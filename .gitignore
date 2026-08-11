@@ -1,0 +1,19 @@
+# Secrets
+.env
+.env.local
+*.local.json
+.mcp.local.json
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Dependencies / build
+node_modules/
+dist/
+build/
+__pycache__/
+*.py[cod]
+.venv/
+venv/

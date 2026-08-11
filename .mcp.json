@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "ditto": {
+      "type": "http",
+      "url": "https://api.ditto.site/mcp",
+      "headers": {
+        "Authorization": "Bearer ${DITTO_API_KEY}"
+      }
+    }
+  }
+}
