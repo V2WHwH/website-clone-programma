@@ -62,3 +62,51 @@ Redirects uit `redirects.md` overnemen als `return 301`-regels.
 
 De site gebruikt er geen. Er staan geen API-keys of tokens in de
 repository; analytics is bewust nog niet geplaatst (zie eindrapport).
+
+## Preview-omgeving (tijdelijk adres, vóór livegang)
+
+Er staat een Netlify-site klaar voor de preview:
+
+- Naam: `vision2watch-rebuild-preview`
+- Adres: https://vision2watch-rebuild-preview.netlify.app
+- Site-id: `52c62018-ab1b-4c45-826a-412cbbc5753b`
+- Beheer: https://app.netlify.com/projects/vision2watch-rebuild-preview
+
+De ontwikkelomgeving waarin deze site is gebouwd mag zelf geen verbinding
+met Netlify maken (het netwerkbeleid van die omgeving blokkeert
+`api.netlify.com` en `netlify-mcp.netlify.app`). Publiceren gebeurt daarom
+van buitenaf, op een van deze twee manieren.
+
+### A. Netlify laten bouwen vanuit GitHub (aanbevolen)
+
+Geen token nodig en elke push publiceert vanzelf:
+
+1. Open https://app.netlify.com/projects/vision2watch-rebuild-preview
+2. **Project configuration > Build & deploy > Link repository**
+3. Kies de repository en als branch `claude/vision2watch-rebuild-uf0biw`
+4. Build command en publish directory komen uit `netlify.toml`
+   (`npm run build && node scripts/preview-klaarzetten.mjs`, map `dist`)
+
+### B. Publiceren vanuit GitHub Actions
+
+De workflow `.github/workflows/netlify-preview.yml` staat klaar. Eenmalig:
+
+1. Maak in Netlify een persoonlijk toegangstoken
+   (User settings > Applications > Personal access tokens)
+2. Zet dat in GitHub onder Settings > Secrets and variables > Actions als
+   secret `NETLIFY_AUTH_TOKEN`
+3. Start de workflow via Actions > netlify-preview > Run workflow
+
+Daarna publiceert elke push naar de werkbranch de preview opnieuw.
+
+### De preview staat bewust op noindex
+
+`scripts/preview-klaarzetten.mjs` zet na de build een
+`X-Robots-Tag: noindex, nofollow` op alle paden zolang het adres niet
+vision2watch.nl is. Zo verschijnt de preview niet naast de echte site in
+Google. Op het echte domein doet dat script niets, dus de livegang kan
+nooit per ongeluk met een noindex gebeuren.
+
+Let op: het formulier werkt op de preview pas als Netlify Forms voor deze
+site is ingeschakeld (Project configuration > Forms). Netlify herkent het
+formulier automatisch bij de eerste deploy die het bevat.

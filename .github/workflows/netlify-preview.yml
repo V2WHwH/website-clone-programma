@@ -1,0 +1,78 @@
+name: netlify-preview
+
+# Publiceert de gebouwde site naar de Netlify-preview
+# (vision2watch-rebuild-preview.netlify.app). Draait in een GitHub-runner,
+# omdat de ontwikkelomgeving zelf geen verbinding met Netlify mag maken.
+#
+# Eenmalig instellen: zet in de repository onder
+# Settings > Secrets and variables > Actions een secret NETLIFY_AUTH_TOKEN
+# met een persoonlijk toegangstoken uit Netlify
+# (User settings > Applications > Personal access tokens).
+# Het site-id staat hieronder en hoeft niet geheim te zijn.
+#
+# Daarna draait deze workflow bij elke push naar de werkbranch, en met de
+# hand via Actions > netlify-preview > Run workflow.
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [claude/vision2watch-rebuild-uf0biw]
+
+concurrency:
+  group: netlify-preview
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NETLIFY_SITE_ID: 52c62018-ab1b-4c45-826a-412cbbc5753b
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Controleren of het token is ingesteld
+        run: |
+          if [ -z "${{ secrets.NETLIFY_AUTH_TOKEN }}" ]; then
+            echo "::error::NETLIFY_AUTH_TOKEN ontbreekt. Zie de uitleg boven in dit workflowbestand."
+            exit 1
+          fi
+
+      - name: Afhankelijkheden installeren
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+
+      - name: Typecontrole
+        run: npm run typecheck
+
+      - name: Bouwen
+        run: npm run build
+
+      - name: Kwaliteitscontrole
+        run: npm run qa
+
+      - name: Preview op noindex zetten
+        # Het script kijkt naar het doeladres: op vision2watch.nl doet het
+        # niets, op een preview-adres zet het noindex aan.
+        run: node scripts/preview-klaarzetten.mjs
+        env:
+          URL: https://vision2watch-rebuild-preview.netlify.app
+
+      - name: Naar Netlify publiceren
+        run: npx --yes netlify-cli@27 deploy --dir=dist --prod --message "preview vanaf ${GITHUB_SHA::7}"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ env.NETLIFY_SITE_ID }}
+
+      - name: Adres tonen
+        run: echo "Preview staat op https://vision2watch-rebuild-preview.netlify.app"
