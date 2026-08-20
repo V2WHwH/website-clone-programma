@@ -1,0 +1,77 @@
+name: demo-pages
+
+# Publiceert de site als demo op GitHub Pages, zodat hij te bekijken is
+# zonder dat er iets aan vision2watch.nl verandert.
+#
+# Dit is uitsluitend een demo-adres. GitHub Pages serveert de site in een
+# submap (https://<gebruiker>.github.io/<repository>/), dus draait er na de
+# build een stap die alle paden daarop aanpast. Elke pagina krijgt daarbij
+# een noindex mee: de demo hoort niet naast de echte site in Google.
+#
+# De echte oplevering gaat níét via Pages maar via de gewone build in de
+# webroot (zie docs/deployment.md).
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [claude/vision2watch-rebuild-uf0biw]
+
+concurrency:
+  group: demo-pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  bouwen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Pages inschakelen en het basispad ophalen
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Afhankelijkheden installeren
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+
+      - name: Typecontrole
+        run: npm run typecheck
+
+      - name: Bouwen
+        run: npm run build
+
+      - name: Kwaliteitscontrole
+        run: npm run qa
+
+      - name: Paden op de submap zetten
+        # base_path is bijvoorbeeld /website-clone-programma
+        run: node scripts/submap-klaarzetten.mjs "${{ steps.pages.outputs.base_path }}"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  publiceren:
+    needs: bouwen
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+      - run: echo "Demo staat op ${{ steps.deployment.outputs.page_url }}"

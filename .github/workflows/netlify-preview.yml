@@ -13,10 +13,11 @@ name: netlify-preview
 # Daarna draait deze workflow bij elke push naar de werkbranch, en met de
 # hand via Actions > netlify-preview > Run workflow.
 
+# Draait bewust alleen met de hand: zonder het token hieronder zou elke
+# push een mislukte run opleveren. Zodra het secret er is, kan de
+# push-trigger eronder weer aangezet worden.
 on:
   workflow_dispatch: {}
-  push:
-    branches: [claude/vision2watch-rebuild-uf0biw]
 
 concurrency:
   group: netlify-preview
