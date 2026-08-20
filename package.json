@@ -10,7 +10,7 @@
     "build": "vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "qa": "node scripts/qa-rapport.mjs && node scripts/linkcontrole.mjs",
+    "qa": "node scripts/qa-rapport.mjs && node scripts/linkcontrole.mjs && node scripts/redirectcontrole.mjs",
     "audit:statisch": "node scripts/audit-uitgebreid.mjs",
     "audit:runtime": "node scripts/runtime-audit.mjs",
     "audit:a11y": "node scripts/a11y-audit.mjs"

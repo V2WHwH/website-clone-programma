@@ -124,7 +124,7 @@ export function Diensten() {
           </Reveal>
           <Reveal vertraging={80}>
             <p className="text-lg leading-relaxed text-zacht">
-              Animaties, spellen, virtuele presentatoren en panoramische producties ontstaan in onze eigen studio. Dat betekent korte lijnen, snelle aanpassingen en content die exact aansluit op de techniek waarop hij draait. Als een van de weinige partijen in Europa ontwikkelen we ook de interactieve software zelf.
+              Animaties, spellen, virtuele presentatoren en panoramische producties ontstaan in onze eigen studio. Dat betekent korte lijnen, snelle aanpassingen en content die exact aansluit op de techniek waarop hij draait. Ook de interactieve software erachter ontwikkelen we zelf.
             </p>
             <div className="mt-8">
               <Knop naar="/projecten" variant="secundair">Bekijk het resultaat</Knop>

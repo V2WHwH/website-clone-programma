@@ -1,7 +1,7 @@
 // Metadata-rapport over alle geprerenderde pagina's: unieke titels en
 // descriptions, canonicals, lang, precies één H1, parsende JSON-LD.
 // Exitcode 1 zodra iets ontbreekt. Zie kennisbank 05-kwaliteitscontrole.md.
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -61,6 +61,29 @@ for (const bestand of paginas) {
 
 for (const [t, routes] of titels) if (routes.length > 1) fouten.push(`dubbele titel "${t.slice(0, 50)}" op ${routes.join(", ")}`);
 for (const [d, routes] of descs) if (routes.length > 1) fouten.push(`dubbele description op ${routes.join(", ")}`);
+
+// Beweringen die bij de contentcontrole zijn verwijderd omdat ze nergens in
+// de bron staan (zie docs/ontbrekende-assets.md). Ze mogen niet ongemerkt
+// terugkeren, ook niet via een los bestand zoals llms.txt. Zodra de
+// opdrachtgever een gegeven bevestigt, hoort de regel hier weg.
+const verboden = [
+  [/NL009550458B01/, "btw-nummer dat niet in de bron staat"],
+  [/\b(sinds|opgericht(?: in)?)\s+2008\b/i, "oprichtingsjaar 2008 is niet te staven"],
+  [/langste\s+(holografische\s+)?scherm\s+van\s+Nederland/i, "superlatief zonder bron en peildatum"],
+  [/een van de weinige partijen in Europa/i, "concurrentieclaim zonder onderbouwing"],
+];
+for (const bestand of ["llms.txt", "robots.txt"]) {
+  const pad = join(dist, bestand);
+  if (!existsSync(pad)) continue;
+  const inhoud = readFileSync(pad, "utf8");
+  for (const [patroon, waarom] of verboden)
+    if (patroon.test(inhoud)) fouten.push(`${bestand}: ${waarom}`);
+}
+for (const bestand of paginas) {
+  const html = readFileSync(bestand, "utf8");
+  for (const [patroon, waarom] of verboden)
+    if (patroon.test(html)) fouten.push(`${relative(dist, bestand)}: ${waarom}`);
+}
 
 if (fouten.length) {
   console.error(`QA-rapport: ${fouten.length} fout(en):`);

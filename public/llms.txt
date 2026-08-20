@@ -1,6 +1,6 @@
 # Vision2Watch
 
-> Vision2Watch (Vision 2 Watch B.V., Den Haag, opgericht 2008, KvK 27130482)
+> Vision2Watch (Vision 2 Watch B.V., Den Haag, KvK 27130482)
 > levert en bouwt interactieve audiovisuele oplossingen voor bedrijven:
 > interactieve vloeren, muren, tafels en etalages, hologram-projectie,
 > holoboxen (via zusterbedrijf HEREweHOLO), holografische molens,
@@ -9,7 +9,7 @@
 > logo-animatie. Producten zijn te koop en te huur; Vision2Watch verzorgt
 > advies, contentproductie (eigen studio en eigen software), installatie en
 > onderhoud tot en met SLA. Showroom in Den Haag met een holografisch
-> scherm van 9 meter. Contact: info@vision2watch.nl, +31 (0)85 007 02 23,
+> scherm van 9 meter breed. Contact: info@vision2watch.nl, +31 (0)85 007 02 23,
 > Tiber 10, 2491 DH Den Haag.
 
 ## Kernpagina's
