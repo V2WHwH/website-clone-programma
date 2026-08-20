@@ -1,6 +1,9 @@
 name: discovery
 on:
   workflow_dispatch: {}
+  push:
+    branches: [claude/vision2watch-rebuild-uf0biw]
+    paths: ["discovery/trigger.txt"]
 
 concurrency:
   group: discovery
