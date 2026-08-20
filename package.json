@@ -1,0 +1,30 @@
+{
+  "name": "vision2watch-rebuild",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Volledige rebuild van vision2watch.nl: statisch geprerenderde marketingsite (Vite + React + TypeScript + Tailwind)",
+  "scripts": {
+    "dev": "vite",
+    "prebuild": "node scripts/mediacheck.mjs",
+    "build": "vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "qa": "node scripts/qa-rapport.mjs && node scripts/linkcontrole.mjs",
+    "audit:statisch": "node scripts/audit-uitgebreid.mjs",
+    "audit:runtime": "node scripts/runtime-audit.mjs",
+    "audit:a11y": "node scripts/a11y-audit.mjs"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
+  }
+}

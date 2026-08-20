@@ -1,1 +1,1 @@
-run 1: volledige crawl + screenshots 2026-08-20T19:44:18Z
+run 2: media ophalen 2026-08-20T19:59:01Z

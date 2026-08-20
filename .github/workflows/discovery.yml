@@ -23,20 +23,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Crawl huidige site
-        run: node discovery/crawl.mjs
-      - name: Playwright installeren
-        run: |
-          npm init -y >/dev/null
-          npm i playwright@1 >/dev/null 2>&1
-          npx playwright install --with-deps chromium >/dev/null 2>&1
-      - name: Screenshots maken
-        run: node discovery/screenshots.mjs
+      - name: Media ophalen
+        run: node discovery/media-ophalen.mjs
       - name: Resultaten committen
         run: |
-          rm -rf node_modules package.json package-lock.json
           git config user.name "discovery-runner"
           git config user.email "actions@github.com"
-          git add discovery
-          git commit -m "Discovery: crawl huidige site + referentie-screenshots" || echo "niets te committen"
+          git add discovery/media-bron
+          git commit -m "Discovery: bronmedia van huidige site opgehaald" || echo "niets te committen"
+          git pull --rebase origin claude/vision2watch-rebuild-uf0biw
           git push origin claude/vision2watch-rebuild-uf0biw
