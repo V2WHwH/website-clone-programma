@@ -120,7 +120,54 @@ for (const [frag, [naam, breedte, omschrijving]] of Object.entries(beelden)) {
 for (const [frag, [naam, omschrijving]] of Object.entries(logos)) {
   const bron = vind(frag);
   if (!bron) { console.log(`LOGO NIET GEVONDEN: ${frag}`); mis++; continue; }
-  await sharp(`${BRON}/${bron}`).resize({ width: 400, withoutEnlargement: true }).webp({ quality: 80 }).toFile(`${UIT}/logo/${naam}`);
+  // De bronlogo's staan deels op een witte en deels op een zwarte
+  // achtergrond. Eén blend-mode in CSS kan dat niet allebei wegwerken; op de
+  // donkere balk bleven daardoor lichte blokken staan. Daarom haalt dit
+  // script de achtergrond er hier uit: de kleur van de hoeken wordt
+  // doorzichtig gemaakt, de eigen kleuren van het logo blijven staan. Een
+  // vlak dat écht bij het logo hoort (het blauwe blok van Sea Life) blijft
+  // dus behouden, de omringende witruimte verdwijnt.
+  const { data, info } = await sharp(`${BRON}/${bron}`)
+    .resize({ width: 400, withoutEnlargement: true })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const k = info.channels;
+  const hoeken = [0, (info.width - 1) * k, (info.height - 1) * info.width * k, ((info.height - 1) * info.width + info.width - 1) * k];
+  const achtergrond = [0, 1, 2].map((c) => hoeken.reduce((s, i) => s + data[i + c], 0) / hoeken.length);
+  const uit = Buffer.alloc(info.width * info.height * 4);
+  for (let p = 0; p < info.width * info.height; p++) {
+    const i = p * k;
+    const afstand = Math.max(Math.abs(data[i] - achtergrond[0]), Math.abs(data[i + 1] - achtergrond[1]), Math.abs(data[i + 2] - achtergrond[2]));
+    // tot 26 volledig doorzichtig, vanaf 60 volledig dekkend: een zachte
+    // rand voorkomt gekartelde letters
+    const dekking = Math.min(1, Math.max(0, (afstand - 26) / 34));
+    uit[p * 4] = data[i];
+    uit[p * 4 + 1] = data[i + 1];
+    uit[p * 4 + 2] = data[i + 2];
+    uit[p * 4 + 3] = Math.round(dekking * data[i + 3]);
+  }
+  // Een logo dat in zwarte inkt is getekend valt weg op de donkere balk;
+  // dat wordt omgekeerd naar wit. Alleen als het logo grijswaarden gebruikt:
+  // bij een kleurenlogo zou omkeren de merkkleuren veranderen, en die horen
+  // te blijven zoals ze zijn.
+  let som = 0, kleurigheid = 0, aantal = 0;
+  for (let p = 0; p < info.width * info.height; p++) {
+    if (uit[p * 4 + 3] < 140) continue;
+    const [r, g, bl] = [uit[p * 4], uit[p * 4 + 1], uit[p * 4 + 2]];
+    som += (r * 0.2126 + g * 0.7152 + bl * 0.0722) / 255;
+    kleurigheid += (Math.max(r, g, bl) - Math.min(r, g, bl)) / 255;
+    aantal++;
+  }
+  if (aantal && som / aantal < 0.35 && kleurigheid / aantal < 0.12) {
+    for (let p = 0; p < info.width * info.height; p++)
+      for (const c of [0, 1, 2]) uit[p * 4 + c] = 255 - uit[p * 4 + c];
+  }
+
+  await sharp(uit, { raw: { width: info.width, height: info.height, channels: 4 } })
+    .trim({ threshold: 1 })
+    .webp({ quality: 90, alphaQuality: 100 })
+    .toFile(`${UIT}/logo/${naam}`);
   register[`/media/logo/${naam}`] = { bron: `wixstatic ${bron.replace(/_mv2.*/, "")}`, omschrijving };
   ok++;
 }

@@ -76,6 +76,17 @@ h1, h2, h3, h4 {
   font-family: var(--font-display);
   letter-spacing: -0.015em;
   text-wrap: balance;
+  /* Nederlands zit vol lange samenstellingen ("productdemonstratie",
+     "vloerprojectiesysteem"). Op een smal scherm past zo'n woord niet in de
+     kop en duwt het de hele pagina breder. Afbreken mag daar dus, met een
+     koppelteken; op grotere schermen is het niet nodig. */
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 640px) {
+  h1, h2, h3 {
+    hyphens: auto;
+  }
 }
 
 p {
@@ -118,15 +129,16 @@ p {
 
 /* logo's van klanten: bron heeft zwarte achtergrond; lighten laat alleen
    het logo zelf zien op onze donkere grond */
+/* De logobestanden hebben sinds de curatie een doorzichtige achtergrond
+   (zie scripts/media-cureren.mjs), dus een blend-mode is niet meer nodig.
+   Ze staan iets ingetogen in de balk en komen op tot volle sterkte bij
+   aanwijzen. */
 .logo-klant {
-  mix-blend-mode: lighten;
-  filter: grayscale(1) brightness(1.15);
-  opacity: 0.75;
-  transition: opacity var(--duur-kort) ease, filter var(--duur-kort) ease;
+  opacity: 0.85;
+  transition: opacity var(--duur-kort) ease;
 }
 .logo-klant:hover {
   opacity: 1;
-  filter: grayscale(0) brightness(1);
 }
 
 /* skiplink */

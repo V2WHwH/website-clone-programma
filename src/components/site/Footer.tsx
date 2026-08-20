@@ -9,7 +9,10 @@ export function Footer() {
   return (
     <footer className="border-t border-lijn bg-nacht">
       <div className="mx-auto w-full max-w-6xl px-5 py-14 md:px-8 md:py-20">
-        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+        {/* minmax(0,…): zonder die 0 krimpt een kolom niet onder de breedte van
+            haar langste woord, waardoor een lang e-mailadres het raster op
+            tabletbreedte breder maakt dan het scherm. */}
+        <div className="grid gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)]">
           <div>
             <Logo className="text-lg" />
             <p className="mt-4 max-w-xs text-[0.95rem] leading-relaxed text-zacht">
