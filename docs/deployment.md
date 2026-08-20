@@ -110,3 +110,25 @@ nooit per ongeluk met een noindex gebeuren.
 Let op: het formulier werkt op de preview pas als Netlify Forms voor deze
 site is ingeschakeld (Project configuration > Forms). Netlify herkent het
 formulier automatisch bij de eerste deploy die het bevat.
+
+## Demo in één bestand
+
+`node scripts/demo-eenbestand.mjs` maakt van de gebouwde site één HTML-
+bestand van ongeveer 4,5 MB waarin alles zit: stijlen, lettertypen,
+beelden, video en de app. Openen kan overal, ook rechtstreeks vanaf een
+schijf, zonder server of internetverbinding. Handig om de site te laten
+zien of mee te sturen.
+
+Wat er in dat bestand anders is dan op de echte site, en waarom:
+
+- **Adressen achter een hekje.** Er is geen server die `/producten` kan
+  serveren, dus gebruikt de app in demomodus `#/producten`. De site zelf
+  gebruikt gewone adressen; het verschil zit in één vlag op het
+  html-element (`data-demo`).
+- **Beelden in de 640px-versie**, elk één keer opgenomen. Ruim genoeg om
+  het ontwerp te beoordelen en het scheelt de helft van het bestand.
+- **Video's in de mobiele versie**, om dezelfde reden.
+- **noindex**, want een demo hoort nergens in de zoekresultaten.
+
+De echte oplevering is en blijft de map `dist/` met losse pagina's: die
+haalt de prestaties en de vindbaarheid die in het eindrapport staan.
