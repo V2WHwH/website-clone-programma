@@ -83,11 +83,13 @@ webversie en een mobiele variant van.
 Bij de contentcontrole is elke feitelijke bewering nagelopen tegen de crawl
 van de huidige site (`/tmp`-onafhankelijk vastgelegd in `discovery/crawl`).
 Deze stonden nergens in de bron en zijn daarom van de site gehaald. Ze
-kunnen er meteen weer bij zodra de opdrachtgever ze bevestigt.
+kunnen er meteen weer bij zodra de opdrachtgever ze bevestigt. (Het
+btw-nummer stond er eerst ook bij: dat blijkt wél op de huidige site te
+staan, als "VAT 0095.50.458.B01", en is teruggezet in de standaardnotatie
+NL009550458B01.)
 
 | Gegeven | Status | Waar het weer terugkomt |
 | --- | --- | --- |
-| Btw-nummer | niet gevonden; stond eerder als NL009550458B01 op de site, herkomst onbekend | `SITE.btw` in `src/data/site.ts`, daarna footer, contactpagina en `vatID` in de structured data |
 | Oprichtingsjaar | niet gevonden; "sinds 2008" was niet te staven | `SITE.oprichtingsjaar`, daarna footer, homepage, over-onspagina en `foundingDate` in de structured data |
 | Medewerker "Patricia, administratie" | komt niet voor op de huidige over-onspagina | `TEAM` in `src/data/site.ts` |
 

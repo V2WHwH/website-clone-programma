@@ -55,7 +55,7 @@ export function Contact() {
             <div>
               <dt className="font-display text-[0.85rem] font-medium uppercase tracking-[0.14em] text-dof">Gegevens</dt>
               <dd className="mt-2 text-[0.9rem] text-zacht">
-                {SITE.juridischeNaam} · KvK {SITE.kvk}
+                {SITE.juridischeNaam} · KvK {SITE.kvk} · BTW {SITE.btw}
               </dd>
             </div>
           </dl>

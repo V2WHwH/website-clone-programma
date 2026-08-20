@@ -16,6 +16,7 @@ export const organisatieSchema = () => ({
   email: SITE.email,
   telephone: SITE.telefoon.algemeen.label,
   identifier: { "@type": "PropertyValue", propertyID: "KvK", value: SITE.kvk },
+  vatID: SITE.btw,
   address: {
     "@type": "PostalAddress",
     streetAddress: SITE.adres.straat,

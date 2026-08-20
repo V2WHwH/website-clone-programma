@@ -28,7 +28,10 @@ screenshots van de huidige site en de referentiesites.
 ## 2. Feitelijke basis (geverifieerd)
 
 - Bedrijf: Vision 2 Watch B.V., KvK 27130482, BTW NL009550458B01
-  (op de site: VAT 0095.50.458.B01), opgericht 2008.
+  (op de site: VAT 0095.50.458.B01).
+  Een oprichtingsjaar staat nergens op de site; de eerdere aanname "2008"
+  in dit rapport bleek bij de contentcontrole niet houdbaar en is uit de
+  site gehaald (zie docs/ontbrekende-assets.md).
 - Adres (actueel op de site): Tiber 10, 2491 DH Den Haag.
 - Telefoon: algemeen +31 (0)85 007 02 23, Desmond +31 (0)6 50 40 95 53,
   Ronald +31 (0)6 53 48 62 82. E-mail: info@vision2watch.nl.

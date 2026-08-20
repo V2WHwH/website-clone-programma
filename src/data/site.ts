@@ -2,16 +2,19 @@
 // Alle waarden hieronder zijn teruggevonden op de huidige site (crawl
 // augustus 2026, zie discovery/crawl); niets is verzonnen.
 //
-// Bewust NIET opgenomen omdat ze nergens in de bron staan: het btw-nummer
-// en een oprichtingsjaar. Zodra de opdrachtgever die aanlevert kunnen ze
-// hier bij, en dan ook in de structured data en op de contactpagina.
-// Zie docs/ontbrekende-assets.md.
+// Bewust NIET opgenomen omdat het nergens in de bron staat: een
+// oprichtingsjaar. Zodra de opdrachtgever dat aanlevert kan het hier bij,
+// en dan ook in de structured data. Zie docs/ontbrekende-assets.md.
+//
+// Het btw-nummer staat op de huidige site als "VAT 0095.50.458.B01";
+// hieronder in de standaardnotatie (NL + 9 cijfers + B + 2 cijfers).
 
 export const SITE = {
   naam: "Vision2Watch",
   juridischeNaam: "Vision 2 Watch B.V.",
   domein: "https://www.vision2watch.nl",
   kvk: "27130482",
+  btw: "NL009550458B01",
   adres: {
     straat: "Tiber 10",
     postcode: "2491 DH",

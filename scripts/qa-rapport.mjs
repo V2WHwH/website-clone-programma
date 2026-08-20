@@ -67,7 +67,6 @@ for (const [d, routes] of descs) if (routes.length > 1) fouten.push(`dubbele des
 // terugkeren, ook niet via een los bestand zoals llms.txt. Zodra de
 // opdrachtgever een gegeven bevestigt, hoort de regel hier weg.
 const verboden = [
-  [/NL009550458B01/, "btw-nummer dat niet in de bron staat"],
   [/\b(sinds|opgericht(?: in)?)\s+2008\b/i, "oprichtingsjaar 2008 is niet te staven"],
   [/langste\s+(holografische\s+)?scherm\s+van\s+Nederland/i, "superlatief zonder bron en peildatum"],
   [/een van de weinige partijen in Europa/i, "concurrentieclaim zonder onderbouwing"],

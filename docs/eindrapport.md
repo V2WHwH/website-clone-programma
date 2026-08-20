@@ -237,9 +237,9 @@ Volledig uitgewerkt in `docs/ontbrekende-assets.md`. Samengevat:
 - **Twee cases hebben geen eigen projectfoto** (Philips, Kanon Loading
   Equipment). Ze tonen een foto van dezelfde techniek met daaronder de
   zichtbare vermelding dat het een illustratiebeeld is.
-- **Drie gegevens zijn van de site gehaald** omdat ze nergens in de bron
-  staan: het btw-nummer, het oprichtingsjaar ("sinds 2008") en een tiende
-  teamlid. Aanleveren en ze staan er weer op.
+- **Twee gegevens zijn van de site gehaald** omdat ze nergens in de bron
+  staan: het oprichtingsjaar ("sinds 2008") en een tiende teamlid.
+  Aanleveren en ze staan er weer op.
 - **Twee beweringen vragen bevestiging**: of het holografische scherm van
   9 meter nog "het langste van Nederland" is (de bron zegt dit met de
   toevoeging "aldus 2015") en of de showroom op het huidige adres in Den

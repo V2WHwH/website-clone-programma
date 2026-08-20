@@ -83,7 +83,7 @@ export function Footer() {
                 </a>
               </p>
               <p className="pt-2 text-[0.85rem] text-dof">
-                KvK {SITE.kvk}
+                KvK {SITE.kvk} · BTW {SITE.btw}
               </p>
             </address>
           </div>
