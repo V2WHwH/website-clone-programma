@@ -1,0 +1,13 @@
+# Netlify-configuratie. De site is statisch: er valt op de server niets te
+# bouwen wat hier niet al gebouwd is, dus wordt dist/ rechtstreeks
+# gepubliceerd. Omleidingen en kopregels staan in dist/_redirects en
+# dist/_headers; die pakt Netlify automatisch op.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Playwright is alleen nodig voor de audits, niet voor de build zelf.
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
