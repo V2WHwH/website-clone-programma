@@ -4,7 +4,11 @@
 # dist/_headers; die pakt Netlify automatisch op.
 
 [build]
-  command = "npm run build"
+  # De tweede stap zet een noindex-kop op elke pagina zolang de site niet op
+  # het echte domein draait, zodat een preview niet naast vision2watch.nl in
+  # Google verschijnt. Op vision2watch.nl doet die stap zelf niets; zie
+  # scripts/preview-klaarzetten.mjs.
+  command = "npm run build && node scripts/preview-klaarzetten.mjs"
   publish = "dist"
 
 [build.environment]

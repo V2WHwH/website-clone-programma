@@ -9,15 +9,32 @@
 // zien: het adres belandt dan alsnog zonder inhoud in de index. Crawlen
 // toestaan en noindex meegeven is de manier die wél werkt.
 //
-// Draai dit ná `npm run build` en vóór een preview-deploy. De volgende
-// build wist het weer, zodat een echte livegang nooit per ongeluk met een
-// noindex de lucht in gaat.
+// Het script bepaalt zelf of het aan zet is: draait de build op het echte
+// domein, dan doet het niets. Overal anders (een netlify.app-adres, een
+// testdomein) zet het noindex aan. Zo kan niemand vergeten de vlag om te
+// zetten, en kan de echte site er nooit met een noindex op komen.
+//
+// Draai dit ná `npm run build`; in de Netlify-build gebeurt dat vanzelf
+// (zie netlify.toml).
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const wortel = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(wortel, "dist");
+
+const HOOFDDOMEIN = "vision2watch.nl";
+// Netlify zet URL op het adres waarop deze build straks staat.
+const doelUrl = process.env.URL || process.env.DEPLOY_PRIME_URL || "";
+if (doelUrl) {
+  let host = "";
+  try { host = new URL(doelUrl).hostname; } catch { host = ""; }
+  if (host === HOOFDDOMEIN || host === `www.${HOOFDDOMEIN}`) {
+    console.log(`Preview overgeslagen: dit is het echte domein (${host}).`);
+    process.exit(0);
+  }
+  console.log(`Preview-adres gedetecteerd (${host || doelUrl}): noindex wordt gezet.`);
+}
 
 if (!existsSync(dist)) {
   console.error("dist/ bestaat niet. Draai eerst: npm run build");
