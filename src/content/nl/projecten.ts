@@ -207,7 +207,7 @@ export const PROJECTEN: Project[] = [
     oplossing:
       "Voor Nespresso maakte Vision2Watch een interactieve vloer volledig op maat, afgestemd op de stijl en campagne van het merk.",
     producten: ["interactieve-vloer"],
-    beeld: { src: "/media/vloer-valentijn.webp", alt: "Interactieve vloerprojectie met campagnecontent" },
+    beeld: { src: "/media/symphony-cirkelvloer.webp", alt: "Interactieve vloerprojectie in een showroomopstelling" },
   },
   {
     slug: "philips",
@@ -218,7 +218,7 @@ export const PROJECTEN: Project[] = [
     oplossing:
       "Voor Philips creëerden we een interactieve vloer die op een speelse en boeiende manier de functionaliteiten van het product liet zien: productdemonstratie en beleving in één.",
     producten: ["interactieve-vloer"],
-    beeld: { src: "/media/alpro-vloer-close.webp", alt: "Close-up van een interactieve vloerprojectie" },
+    beeld: { src: "/media/beursstand-donker.webp", alt: "Interactieve vloerprojectie tijdens een presentatie" },
   },
   {
     slug: "tieleman-keukens",
@@ -297,7 +297,6 @@ export const PROJECTEN: Project[] = [
       "Onze oplossing: een interactieve vloer in Alpro-stijl die niet alleen de aandacht trok, maar bezoekers ook betrokken hield, merkactivatie waar je doorheen loopt.",
     producten: ["interactieve-vloer"],
     beeld: { src: "/media/alpro-stand-vloer.webp", alt: "Interactieve vloer in Alpro-huisstijl in Westfield Mall of the Netherlands" },
-    galerij: [{ src: "/media/alpro-vloer-close.webp", alt: "Close-up van de Alpro-vloerprojectie" }],
   },
 ];
 

@@ -41,7 +41,7 @@ export const PRODUCTEN: Product[] = [
     galerij: [
       { src: "/media/dreamhack-vloer-breed.webp", alt: "Interactieve gamevloer op DreamHack voor het Ministerie van Defensie" },
       { src: "/media/vloer-strand.webp", alt: "Interactieve strandprojectie op de vloer" },
-      { src: "/media/alpro-vloer-close.webp", alt: "Interactieve vloerprojectie in Alpro-huisstijl" },
+      { src: "/media/alpro-stand-vloer.webp", alt: "Interactieve vloerprojectie in Alpro-huisstijl" },
       { src: "/media/ouwehands-stenenvloer.webp", alt: "Interactieve waterwereldvloer bij Ouwehands Dierenpark" },
     ],
     faq: [
@@ -442,7 +442,10 @@ export const PRODUCTEN: Product[] = [
     ],
     levering:
       "Van scriptontwikkeling en opname tot installatie op locatie: Vision2Watch levert de complete virtuele host, te koop en te huur.",
-    galerij: [{ src: "/media/virtual-host-buitenunit.webp", alt: "Virtual host in een buitenopstelling met informatiescherm" }],
+    galerij: [
+      { src: "/media/virtual-host-buitenunit.webp", alt: "Virtual host in een buitenopstelling met informatiescherm" },
+      { src: "/media/virtual-host-silhouet.webp", alt: "Virtual host spreekt passanten aan" },
+    ],
     faq: [
       {
         vraag: "Hoe wordt de Virtual Host gemaakt?",

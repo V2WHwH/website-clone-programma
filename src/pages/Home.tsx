@@ -27,12 +27,14 @@ export function Home() {
     <>
       {/* Hero: video van een echt project, boodschap in enkele seconden helder */}
       <section className="relative min-h-[82svh] overflow-hidden">
-        <HeroVideo
-          src="/media/video/dreamhack-interactieve-vloer.mp4"
-          poster="/media/video/dreamhack-interactieve-vloer-poster.webp"
-          label="Interactieve vloer van Vision2Watch in actie op DreamHack, Rotterdam Ahoy"
-          className="absolute inset-0"
-        />
+        <div className="absolute inset-0">
+          <HeroVideo
+            src="/media/video/dreamhack-interactieve-vloer.mp4"
+            poster="/media/video/dreamhack-interactieve-vloer-poster.webp"
+            label="Interactieve vloer van Vision2Watch in actie op DreamHack, Rotterdam Ahoy"
+            className="h-full"
+          />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-inkt via-inkt/55 to-inkt/25" aria-hidden="true" />
         <div className="relative mx-auto flex min-h-[82svh] w-full max-w-6xl flex-col justify-end px-5 pb-16 pt-28 md:px-8 md:pb-24">
           <h1 className="max-w-3xl text-4xl font-medium leading-[1.08] md:text-6xl">

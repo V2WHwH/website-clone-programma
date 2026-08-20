@@ -354,7 +354,7 @@ var PRODUCTEN = [
 				alt: "Interactieve strandprojectie op de vloer"
 			},
 			{
-				src: "/media/alpro-vloer-close.webp",
+				src: "/media/alpro-stand-vloer.webp",
 				alt: "Interactieve vloerprojectie in Alpro-huisstijl"
 			},
 			{
@@ -995,6 +995,9 @@ var PRODUCTEN = [
 		galerij: [{
 			src: "/media/virtual-host-buitenunit.webp",
 			alt: "Virtual host in een buitenopstelling met informatiescherm"
+		}, {
+			src: "/media/virtual-host-silhouet.webp",
+			alt: "Virtual host spreekt passanten aan"
 		}],
 		faq: [
 			{
@@ -2039,8 +2042,8 @@ var PROJECTEN = [
 		oplossing: "Voor Nespresso maakte Vision2Watch een interactieve vloer volledig op maat, afgestemd op de stijl en campagne van het merk.",
 		producten: ["interactieve-vloer"],
 		beeld: {
-			src: "/media/vloer-valentijn.webp",
-			alt: "Interactieve vloerprojectie met campagnecontent"
+			src: "/media/symphony-cirkelvloer.webp",
+			alt: "Interactieve vloerprojectie in een showroomopstelling"
 		}
 	},
 	{
@@ -2052,8 +2055,8 @@ var PROJECTEN = [
 		oplossing: "Voor Philips creëerden we een interactieve vloer die op een speelse en boeiende manier de functionaliteiten van het product liet zien: productdemonstratie en beleving in één.",
 		producten: ["interactieve-vloer"],
 		beeld: {
-			src: "/media/alpro-vloer-close.webp",
-			alt: "Close-up van een interactieve vloerprojectie"
+			src: "/media/beursstand-donker.webp",
+			alt: "Interactieve vloerprojectie tijdens een presentatie"
 		}
 	},
 	{
@@ -2148,11 +2151,7 @@ var PROJECTEN = [
 		beeld: {
 			src: "/media/alpro-stand-vloer.webp",
 			alt: "Interactieve vloer in Alpro-huisstijl in Westfield Mall of the Netherlands"
-		},
-		galerij: [{
-			src: "/media/alpro-vloer-close.webp",
-			alt: "Close-up van de Alpro-vloerprojectie"
-		}]
+		}
 	}
 ];
 var vindProject = (slug) => PROJECTEN.find((p) => p.slug === slug);
@@ -2601,7 +2600,6 @@ function HeroVideo({ src, poster, label, className = "" }) {
 //#region src/data/beeldmaten.ts
 var BEELDMATEN = {
 	"/media/alpro-stand-vloer.webp": [841, 1583],
-	"/media/alpro-vloer-close.webp": [1080, 1080],
 	"/media/beursstand-donker.webp": [1170, 1170],
 	"/media/beursstand-fotolight.webp": [720, 960],
 	"/media/beursstand-hostess.webp": [1024, 768],
@@ -2660,16 +2658,17 @@ var BEELDMATEN = {
 	"/media/virtual-chef-tafelrond.webp": [1080, 1080],
 	"/media/virtual-host-buitenunit.webp": [1200, 900],
 	"/media/virtual-host-lounge.webp": [1200, 900],
+	"/media/virtual-host-silhouet.webp": [1080, 1080],
 	"/media/vloer-sportteam.webp": [1170, 660],
 	"/media/vloer-strand.webp": [908, 1600],
 	"/media/vloer-valentijn.webp": [1080, 1080],
 	"/media/vloerprojectie-grot.webp": [566, 298],
-	"/media/logo/24-7-events.webp": [200, 200],
-	"/media/logo/alpro.webp": [150, 150],
+	"/media/logo/24-7-events.webp": [400, 400],
+	"/media/logo/alpro.webp": [290, 142],
 	"/media/logo/bloemenbureau-holland.webp": [201, 78],
-	"/media/logo/defensie.webp": [200, 200],
+	"/media/logo/defensie.webp": [225, 225],
 	"/media/logo/escher-museum.webp": [171, 295],
-	"/media/logo/hotel-vic.webp": [400, 100],
+	"/media/logo/hotel-vic.webp": [225, 225],
 	"/media/logo/jada-events.webp": [340, 148],
 	"/media/logo/mcdonalds.webp": [400, 391],
 	"/media/logo/rtl.webp": [400, 225],
@@ -2859,11 +2858,14 @@ function Home() {
 		/* @__PURE__ */ jsxs("section", {
 			className: "relative min-h-[82svh] overflow-hidden",
 			children: [
-				/* @__PURE__ */ jsx(HeroVideo, {
-					src: "/media/video/dreamhack-interactieve-vloer.mp4",
-					poster: "/media/video/dreamhack-interactieve-vloer-poster.webp",
-					label: "Interactieve vloer van Vision2Watch in actie op DreamHack, Rotterdam Ahoy",
-					className: "absolute inset-0"
+				/* @__PURE__ */ jsx("div", {
+					className: "absolute inset-0",
+					children: /* @__PURE__ */ jsx(HeroVideo, {
+						src: "/media/video/dreamhack-interactieve-vloer.mp4",
+						poster: "/media/video/dreamhack-interactieve-vloer-poster.webp",
+						label: "Interactieve vloer van Vision2Watch in actie op DreamHack, Rotterdam Ahoy",
+						className: "h-full"
+					})
 				}),
 				/* @__PURE__ */ jsx("div", {
 					className: "absolute inset-0 bg-gradient-to-t from-inkt via-inkt/55 to-inkt/25",

@@ -1,94 +1,82 @@
-# website-clone-programma
+# Vision2watch Rebuild
 
-Repo voor het website-clone-programma. Op dit moment bevat de repo de configuratie
-om de **Ditto MCP-server** (`https://api.ditto.site/mcp`) te koppelen aan
-MCP-clients zoals Claude Code.
+Volledige rebuild van [vision2watch.nl](https://www.vision2watch.nl): een
+statisch geprerenderde, Nederlandstalige marketingsite die Vision2Watch
+positioneert als specialist in interactieve audiovisuele technologie.
+Gebouwd volgens de meegeleverde kennisbank websitebouw (zie
+`docs/discovery-rapport.md` voor de volledige analyse).
 
-## Ditto MCP-server
+## Stack
 
-De server is geregistreerd in [`.mcp.json`](.mcp.json) als een remote HTTP
-MCP-server:
+- **Vite 8 + React 19 + TypeScript + Tailwind CSS 4**
+- **Eigen prerender-stap**: elke route wordt als echt HTML-bestand
+  weggeschreven (`route/index.html`). Bezoekers en crawlers krijgen
+  kant-en-klare HTML; React hydrateert daarna alleen voor interactie.
+- **Geen CMS, geen database**: alle content staat in TypeScript-bestanden;
+  elke wijziging is een commit.
+- Zelf-gehoste variabele fonts (Space Grotesk + Inter), alle media op de
+  eigen server, geen externe runtime-afhankelijkheden.
 
-```json
-{
-  "mcpServers": {
-    "ditto": {
-      "type": "http",
-      "url": "https://api.ditto.site/mcp",
-      "headers": {
-        "Authorization": "Bearer ${DITTO_API_KEY}"
-      }
-    }
-  }
-}
-```
-
-### Instellen
-
-1. Kopieer `.env.example` naar `.env` en vul je Ditto API key in:
-
-   ```bash
-   cp .env.example .env
-   # zet DITTO_API_KEY=... in .env
-   ```
-
-2. Zorg dat de variabele in je shell staat voordat je de client start
-   (Claude Code leest `${DITTO_API_KEY}` uit de omgeving, niet uit `.env`):
-
-   ```bash
-   export DITTO_API_KEY="$(grep '^DITTO_API_KEY=' .env | cut -d= -f2-)"
-   ```
-
-3. Start Claude Code in deze map. Bij de eerste keer vraagt hij om de
-   project-MCP-servers goed te keuren. Controleer daarna met:
-
-   ```bash
-   claude mcp list
-   ```
-
-   Of binnen een sessie met `/mcp`.
-
-### Alternatief: toevoegen via de CLI
-
-Zonder `.mcp.json` kan het ook direct:
+## Ontwikkelen
 
 ```bash
-claude mcp add --transport http ditto https://api.ditto.site/mcp \
-  --header "Authorization: Bearer $DITTO_API_KEY"
+npm install
+npm run dev        # ontwikkelserver
+npm run typecheck  # TypeScript-controle
+npm run build      # prebuild-mediacheck + client- en SSR-build + prerender + sitemap
+npm run qa         # metadata-rapport + linkcontrole over dist/
+npm run preview    # dist/ lokaal serveren (poort via --port)
 ```
 
-### Handmatig testen
-
-De MCP-endpoint spreekt JSON-RPC 2.0 over HTTP (Streamable HTTP transport):
+Audits (vereisen een draaiende `npm run preview` op poort 4390):
 
 ```bash
-curl -sS https://api.ditto.site/mcp \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -H "Authorization: Bearer $DITTO_API_KEY" \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "initialize",
-    "params": {
-      "protocolVersion": "2025-06-18",
-      "capabilities": {},
-      "clientInfo": { "name": "curl", "version": "1.0" }
-    }
-  }'
+npm run audit:statisch   # metadata, OG, JSON-LD, alt-teksten, gewichten (P0-P3)
+npm run audit:runtime    # Playwright: console, LCP/CLS, mobiel, formulier
+npm run audit:a11y       # toegankelijkheidsheuristieken
 ```
 
-Daarna `tools/list` met dezelfde headers plus de `Mcp-Session-Id` die de server
-in de response-header teruggeeft.
+## Structuur
 
-## Nog te verifiëren
+```
+src/content/nl/     alle teksten: producten, projecten, sectoren, kennisbank
+src/content/types.ts het gedeelde contenttype (klaar voor meertaligheid)
+src/data/site.ts    bedrijfsgegevens: één bron van waarheid
+src/seo/            metadata, head-builder en JSON-LD per paginatype
+src/components/     ui- en sitecomponenten
+src/pages/          de pagina's
+public/             media, fonts, robots.txt, llms.txt, _redirects, _headers
+scripts/            prerender, QA, audits, media-pipeline
+discovery/          crawl van de oude site + bronmedia (naslag)
+docs/               ontwerp- en opleverdocumentatie
+```
 
-De endpoint is **niet** getest vanuit deze omgeving: `api.ditto.site` wordt
-geblokkeerd door de egress-policy van de sessie (`403` op de CONNECT). Daardoor
-staan twee dingen nog open:
+Belangrijke documenten in de hoofdmap: `content-inventory.md` (oud naar
+nieuw), `redirects.md` (301-plan), `seo-strategy.md` (zoekwoorden,
+structured data, GEO). In `docs/`: discovery-rapport, design system en
+deployment.
 
-- **Auth-schema** — de config gaat uit van een bearer token. Als Ditto in plaats
-  daarvan OAuth of een andere header (bijv. `X-API-Key`) gebruikt, moet
-  `.mcp.json` daarop aangepast worden.
-- **Beschikbare tools** — de tool-namen en schema's van de server zijn nog
-  onbekend en dus nergens gedocumenteerd in deze repo.
+## Contentregels
+
+- Bedrijfsgegevens alleen wijzigen in `src/data/site.ts`.
+- Media vervangen = bestand hernoemen (cachebeleid: media staat een week
+  in de browsercache). Herkomst per bestand: `scripts/media-herkomst.json`.
+- Geen verzonnen feiten, prijzen of reviews; structured data beschrijft
+  alleen wat zichtbaar en waar is.
+- Elke wijziging door de hele pijplijn (typecheck, build, qa) vóór push.
+
+## Meertaligheid (voorbereid, nog niet actief)
+
+De contentlaag heeft één gedeeld type; een tweede taal toevoegen betekent
+`src/content/en/` vullen, taaleigen slugs registreren en hreflang activeren
+in `src/seo/head.ts`. De URL-structuur (hoofdtaal zonder voorvoegsel,
+andere talen onder `/en/` met eigen slugs) staat beschreven in de
+kennisbank en in `redirects.md`.
+
+## Deployment
+
+Zie `docs/deployment.md`. Kort: `dist/` is de complete site; `_redirects`
+en `_headers` bedienen Netlify/Cloudflare Pages, voor Apache wordt een
+`.htaccess` gegenereerd met `node scripts/htaccess-genereren.mjs`.
+De site vervangt vision2watch.nl pas na expliciete goedkeuring; zie het
+eindrapport voor de livegangstappen.
