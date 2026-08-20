@@ -48,7 +48,7 @@ export function Projecten() {
         <div className="grid gap-4 pb-20 sm:grid-cols-2 lg:grid-cols-3">
           {zichtbaar.map((p, i) => (
             <Reveal key={p.slug} vertraging={(i % 6) * 40}>
-              <ProjectKaart project={p} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" />
+              <ProjectKaart project={p} prioriteit={i < 2} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" />
             </Reveal>
           ))}
         </div>

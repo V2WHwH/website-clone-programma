@@ -13,9 +13,17 @@ type Props = {
 // behalve het LCP-beeld dat eager + fetchpriority=high laadt.
 export function Beeld({ src, alt, prioriteit = false, className, sizes }: Props) {
   const maat = BEELDMATEN[src];
+  const varianten = [
+    [src.replace(/\.webp$/, "-640.webp"), 640],
+    [src.replace(/\.webp$/, "-1024.webp"), 1024],
+  ].filter(([v]) => BEELDMATEN[v as string]) as [string, number][];
+  const srcSet = varianten.length
+    ? [...varianten.map(([v, w]) => `${v} ${w}w`), `${src} ${maat?.[0] ?? 1200}w`].join(", ")
+    : undefined;
   return (
     <img
       src={src}
+      srcSet={srcSet}
       alt={alt}
       width={maat?.[0]}
       height={maat?.[1]}

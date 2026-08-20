@@ -15,7 +15,16 @@ const { render, routes } = await import(pathToFileURL(join(ssr, "entry-server.js
 let fouten = 0;
 for (const pad of routes()) {
   try {
-    const { html, head } = render(pad);
+    let { html, head } = render(pad);
+    // React 19 hoist <link rel="preload"> voor prioriteitsbeelden naar het
+    // begin van de stream (binnen #root). Verplaats ze naar de head, anders
+    // ontstaat een hydration-mismatch.
+    const preloads = [];
+    html = html.replace(/<link rel="preload"[^>]*>/g, (m) => {
+      preloads.push(m);
+      return "";
+    });
+    if (preloads.length) head += "\n    " + preloads.join("\n    ");
     let pagina = sjabloon.replace("<!--app-head-->", head).replace("<!--app-html-->", html);
     // taal van de route in het lang-attribuut
     const lang = pad.match(/^\/(en|de|fr)(\/|$)/)?.[1] || "nl";

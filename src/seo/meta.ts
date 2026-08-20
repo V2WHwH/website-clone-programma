@@ -12,7 +12,7 @@ export const STATISCHE_META: Record<string, Meta> = {
       "Vision2Watch maakt ruimtes interactief: hologrammen, interactieve vloeren, projectie en digitale etalages, van concept en content tot installatie en service.",
   },
   "/producten": {
-    titel: "Producten: interactieve projectie, holografie en displays | Vision2Watch",
+    titel: "Producten: interactieve projectie en displays | Vision2Watch",
     description:
       "Alle interactieve AV-oplossingen van Vision2Watch: vloeren, muren, tafels, hologrammen, touchscreens, LED en projectie. Te koop en te huur, met content op maat.",
   },

@@ -186,7 +186,7 @@ export const ARTIKELEN: Artikel[] = [
   },
   {
     slug: "opvallen-op-een-beurs",
-    titel: "Opvallen op een beurs: zo werkt interactieve technologie | Vision2Watch",
+    titel: "Opvallen op een beurs met interactieve technologie | Vision2Watch",
     kop: "Opvallen op een beurs: zo zet u interactieve technologie in",
     description:
       "Bezoekers lopen in seconden voorbij. Vijf bewezen manieren uit onze eigen beurspraktijk om ze te laten stoppen, meedoen en uw verhaal te onthouden.",

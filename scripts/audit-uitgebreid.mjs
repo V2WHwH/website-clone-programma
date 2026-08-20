@@ -44,8 +44,9 @@ for (const bestand of paginas) {
     if (d.length > 170) meld("P3", route, `description lang (${d.length})`);
     descs.set(d, (descs.get(d) || []).concat(route));
   }
+  const heeftNoindex = /name="robots"[^>]+noindex/.test(html);
   const can = (html.match(/<link rel="canonical" href="([^"]*)"/) || [])[1] || "";
-  if (!can && !is404) meld("P1", route, "canonical ontbreekt");
+  if (!can && !is404 && !heeftNoindex) meld("P1", route, "canonical ontbreekt");
   else if (can && !can.startsWith(HOOFD)) meld("P1", route, `canonical fout: ${can}`);
 
   const lang = (html.match(/<html[^>]*\blang="([^"]*)"/) || [])[1] || "";
@@ -69,7 +70,15 @@ for (const bestand of paginas) {
     if (!/\bwidth="/.test(tag) || !/\bheight="/.test(tag)) zonderMaat++;
     if (!/\bloading="lazy"/.test(tag) && !/\bfetchpriority="high"/.test(tag) && !/\bloading="eager"/.test(tag)) lazyMissend++;
   }
-  for (const m of html.matchAll(/<video\b[^>]*>/g)) if (!/\bposter="/.test(m[0])) videosZonderPoster++;
+  // Een video hoort een stilstaand beeld te tonen voordat hij speelt. Dat mag
+  // via het poster-attribuut, of via een beeld dat er in dezelfde container
+  // direct aan voorafgaat (dat kan wél een srcset hebben, zie HeroVideo).
+  for (const m of html.matchAll(/<video\b[^>]*>/g)) {
+    if (/\bposter="/.test(m[0])) continue;
+    const ervoor = html.slice(Math.max(0, m.index - 700), m.index);
+    if (/<img\b[^>]*>\s*$/.test(ervoor)) continue;
+    videosZonderPoster++;
+  }
 
   for (const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
     try {

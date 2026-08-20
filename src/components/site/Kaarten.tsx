@@ -22,14 +22,14 @@ export function ProductKaart({ product, sizes }: { product: Product; sizes?: str
   );
 }
 
-export function ProjectKaart({ project, sizes }: { project: Project; sizes?: string }) {
+export function ProjectKaart({ project, sizes, prioriteit }: { project: Project; sizes?: string; prioriteit?: boolean }) {
   return (
     <Link
       to={`/projecten/${project.slug}`}
       className="kaart group block overflow-hidden rounded-kaart border border-lijn bg-nacht transition-colors duration-200 hover:border-accent/60"
     >
       <div className="kaart-beeld aspect-[3/2] overflow-hidden">
-        <Beeld src={project.beeld.src} alt={project.beeld.alt} className="h-full w-full object-cover" sizes={sizes} />
+        <Beeld src={project.beeld.src} alt={project.beeld.alt} prioriteit={prioriteit} className="h-full w-full object-cover" sizes={sizes} />
       </div>
       <div className="px-4 py-4">
         <p className="kicker !text-[0.7rem]">{project.klant}</p>

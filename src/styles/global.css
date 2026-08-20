@@ -11,7 +11,7 @@
   --color-lijn: rgb(255 255 255 / 0.09); /* hairlines */
   --color-tekst: #f5f5f2;
   --color-zacht: #a8a8b3; /* secundaire tekst */
-  --color-dof: #6d6d78; /* tertiair, bijschriften */
+  --color-dof: #8b8b96; /* tertiair, bijschriften (AA-contrast op nacht) */
   --color-accent: #f58220; /* Vision2watch-oranje (logo) */
   --color-accent-fel: #ff9a3d;
   --color-accent-diep: #c2620a;

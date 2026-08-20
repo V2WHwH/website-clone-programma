@@ -61,7 +61,7 @@ export function headData(pad: string): HeadData {
     const p = PROJECTEN.find((x) => x.slug === projectSlug);
     if (p)
       return {
-        titel: `${p.klant}: ${p.titel} | Vision2Watch`,
+        titel: `${p.titel} | Vision2Watch`,
         description: p.description,
         og: p.beeld.src,
         schemas: [kruimelSchema([...kruimelBasis, { naam: "Projecten", pad: "/projecten" }, { naam: p.klant, pad }])],
@@ -125,6 +125,11 @@ export function bouwHead(pad: string): string {
     `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`,
     `<link rel="preload" as="font" type="font/woff2" href="/fonts/space-grotesk.woff2" crossorigin />`,
     `<link rel="preload" as="font" type="font/woff2" href="/fonts/inter.woff2" crossorigin />`,
+    // De homepage-hero toont eerst de poster van de video; die is daar het
+    // grootste beeld en verdient dus voorrang. Alleen op de homepage.
+    pad === "/"
+      ? `<link rel="preload" as="image" href="/media/video/dreamhack-interactieve-vloer-poster.webp" imagesrcset="/media/video/dreamhack-interactieve-vloer-poster-640.webp 640w, /media/video/dreamhack-interactieve-vloer-poster-1024.webp 1024w, /media/video/dreamhack-interactieve-vloer-poster.webp 1280w" imagesizes="100vw" fetchpriority="high" />`
+      : "",
     `<meta name="theme-color" content="#0b0b0e" />`,
     ...d.schemas.map((s) => `<script type="application/ld+json">${JSON.stringify(s)}</script>`),
   ];

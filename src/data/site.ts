@@ -47,14 +47,18 @@ export const TEAM = [
 // Klantlogo's voor de referentiebalk (allemaal klanten met een project op
 // deze site). Bronbestanden hebben een zwarte achtergrond; de weergave
 // gebruikt blend-mode zodat alleen het logo zichtbaar is.
+//
+// Alleen logo's die als échte huisstijl van de klant herkenbaar zijn staan
+// hier. Voor Alpro, Ministerie van Defensie, Hotel VIC en 24-7 Events
+// leverde de oude site geen bruikbaar logo (het waren interface-icoontjes
+// of een leeg bestand); die klanten worden nu in tekst genoemd bij hun
+// project en komen pas in deze balk zodra de opdrachtgever de logo's
+// aanlevert. Zie docs/ontbrekende-assets.md.
 export const KLANTLOGOS = [
   { src: "/media/logo/rtl.webp", alt: "RTL" },
   { src: "/media/logo/mcdonalds.webp", alt: "McDonald's" },
-  { src: "/media/logo/alpro.webp", alt: "Alpro" },
   { src: "/media/logo/sea-life.webp", alt: "Sea Life" },
-  { src: "/media/logo/escher-museum.webp", alt: "Escher Museum" },
-  { src: "/media/logo/defensie.webp", alt: "Ministerie van Defensie" },
-  { src: "/media/logo/hotel-vic.webp", alt: "Hotel VIC Leiden" },
+  { src: "/media/logo/escher-museum.webp", alt: "Escher in het Paleis" },
   { src: "/media/logo/bloemenbureau-holland.webp", alt: "Bloemenbureau Holland" },
   { src: "/media/logo/jada-events.webp", alt: "Jada Events" },
 ] as const;

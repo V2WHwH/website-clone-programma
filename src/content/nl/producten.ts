@@ -41,6 +41,7 @@ export const PRODUCTEN: Product[] = [
     galerij: [
       { src: "/media/dreamhack-vloer-breed.webp", alt: "Interactieve gamevloer op DreamHack voor het Ministerie van Defensie" },
       { src: "/media/vloer-strand.webp", alt: "Interactieve strandprojectie op de vloer" },
+      { src: "/media/mm-vloer-snoep.webp", alt: "Interactieve vloerprojectie met bewegende snoepjes in een winkel" },
       { src: "/media/alpro-stand-vloer.webp", alt: "Interactieve vloerprojectie in Alpro-huisstijl" },
       { src: "/media/ouwehands-stenenvloer.webp", alt: "Interactieve waterwereldvloer bij Ouwehands Dierenpark" },
     ],
@@ -147,7 +148,7 @@ export const PRODUCTEN: Product[] = [
       "Te koop en te huur, van eenmalige activatie tot vaste installatie. Vision2Watch verzorgt concept, content, installatie en service.",
     galerij: [
       { src: "/media/clinique-interactieve-bar.webp", alt: "Interactieve bar in Clinique-stijl met projectie rond de producten" },
-      { src: "/media/mm-interactieve-tafel.webp", alt: "Interactieve tafel met kleurrijke animatie" },
+      { src: "/media/interactieve-tafel-vissen.webp", alt: "Grote ronde interactieve tafel met geprojecteerde gerechten" },
       { src: "/media/interactieve-tafel-overleg.webp", alt: "Interactieve tafel tijdens een presentatie" },
     ],
     faq: [
@@ -364,6 +365,10 @@ export const PRODUCTEN: Product[] = [
           "Ja. Onze studio maakt een 3D-animatie van uw product of logo, precies afgestemd op de molen en uw campagne.",
       },
     ],
+    galerij: [
+      { src: "/media/holografische-molen.webp", alt: "Holografische molen met zwevend beeld in een donkere ruimte" },
+      { src: "/media/holografische-molen-schoen.webp", alt: "Zwevende productanimatie van een sportschoen boven de molen" },
+    ],
     projecten: [],
     verwant: ["hologram-projectie", "hereweholo", "led-displays"],
   },
@@ -546,6 +551,7 @@ export const PRODUCTEN: Product[] = [
       { src: "/media/timing-etalage-nacht.webp", alt: "Digitale etalage van Timing bij avond" },
       { src: "/media/outlet-etalage-beren.webp", alt: "Interactieve etalages met animaties in Outlet Roermond" },
       { src: "/media/shell-etalage-led.webp", alt: "Informatiescherm achter glas bij Shell Technology Centre" },
+      { src: "/media/shell-etalage-dag.webp", alt: "Dezelfde etalage van Shell Technology Centre overdag, met het scherm helder zichtbaar" },
     ],
     faq: [
       {
@@ -789,6 +795,7 @@ export const PRODUCTEN: Product[] = [
     galerij: [
       { src: "/media/marbella-muurprojectie.webp", alt: "Kleurrijke brede muurprojectie" },
       { src: "/media/immersive-kunstzaal.webp", alt: "Immersive projectiezaal met kunstwerken" },
+      { src: "/media/panorama-projectie-showroom.webp", alt: "Panoramische projectie over de volle breedte van een showroomwand" },
       { src: "/media/symphony-cirkelvloer.webp", alt: "Circulaire projectieopstelling met vloerprojectie" },
     ],
     faq: [

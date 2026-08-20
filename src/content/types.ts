@@ -65,6 +65,8 @@ export type Project = {
   oplossing: string;
   producten: string[];
   beeld: Beeld;
+  /** true als het beeld de techniek toont maar niet dit project zelf */
+  beeldIllustratief?: boolean;
   galerij?: Beeld[];
   video?: { src: string; poster: string; label: string };
 };

@@ -179,7 +179,7 @@ export const PROJECTEN: Project[] = [
     slug: "nike",
     klant: "Nike",
     titel: "Interactieve vloer voor Nike",
-    description: "Voor Nike realiseerde Vision2Watch een interactieve vloer.",
+    description: "Voor Nike leverde Vision2Watch een interactieve vloer die bezoekers in beweging brengt, afgestemd op de merkbeleving van Nike.",
     sector: "retail",
     oplossing:
       "Voor Nike leverde Vision2Watch een interactieve vloer die bezoekers in beweging brengt, volledig afgestemd op de merkbeleving van Nike.",
@@ -202,7 +202,7 @@ export const PROJECTEN: Project[] = [
     slug: "nespresso",
     klant: "Nespresso",
     titel: "Interactieve vloer op maat",
-    description: "Een op maat gemaakte interactieve vloer voor Nespresso.",
+    description: "Voor Nespresso maakte Vision2Watch een interactieve vloer volledig op maat, afgestemd op de stijl en campagne van het merk.",
     sector: "retail",
     oplossing:
       "Voor Nespresso maakte Vision2Watch een interactieve vloer volledig op maat, afgestemd op de stijl en campagne van het merk.",
@@ -219,6 +219,7 @@ export const PROJECTEN: Project[] = [
       "Voor Philips creëerden we een interactieve vloer die op een speelse en boeiende manier de functionaliteiten van het product liet zien: productdemonstratie en beleving in één.",
     producten: ["interactieve-vloer"],
     beeld: { src: "/media/beursstand-donker.webp", alt: "Interactieve vloerprojectie tijdens een presentatie" },
+    beeldIllustratief: true,
   },
   {
     slug: "tieleman-keukens",
@@ -269,7 +270,8 @@ export const PROJECTEN: Project[] = [
     oplossing:
       "Voor Kanon Loading Equipment maakte Vision2Watch een interactief tussenpad op StocExpo in Rotterdam Ahoy: het gangpad zelf werd de blikvanger die bezoekers naar de stand leidde.",
     producten: ["interactieve-vloer", "logo-animatie"],
-    beeld: { src: "/media/beursstand-donker.webp", alt: "Interactief verlicht looppad op een beursstand" },
+    beeld: { src: "/media/beursstand-fotolight.webp", alt: "Interactieve presentatieopstelling op een beursstand" },
+    beeldIllustratief: true,
   },
   {
     slug: "bloemenbureau-holland",

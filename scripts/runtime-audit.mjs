@@ -17,7 +17,11 @@ for (const mobiel of [false, true]) {
     const page = await ctx.newPage();
     const fouten = [], mislukt = [];
     page.on("console", (m) => { if (m.type() === "error") fouten.push(m.text().slice(0, 120)); });
-    page.on("requestfailed", (r) => mislukt.push(r.url().replace(BASIS, "").slice(0, 90)));
+    page.on("requestfailed", (r) => {
+      // afgebroken video-range-requests zijn normaal browsergedrag
+      if (r.failure()?.errorText === "net::ERR_ABORTED" && /\.(mp4|webm)$/.test(r.url())) return;
+      mislukt.push(r.url().replace(BASIS, "").slice(0, 90));
+    });
     const resp = await page.goto(BASIS + route, { waitUntil: "networkidle", timeout: 30000 }).catch(() => null);
     const status = resp ? resp.status() : "TIMEOUT";
     await page.waitForTimeout(600);

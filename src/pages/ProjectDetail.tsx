@@ -47,12 +47,19 @@ export function ProjectDetail() {
           </dl>
         </div>
 
-        <Reveal className="overflow-hidden rounded-kaart border border-lijn">
-          {project.video ? (
-            <HeroVideo src={project.video.src} poster={project.video.poster} label={project.video.label} className="aspect-video" />
-          ) : (
-            <Beeld src={project.beeld.src} alt={project.beeld.alt} prioriteit className="max-h-[34rem] w-full object-cover" sizes="(min-width: 1152px) 1104px, 100vw" />
-          )}
+        <Reveal>
+          <figure className="overflow-hidden rounded-kaart border border-lijn">
+            {project.video ? (
+              <HeroVideo src={project.video.src} poster={project.video.poster} label={project.video.label} className="aspect-video" />
+            ) : (
+              <Beeld src={project.beeld.src} alt={project.beeld.alt} prioriteit className="max-h-[34rem] w-full object-cover" sizes="(min-width: 1152px) 1104px, 100vw" />
+            )}
+            {project.beeldIllustratief && (
+              <figcaption className="border-t border-lijn px-4 py-2.5 text-[0.85rem] text-dof">
+                Illustratiebeeld: dit toont de gebruikte techniek, niet dit project zelf.
+              </figcaption>
+            )}
+          </figure>
         </Reveal>
       </div>
 
