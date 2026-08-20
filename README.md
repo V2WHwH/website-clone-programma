@@ -24,16 +24,33 @@ npm install
 npm run dev        # ontwikkelserver
 npm run typecheck  # TypeScript-controle
 npm run build      # prebuild-mediacheck + client- en SSR-build + prerender + sitemap
-npm run qa         # metadata-rapport + linkcontrole over dist/
+npm run qa         # metadata- en feitencontrole + interne links + omleidingen
 npm run preview    # dist/ lokaal serveren (poort via --port)
 ```
 
-Audits (vereisen een draaiende `npm run preview` op poort 4390):
+`npm run qa` bestaat uit drie stappen die elk met exitcode 1 falen:
+`qa-rapport.mjs` (unieke titels en descriptions, canonicals, één H1,
+parsende JSON-LD, plus een controle dat geschrapte beweringen niet
+terugkeren), `linkcontrole.mjs` (geen kapotte interne links, elke pagina
+minimaal twee inkomende links) en `redirectcontrole.mjs` (elk adres uit de
+crawl van de oude site wordt opgevangen, het doel bestaat, geen ketens).
+
+Audits draaien tegen een lokale server. Start die eerst en geef het adres
+mee met `AUDIT_BASIS` als je een andere poort gebruikt dan 4390:
 
 ```bash
+npm run preview -- --port 4390
 npm run audit:statisch   # metadata, OG, JSON-LD, alt-teksten, gewichten (P0-P3)
 npm run audit:runtime    # Playwright: console, LCP/CLS, mobiel, formulier
 npm run audit:a11y       # toegankelijkheidsheuristieken
+node scripts/schermafdrukken.mjs   # schermafdrukken op 375-1920 px
+```
+
+Lighthouse heeft in deze omgeving een expliciet browserpad nodig:
+
+```bash
+CHROME_PATH=/opt/pw-browsers/chromium npx lighthouse http://localhost:4390/ \
+  --chrome-flags="--headless --no-sandbox" --view
 ```
 
 ## Structuur
@@ -53,8 +70,9 @@ docs/               ontwerp- en opleverdocumentatie
 
 Belangrijke documenten in de hoofdmap: `content-inventory.md` (oud naar
 nieuw), `redirects.md` (301-plan), `seo-strategy.md` (zoekwoorden,
-structured data, GEO). In `docs/`: discovery-rapport, design system en
-deployment.
+structured data, GEO). In `docs/`: discovery-rapport, design system,
+deployment, `ontbrekende-assets.md` (wat de opdrachtgever nog moet
+aanleveren en welke gegevens bewust zijn weggelaten) en `eindrapport.md`.
 
 ## Contentregels
 
@@ -62,7 +80,11 @@ deployment.
 - Media vervangen = bestand hernoemen (cachebeleid: media staat een week
   in de browsercache). Herkomst per bestand: `scripts/media-herkomst.json`.
 - Geen verzonnen feiten, prijzen of reviews; structured data beschrijft
-  alleen wat zichtbaar en waar is.
+  alleen wat zichtbaar en waar is. Elke feitelijke bewering moet terug te
+  vinden zijn in de crawl van de huidige site (`discovery/crawl`) of door
+  de opdrachtgever bevestigd zijn. Wat niet klopte staat met reden in
+  `docs/ontbrekende-assets.md`; `npm run qa` bewaakt dat die beweringen
+  niet ongemerkt terugkeren.
 - Elke wijziging door de hele pijplijn (typecheck, build, qa) vóór push.
 
 ## Meertaligheid (voorbereid, nog niet actief)

@@ -61,6 +61,23 @@ bijgeschreven omschrijving alsnog te gebruiken:
 Portretfoto's van teamleden zijn bewust niet overgenomen: de koppeling
 tussen foto en naam is niet te verifiëren.
 
+## 3b. Twee video's konden niet worden opgehaald
+
+De huidige site bevat vier video's; twee daarvan kwamen niet binnen (de
+download leverde een foutpagina van 4 kB in plaats van een bestand, zie
+`discovery/media-bron/video`). Het gaat om:
+
+| Video | Waar hij nu staat |
+| --- | --- |
+| bij het artikel over 3D-hologramprojectie (480p) | `/post/holografie-wat-is-een-3d-hologram-projectie` |
+| bij de case Starline / Ebben Inspyrium (360p) | `/post/starline-interactieve-vloer-bij-ebben-inspyrium` |
+
+Beide bronbestanden zijn bovendien laag van resolutie (360p en 480p). Als
+het originele materiaal er nog is, zijn dat twee sterke toevoegingen: één
+bij het hologramproduct en één bij de Starline-case. Aanleveren in de
+hoogste beschikbare resolutie; het curatiescript maakt er zelf een
+webversie en een mobiele variant van.
+
 ## 4. Gegevens die niet in de bron staan
 
 Bij de contentcontrole is elke feitelijke bewering nagelopen tegen de crawl
