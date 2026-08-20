@@ -13,11 +13,9 @@ export const organisatieSchema = () => ({
   legalName: SITE.juridischeNaam,
   url: SITE.domein,
   logo: abs("/media/logo-v2w.webp"),
-  foundingDate: String(SITE.oprichtingsjaar),
   email: SITE.email,
   telephone: SITE.telefoon.algemeen.label,
   identifier: { "@type": "PropertyValue", propertyID: "KvK", value: SITE.kvk },
-  vatID: SITE.btw,
   address: {
     "@type": "PostalAddress",
     streetAddress: SITE.adres.straat,

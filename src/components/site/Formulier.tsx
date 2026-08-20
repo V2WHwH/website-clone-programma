@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { PRODUCTEN } from "../../content/nl/producten";
 
 type Props = {
@@ -132,7 +133,11 @@ export function Formulier({ naam, knoptekst, toonInteresse = false }: Props) {
         {knoptekst}
       </button>
       <p className="text-[0.85rem] leading-relaxed text-dof">
-        Uw gegevens gebruiken we alleen om uw aanvraag te beantwoorden. Zie de privacyverklaring.
+        Uw gegevens gebruiken we alleen om uw aanvraag te beantwoorden. Meer hierover staat in de{" "}
+        <Link to="/privacy" className="text-zacht underline underline-offset-2 transition-colors hover:text-accent">
+          privacyverklaring
+        </Link>
+        .
       </p>
     </form>
   );

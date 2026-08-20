@@ -116,13 +116,13 @@ export const PROJECTEN: Project[] = [
   },
   {
     slug: "the-vic-leiden",
-    klant: "Hotel VIC",
+    klant: "Vic Hotel Leiden",
     titel: "Interactieve zee bij de liften",
-    description: "In Hotel VIC in Leiden verandert een interactieve vloer met zee-animatie het wachten op de lift in een klein moment van beleving.",
+    description: "In het Vic Hotel in Leiden verandert een interactieve vloer met zee-animatie het wachten op de lift in een klein moment van beleving.",
     locatie: "Leiden",
     sector: "horeca-en-hotels",
     oplossing:
-      "Voor Hotel VIC in Leiden toverden we het wachten op de lift om tot een unieke ervaring: een interactieve vloer met levensechte zee-animatie geeft gasten het gevoel dat ze met hun voeten in zee staan. Een speelse manier om de wachttijd te vergeten en de gastbeleving een niveau hoger te tillen.",
+      "Voor het Vic Hotel in Leiden toverden we het wachten op de lift om tot een unieke ervaring: een interactieve vloer met levensechte zee-animatie geeft gasten het gevoel dat ze met hun voeten in zee staan. Een speelse manier om de wachttijd te vergeten en de gastbeleving een niveau hoger te tillen.",
     producten: ["interactieve-vloer"],
     beeld: { src: "/media/vloer-strand.webp", alt: "Interactieve strandvloer met zee-animatie" },
   },

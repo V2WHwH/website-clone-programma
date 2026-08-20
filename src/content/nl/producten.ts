@@ -25,7 +25,7 @@ export const PRODUCTEN: Product[] = [
     },
     voordelen: [
       { kop: "Volledig in uw huisstijl", tekst: "Kleuren, stijl, logo's en thema's: elke projectie wordt door onze studio op maat gemaakt, van subtiele merkaccenten tot een compleet spel." },
-      { kop: "Eigen software", tekst: "Vision2Watch is een van de weinige partijen in Europa met zelfontwikkelde interactieve software. Aanpassingen en nieuwe content regelen we daardoor snel en in eigen huis." },
+      { kop: "Eigen software", tekst: "De iFloor-software is door Vision2Watch zelf ontwikkeld. Aanpassingen en nieuwe content regelen we daardoor in eigen huis, zonder een externe leverancier af te wachten." },
       { kop: "Vast of mobiel", tekst: "Als vaste installatie via het plafond, of als draagbaar iFloor-systeem dat in korte tijd staat, ook bij beperkte ruimte en hoogte." },
       { kop: "Herbruikbaar", tekst: "Bij aankoop zet u het systeem zonder extra kosten steeds opnieuw in, met telkens andere content." },
     ],
@@ -277,7 +277,7 @@ export const PRODUCTEN: Product[] = [
     intro:
       "Bij hologram-projectie worden personen, producten of objecten op ware grootte geprojecteerd op een speciaal transparant scherm. Door de gebruikte techniek lijkt het beeld vrij in de ruimte te zweven: een opvallend hologram-effect voor retail, architectuur, beurzen en podia.",
     waarom:
-      "Een spreker die verschijnt zonder aanwezig te zijn, een product dat zwevend in de ruimte draait: een hologram trekt aandacht op een manier die een gewoon scherm niet kan. In onze showroom staat een holografisch scherm van 9 meter, het langste van Nederland, om het effect zelf te ervaren.",
+      "Een spreker die verschijnt zonder aanwezig te zijn, een product dat zwevend in de ruimte draait: een hologram trekt aandacht op een manier die een gewoon scherm niet kan. In onze showroom staat een holografisch scherm van 9 meter breed om het effect zelf te ervaren.",
     beeld: { src: "/media/hologram-groep-podium.webp", alt: "Levensgrote hologram-projectie van personen op een podium" },
     video: {
       src: "/media/video/hologram-displays.mp4",
@@ -316,7 +316,7 @@ export const PRODUCTEN: Product[] = [
       {
         vraag: "Kan ik het effect eerst zien?",
         antwoord:
-          "Graag zelfs. In onze showroom staat een 9 meter lang holografisch scherm, het langste van Nederland. Maak een afspraak en ervaar het effect in het echt.",
+          "Graag zelfs. In onze showroom staat een holografisch scherm van 9 meter breed. Maak een afspraak en ervaar het effect in het echt.",
       },
     ],
     projecten: ["escher-museum"],

@@ -39,12 +39,12 @@ export const STATISCHE_META: Record<string, Meta> = {
   "/over-ons": {
     titel: "Over Vision2Watch: AV-specialist uit Den Haag",
     description:
-      "Sinds 2008 maakt Vision2Watch ruimtes interactief met eigen software, een eigen studio en een team dat adviseert, bouwt, installeert en onderhoudt.",
+      "Vision2Watch maakt ruimtes interactief met eigen software, een eigen studio en een team dat adviseert, bouwt, installeert en onderhoudt.",
   },
   "/contact": {
     titel: "Contact en showroom | Vision2Watch",
     description:
-      "Bespreek uw project met Vision2Watch: bel +31 (0)85 007 02 23, mail info@vision2watch.nl of bezoek de showroom in Den Haag met het 9 meter lange holoscherm.",
+      "Bespreek uw project met Vision2Watch: bel +31 (0)85 007 02 23, mail info@vision2watch.nl of bezoek de showroom in Den Haag met het holografische scherm van 9 meter.",
   },
   "/prijslijst": {
     titel: "Prijslijst aanvragen | Vision2Watch",

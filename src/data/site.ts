@@ -1,14 +1,17 @@
 // Eén bron van waarheid voor bedrijfsgegevens, kanalen en hoofdnavigatie.
-// Alle waarden komen van de huidige site (footer/contactpagina, crawl
-// augustus 2026) of uit publieke registers; niets is verzonnen.
+// Alle waarden hieronder zijn teruggevonden op de huidige site (crawl
+// augustus 2026, zie discovery/crawl); niets is verzonnen.
+//
+// Bewust NIET opgenomen omdat ze nergens in de bron staan: het btw-nummer
+// en een oprichtingsjaar. Zodra de opdrachtgever die aanlevert kunnen ze
+// hier bij, en dan ook in de structured data en op de contactpagina.
+// Zie docs/ontbrekende-assets.md.
 
 export const SITE = {
   naam: "Vision2Watch",
   juridischeNaam: "Vision 2 Watch B.V.",
   domein: "https://www.vision2watch.nl",
-  oprichtingsjaar: 2008,
   kvk: "27130482",
-  btw: "NL009550458B01",
   adres: {
     straat: "Tiber 10",
     postcode: "2491 DH",
@@ -31,6 +34,9 @@ export const SITE = {
 
 // Teamleden zoals vermeld op de huidige over-ons-pagina. Bewust zonder
 // portretfoto's: de koppeling foto-naam is uit de bron niet verifieerbaar.
+// Namen en functies letterlijk zoals ze op de huidige over-onspagina staan.
+// Hier niets aan toevoegen zonder bevestiging van de opdrachtgever: het gaat
+// om echte mensen.
 export const TEAM = [
   { naam: "Desmond", rol: "Founder & CEO" },
   { naam: "Doris", rol: "Marketing- en projectmanager" },
@@ -41,7 +47,6 @@ export const TEAM = [
   { naam: "Mark", rol: "Animator" },
   { naam: "Wim", rol: "Allrounder" },
   { naam: "Flo", rol: "Hostess" },
-  { naam: "Patricia", rol: "Administratie" },
 ] as const;
 
 // Klantlogo's voor de referentiebalk (allemaal klanten met een project op
@@ -49,7 +54,7 @@ export const TEAM = [
 // gebruikt blend-mode zodat alleen het logo zichtbaar is.
 //
 // Alleen logo's die als échte huisstijl van de klant herkenbaar zijn staan
-// hier. Voor Alpro, Ministerie van Defensie, Hotel VIC en 24-7 Events
+// hier. Voor Alpro, Ministerie van Defensie, Vic Hotel Leiden en 24-7 Events
 // leverde de oude site geen bruikbaar logo (het waren interface-icoontjes
 // of een leeg bestand); die klanten worden nu in tekst genoemd bij hun
 // project en komen pas in deze balk zodra de opdrachtgever de logo's

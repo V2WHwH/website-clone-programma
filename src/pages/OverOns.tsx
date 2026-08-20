@@ -10,7 +10,7 @@ import { LogoBalk } from "../components/site/LogoBalk";
 const PIJLERS = [
   {
     kop: "Eigen software",
-    tekst: "Als een van de weinige partijen in Europa ontwikkelen we onze interactieve software zelf. Content aanpassen aan een huisstijl of campagne doen we daardoor snel en in eigen huis.",
+    tekst: "We ontwikkelen onze interactieve software zelf. Content aanpassen aan een huisstijl of campagne doen we daardoor in eigen huis, zonder tussenkomst van een externe leverancier.",
   },
   {
     kop: "Eigen studio",
@@ -30,7 +30,7 @@ export function OverOns() {
         <div className="max-w-3xl pb-10 pt-10 md:pt-14">
           <p className="kicker mb-3">Over ons</p>
           <h1 className="text-4xl font-medium leading-[1.1] md:text-5xl">
-            Sinds {SITE.oprichtingsjaar} laten we ruimtes reageren
+            Wij laten ruimtes reageren op mensen
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-zacht">
             Vision2Watch is gespecialiseerd in denken buiten de gebaande paden. Door kennis van marketing, audio en visuals te combineren zetten we interactieve projectie, holografie en mixed reality om in oplossingen die klanten telkens weer verbazen: inspirerende ideeën, kwalitatief hoogstaand werk en volledige toewijding.
@@ -98,7 +98,7 @@ export function OverOns() {
       <LogoBalk />
 
       {/* Showroom */}
-      <Sectie kicker="Showroom" kop="Kom kijken in Den Haag" lead={`Vrijwel al onze oplossingen staan opgesteld in de showroom aan de ${SITE.adres.straat} in ${SITE.adres.plaats}, inclusief het 9 meter lange holografische scherm, het langste van Nederland.`}>
+      <Sectie kicker="Showroom" kop="Kom kijken in Den Haag" lead={`Vrijwel al onze oplossingen staan opgesteld in de showroom aan de ${SITE.adres.straat} in ${SITE.adres.plaats}, inclusief het holografische scherm van 9 meter breed.`}>
         <Reveal className="mt-8 flex flex-wrap gap-3">
           <Knop naar="/contact">Plan een bezoek</Knop>
           <Knop naar="/projecten" variant="secundair">Bekijk eerst ons werk</Knop>

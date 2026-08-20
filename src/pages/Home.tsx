@@ -56,7 +56,7 @@ export function Home() {
       <Sectie
         kicker="Wat we doen"
         kop="Technologie, experience, content en integratie uit één hand"
-        lead="Sinds 2008 combineren we kennis van marketing, audio en visuals tot oplossingen die opvallen én werken. Met eigen interactieve software, een eigen contentstudio en een team dat installeert en onderhoudt."
+        lead="We combineren kennis van marketing, audio en visuals tot oplossingen die opvallen én werken. Met eigen interactieve software, een eigen contentstudio en een team dat installeert en onderhoudt."
       >
         <div className="mt-12 grid gap-4 md:grid-cols-2">
           {CATEGORIEEN.map((cat, i) => {
@@ -163,7 +163,7 @@ export function Home() {
               Zien is geloven: ervaar het zelf in onze showroom
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-zacht">
-              In onze showroom demonstreren we vrijwel alle oplossingen, inclusief een holografisch scherm van 9 meter, het langste van Nederland. Plan een bezoek en ontdek wat werkt voor uw ruimte.
+              In onze showroom demonstreren we vrijwel alle oplossingen, inclusief een holografisch scherm van 9 meter breed. Plan een bezoek en ontdek wat werkt voor uw ruimte.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Knop naar="/contact">Plan een bezoek</Knop>

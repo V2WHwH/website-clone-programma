@@ -22,7 +22,7 @@ de bezoeker misleiden.
 | --- | --- | --- |
 | Alpro | pictogram van een beeldscherm | logo in png/svg, liefst op transparant |
 | Ministerie van Defensie | pictogram van een hand | officieel beeldmerk (let op gebruiksvoorwaarden) |
-| Hotel VIC | leeg zwart vlak | logo in png/svg |
+| Vic Hotel Leiden | leeg zwart vlak | logo in png/svg |
 | 24-7 Events | pictogram van een kubus | logo in png/svg |
 
 Deze klanten worden nu wél in tekst genoemd bij hun project. Zodra de
@@ -61,7 +61,33 @@ bijgeschreven omschrijving alsnog te gebruiken:
 Portretfoto's van teamleden zijn bewust niet overgenomen: de koppeling
 tussen foto en naam is niet te verifiëren.
 
-## 4. Wat de site inhoudelijk sterker zou maken
+## 4. Gegevens die niet in de bron staan
+
+Bij de contentcontrole is elke feitelijke bewering nagelopen tegen de crawl
+van de huidige site (`/tmp`-onafhankelijk vastgelegd in `discovery/crawl`).
+Deze stonden nergens in de bron en zijn daarom van de site gehaald. Ze
+kunnen er meteen weer bij zodra de opdrachtgever ze bevestigt.
+
+| Gegeven | Status | Waar het weer terugkomt |
+| --- | --- | --- |
+| Btw-nummer | niet gevonden; stond eerder als NL009550458B01 op de site, herkomst onbekend | `SITE.btw` in `src/data/site.ts`, daarna footer, contactpagina en `vatID` in de structured data |
+| Oprichtingsjaar | niet gevonden; "sinds 2008" was niet te staven | `SITE.oprichtingsjaar`, daarna footer, homepage, over-onspagina en `foundingDate` in de structured data |
+| Medewerker "Patricia, administratie" | komt niet voor op de huidige over-onspagina | `TEAM` in `src/data/site.ts` |
+
+Twee beweringen staan wél in de bron maar verdienen een bevestiging vóór
+livegang:
+
+1. **"Het langste holografische scherm van Nederland."** De huidige site
+   zegt dit met de toevoeging "aldus 2015". Of het in 2026 nog klopt is
+   niet te controleren, dus staat er nu alleen nog "een holografisch
+   scherm van 9 meter breed". Klopt de superlatief nog, dan kan hij terug
+   mét jaartal en bron op de pagina zelf.
+2. **De showroom.** Het adres Tiber 10 in Den Haag staat op de huidige
+   contactpagina, maar de blogpost over het 9 meter lange scherm noemt een
+   showroom in Rijswijk (uit 2015). De site gaat er nu van uit dat de
+   showroom op het huidige adres in Den Haag staat. Graag bevestigen.
+
+## 5. Wat de site inhoudelijk sterker zou maken
 
 Geen blokkade voor livegang, wel de grootste inhoudelijke winst:
 

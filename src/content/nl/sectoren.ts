@@ -148,7 +148,7 @@ export const SECTOREN: Sector[] = [
       },
       {
         kop: "De lobby als eerste indruk",
-        tekst: "In Hotel VIC in Leiden staat wachten op de lift gelijk aan pootjebaden: een interactieve zee-animatie bij de liften maakt van een verloren moment een glimlach.",
+        tekst: "In het Vic Hotel in Leiden staat wachten op de lift gelijk aan pootjebaden: een interactieve zee-animatie bij de liften maakt van een verloren moment een glimlach.",
       },
       {
         kop: "Sfeer die meebeweegt",

@@ -16,7 +16,7 @@ export function Footer() {
           <div>
             <Logo className="text-lg" />
             <p className="mt-4 max-w-xs text-[0.95rem] leading-relaxed text-zacht">
-              Interactieve audiovisuele oplossingen: van hologram tot interactieve vloer, van concept en content tot installatie en service. Sinds {SITE.oprichtingsjaar}.
+              Interactieve audiovisuele oplossingen: van hologram tot interactieve vloer, van concept en content tot installatie en service.
             </p>
             <ul className="mt-6 flex gap-4">
               {SITE.socials.map((s) => (
@@ -83,7 +83,7 @@ export function Footer() {
                 </a>
               </p>
               <p className="pt-2 text-[0.85rem] text-dof">
-                KvK {SITE.kvk} · BTW {SITE.btw}
+                KvK {SITE.kvk}
               </p>
             </address>
           </div>

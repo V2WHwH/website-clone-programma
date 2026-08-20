@@ -127,7 +127,7 @@ export const ARTIKELEN: Artikel[] = [
       {
         kop: "Zelf ervaren",
         alineas: [
-          "Een hologram moet je zien om het te geloven. In de showroom van Vision2Watch staat een holografisch scherm van 9 meter, het langste van Nederland, waarop we het effect demonstreren, inclusief speciaal geproduceerde content zoals de video voor het Escher Museum.",
+          "Een hologram moet je zien om het te geloven. In de showroom van Vision2Watch staat een holografisch scherm van 9 meter breed, waarop we het effect demonstreren, inclusief speciaal geproduceerde content zoals de video voor het Escher Museum.",
         ],
       },
     ],
