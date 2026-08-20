@@ -1,0 +1,78 @@
+# 301-omleidingen van de oude site (bron: redirects.md).
+# Specifieke regels vóór wildcards; geen ketens.
+
+# kernpagina's
+/prijsformulier            /prijslijst                              301
+/blog/categories/*         /projecten                               301
+/blog/hashtags/touchscreen /producten/touchscreens                  301
+/blog/hashtags/beurs       /toepassingen/beurzen-en-events          301
+/blog/hashtags/beursstand  /toepassingen/beurzen-en-events          301
+/blog/hashtags/interactievevloer /producten/interactieve-vloer      301
+/blog/hashtags/tradeshow   /toepassingen/beurzen-en-events          301
+/blog/hashtags/*           /projecten                               301
+/blog                      /projecten                               301
+
+# producten: afwijkende sluggen eerst
+/product/interactieve-wand /producten/interactieve-muur             301
+/product/touchscreen       /producten/touchscreens                  301
+/product/hereweholo-mini   /producten/hereweholo                    301
+/product/*                 /producten/:splat                        301
+/interactieve-vloer        /producten/interactieve-vloer            301
+/holografische-projectie   /producten/hologram-projectie            301
+/holobox                   /producten/hereweholo                    301
+/virtual-host              /producten/virtual-host                  301
+/mixed-reality             /producten/mixed-reality                 301
+/interactieve-bar          /producten/interactieve-tafel            301
+/3d-projectie              /producten/panoramische-projectie        301
+/3d-website-configurator   /producten                               301
+
+# projecten
+/project/pierson-college-  /projecten/pierson-college               301
+/project/*                 /projecten/:splat                        301
+
+# blogposts
+/post/holografische-displays /kennisbank/wat-is-hologram-projectie  301
+/post/interactieve-vloer-voor-defensie-op-dreamhack /projecten/werken-bij-defensie 301
+/post/nieuwe-mobiele-ifloor /producten/interactieve-vloer           301
+/post/virtual-host-ess     /producten/virtual-host                  301
+/post/interactieve-vloer-ouwehands-dierentuin /projecten/ouwehands-dierenpark 301
+/post/starline-interactieve-vloer-bij-ebben-inspyrium /projecten/starline 301
+/post/dierenpark-amersfoort-de-ooievaart /projecten/dierenpark-amersfoort 301
+/post/nl-een-nieuw-product-in-samenwerking-met-hereweholo /producten/hereweholo 301
+/post/m-m-interactieve-vloer /projecten                             301
+/post/johnson-johnson-eurospine-2019-in-helsinki /toepassingen/beurzen-en-events 301
+/post/augmented-reality    /producten/mixed-reality                 301
+/post/nieuw-de-virtual-product-presenter /producten/virtual-host    301
+/post/we-want-more-zet-hereweholo-boxen-in /producten/hereweholo    301
+/post/*                    /projecten                               301
+
+# Engelse pagina's: tijdelijk naar NL-equivalent tot de EN-taalversie live is
+/en/product/interactieve-wand /producten/interactieve-muur          301
+/en/product/touchscreen    /producten/touchscreens                  301
+/en/product/hereweholo-mini /producten/hereweholo                   301
+/en/product/*              /producten/:splat                        301
+/en/project/pierson-college- /projecten/pierson-college             301
+/en/project/*              /projecten/:splat                        301
+/en/post/*                 /projecten                               301
+/en/blog/*                 /projecten                               301
+/en/blog                   /projecten                               301
+/en/producten              /producten                               301
+/en/projecten              /projecten                               301
+/en/over-ons               /over-ons                                301
+/en/contact                /contact                                 301
+/en/prijsformulier         /prijslijst                              301
+/en/privacy                /privacy                                 301
+/en/algemene-voorwaarden   /algemene-voorwaarden                    301
+/en/homepage               /                                        301
+/en/touchscreens           /producten/touchscreens                  301
+/en/interactieve-etalage   /producten/interactieve-etalage          301
+/en/interactieve-wand      /producten/interactieve-muur             301
+/en/interactieve-vloer     /producten/interactieve-vloer            301
+/en/mixed-reality          /producten/mixed-reality                 301
+/en/panoramische-projectie /producten/panoramische-projectie        301
+/en/sketchwall             /producten/sketchwall                    301
+/en/interactieve-katapult  /producten                               301
+/en/3d-website-configurator /producten                              301
+/en/hereweholo-mini        /producten/hereweholo                    301
+/en/*                      /                                        301
+/en                        /                                        301

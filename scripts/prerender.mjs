@@ -39,4 +39,15 @@ if (fouten) {
   console.error(`${fouten} route(s) faalden; build afgebroken.`);
   process.exit(1);
 }
-console.log(`Prerender klaar: ${routes().length} routes.`);
+
+// sitemap.xml uit dezelfde routelijst: alleen echte, indexeerbare pagina's
+const HOOFD = "https://www.vision2watch.nl";
+const NIET_IN_SITEMAP = new Set(["/bedankt", "/404"]);
+const vandaag = new Date().toISOString().slice(0, 10);
+const smUrls = routes().filter((r) => !NIET_IN_SITEMAP.has(r));
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${smUrls
+  .map((r) => `  <url><loc>${HOOFD}${r === "/" ? "/" : r}</loc><lastmod>${vandaag}</lastmod></url>`)
+  .join("\n")}\n</urlset>\n`;
+writeFileSync(join(dist, "sitemap.xml"), sitemap);
+
+console.log(`Prerender klaar: ${routes().length} routes, sitemap met ${smUrls.length} URL's.`);

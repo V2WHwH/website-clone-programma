@@ -35,8 +35,9 @@ for (const bestand of paginas) {
   if (!d && !is404) fouten.push(`${route}: description ontbreekt`);
   else if (d) descs.set(d, (descs.get(d) || []).concat(route));
 
+  const noindex = /name="robots"[^>]+noindex/.test(html);
   const can = (html.match(/<link rel="canonical" href="([^"]*)"/) || [])[1] || "";
-  if (!is404) {
+  if (!is404 && !noindex) {
     if (!can) fouten.push(`${route}: canonical ontbreekt`);
     else if (!can.startsWith(HOOFD)) fouten.push(`${route}: canonical wijst niet naar hoofddomein: ${can}`);
   }
