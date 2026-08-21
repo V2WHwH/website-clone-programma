@@ -20,6 +20,8 @@ export type Product = {
   waarom: string;
   beeld: Beeld;
   video?: { src: string; poster: string; label: string };
+  /** opname op locatie in de verhouding waarin hij is gemaakt (vaak staand) */
+  demo?: { src: string; poster: string; label: string; kop: string; tekst: string };
   voordelen: Blok[];
   toepassingen: string[];
   technisch: Blok[];

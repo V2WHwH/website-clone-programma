@@ -379,11 +379,11 @@ export const PRODUCTEN: Product[] = [
     categorie: "holografie",
     titel: "Holobox kopen of huren: HEREweHOLO | Vision2Watch",
     description:
-      "De holobox van zusterbedrijf HEREweHOLO toont personen en producten als levensgroot hologram in een plug-and-play display. Ook als compacte Holomini.",
+      "De holobox van zusterbedrijf HEREweHOLO toont personen en producten als levensgroot hologram in een plug-and-play display. Ook als compacte HEREweHOLO mini.",
     intro:
       "De holobox is een plug-and-play holografisch display waarin personen en producten levensecht lijken te zweven. Het is het paradepaardje van HEREweHOLO, het zusterbedrijf van Vision2Watch dat volledig in holografische oplossingen is gespecialiseerd.",
     waarom:
-      "Een holobox combineert de impact van een hologram met het gemak van een kant-en-klaar product: neerzetten, aansluiten en uw presentator, product of boodschap staat er, 24 uur per dag. De compacte Holomini doet hetzelfde op balie- en etalageformaat.",
+      "Een holobox combineert de impact van een hologram met het gemak van een kant-en-klaar product: neerzetten, aansluiten en uw presentator, product of boodschap staat er, 24 uur per dag. De compacte HEREweHOLO mini doet hetzelfde op balie- en etalageformaat.",
     beeld: { src: "/media/holobox-buiten.webp", alt: "HEREweHOLO holobox met levensgroot hologram in het veld" },
     video: {
       src: "/media/video/hologram-scherm-close.mp4",
@@ -393,7 +393,7 @@ export const PRODUCTEN: Product[] = [
     voordelen: [
       { kop: "Plug-and-play", tekst: "Complete unit met display, verlichting en geluid; geen bouwwerk op locatie nodig." },
       { kop: "Brandbaar", tekst: "De box wordt uitgevoerd in uw logo en kleuren, zodat het display zelf al uw merk draagt." },
-      { kop: "Levensgroot of mini", tekst: "Van levensgrote presentator tot Holomini voor producten op de balie of in de etalage." },
+      { kop: "Levensgroot of mini", tekst: "Van levensgrote presentator tot de HEREweHOLO mini voor producten op de balie of in de etalage." },
       { kop: "Specialistisch team", tekst: "HEREweHOLO ontwikkelt content, koppelingen en zelfs hologramwanden van meerdere boxen." },
     ],
     toepassingen: ["Beurzen", "Retail", "Ontvangstruimtes", "Events en congressen", "Horeca"],
@@ -414,7 +414,7 @@ export const PRODUCTEN: Product[] = [
       {
         vraag: "Wat is HEREweHOLO?",
         antwoord:
-          "HEREweHOLO is het zusterbedrijf van Vision2Watch, volledig gespecialiseerd in holografische oplossingen zoals de holobox, de Holomini en hologramwanden. Beide teams werken nauw samen.",
+          "HEREweHOLO is het zusterbedrijf van Vision2Watch, volledig gespecialiseerd in holografische oplossingen zoals de holobox, de HEREweHOLO mini en hologramwanden. Beide teams werken nauw samen.",
       },
       {
         vraag: "Kan er een echt product in de holobox?",

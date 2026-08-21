@@ -8,6 +8,7 @@ import { Reveal } from "../components/ui/Reveal";
 import { Sectie } from "../components/ui/Sectie";
 import { CtaSectie } from "../components/site/CtaSectie";
 import { FaqLijst } from "../components/site/FaqLijst";
+import { Demovideo } from "../components/site/Demovideo";
 import { HeroVideo } from "../components/site/HeroVideo";
 import { ProductKaart, ProjectKaart } from "../components/site/Kaarten";
 import { Kruimelpad } from "../components/site/Kruimelpad";
@@ -113,6 +114,28 @@ export function ProductDetail() {
           </Reveal>
         </div>
       </section>
+
+      {/* Opname op locatie. Staat apart van de galerij: dit is bewegend
+          beeld op ware verhouding, meestal met een telefoon gemaakt tijdens
+          een echte opstelling. */}
+      {product.demo && (
+        <section className="border-t border-lijn bg-nacht/40">
+          <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 py-20 md:grid-cols-[1fr_minmax(0,24rem)] md:px-8 md:py-24">
+            <Reveal>
+              <p className="kicker mb-3">Op locatie</p>
+              <h2 className="text-3xl font-medium md:text-[2.4rem] md:leading-[1.1]">{product.demo.kop}</h2>
+              <p className="mt-5 text-lg leading-relaxed text-zacht">{product.demo.tekst}</p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Knop naar="/prijslijst">Prijslijst aanvragen</Knop>
+                <Knop naar="/contact" variant="secundair">Plan een demonstratie</Knop>
+              </div>
+            </Reveal>
+            <Reveal vertraging={100}>
+              <Demovideo src={product.demo.src} poster={product.demo.poster} label={product.demo.label} />
+            </Reveal>
+          </div>
+        </section>
+      )}
 
       {/* Galerij */}
       {product.galerij && product.galerij.length > 0 && (
