@@ -38,7 +38,6 @@ body{
   font-size:16.5px; line-height:1.6; -webkit-font-smoothing:antialiased;
 }
 .wrap{max-width:1080px; margin:0 auto; padding:0 24px 96px}
-.prose{max-width:66ch}
 
 h1,h2,h3{font-family:"Bricolage Grotesque","Instrument Sans",sans-serif; text-wrap:balance; margin:0}
 h2{font-size:1.6rem; font-weight:700; letter-spacing:-.015em; line-height:1.2}
@@ -51,7 +50,6 @@ a{color:var(--series)}
   letter-spacing:.14em; text-transform:uppercase; color:var(--muted);
 }
 
-/* ---------- masthead ---------- */
 .mast{border-bottom:1px solid var(--line); padding:56px 0 40px; margin-bottom:56px}
 .mast-top{display:flex; flex-wrap:wrap; gap:12px 20px; align-items:baseline; margin-bottom:22px}
 .mast h1{font-size:clamp(2.1rem,5.2vw,3.4rem); font-weight:800; letter-spacing:-.03em; line-height:1.03}
@@ -59,25 +57,25 @@ a{color:var(--series)}
 .grade-hero{
   display:flex; align-items:center; gap:22px; margin-top:34px;
   padding:22px 26px; background:var(--surface); border:1px solid var(--line);
-  border-radius:3px; box-shadow:var(--shadow); max-width:640px;
+  border-radius:3px; box-shadow:var(--shadow); max-width:680px;
 }
 .grade-num{
   font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:3.6rem;
   line-height:1; letter-spacing:-.04em; color:var(--series); font-variant-numeric:tabular-nums;
 }
 .grade-num span{font-size:.42em; color:var(--muted); letter-spacing:0}
+.grade-num small{display:block; font-size:.2em; color:var(--muted); letter-spacing:.05em; margin-top:9px; font-weight:500}
 .grade-hero p{font-size:.95rem; color:var(--ink-2)}
 
-/* ---------- sections ---------- */
 section{margin-bottom:64px}
 .sec-head{margin-bottom:26px; padding-bottom:14px; border-bottom:1px solid var(--line)}
 .sec-head .eyebrow{display:block; margin-bottom:8px}
 .sec-head p{color:var(--muted); font-size:.95rem; margin-top:8px; max-width:66ch}
 
-/* ---------- scorecard ---------- */
+/* scorecard */
 .scores{display:flex; flex-direction:column; gap:2px}
 .score{
-  display:grid; grid-template-columns:64px minmax(0,1fr) 96px;
+  display:grid; grid-template-columns:64px minmax(0,1fr) 118px;
   gap:0 20px; align-items:center; padding:13px 16px;
   background:var(--surface); border:1px solid var(--line); border-radius:3px;
 }
@@ -88,13 +86,19 @@ section{margin-bottom:64px}
 .score-b{min-width:0}
 .score-b h3{font-size:.98rem; margin-bottom:3px}
 .score-b p{font-size:.855rem; color:var(--muted); line-height:1.45}
-.meter{height:6px; border-radius:3px; background:var(--surface-2); overflow:hidden; border:1px solid var(--line)}
+.score-r{display:flex; flex-direction:column; gap:6px; align-items:flex-end}
+.meter{height:6px; border-radius:3px; background:var(--surface-2); overflow:hidden; border:1px solid var(--line); width:100%}
 .meter i{display:block; height:100%; border-radius:0 3px 3px 0}
+.delta{
+  font-family:"IBM Plex Mono",monospace; font-size:.68rem; font-weight:600;
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.delta.up{color:var(--good)} .delta.down{color:var(--crit)} .delta.new{color:var(--series)}
 .g-good .score-g{color:var(--good)} .g-good .meter i{background:var(--good)}
 .g-warn .score-g{color:var(--warn)} .g-warn .meter i{background:var(--warn)}
 .g-crit .score-g{color:var(--crit)} .g-crit .meter i{background:var(--crit)}
 
-/* ---------- chart ---------- */
+/* chart */
 .chart{background:var(--surface); border:1px solid var(--line); border-radius:3px; padding:26px; box-shadow:var(--shadow)}
 .legend{display:flex; flex-wrap:wrap; gap:20px; margin-bottom:24px; font-size:.83rem; color:var(--muted)}
 .legend span{display:flex; align-items:center; gap:8px}
@@ -102,7 +106,7 @@ section{margin-bottom:64px}
 .key-tick{width:2px; height:15px; background:var(--ink-2)}
 .rows{display:flex; flex-direction:column; gap:3px}
 .row{
-  display:grid; grid-template-columns:150px minmax(0,1fr); gap:16px;
+  display:grid; grid-template-columns:158px minmax(0,1fr); gap:16px;
   align-items:center; padding:7px 8px; border-radius:3px; position:relative;
   transition:background .12s ease;
 }
@@ -112,10 +116,7 @@ section{margin-bottom:64px}
 .row-name{font-size:.87rem; color:var(--ink-2); font-weight:500}
 .row-name b{display:block; font-weight:600; color:var(--ink)}
 .track{position:relative; height:26px}
-.bar{
-  position:absolute; left:0; top:5px; height:16px; background:var(--series);
-  border-radius:0 4px 4px 0; min-width:2px;
-}
+.bar{position:absolute; left:0; top:5px; height:16px; background:var(--series); border-radius:0 4px 4px 0; min-width:2px}
 .row.is-last .bar{background:var(--crit)}
 .bar-val{
   position:absolute; top:5px; height:16px; display:flex; align-items:center;
@@ -131,12 +132,12 @@ section{margin-bottom:64px}
 .tick.flip::after{left:auto; right:7px}
 .axis{
   display:flex; justify-content:space-between; margin-top:14px; padding-top:10px;
-  border-top:1px solid var(--line); margin-left:166px;
+  border-top:1px solid var(--line); margin-left:174px;
   font-family:"IBM Plex Mono",monospace; font-size:.7rem; color:var(--muted);
 }
 .chart-note{margin-top:18px; font-size:.83rem; color:var(--muted); max-width:70ch}
 
-/* ---------- findings ---------- */
+/* findings */
 .finds{display:flex; flex-direction:column; gap:14px}
 .find{
   background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--line-2);
@@ -145,6 +146,7 @@ section{margin-bottom:64px}
 .find.sev-crit{border-left-color:var(--crit)}
 .find.sev-warn{border-left-color:var(--warn)}
 .find.sev-good{border-left-color:var(--good)}
+.find.sev-fix{border-left-color:var(--series)}
 .find-head{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:10px}
 .chip{
   font-family:"IBM Plex Mono",monospace; font-size:.66rem; font-weight:600;
@@ -153,20 +155,19 @@ section{margin-bottom:64px}
 .sev-crit .chip{background:var(--crit-bg); color:var(--crit)}
 .sev-warn .chip{background:var(--warn-bg); color:var(--warn)}
 .sev-good .chip{background:var(--good-bg); color:var(--good)}
+.sev-fix .chip{background:var(--series-soft); color:var(--series)}
 .find p{font-size:.93rem; color:var(--ink-2); margin-bottom:10px}
 .find p:last-child{margin-bottom:0}
 .evidence{
   font-family:"IBM Plex Mono",monospace; font-size:.78rem; color:var(--muted);
   background:var(--surface-2); border:1px solid var(--line); border-radius:2px;
-  padding:9px 12px; overflow-x:auto; white-space:pre-wrap; word-break:break-word;
+  padding:9px 12px; overflow-x:auto; white-space:pre-wrap; word-break:break-word; margin-bottom:10px;
 }
 
-/* ---------- untested ---------- */
 .untested{background:var(--surface-2); border:1px dashed var(--line-2); border-radius:3px; padding:24px 26px}
 .untested ul{margin:14px 0 0; padding-left:20px; display:grid; gap:7px; font-size:.92rem; color:var(--ink-2)}
 .untested li::marker{color:var(--muted)}
 
-/* ---------- actions ---------- */
 ol.actions{list-style:none; counter-reset:a; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
 ol.actions li{
   counter-increment:a; display:grid; grid-template-columns:38px minmax(0,1fr);
@@ -182,9 +183,9 @@ ol.actions p{font-size:.89rem; color:var(--muted)}
 footer{border-top:1px solid var(--line); padding-top:24px; font-size:.83rem; color:var(--muted)}
 footer p{margin-bottom:8px}
 
-@media (max-width:720px){
+@media (max-width:760px){
   .score{grid-template-columns:52px minmax(0,1fr); gap:0 14px}
-  .score .meter{grid-column:1 / -1; margin-top:11px}
+  .score .score-r{grid-column:1 / -1; margin-top:11px; align-items:stretch}
   .row{grid-template-columns:1fr; gap:5px}
   .axis{margin-left:8px}
   .grade-hero{flex-direction:column; align-items:flex-start; gap:14px}
@@ -198,115 +199,179 @@ footer p{margin-bottom:8px}
 <header class="mast">
   <div class="mast-top">
     <span class="eyebrow">Website-audit · hereweholo.nl</span>
-    <span class="eyebrow">Meetperiode 25 jul – 21 aug 2026</span>
+    <span class="eyebrow">Versie 2 · 21 aug 2026</span>
   </div>
-  <h1>Het fundament staat.<br>De vangst niet.
-    <span class="sub">Sterke SEO-hygiëne en bijna perfecte merkherkenning — maar wie de merknaam nog niet kent, vindt HEREweHOLO niet.</span>
+  <h1>Technisch bijna af.<br>Onzichtbaar in de categorie.
+    <span class="sub">Versie 2, na inzage in de broncode. De techniek blijkt veel beter dan de eerste meting suggereerde — het echte gat zit in autoriteit buiten de eigen site, en in Duitsland.</span>
   </h1>
 
   <div class="grade-hero">
-    <div class="grade-num">5,5<span>/10</span></div>
-    <p><b>Gewogen totaalcijfer.</b> De losse onderdelen lopen uiteen van een 9 tot een 2,5. De techniek onder de motorkap is netjes; het verlies zit in generieke vindbaarheid, meetbaarheid en één kapotte URL waar AI-engines nog dagelijks naar verwijzen.</p>
+    <div class="grade-num">6,5<span>/10</span><small>WAS 5,5</small></div>
+    <p><b>Bijgesteld totaalcijfer.</b> In versie 1 kon ik de site niet laden en beoordeelde ik de techniek via een externe scraper. Die gaf een verkeerd beeld. Met de broncode erbij gaat de technische score van een 4,0 naar een 8,5 — en zakt de off-site autoriteit van een 5,0 naar een 3,5.</p>
   </div>
 </header>
 
 <section>
   <div class="sec-head">
     <span class="eyebrow">Deel 1</span>
-    <h2>Rapportcijfers per aspect</h2>
-    <p>Alleen aspecten waar ik daadwerkelijk bewijs voor heb gevonden krijgen een cijfer. Wat ik niet heb kunnen meten staat verderop expliciet vermeld — ongetoetst is niet hetzelfde als goed.</p>
+    <h2>Wat ik in versie 1 verkeerd had</h2>
+    <p>Drie bevindingen uit het eerste rapport kloppen niet meer. Twee omdat ik ze verkeerd inschatte, één omdat jullie hem vanmiddag om 16:05 hebben opgelost.</p>
+  </div>
+
+  <div class="finds">
+
+    <div class="find sev-fix">
+      <div class="find-head"><span class="chip">Correctie</span><h3>De HTML is niet slecht — hij is uitstekend</h3></div>
+      <p>Ik gaf technische leesbaarheid een 4,0 op basis van één externe scraper die twee keer vastliep. Dat was te snel geconcludeerd. De broncode laat een volledig voorgerenderde site zien: elke pagina is echte HTML, geen JavaScript-shell. AI-crawlers krijgen gewoon tekst.</p>
+      <div class="evidence">335 voorgerenderde HTML-pagina's
+321 daarvan met hreflang, inclusief x-default
+sitemap.xml: 327 URL's, 2.016 hreflang-alternates
+JSON-LD: Organization, Product, FAQPage, BreadcrumbList, VideoObject, Article
+robots.txt staat ClaudeBot, Claude-User én Claude-SearchBot expliciet toe
+llms.txt aanwezig in alle zes de talen, mét vanafprijzen</div>
+      <p>Die <span class="mono">llms.txt</span> met echte prijzen erin is precies wat AI-engines willen citeren. Daar lopen jullie voor op de markt. <b>Technische leesbaarheid: 4,0 → 8,5.</b></p>
+    </div>
+
+    <div class="find sev-fix">
+      <div class="find-head"><span class="chip">Opgelost</span><h3>De 404-pagina bestaat weer — sinds vanmiddag</h3></div>
+      <p>Mijn belangrijkste aanbeveling was een redirect voor <span class="mono">/en/what-is-a-holobox</span>, goed voor 164 citaties. Die pagina staat inmiddels weer in de build, in alle vijf de vertaalde talen.</p>
+      <div class="evidence">laatste commit: 21-08 16:05
+"Wat-is-een-holobox-artikel in alle vijf de vertaalde talen"</div>
+      <p>Eén ding blijft staan: er is nog steeds géén 301-redirect voor het oude adres tussen de 155 redirect-regels. Dat is nu minder urgent omdat de pagina zelf terug is, maar controleer of het exacte pad identiek is aan wat AI-engines citeren — anders levert die citatie alsnog niets op.</p>
+    </div>
+
+    <div class="find sev-fix">
+      <div class="find-head"><span class="chip">Correctie</span><h3>De vergelijkingspagina's bestonden al</h3></div>
+      <p>Ik adviseerde "bouw één eerlijke vergelijkingspagina". Jullie hebben er veertien, in zes talen, precies op de vragen die op 0% stonden. Die aanbeveling was overbodig — maar er zit wel een fout in die uitvoering, en die staat in deel 3.</p>
+      <div class="evidence">/vergelijk/alternative-to-holoconnects      (en)
+/vergelijk/holoconnects-alternative         (de)
+/vergelijk/alternative-a-holoconnects       (fr)
+/vergelijk/alternativa-holoconnects         (es)
+/vergelijk/alternativa-a-holoconnects       (it)
+/vergelijk/best-holobox-suppliers-in-europe (en)
++ holobox-vs-holoconnects / -proto / -hypervsn / -hologramventilator …</div>
+    </div>
+
+    <div class="find sev-warn">
+      <div class="find-head"><span class="chip">Belangrijk</span><h3>Alle zichtbaarheidscijfers meten een oudere versie</h3></div>
+      <p>De crawl draaide vanmiddag om 15:11, de nieuwste build is van 16:05. Alle AI-zichtbaarheidsdata in dit rapport gaat dus over de site zoals hij eerder vandaag was. Reken op vier tot acht weken voordat de verbeteringen terugkomen in de cijfers — AI-engines herindexeren trager dan Google.</p>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">Deel 2</span>
+    <h2>Rapportcijfers, bijgesteld</h2>
+    <p>Vijftien aspecten. De vijf onderaan zijn nieuw: die kon ik pas beoordelen met de broncode erbij.</p>
   </div>
 
   <div class="scores">
 
     <div class="score g-good">
       <div class="score-g mono">9,0</div>
-      <div class="score-b">
-        <h3>Vindbaarheid op merknaam in AI</h3>
-        <p>Wie "HEREweHOLO" noemt, krijgt een correct en compleet antwoord — in acht talen. Merkvragen scoren 71–89% zichtbaarheid.</p>
-      </div>
-      <div class="meter"><i style="width:90%"></i></div>
+      <div class="score-b"><h3>Vindbaarheid op merknaam in AI</h3>
+        <p>Merkvragen scoren 71–89% zichtbaarheid, in acht taalgebieden. Wie de naam kent, krijgt een compleet antwoord.</p></div>
+      <div class="score-r"><span class="delta">ongewijzigd</span><div class="meter"><i style="width:90%"></i></div></div>
+    </div>
+
+    <div class="score g-good">
+      <div class="score-g mono">9,0</div>
+      <div class="score-b"><h3>SEO-basis en gestructureerde data</h3>
+        <p>Nul ontbrekende titles, descriptions of H1's. Daarbovenop rijke JSON-LD op de hele site en een sitemap met 2.016 taalalternatieven.</p></div>
+      <div class="score-r"><span class="delta up">▲ was 8,5</span><div class="meter"><i style="width:90%"></i></div></div>
     </div>
 
     <div class="score g-good">
       <div class="score-g mono">8,5</div>
-      <div class="score-b">
-        <h3>SEO-basis: titels, descriptions, H1's</h3>
-        <p>De crawl van 21 augustus vond nul pagina's met een ontbrekende title, ontbrekende meta description, ontbrekende H1 of dubbele H1. Dat is zeldzaam netjes.</p>
-      </div>
-      <div class="meter"><i style="width:85%"></i></div>
+      <div class="score-b"><h3>Technische leesbaarheid voor AI-crawlers</h3>
+        <p>335 voorgerenderde pagina's, robots.txt die ClaudeBot expliciet toelaat, en llms.txt in zes talen inclusief prijzen.</p></div>
+      <div class="score-r"><span class="delta up">▲ was 4,0</span><div class="meter"><i style="width:85%"></i></div></div>
+    </div>
+
+    <div class="score g-good">
+      <div class="score-g mono">8,0</div>
+      <div class="score-b"><h3>Beveiliging en headers</h3>
+        <p>HSTS, nosniff, strict-origin-referrer, Permissions-Policy en X-Frame-Options staan er allemaal. Caching correct per bestandstype. Alleen een Content-Security-Policy ontbreekt.</p></div>
+      <div class="score-r"><span class="delta new">nieuw</span><div class="meter"><i style="width:80%"></i></div></div>
+    </div>
+
+    <div class="score g-good">
+      <div class="score-g mono">7,5</div>
+      <div class="score-b"><h3>Toegankelijkheid, basis</h3>
+        <p>Alle 2.072 afbeeldingen hebben een alt-tekst, <span class="mono">prefers-reduced-motion</span> wordt gerespecteerd, lettertypen staan op de eigen server en woordafbreking volgt het lang-attribuut.</p></div>
+      <div class="score-r"><span class="delta new">nieuw</span><div class="meter"><i style="width:75%"></i></div></div>
+    </div>
+
+    <div class="score g-warn">
+      <div class="score-g mono">7,0</div>
+      <div class="score-b"><h3>URL-hygiëne en redirects</h3>
+        <p>De 404-pagina is terug. 155 redirect-regels staan klaar, maar het oude Engelse adres zit daar niet bij.</p></div>
+      <div class="score-r"><span class="delta up">▲ was 3,0</span><div class="meter"><i style="width:70%"></i></div></div>
+    </div>
+
+    <div class="score g-warn">
+      <div class="score-g mono">6,5</div>
+      <div class="score-b"><h3>Content-diepgang</h3>
+        <p>De nieuwe build is fors dieper dan wat de crawl mat. Maar <span class="mono">/vergelijk</span> haalt 264 woorden, <span class="mono">/de/termin</span> 335 en <span class="mono">/kennismaking</span> 336 — inclusief menu en voettekst.</p></div>
+      <div class="score-r"><span class="delta up">▲ was 5,5</span><div class="meter"><i style="width:65%"></i></div></div>
+    </div>
+
+    <div class="score g-warn">
+      <div class="score-g mono">6,0</div>
+      <div class="score-b"><h3>Meertalige uitvoering</h3>
+        <p>Zes talen met hreflang op 321 van de 335 pagina's. De veertien die het missen zijn uitgerekend de vergelijkingspagina's.</p></div>
+      <div class="score-r"><span class="delta up">▲ was 4,5</span><div class="meter"><i style="width:60%"></i></div></div>
     </div>
 
     <div class="score g-warn">
       <div class="score-g mono">5,5</div>
-      <div class="score-b">
-        <h3>Content-diepgang</h3>
-        <p>29 pagina's blijven onder de 300 woorden. Gemiddelde contentdekking 68/100, en 123 van de 151 gevolgde zoekvragen zijn nog nooit inhoudelijk gedekt.</p>
-      </div>
-      <div class="meter"><i style="width:55%"></i></div>
+      <div class="score-b"><h3>Laadgewicht wereldwijd</h3>
+        <p>Eén video van 14 MB, een hero van 4,2 MB en 588 KB JavaScript in één bundel. In Nederland merk je dat niet; in Brazilië of Indonesië wel.</p></div>
+      <div class="score-r"><span class="delta new">nieuw</span><div class="meter"><i style="width:55%"></i></div></div>
     </div>
 
     <div class="score g-warn">
       <div class="score-g mono">5,0</div>
-      <div class="score-b">
-        <h3>Autoriteit buiten de eigen site</h3>
-        <p>De site wordt goed geciteerd zodra het merk al genoemd is, maar ontbreekt in de vergelijkingsartikelen van derden waar concurrenten wél in staan.</p>
-      </div>
-      <div class="meter"><i style="width:50%"></i></div>
+      <div class="score-b"><h3>Internationale dekking</h3>
+        <p>Zes talen die Europa afdekken. Geen VK, Nordics, Polen, Midden-Oosten of Azië — terwijl Dubai en Singapore juist beursmarkten zijn.</p></div>
+      <div class="score-r"><span class="delta new">nieuw</span><div class="meter"><i style="width:50%"></i></div></div>
     </div>
 
     <div class="score g-crit">
       <div class="score-g mono">4,5</div>
-      <div class="score-b">
-        <h3>Meertalige uitvoering</h3>
-        <p>Vijf taalversies live (nl, en, de, fr, it) — maar de Duitse, Franse en Italiaanse pagina's zijn precies de dunne pagina's, en scoren 0% zichtbaarheid.</p>
-      </div>
-      <div class="meter"><i style="width:45%"></i></div>
+      <div class="score-b"><h3>Visuele onderscheidendheid</h3>
+        <p>Het ontwerpsysteem is naar eigen zeggen een mix van Holoconnects en Proto. Je lijkt op de partij waarvan je het alternatief wil zijn.</p></div>
+      <div class="score-r"><span class="delta new">nieuw</span><div class="meter"><i style="width:45%"></i></div></div>
     </div>
 
     <div class="score g-crit">
       <div class="score-g mono">4,0</div>
-      <div class="score-b">
-        <h3>Technische leesbaarheid van de HTML</h3>
-        <p>Een externe tekst-extractor liep twee van de twee keer vast op "invalid or incomplete HTML". Dezelfde tool las de site van de directe concurrent zonder problemen.</p>
-      </div>
-      <div class="meter"><i style="width:40%"></i></div>
+      <div class="score-b"><h3>Zichtbaarheid bij Claude</h3>
+        <p>8,98% — de laagste van alle tien geteste AI-engines. HYPERVSN haalt op Claude 30,5%.</p></div>
+      <div class="score-r"><span class="delta">ongewijzigd</span><div class="meter"><i style="width:40%"></i></div></div>
     </div>
 
     <div class="score g-crit">
-      <div class="score-g mono">4,0</div>
-      <div class="score-b">
-        <h3>Zichtbaarheid bij Claude specifiek</h3>
-        <p>8,98% — de laagste score van alle tien geteste AI-engines. HYPERVSN haalt op Claude 30,5%.</p>
-      </div>
-      <div class="meter"><i style="width:40%"></i></div>
+      <div class="score-g mono">3,5</div>
+      <div class="score-b"><h3>Autoriteit buiten de eigen site</h3>
+        <p>115 pagina's van derden citeren je concurrenten en jou niet. Dit is erger dan ik in versie 1 dacht.</p></div>
+      <div class="score-r"><span class="delta down">▼ was 5,0</span><div class="meter"><i style="width:35%"></i></div></div>
     </div>
 
     <div class="score g-crit">
       <div class="score-g mono">3,0</div>
-      <div class="score-b">
-        <h3>URL-hygiëne en redirects</h3>
-        <p><span class="mono">/en/what-is-a-holobox</span> is 164 keer geciteerd door AI-engines en geeft nu een 404. Elke verwijzing daarheen is een verloren bezoeker.</p>
-      </div>
-      <div class="meter"><i style="width:30%"></i></div>
+      <div class="score-b"><h3>Vindbaarheid op generieke zoekvragen</h3>
+        <p>20 actieve zoekvragen op 0%. De pagina's die dit moeten oplossen bestaan nu wel, maar zijn nog niet opgepikt.</p></div>
+      <div class="score-r"><span class="delta up">▲ was 2,5</span><div class="meter"><i style="width:30%"></i></div></div>
     </div>
 
     <div class="score g-crit">
       <div class="score-g mono">2,5</div>
-      <div class="score-b">
-        <h3>Meetbaarheid en analytics-setup</h3>
-        <p>Geen Google Search Console gekoppeld, geen sitemap ingediend, geen crawler-logs, geen bezoekers-logs. Je kunt nu niet zien welke AI-bots je site ophalen.</p>
-      </div>
-      <div class="meter"><i style="width:25%"></i></div>
-    </div>
-
-    <div class="score g-crit">
-      <div class="score-g mono">2,5</div>
-      <div class="score-b">
-        <h3>Vindbaarheid op generieke zoekvragen</h3>
-        <p>20 actieve zoekvragen staan op 0% — inclusief élke variant van "alternatief voor Holoconnects", in het Engels, Frans, Italiaans én Spaans.</p>
-      </div>
-      <div class="meter"><i style="width:25%"></i></div>
+      <div class="score-b"><h3>Meetbaarheid en analytics-setup</h3>
+        <p>De verificatiecode voor Search Console staat in de HTML, maar de koppeling is niet afgerond. Geen sitemap ingediend, geen crawler-logs, geen bezoekers-logs.</p></div>
+      <div class="score-r"><span class="delta">ongewijzigd</span><div class="meter"><i style="width:25%"></i></div></div>
     </div>
 
   </div>
@@ -314,270 +379,237 @@ footer p{margin-bottom:8px}
 
 <section>
   <div class="sec-head">
-    <span class="eyebrow">Deel 2 · de vraag over Claude</span>
-    <h2>Nee — Claude vindt jullie het slechtst van allemaal</h2>
-    <p>Zichtbaarheid = het percentage relevante AI-antwoorden waarin HEREweHOLO genoemd wordt. Gemeten over 11.158 antwoorden op 151 zoekvragen in 8 taalgebieden.</p>
+    <span class="eyebrow">Deel 3 · wereldwijd</span>
+    <h2>Duitsland is het gat, niet Italië</h2>
+    <p>Zichtbaarheid per markt: het percentage AI-antwoorden waarin HEREweHOLO genoemd wordt. Gemeten over 8.445 antwoorden, 25 juli – 21 augustus 2026.</p>
   </div>
 
   <div class="chart">
     <div class="legend">
-      <span><i class="key-bar"></i> HEREweHOLO</span>
-      <span><i class="key-tick"></i> sterkste concurrent op die engine</span>
+      <span><i class="key-bar"></i> zichtbaarheid in AI-antwoorden</span>
+      <span class="mono">n = aantal gemeten antwoorden</span>
     </div>
 
     <div class="rows">
-
       <div class="row" tabindex="0">
-        <div class="row-name"><b>Google AI Mode</b></div>
-        <div class="track">
-          <div class="bar" style="width:67.7%"></div>
-          <div class="bar-val" style="left:67.7%">28,4%</div>
-          <div class="tick" style="left:80.7%" data-label="Holoconnects 33,9"></div>
-        </div>
+        <div class="row-name"><b>Nederland</b>39 zoekvragen</div>
+        <div class="track"><div class="bar" style="width:93.8%"></div><div class="bar-val" style="left:93.8%">30,0%</div></div>
       </div>
-
       <div class="row" tabindex="0">
-        <div class="row-name"><b>Microsoft Copilot</b></div>
-        <div class="track">
-          <div class="bar" style="width:60.7%"></div>
-          <div class="bar-val" style="left:60.7%">25,5%</div>
-          <div class="tick flip" style="left:99.7%" data-label="Holoconnects 41,9"></div>
-        </div>
+        <div class="row-name"><b>Italië</b>9 zoekvragen</div>
+        <div class="track"><div class="bar" style="width:90.6%"></div><div class="bar-val" style="left:90.6%">29,0%</div></div>
       </div>
-
       <div class="row" tabindex="0">
-        <div class="row-name"><b>Perplexity</b>sonar-pro</div>
-        <div class="track">
-          <div class="bar" style="width:56.7%"></div>
-          <div class="bar-val" style="left:56.7%">23,8%</div>
-          <div class="tick" style="left:32.4%" data-label="Holoconnects 13,6"></div>
-        </div>
+        <div class="row-name"><b>Spanje</b>11 zoekvragen</div>
+        <div class="track"><div class="bar" style="width:72.5%"></div><div class="bar-val" style="left:72.5%">23,2%</div></div>
       </div>
-
       <div class="row" tabindex="0">
-        <div class="row-name"><b>Gemini</b></div>
-        <div class="track">
-          <div class="bar" style="width:39.9%"></div>
-          <div class="bar-val" style="left:39.9%">16,8%</div>
-          <div class="tick" style="left:74.4%" data-label="Holoconnects 31,2"></div>
-        </div>
+        <div class="row-name"><b>Internationaal EN</b>25 zoekvragen</div>
+        <div class="track"><div class="bar" style="width:72.5%"></div><div class="bar-val" style="left:72.5%">23,2%</div></div>
       </div>
-
       <div class="row" tabindex="0">
-        <div class="row-name"><b>Google AI Overview</b></div>
-        <div class="track">
-          <div class="bar" style="width:39.6%"></div>
-          <div class="bar-val" style="left:39.6%">16,7%</div>
-          <div class="tick" style="left:42.4%" data-label="Holoconnects 17,8"></div>
-        </div>
+        <div class="row-name"><b>België</b>17 zoekvragen</div>
+        <div class="track"><div class="bar" style="width:60.0%"></div><div class="bar-val" style="left:60.0%">19,2%</div></div>
       </div>
-
       <div class="row" tabindex="0">
-        <div class="row-name"><b>ChatGPT</b>gpt-search</div>
-        <div class="track">
-          <div class="bar" style="width:31.5%"></div>
-          <div class="bar-val" style="left:31.5%">13,2%</div>
-          <div class="tick" style="left:70.8%" data-label="Holoconnects 29,7"></div>
-        </div>
+        <div class="row-name"><b>Frankrijk</b>12 zoekvragen</div>
+        <div class="track"><div class="bar" style="width:33.4%"></div><div class="bar-val" style="left:33.4%">10,7%</div></div>
       </div>
-
-      <div class="row" tabindex="0">
-        <div class="row-name"><b>Mistral Large</b></div>
-        <div class="track">
-          <div class="bar" style="width:29.5%"></div>
-          <div class="bar-val" style="left:29.5%">12,4%</div>
-          <div class="tick flip" style="left:97.8%" data-label="Looking Glass 41,1"></div>
-        </div>
-      </div>
-
-      <div class="row" tabindex="0">
-        <div class="row-name"><b>DeepSeek</b></div>
-        <div class="track">
-          <div class="bar" style="width:27.6%"></div>
-          <div class="bar-val" style="left:27.6%">11,6%</div>
-          <div class="tick" style="left:55.0%" data-label="HYPERVSN 23,1"></div>
-        </div>
-      </div>
-
-      <div class="row" tabindex="0">
-        <div class="row-name"><b>Grok 4.5</b></div>
-        <div class="track">
-          <div class="bar" style="width:24.1%"></div>
-          <div class="bar-val" style="left:24.1%">10,1%</div>
-          <div class="tick" style="left:48.0%" data-label="Proto 20,1"></div>
-        </div>
-      </div>
-
       <div class="row is-last" tabindex="0">
-        <div class="row-name"><b>Claude</b>sonnet-4.6</div>
-        <div class="track">
-          <div class="bar" style="width:21.4%"></div>
-          <div class="bar-val" style="left:21.4%">8,98%</div>
-          <div class="tick" style="left:72.8%" data-label="HYPERVSN 30,5"></div>
-        </div>
+        <div class="row-name"><b>Duitsland</b>23 zoekvragen</div>
+        <div class="track"><div class="bar" style="width:24.0%"></div><div class="bar-val" style="left:24.0%">7,7%</div></div>
       </div>
-
     </div>
 
-    <div class="axis"><span>0%</span><span>21%</span><span>42%</span></div>
+    <div class="axis"><span>0%</span><span>16%</span><span>32%</span></div>
 
-    <p class="chart-note">De as loopt tot 42%. Vergeleken concurrenten: Holoconnects, HYPERVSN, Proto, RealFiction, Looking Glass Factory en ARHT Media — per engine is de hoogst scorende getoond.</p>
-  </div>
-</section>
-
-<section>
-  <div class="sec-head">
-    <span class="eyebrow">Deel 3</span>
-    <h2>Wat er precies misgaat</h2>
-  </div>
-
-  <div class="finds">
-
-    <div class="find sev-crit">
-      <div class="find-head"><span class="chip">Kritiek</span><h3>Een druk geciteerde pagina geeft een 404</h3></div>
-      <p>AI-engines verwijzen bezoekers naar een pagina die niet meer bestaat. Dit is de goedkoopste winst in het hele rapport: één redirect, direct effect.</p>
-      <div class="evidence">https://hereweholo.nl/en/what-is-a-holobox
-164 citaties · gemiddelde positie 5,1 in het antwoord · status 404</div>
-    </div>
-
-    <div class="find sev-crit">
-      <div class="find-head"><span class="chip">Kritiek</span><h3>Je wint elke merkvraag en verliest elke categorievraag</h3></div>
-      <p>Het patroon is genadeloos consistent. Iedereen die de naam al kent krijgt een uitstekend antwoord. Iedereen die de naam nog niet kent — dus elke nieuwe klant — komt bij een concurrent uit.</p>
-      <div class="evidence">"Wat is HEREweHOLO en wat maken ze?"          88,9%
-"Was ist HEREweHOLO..."                       85,2%
-"What is HEREweHOLO..."                       82,8%
-─────────────────────────────────────────────────
-"Best hologram box suppliers for trade shows"  0%   (120 antwoorden)
-"Holobox mieten für eine Messe in Deutschland" 0%   ( 78 antwoorden)
-"Alternative to Holoconnects"                  0%   (124 antwoorden)</div>
-      <p>Van de 846 merkvermeldingen in 11.158 antwoorden komt het overgrote deel uit vragen waarin de naam al viel.</p>
-    </div>
-
-    <div class="find sev-crit">
-      <div class="find-head"><span class="chip">Kritiek</span><h3>Je staat nergens als alternatief voor je eigen hoofdconcurrent</h3></div>
-      <p>Vier taalvarianten van dezelfde vraag, vier keer nul. Dit is de meest koopklare vraag die er bestaat — iemand kent de markt, is ontevreden, en zoekt een vervanger. Holoconnects is tegelijk de best scorende concurrent op zeven van de tien engines.</p>
-      <div class="evidence">"Alternative to Holoconnects for holographic displays"       0%  (EN)
-"¿Cuál es una buena alternativa a Holoconnects...?"          0%  (ES)
-"Quelle est une bonne alternative à Holoconnects...?"        0%  (FR)
-"Qual è una buona alternativa a Holoconnects...?"            0%  (IT)</div>
-    </div>
-
-    <div class="find sev-warn">
-      <div class="find-head"><span class="chip">Serieus</span><h3>Externe tools kunnen je HTML niet uitlezen</h3></div>
-      <p>Ik heb dit met een controlemeting getoetst: dezelfde extractor las holoconnects.com in één keer correct uit en produceerde een volledige samenvatting. Op hereweholo.nl faalde hij twee van de twee keer met dezelfde parseerfout.</p>
-      <div class="evidence">hereweholo.nl        → 500 "Error processing text: Invalid or incomplete HTML"
-hereweholo.nl/holobox → 500 "Error processing text: Invalid or incomplete HTML"
-holoconnects.com     → 200 volledige samenvatting</div>
-      <p>Twee pagina's met één tool is geen sluitend bewijs, maar het is wel precies het faalpatroon dat past bij de lage Claude-score: engines die minder goed omgaan met JavaScript-gerenderde of niet-valide markup vallen als eerste af. Dit verdient een handmatige controle van de server-side HTML.</p>
-    </div>
-
-    <div class="find sev-warn">
-      <div class="find-head"><span class="chip">Serieus</span><h3>De vertaalde markten zijn wel gebouwd, niet gevuld</h3></div>
-      <p>Van de 29 te dunne pagina's zit het grootste deel in <span class="mono">/de/</span>, <span class="mono">/it/</span> en <span class="mono">/fr/</span>. Diezelfde markten scoren 0% zichtbaarheid. Het verband is direct: een pagina van 150 woorden geeft een AI-engine niets om te citeren.</p>
-      <div class="evidence">/de/anwendungen, /de/anwendungen/bildung, /de/anwendungen/einzelhandel,
-/de/anwendungen/entertainment, /de/anwendungen/gastgewerbe, /de/termin,
-/it/applicazioni/istruzione, /it/applicazioni/sanita, /it/contatti,
-/fr/rendez-vous, /toepassingen/zorg, /vergelijk, /kennismaking  … (29 totaal)</div>
-    </div>
-
-    <div class="find sev-warn">
-      <div class="find-head"><span class="chip">Serieus</span><h3>Je meet je eigen AI-verkeer niet</h3></div>
-      <p>Crawler-logs zijn niet ingericht, dus er is nul zicht op welke AI-bots de site daadwerkelijk ophalen. Juist bij Claude is dat de vraag die je wilt kunnen beantwoorden: komt ClaudeBot langs, krijgt hij een 200, en wat leest hij dan? Zonder logs blijft dat gissen. Ook Search Console en de sitemap staan nog open.</p>
-    </div>
-
-    <div class="find sev-good">
-      <div class="find-head"><span class="chip">Sterk punt</span><h3>De trend gaat de goede kant op — en Perplexity win je gewoon</h3></div>
-      <p>De zichtbaarheid steeg in vier weken van 14,7 naar 19,0 (+29%). Op Perplexity versla je Holoconnects met 23,8% tegen 13,6% — het bewijs dat het model werkt zodra een engine je site echt ophaalt en leest.</p>
-      <div class="evidence">week 27 jul   14,71        citaties naar eigen domein:    309
-week 03 aug   17,15                                     1.033
-week 10 aug   17,71                                     4.152
-week 17 aug   19,04                                       335</div>
-    </div>
-
-    <div class="find sev-good">
-      <div class="find-head"><span class="chip">Sterk punt</span><h3>De on-page basis is echt in orde</h3></div>
-      <p>Geen enkele pagina mist een title, meta description of H1, en nergens staan er twee H1's. Bij een site van deze omvang met vijf taalversies is dat een teken dat er structureel goed gewerkt is. Dit is de reden dat het cijfer een 5,5 is en geen 4.</p>
-    </div>
-
+    <p class="chart-note">Duitsland is na Nederland de zwaarst gemeten markt — 23 zoekvragen, 1.319 antwoorden — en scoort het laagst van allemaal. In versie 1 schreef ik dat Duitsland, Frankrijk én Italië achterbleven. Dat klopt niet: Italië staat op 29,0% en Spanje op 23,2%. Het probleem is specifiek Duits en Frans.</p>
   </div>
 </section>
 
 <section>
   <div class="sec-head">
     <span class="eyebrow">Deel 4</span>
-    <h2>Wat ik níet heb kunnen toetsen</h2>
+    <h2>Wat wereldwijde vindbaarheid nu tegenhoudt</h2>
   </div>
-  <div class="untested">
-    <p>De omgeving waarin ik werk mocht hereweholo.nl niet rechtstreeks laden — dat is een beperking van mijn eigen netwerkbeleid en <b>zegt niets over jouw site</b>. Alle bevindingen hierboven komen daarom uit crawldata, AI-antwoordanalyse, zoekresultaten en externe tools. Deze aspecten blijven ongetoetst en horen in een vervolgronde:</p>
-    <ul>
-      <li><b>Laadsnelheid en Core Web Vitals</b> — LCP, INP, CLS op mobiel en desktop</li>
-      <li><b>Toegankelijkheid (WCAG 2.2)</b> — contrast, toetsenbordnavigatie, alt-teksten, schermlezers</li>
-      <li><b>Mobiele weergave</b> — responsive gedrag en tapdoelen</li>
-      <li><b>robots.txt en ClaudeBot-toegang</b> — cruciaal gezien de lage Claude-score, maar niet verifieerbaar zonder de site op te halen</li>
-      <li><b>Gestructureerde data</b> — schema.org voor Organization, Product, FAQ en LocalBusiness</li>
-      <li><b>Security headers en TLS-configuratie</b></li>
-      <li><b>Cookiebanner en AVG-naleving</b></li>
-      <li><b>Visueel ontwerp, UX en conversiepad</b> — vereist de site met eigen ogen zien</li>
-    </ul>
+
+  <div class="finds">
+
+    <div class="find sev-crit">
+      <div class="find-head"><span class="chip">Kritiek</span><h3>Je duurste pagina's missen als enige hreflang</h3></div>
+      <p>Van de 335 pagina's hebben er precies veertien geen hreflang. Het zijn alle veertien vergelijkingspagina's — de pagina's die de meest koopklare zoekvraag in de markt moeten winnen, in zes talen.</p>
+      <div class="evidence">/vergelijk/alternative-to-holoconnects   lang="en"   hreflang: GEEN
+/vergelijk/holoconnects-alternative      lang="de"   hreflang: GEEN
+/vergelijk/alternative-a-holoconnects    lang="fr"   hreflang: GEEN
+/vergelijk/alternativa-holoconnects      lang="es"   hreflang: GEEN
+/vergelijk/alternativa-a-holoconnects    lang="it"   hreflang: GEEN
+… en 9 andere vergelijkingspagina's</div>
+      <p>Het <span class="mono">lang</span>-attribuut staat per pagina goed en ze staan in de sitemap. Maar zonder hreflang weet geen enkele zoekmachine dat dit zes vertalingen van hetzelfde artikel zijn. Ze concurreren nu met elkaar in plaats van elkaar te versterken. Dit is de goedkoopste ingreep in dit hele rapport: zes regels HTML per pagina.</p>
+    </div>
+
+    <div class="find sev-crit">
+      <div class="find-head"><span class="chip">Kritiek</span><h3>Holoconnects heeft een citatiemuur gebouwd en jij staat erbuiten</h3></div>
+      <p>115 pagina's van derden worden door AI-engines geciteerd, noemen je concurrenten, en noemen jou niet. De meest geciteerde zijn de vergelijkingsartikelen die Holoconnects <b>zelf</b> heeft geschreven. Ze bepalen daarmee hoe de hele markt beschreven wordt.</p>
+      <div class="evidence">holoconnects.com/holobox-vs-proto                        134 citaties
+holoconnects.com/best-hologram-displays                  129 citaties
+holoconnects.com/news/hologram-industry-vendor-overview  94 citaties
+holoconnects.com/who-makes-hologram-displays             75 citaties
+ailias.vip/best-hologram-companies-uk                    56 citaties
+cbinsights.com/company/holoconnects/alternatives         42 citaties
+─────────────────────────────────────────────────────────────────
+HEREweHOLO genoemd in: 0 van deze 6</div>
+      <p>Jullie doen hetzelfde met <span class="mono">/vergelijk/</span> — dat is de juiste zet. Maar hun pagina's staan er al een jaar en worden al geciteerd. Reken op maanden, en zet er onafhankelijke bronnen naast: CB Insights heeft een pagina "Holoconnects alternatives" waar je gewoon op kunt vragen te worden toegevoegd.</p>
+    </div>
+
+    <div class="find sev-crit">
+      <div class="find-head"><span class="chip">Kritiek</span><h3>Duitsland: grootste beursmarkt van Europa, laagste score</h3></div>
+      <p>7,69% bij 1.319 gemeten antwoorden. Ondertussen wordt een Duitse concurrent stelselmatig geciteerd op precies de zoekvragen waar jullie op nul staan.</p>
+      <div class="evidence">magic-holo.com/hologramm-projektor-mieten-kaufen-infos   76 citaties
+magic-holo.com/messestand-ideen                          46 citaties
+
+"holografische display mieten für messe oder event"       0%  (100 antw.)
+"Holobox mieten für eine Messe in Deutschland"            0%  ( 78 antw.)</div>
+      <p>Duitsland heeft Messe Frankfurt, Köln, Düsseldorf, Hannover en München. Als er één markt een eigen contentinvestering verdient in plaats van een vertaling, is het deze.</p>
+    </div>
+
+    <div class="find sev-warn">
+      <div class="find-head"><span class="chip">Serieus</span><h3>"Wereldwijd" is nu zes Europese talen</h3></div>
+      <p>De site zegt wereldwijd te leveren en <span class="mono">llms.txt</span> noemt het verzorgingsgebied expliciet "Nederland en wereldwijd". De taaldekking is nl, en, de, fr, it, es. Er is geen enkele meting of pagina gericht op het VK als eigen markt, de Nordics, Polen, het Midden-Oosten of Azië.</p>
+      <p>Voor holografische displays op beurzen zijn Dubai, Singapore en Londen aantoonbaar relevante markten. Engels dekt die deels af, maar zonder land-specifieke signalen — een lokale case, een <span class="mono">en-GB</span> of <span class="mono">en-AE</span> variant, een adres of partner ter plaatse — kiest een AI-engine bij "hologram supplier Dubai" bijna altijd een lokale of Amerikaanse partij.</p>
+    </div>
+
+    <div class="find sev-warn">
+      <div class="find-head"><span class="chip">Serieus</span><h3>Het gewicht van de media is een wereldwijd probleem</h3></div>
+      <p>Netlify levert vanaf een wereldwijd CDN, dus de afstand is opgelost. Het formaat niet.</p>
+      <div class="evidence">media/videos/holobox-retail-hd.mp4      14,0 MB
+media/videos/holobox-receptie.mp4        5,4 MB
+media/videos/homepage-hero.mp4           4,2 MB   (mobiel: 2,7 MB)
+assets/index-*.js                          588 KB  in één bundel
+totale gepubliceerde site                   67 MB</div>
+      <p>Dat er al een aparte mobiele hero is, laat zien dat hier over nagedacht is. Zet die lijn door: video's in AV1 of HEVC naast de MP4, en de hoofdbundel opsplitsen. Op een 4G-verbinding in Zuid-Amerika of Zuidoost-Azië scheelt dat seconden — en seconden bepalen of iemand het formulier haalt.</p>
+    </div>
+
+    <div class="find sev-good">
+      <div class="find-head"><span class="chip">Sterk punt</span><h3>llms.txt met prijzen is precies goed</h3></div>
+      <p>Zes talen, elk met producten, vanafprijzen en contactgegevens in platte tekst. AI-engines citeren het liefst concrete, verifieerbare feiten — en een prijs is het meest concrete feit dat er is. De meeste concurrenten hebben dit niet.</p>
+      <div class="evidence">AI Hologram        vanaf €2.500      HoloMini    vanaf €5.200
+Digital Twin       vanaf €8.500      The 43      vanaf €9.000
+Recording Station  vanaf   €940</div>
+    </div>
+
   </div>
 </section>
 
 <section>
   <div class="sec-head">
-    <span class="eyebrow">Deel 5</span>
-    <h2>Wat ik zou doen, op volgorde</h2>
-    <p>Gesorteerd op effect gedeeld door moeite. De eerste drie zijn samen minder dan een dag werk.</p>
+    <span class="eyebrow">Deel 5 · visueel</span>
+    <h2>Het ontwerp lijkt op de concurrent die je wil verslaan</h2>
+    <p>Beoordeeld op het ontwerpsysteem in de broncode: kleuren, typografie, ritme. Hoe het in de praktijk oogt kon ik nog niet zien.</p>
+  </div>
+
+  <div class="finds">
+
+    <div class="find sev-crit">
+      <div class="find-head"><span class="chip">Kritiek</span><h3>Het ontwerpsysteem noemt zijn eigen bronnen — en dat zijn je concurrenten</h3></div>
+      <p>Bovenaan het stijlbestand staat letterlijk waar het ontwerp vandaan komt:</p>
+      <div class="evidence">/*
+ * HEREweHOLO design system.
+ * Mix van de referenties: Holoconnects (puur zwart, massieve typografie met
+ * strakke letter-spacing, witte pill-buttons, zwart/wit sectie-ritme) en
+ * Proto (cleane lichte secties, editorial witruimte, één krachtige accentkleur).
+ */</div>
+      <p>Als ontwerpmethode is dat verdedigbaar — je leert van wie het goed doet. Als merkstrategie werkt het tegen je. Je bouwt veertien pagina's die uitleggen waarom je géén Holoconnects bent, op een site die er bewust uitziet als Holoconnects. Een bezoeker die beide tabbladen open heeft, ziet twee varianten van hetzelfde bedrijf.</p>
+    </div>
+
+    <div class="find sev-warn">
+      <div class="find-head"><span class="chip">Serieus</span><h3>De typografie is de meest voorspelbare keuze die er is</h3></div>
+      <p>Inter voor de tekst, Space Grotesk voor de koppen. Dat is op dit moment de standaardcombinatie van vrijwel elke technologiesite; het is precies wat je krijgt als niemand een keuze maakt. Er zit niets holografisch, niets Haags en niets eigens in.</p>
+      <p>Je verkoopt licht, diepte en transparantie. Er bestaan letterontwerpen met optische assen, variabele breedte of een lensachtige vervorming die dat wél oproepen. Eén karakteristieke kopletter — en Inter gewoon laten staan voor de leestekst — verandert het hele gevoel zonder de leesbaarheid aan te tasten.</p>
+      <div class="evidence">body     Inter          17px
+h1–h4    Space Grotesk
+--radius 1rem                (afgeronde hoeken overal)
+--primary 16 100% 66%        ≈ #FF7A47, één oranje accent op puur zwart</div>
+    </div>
+
+    <div class="find sev-warn">
+      <div class="find-head"><span class="chip">Serieus</span><h3>Puur zwart met één oranje accent is het standaardsjabloon</h3></div>
+      <p>Achtergrond <span class="mono">#000000</span>, tekst wit, één oranje accentkleur, alles met een radius van 1rem. Dat is de meest gebruikte "innovatief technologiebedrijf"-look van dit moment, en tegelijk de puur zwarte basis die het stijlbestand van Holoconnects overneemt.</p>
+      <p>Puur zwart is bovendien een gemiste kans voor jullie specifiek: een Holobox is een donkere kast waarin licht hangt. Een diep, licht gekleurd zwart — een spoor blauw of violet in de donkerste tint — laat het beeldmateriaal juist oplichten en is meteen van jullie. Dat is een wijziging van drie kleurwaarden, niet van het hele ontwerp.</p>
+    </div>
+
+    <div class="find sev-good">
+      <div class="find-head"><span class="chip">Sterk punt</span><h3>Het vakwerk eronder is netjes</h3></div>
+      <p>Wat er in de bouw goed gaat, gaat opvallend goed: alle 2.072 afbeeldingen hebben een alt-tekst, bewegende elementen respecteren <span class="mono">prefers-reduced-motion</span>, lettertypen staan op de eigen server met preload, beelden zijn WebP, en er is over Duitse samenstellingen nagedacht met woordafbreking per taal. Dat zijn precies de details die meestal overgeslagen worden.</p>
+      <p>Eén schoonheidsfoutje: <span class="mono">src/App.css</span> is nog de originele Vite-voorbeeldstijl, met een draaiend React-logo en <span class="mono">.read-the-docs</span>. Het wordt nergens geïmporteerd en komt dus niet in de site terecht — het mag weg.</p>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">Deel 6</span>
+    <h2>Wat ik nu zou doen, op volgorde</h2>
+    <p>De eerste twee zijn samen een halve dag werk en raken je meest waardevolle pagina's.</p>
   </div>
 
   <ol class="actions">
-    <li>
-      <div>
-        <h3>Zet een 301-redirect op <span class="mono">/en/what-is-a-holobox</span></h3>
-        <p>164 citaties komen nu op een 404 uit. Wijs hem naar de vervangende uitlegpagina. Loop meteen de rest van de oude Engelse URL-structuur na op hetzelfde probleem.</p>
-      </div>
-    </li>
-    <li>
-      <div>
-        <h3>Koppel Search Console, dien de sitemap in, zet crawler-logs aan</h3>
-        <p>Zonder deze drie werk je blind. Crawler-logs vertellen je binnen een week of ClaudeBot je site überhaupt ophaalt — de enige manier om de Claude-score echt te verklaren.</p>
-      </div>
-    </li>
-    <li>
-      <div>
-        <h3>Laat een developer de server-side HTML valideren</h3>
-        <p>Doe <span class="mono">curl</span> op de homepage en kijk of de kernteksten in de kale HTML staan of pas door JavaScript verschijnen. Draai de output door een HTML-validator. Als teksten pas na JS verschijnen, is server-side rendering of prerendering de belangrijkste structurele investering die je kunt doen.</p>
-      </div>
-    </li>
-    <li>
-      <div>
-        <h3>Bouw één eerlijke vergelijkingspagina: HEREweHOLO vs Holoconnects vs HYPERVSN vs Proto</h3>
-        <p>Vier taalvarianten van "alternatief voor Holoconnects" staan op nul. Een pagina met een echte tabel — formaten, prijsindicatie, huur versus koop, levertijd, contentproductie — is precies wat AI-engines citeren bij vergelijkingsvragen. Wees eerlijk over waar een concurrent beter past; dat verhoogt juist de kans dat je geciteerd wordt.</p>
-      </div>
-    </li>
-    <li>
-      <div>
-        <h3>Verdiep de 29 dunne pagina's, te beginnen bij Duitsland</h3>
-        <p>Mik op 600–900 woorden met concrete cases, afmetingen, prijsindicaties en veelgestelde vragen. Duitsland eerst: grootste markt, meeste dunne pagina's, en de zoekvraag "Holobox mieten für eine Messe" staat op 0% bij 78 antwoorden.</p>
-      </div>
-    </li>
-    <li>
-      <div>
-        <h3>Claim de positie "wij maken ook de content"</h3>
-        <p>"Who creates content for holographic displays and AI avatars?" staat op 0% bij 121 antwoorden. Jullie doen concept, opname en productie in eigen huis — dat is een onderscheidend antwoord dat nu nergens vindbaar is. Eén stevige pagina plus een case met beeldmateriaal.</p>
-      </div>
-    </li>
-    <li>
-      <div>
-        <h3>Ga staan in de artikelen van derden waar je concurrenten al staan</h3>
-        <p>Er liggen drie concrete kansen klaar, waaronder "How Much Does a Hologram Cost? 2026" en een Duitstalig overzichtsartikel over hologramdisplays voor beurzen. Claude leunt zwaarder op dit soort bronnen dan op je eigen site — dit is de meest directe route naar een hogere Claude-score.</p>
-      </div>
-    </li>
+    <li><div>
+      <h3>Zet hreflang op de veertien vergelijkingspagina's</h3>
+      <p>Zes taalvarianten van "alternatief voor Holoconnects" die niet weten dat ze bij elkaar horen. Voeg per pagina de zes <span class="mono">rel="alternate"</span>-regels plus x-default toe, precies zoals de andere 321 pagina's het al doen, en neem de alternates ook op in de sitemap.</p>
+    </div></li>
+    <li><div>
+      <h3>Maak de Search Console-koppeling af en dien de sitemap in</h3>
+      <p>De verificatiecode staat al in de HTML — er hoeft alleen nog op "verifiëren" geklikt te worden. Zet in dezelfde gang crawler-logs aan. Dan zie je binnen een week of ClaudeBot langskomt en wat hij ophaalt; je robots.txt nodigt hem al expliciet uit.</p>
+    </div></li>
+    <li><div>
+      <h3>Vraag om opname in onafhankelijke overzichten</h3>
+      <p>Begin bij <span class="mono">cbinsights.com/company/holoconnects/alternatives-competitors</span> — een pagina die letterlijk over alternatieven voor je hoofdconcurrent gaat, 42 keer geciteerd, en jou niet noemt. Daarna de vakmedia. Dit is de snelste route naar een hogere Claude-score, omdat Claude zwaarder op bronnen van derden leunt dan op je eigen site.</p>
+    </div></li>
+    <li><div>
+      <h3>Behandel Duitsland als eigen markt, niet als vertaling</h3>
+      <p>7,7% bij 1.319 antwoorden, terwijl Magic Holo de Duitse hologramcontent bezit. Een Duitse case bij een echte Messe, met naam, hal en resultaat, doet meer dan vijf vertaalde pagina's. Verdiep meteen <span class="mono">/de/termin</span> (335 woorden).</p>
+    </div></li>
+    <li><div>
+      <h3>Vul <span class="mono">/vergelijk</span> zelf aan tot een echte pagina</h3>
+      <p>264 woorden op de overzichtspagina van je sterkste contentblok. Zet er de vergelijkingstabel zelf op — acht criteria, alle aanbieders naast elkaar — zodat de overzichtspagina ook los citeerbaar wordt en niet alleen doorverwijst.</p>
+    </div></li>
+    <li><div>
+      <h3>Geef het ontwerp één eigen signaal</h3>
+      <p>Twee ingrepen die samen een dag kosten: een karakteristieke kopletter in plaats van Space Grotesk, en een diep gekleurd zwart in plaats van <span class="mono">#000000</span>. Inter, de layout en het ritme blijven staan. Daarmee lijk je niet langer op de partij waarvan je het alternatief wil zijn.</p>
+    </div></li>
+    <li><div>
+      <h3>Comprimeer de zware video's</h3>
+      <p>14 MB voor één bestand is buiten Europa een afhaker. Lever AV1 of HEVC naast de MP4 en splits de 588 KB-bundel. De mobiele hero-variant laat zien dat het patroon er al is — pas het toe op de rest.</p>
+    </div></li>
+    <li><div>
+      <h3>Kies bewust of "wereldwijd" ook buiten Europa geldt</h3>
+      <p>Zes Europese talen dekken Europa. Willen jullie Dubai, Singapore of Londen echt, dan hoort daar minstens een <span class="mono">en-GB</span> of <span class="mono">en-AE</span> variant bij met lokale cases. Zo niet, pas dan de claim in <span class="mono">llms.txt</span> aan — een belofte die AI-engines niet kunnen staven, kost geloofwaardigheid.</p>
+    </div></li>
   </ol>
 </section>
 
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">Deel 7</span>
+    <h2>Wat ik nog steeds niet heb kunnen toetsen</h2>
+  </div>
+  <div class="untested">
+    <p>Mijn netwerkomgeving mag hereweholo.nl en hereweholo.netlify.app nog altijd niet laden — een beperking van mijn sessie, <b>niet van jullie site</b>. Alles in versie 2 komt uit de broncode, de gepubliceerde build en AI-antwoordanalyse. Deze punten blijven open:</p>
+    <ul>
+      <li><b>Hoe het er daadwerkelijk uitziet</b> — ik beoordeelde het ontwerpsysteem, niet het resultaat op het scherm</li>
+      <li><b>Gemeten laadsnelheid</b> — LCP, INP en CLS in het veld; ik zag bestandsgroottes, geen echte tijden</li>
+      <li><b>Toegankelijkheid in de praktijk</b> — contrastverhoudingen, toetsenbordvolgorde en schermlezergedrag</li>
+      <li><b>Of de live site gelijk is aan deze build</b> — de laatste commit is van vanmiddag 16:05</li>
+      <li><b>Werking van formulieren</b> — Netlify Forms staat uit; er is een eigen <span class="mono">formulier.php</span></li>
+      <li><b>Cookiebanner en AVG-naleving</b></li>
+    </ul>
+  </div>
+</section>
+
 <footer>
-  <p><b>Bronnen en methode.</b> Crawldata en AI-antwoordanalyse uit Promptwatch (project HEREweHOLO, crawl van 21 augustus 2026; 11.158 AI-antwoorden op 151 zoekvragen over 8 taalgebieden, meetperiode 25 juli – 21 augustus 2026). Zichtbaarheidspercentages per engine uit de merk-versus-concurrent vergelijking over dezelfde periode. HTML-extractietest via een externe scraper, met holoconnects.com als controlemeting. Aanvullende deskresearch via websearch.</p>
-  <p>Cijfers zijn een beoordeling op basis van dit bewijs, geen genormeerde branchestandaard. De aspecten in deel 4 zijn niet meegewogen in het totaalcijfer.</p>
+  <p><b>Bronnen en methode.</b> Versie 2, aangevuld met de broncode uit <span class="mono">V2WHwH/HEREweHOLO-Website</span> (commit a2d60db, 21 augustus 2026 16:05) en de gepubliceerde build op de tak <span class="mono">gebouwde-site</span>. AI-zichtbaarheid uit Promptwatch: 11.158 antwoorden op 151 zoekvragen over 8 taalgebieden, 25 juli – 21 augustus 2026; crawl van 21 augustus 15:11. Off-site kansen uit 115 geanalyseerde citatiepagina's. Netlify-projectgegevens via de Netlify-koppeling.</p>
+  <p>Cijfers zijn een beoordeling op basis van dit bewijs, geen genormeerde branchestandaard. De punten in deel 7 zijn niet meegewogen. Waar versie 1 en versie 2 verschillen, geldt versie 2.</p>
 </footer>
 
 </div>
