@@ -90,7 +90,9 @@ let ok = 0, mislukt = 0;
 for (const item of selectie) {
   const ruw = `tijdelijk/${item.naam}-ruw`;
   try {
-    const r = await fetch(adresVan(item), { redirect: "follow" });
+    // Eén bestand dat blijft hangen mag de rest niet meeslepen: na twee
+    // minuten breekt het af en gaat de lijst gewoon verder.
+    const r = await fetch(adresVan(item), { redirect: "follow", signal: AbortSignal.timeout(120_000) });
     if (!r.ok) throw new Error(`status ${r.status}`);
     const buf = Buffer.from(await r.arrayBuffer());
     writeFileSync(ruw, buf);
@@ -137,3 +139,6 @@ for (const item of selectie) {
 }
 rmSync("tijdelijk", { recursive: true, force: true });
 console.log(`\nklaar: ${ok} gelukt, ${mislukt} mislukt`);
+// Een enkele mislukking is geen reden om alles weg te gooien: wat wel gelukt
+// is moet bewaard worden. Alleen als er niets is gelukt, faalt deze stap.
+if (!ok) process.exitCode = 1;
