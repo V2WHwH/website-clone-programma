@@ -173,6 +173,11 @@ export const PROJECTEN: Project[] = [
       "Voor Castello bouwde Vision2Watch een interactieve wand waarin schermen en lijsten in de merkomgeving zijn opgenomen; de content wisselt en reageert op de omgeving.",
     producten: ["interactieve-muur"],
     beeld: { src: "/media/castello-projectie-lijsten.webp", alt: "Interactieve wand met ingelijste schermen bij Castello" },
+    video: {
+      src: "/media/video/castello-lijstprojectie.mp4",
+      poster: "/media/video/castello-lijstprojectie-poster.webp",
+      label: "Projectie in een schilderijlijst waarin de gerechten elkaar opvolgen",
+    },
   },
   {
     slug: "outlet-store-roermond",

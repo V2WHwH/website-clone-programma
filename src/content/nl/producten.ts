@@ -679,6 +679,11 @@ export const PRODUCTEN: Product[] = [
     waarom:
       "Klanten willen het echte product zien, maar het verhaal eromheen heeft beweging nodig. Het transparante scherm vertelt dat verhaal letterlijk om het product heen, zonder dat het product uit beeld verdwijnt.",
     beeld: { src: "/media/transparant-scherm-fles.webp", alt: "Transparant scherm met fysiek product en digitale animatie" },
+    video: {
+      src: "/media/video/transparant-scherm-beurs.mp4",
+      poster: "/media/video/transparant-scherm-beurs-poster.webp",
+      label: "Bezoeker bedient een transparant scherm waarachter de ruimte gewoon zichtbaar blijft",
+    },
     voordelen: [
       { kop: "Product blijft de ster", tekst: "Het echte product staat verlicht in de vitrine; transparante en dekkende beelden wisselen elkaar af rond het object." },
       { kop: "Compact tot groot", tekst: "Beschikbaar van 10 tot 70 inch, lichtgewicht en duurzaam uitgevoerd." },
@@ -729,6 +734,11 @@ export const PRODUCTEN: Product[] = [
     waarom:
       "Buiten en op afstand telt maar één ding: zichtbaarheid. LED levert helderheid en formaat die met projectie of LCD niet haalbaar zijn, en opent met flexibele en transparante varianten ontwerpmogelijkheden die een standaardscherm niet biedt.",
     beeld: { src: "/media/led-wand-kas.webp", alt: "Grote LED-videowall in een bedrijfsruimte" },
+    video: {
+      src: "/media/video/led-wand-horticenter.mp4",
+      poster: "/media/video/led-wand-horticenter-poster.webp",
+      label: "Grote LED-wand met bewegend beeld in een lichte bedrijfshal",
+    },
     voordelen: [
       { kop: "Elk formaat", tekst: "Van compact informatiescherm tot videowall op gebouwformaat, binnen en buiten." },
       { kop: "Flexibele LED", tekst: "Lichtgewicht panelen voor gebogen ontwerpen die naadloos aansluiten, voor creatieve toepassingen." },
@@ -929,6 +939,11 @@ export const PRODUCTEN: Product[] = [
     waarom:
       "Een logo dat beweegt wordt onthouden. Voor entrees, stands en gevels is logo-animatie de eenvoudigste manier om een ruimte direct van uw merk te voorzien, zonder verbouwing.",
     beeld: { src: "/media/vloer-valentijn.webp", alt: "Merkprojectie met animatie op de vloer" },
+    video: {
+      src: "/media/video/logo-animatie-projectie.mp4",
+      poster: "/media/video/logo-animatie-projectie-poster.webp",
+      label: "Een geprojecteerd logo dat doorlopend van vorm en kleur verandert op een wandpaneel",
+    },
     voordelen: [
       { kop: "Direct herkenbaar", tekst: "Uw bestaande logo, tot leven gebracht met beweging, diepte en effecten die bij uw merk passen." },
       { kop: "Overal toepasbaar", tekst: "Muur, vloer, plafond of gevel; binnen en buiten, tijdelijk of permanent." },
