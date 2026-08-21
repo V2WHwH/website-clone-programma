@@ -113,6 +113,26 @@ vanuit de bron zelf — de Dropbox-map die inmiddels wordt gebruikt bevat
 hetzelfde en beter materiaal, in hogere kwaliteit en zonder compressie van
 Instagram.
 
+## 3e. Wat er uit de Dropbox is gekomen, en wat niet
+
+Uit de gedeelde map "Demo Video's" zijn zestien video's beoordeeld. Dat
+beoordelen ging via contactvellen: van elke video maakt de runner een
+raster van twaalf beelden, dat in `discovery/contactvellen/` blijft staan.
+Zo is per bestand terug te zien waarop de keuze is gebaseerd, en is er
+niets aan een pagina gekoppeld op basis van alleen een bestandsnaam.
+
+Tien fragmenten zijn gebruikt (achterwand, producthero's, projecten en de
+blokken "op locatie"). Deze vielen af, met reden:
+
+| Bestand | Waarom niet gebruikt |
+| --- | --- |
+| showreel 2018.mp4 | Opent op een handdruk in een kantoorgang, met het logo van een derde partij in beeld gebrand. Toont het werk niet. |
+| holomolen.mp4 | Opgenomen tegen een greenscreen in de werkplaats. Laat het product goed zien, maar de omgeving oogt onaf. |
+| holowall bruynzeel adj.mp4 | Engelstalige animatie met tekst in beeld ("Each module provides 4k image quality"). Past niet op een Nederlandstalige site. |
+| interactieve wand/waterstijl | Opbouwbeelden: monteurs op de knieën naast de installatie. |
+| DigitalMoo, ARApp Live Painting | Demomateriaal van leveranciers, geen eigen werk. |
+| Nimeto - Education.mov | Bruikbaar, maar de holobox heeft al een sterker fragment (Santino). Bewaard in de Dropbox. |
+
 ## 4. Gegevens die niet in de bron staan
 
 Bij de contentcontrole is elke feitelijke bewering nagelopen tegen de crawl
