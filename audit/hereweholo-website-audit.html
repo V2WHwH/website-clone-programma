@@ -199,10 +199,10 @@ footer p{margin-bottom:8px}
 <header class="mast">
   <div class="mast-top">
     <span class="eyebrow">Website-audit · hereweholo.nl</span>
-    <span class="eyebrow">Versie 2 · 21 aug 2026</span>
+    <span class="eyebrow">Versie 3 · 21 aug 2026</span>
   </div>
   <h1>Technisch bijna af.<br>Onzichtbaar in de categorie.
-    <span class="sub">Versie 2, na inzage in de broncode. De techniek blijkt veel beter dan de eerste meting suggereerde — het echte gat zit in autoriteit buiten de eigen site, en in Duitsland.</span>
+    <span class="sub">Versie 3, nu met de site daadwerkelijk gerenderd. De prijspagina is uitstekend, de hero werkt niet, en je veertien belangrijkste pagina&#39;s staan er visueel los van.</span>
   </h1>
 
   <div class="grade-hero">
@@ -298,10 +298,10 @@ llms.txt aanwezig in alle zes de talen, mét vanafprijzen</div>
     </div>
 
     <div class="score g-good">
-      <div class="score-g mono">7,5</div>
-      <div class="score-b"><h3>Toegankelijkheid, basis</h3>
-        <p>Alle 2.072 afbeeldingen hebben een alt-tekst, <span class="mono">prefers-reduced-motion</span> wordt gerespecteerd, lettertypen staan op de eigen server en woordafbreking volgt het lang-attribuut.</p></div>
-      <div class="score-r"><span class="delta new">nieuw</span><div class="meter"><i style="width:75%"></i></div></div>
+      <div class="score-g mono">7,0</div>
+      <div class="score-b"><h3>Toegankelijkheid</h3>
+        <p>Alt-teksten compleet, skiplink aanwezig, contrast in orde, <span class="mono">prefers-reduced-motion</span> gerespecteerd. Maar de links in de uitklapmenu&#39;s hebben geen zichtbare focusrand.</p></div>
+      <div class="score-r"><span class="delta down">▼ was 7,5</span><div class="meter"><i style="width:70%"></i></div></div>
     </div>
 
     <div class="score g-warn">
@@ -340,10 +340,10 @@ llms.txt aanwezig in alle zes de talen, mét vanafprijzen</div>
     </div>
 
     <div class="score g-crit">
-      <div class="score-g mono">4,5</div>
-      <div class="score-b"><h3>Visuele onderscheidendheid</h3>
-        <p>Het ontwerpsysteem is naar eigen zeggen een mix van Holoconnects en Proto. Je lijkt op de partij waarvan je het alternatief wil zijn.</p></div>
-      <div class="score-r"><span class="delta new">nieuw</span><div class="meter"><i style="width:45%"></i></div></div>
+      <div class="score-g mono">5,0</div>
+      <div class="score-b"><h3>Visuele uitvoering</h3>
+        <p>Productsecties en prijspagina zijn sterk. De hero laat het afweten en de vergelijkingspagina&#39;s zien eruit als een andere website.</p></div>
+      <div class="score-r"><span class="delta new">nieuw</span><div class="meter"><i style="width:50%"></i></div></div>
     </div>
 
     <div class="score g-crit">
@@ -503,44 +503,86 @@ Recording Station  vanaf   €940</div>
 <section>
   <div class="sec-head">
     <span class="eyebrow">Deel 5 · visueel</span>
-    <h2>Het ontwerp lijkt op de concurrent die je wil verslaan</h2>
-    <p>Beoordeeld op het ontwerpsysteem in de broncode: kleuren, typografie, ritme. Hoe het in de praktijk oogt kon ik nog niet zien.</p>
+    <h2>Wat ik zie als ik de site echt open</h2>
+    <p>De live site blijft geblokkeerd in mijn omgeving, dus ik heb de gepubliceerde build lokaal gedraaid en met Chromium gerenderd op 1440&#215;900 en 390&#215;844. Zes pagina&#39;s, desktop en mobiel.</p>
   </div>
 
   <div class="finds">
 
     <div class="find sev-crit">
-      <div class="find-head"><span class="chip">Kritiek</span><h3>Het ontwerpsysteem noemt zijn eigen bronnen — en dat zijn je concurrenten</h3></div>
-      <p>Bovenaan het stijlbestand staat letterlijk waar het ontwerp vandaan komt:</p>
-      <div class="evidence">/*
- * HEREweHOLO design system.
- * Mix van de referenties: Holoconnects (puur zwart, massieve typografie met
- * strakke letter-spacing, witte pill-buttons, zwart/wit sectie-ritme) en
- * Proto (cleane lichte secties, editorial witruimte, één krachtige accentkleur).
- */</div>
-      <p>Als ontwerpmethode is dat verdedigbaar — je leert van wie het goed doet. Als merkstrategie werkt het tegen je. Je bouwt veertien pagina's die uitleggen waarom je géén Holoconnects bent, op een site die er bewust uitziet als Holoconnects. Een bezoeker die beide tabbladen open heeft, ziet twee varianten van hetzelfde bedrijf.</p>
+      <div class="find-head"><span class="chip">Kritiek</span><h3>De hero laat je product niet zien</h3></div>
+      <p>Het belangrijkste beeld van de hele site toont twee dingen die niet bij elkaar komen: rechts staat een Holobox die leeg en wit oplicht, en midden in beeld staat een man die er náást staat. Ik heb de video op drie momenten stilgezet — na 2, 5 en 9 seconden — en hij stapt er nooit in.</p>
+      <p>Je verkoopt precies één belofte: een levensecht mens verschijnt ín die kast. Het eerste beeld dat een bezoeker ziet, is een lege kast. Iemand die niet weet wat een Holobox doet, leert het hier niet.</p>
+      <p>Daar komt bij dat de kop dwars door het gezicht van de presentator loopt. Het woord <span class="mono">hologramdisplays</span> bedekt zijn hoofd, en de alinea eronder loopt over zijn romp. In elk frame.</p>
+      <div class="evidence">/media/videos/homepage-hero.mp4  ·  autoplay, muted, loop
+frame t=2s, t=5s, t=9s: presentator staat links van de box, box blijft leeg
+kop "hologramdisplays" (108px) overlapt hoofd op alle drie de frames</div>
+      <p>De oplossing is geen herontwerp: gebruik beeld waarin iemand ín de box staat — dat materiaal heb je, want de HoloWall-sectie verderop laat het perfect zien — en verschuif de tekstkolom zodat hij het gezicht vrijlaat.</p>
+    </div>
+
+    <div class="find sev-crit">
+      <div class="find-head"><span class="chip">Kritiek</span><h3>Je vergelijkingspagina&#39;s zien eruit als een andere website</h3></div>
+      <p>Dit verklaart ook waarom uitgerekend deze veertien pagina&#39;s geen hreflang hebben: ze komen uit een andere bouwstraat. Ze delen geen enkel stijlbestand met de rest van de site.</p>
+      <div class="evidence">                    rest van de site      /vergelijk/*
+achtergrond         #000000 puur zwart    #14181D blauwgrijs
+letter              Inter / Space Grotesk Archivo
+stijlbestand        index-D5R4X98m.css    geen — alleen inline
+navigatiebalk       aanwezig              ontbreekt op 2 van de 3
+logo boven de vouw  aanwezig              afwezig</div>
+      <p>Een bezoeker die via een AI-antwoord op "alternative to Holoconnects" binnenkomt — precies de reis waarvoor deze pagina&#39;s gebouwd zijn — landt op een kaal document. Geen logo, geen menu, geen taalwisselaar, geen knop. Alleen een kruimelpad. Er is geen enkele manier om door te klikken naar de Holobox of de prijslijst.</p>
+      <p>Zonde, want inhoudelijk zijn dit je beste pagina&#39;s: feitelijk, niet kleinerend, met concrete referenties als Brussels Airport, Proximus en ISE Barcelona, en eerlijk over het faillissement en de doorstart van de concurrent. Die tekst verdient de rest van de site eromheen.</p>
     </div>
 
     <div class="find sev-warn">
-      <div class="find-head"><span class="chip">Serieus</span><h3>De typografie is de meest voorspelbare keuze die er is</h3></div>
-      <p>Inter voor de tekst, Space Grotesk voor de koppen. Dat is op dit moment de standaardcombinatie van vrijwel elke technologiesite; het is precies wat je krijgt als niemand een keuze maakt. Er zit niets holografisch, niets Haags en niets eigens in.</p>
-      <p>Je verkoopt licht, diepte en transparantie. Er bestaan letterontwerpen met optische assen, variabele breedte of een lensachtige vervorming die dat wél oproepen. Eén karakteristieke kopletter — en Inter gewoon laten staan voor de leestekst — verandert het hele gevoel zonder de leesbaarheid aan te tasten.</p>
-      <div class="evidence">body     Inter          17px
-h1–h4    Space Grotesk
---radius 1rem                (afgeronde hoeken overal)
---primary 16 100% 66%        ≈ #FF7A47, één oranje accent op puur zwart</div>
+      <div class="find-head"><span class="chip">Serieus</span><h3>Twee concrete bugs die niemand ziet, tot iemand ze wel ziet</h3></div>
+      <p><b>Geen zichtbare focusrand in de uitklapmenu&#39;s.</b> De hoofdknoppen in de navigatie krijgen netjes een focusrand. De links binnen de menu&#39;s — Holobox, HoloWall, HoloMini, alle toepassingen — hebben <span class="mono">outline: none</span> en geen vervanging. Wie met het toetsenbord navigeert, is de weg kwijt zodra een menu opengaat. Dat is een WCAG-afkeuring op je hoofdnavigatie.</p>
+      <p><b>Ankerlinks verdwijnen onder de balk.</b> De navigatiebalk is 80px hoog en blijft staan, en de pagina scrollt vloeiend. Maar er is nergens een <span class="mono">scroll-padding-top</span> of <span class="mono">scroll-margin-top</span> gezet. Elke sprong naar een sectie op de pagina zet de kop van die sectie dus achter de balk.</p>
+      <div class="evidence">navigatiebalk        80px, sticky
+html scroll-padding-top: auto        ← zou 96px moeten zijn
+alle #id-doelen scroll-margin-top: 0px
+dropdown-links       outline: none, box-shadow: none</div>
+      <p>De eerste is een halve dag, de tweede is één regel CSS.</p>
     </div>
 
     <div class="find sev-warn">
-      <div class="find-head"><span class="chip">Serieus</span><h3>Puur zwart met één oranje accent is het standaardsjabloon</h3></div>
-      <p>Achtergrond <span class="mono">#000000</span>, tekst wit, één oranje accentkleur, alles met een radius van 1rem. Dat is de meest gebruikte "innovatief technologiebedrijf"-look van dit moment, en tegelijk de puur zwarte basis die het stijlbestand van Holoconnects overneemt.</p>
-      <p>Puur zwart is bovendien een gemiste kans voor jullie specifiek: een Holobox is een donkere kast waarin licht hangt. Een diep, licht gekleurd zwart — een spoor blauw of violet in de donkerste tint — laat het beeldmateriaal juist oplichten en is meteen van jullie. Dat is een wijziging van drie kleurwaarden, niet van het hele ontwerp.</p>
+      <div class="find-head"><span class="chip">Serieus</span><h3>7,6 MB voor één homepage</h3></div>
+      <p>Nu gemeten in plaats van geschat: de homepage haalt 55 bestanden op, samen 7,6 MB. Dat is voor een bezoeker in Nederland een paar seconden; op een 4G-verbinding in Zuidoost-Azië of Latijns-Amerika is het de reden dat iemand wegklikt.</p>
+      <div class="evidence">video/mp4      4.343 KB
+image/webp     1.861 KB
+image/svg+xml    688 KB      ← ongewoon veel voor SVG
+text/javascript  588 KB      in één bundel
+totaal         7,6 MB over 55 requests</div>
+      <p>688 KB aan SVG is opvallend: dat zijn vrijwel zeker klantlogo&#39;s die als vectoren zijn ingesloten in plaats van geoptimaliseerd. Daar zit snelle winst.</p>
+    </div>
+
+    <div class="find sev-warn">
+      <div class="find-head"><span class="chip">Serieus</span><h3>De homepage is twintig schermen lang op mobiel</h3></div>
+      <p>10.654 pixels op desktop, 17.066 pixels op mobiel. Dat laatste is ongeveer twintig keer scrollen. De secties zijn stuk voor stuk goed, maar samen vragen ze meer geduld dan een bezoeker die net van een AI-antwoord komt meebrengt.</p>
+      <p>Overweeg op mobiel een kortere route: hero, drie producten, prijsindicatie, contact — en de rest achter "meer bekijken". De prijspagina bewijst dat je het compact kunt.</p>
     </div>
 
     <div class="find sev-good">
-      <div class="find-head"><span class="chip">Sterk punt</span><h3>Het vakwerk eronder is netjes</h3></div>
-      <p>Wat er in de bouw goed gaat, gaat opvallend goed: alle 2.072 afbeeldingen hebben een alt-tekst, bewegende elementen respecteren <span class="mono">prefers-reduced-motion</span>, lettertypen staan op de eigen server met preload, beelden zijn WebP, en er is over Duitse samenstellingen nagedacht met woordafbreking per taal. Dat zijn precies de details die meestal overgeslagen worden.</p>
-      <p>Eén schoonheidsfoutje: <span class="mono">src/App.css</span> is nog de originele Vite-voorbeeldstijl, met een draaiend React-logo en <span class="mono">.read-the-docs</span>. Het wordt nergens geïmporteerd en komt dus niet in de site terecht — het mag weg.</p>
+      <div class="find-head"><span class="chip">Sterk punt</span><h3>De prijspagina is het beste wat je hebt</h3></div>
+      <p>Een volledige prijstabel met acht producten, van €940 tot €63.000, met per regel wat het doet. Daarnaast drie afnamevormen, een aanvraagformulier met precies de juiste velden, een blok "standaard inbegrepen" dat de echte verschillen benoemt, en testimonials met naam, functie én bedrijf.</p>
+      <p>Vrijwel niemand in deze markt publiceert prijzen. Het is de meest citeerbare pagina die je hebt en de sterkste reden dat AI-engines je überhaupt noemen. Zet er vanaf de hero een directere route naartoe.</p>
+    </div>
+
+    <div class="find sev-good">
+      <div class="find-head"><span class="chip">Sterk punt</span><h3>De productsecties en het vakwerk kloppen</h3></div>
+      <p>De afwisseling beeld-tekst werkt, en de fotografie is echt in plaats van gestileerd — een kind dat naar een hologram staat te kijken zegt meer dan welke rendering ook. De HoloWall-sectie laat precies zien wat de hero mist: een mens ín het scherm.</p>
+      <div class="evidence">6 pagina&#39;s × 2 schermformaten getest:
+console-fouten            0
+horizontale overflow      geen, ook niet op 390px
+H1 per pagina             precies 1
+contrastafkeuringen       0
+skiplink "Naar hoofdinhoud"  aanwezig</div>
+      <p>Geen enkele console-fout en nergens horizontale overflow: dat haalt lang niet elke site.</p>
+    </div>
+
+    <div class="find sev-warn">
+      <div class="find-head"><span class="chip">Serieus</span><h3>De kop zegt nog niets</h3></div>
+      <p>"Next-gen hologramdisplays uit Nederland", met daarboven de badge "Koplopers in holografische oplossingen". <span class="mono">Next-gen</span> en <span class="mono">koplopers</span> zijn woorden die elk bedrijf over zichzelf zegt en die dus niets bewijzen — ook niet aan een AI-engine, die op verifieerbare feiten selecteert.</p>
+      <p>Alles wat je nodig hebt staat al elders op de site: zelf ontworpen en gebouwd in Den Haag, 99% lichtdoorlatend glas, vaste prijzen vanaf €2.500, geen vendor lock-in, Brussels Airport en Proximus als referentie. Eén van die feiten in de hero is meer waard dan beide huidige regels samen.</p>
     </div>
 
   </div>
@@ -575,12 +617,20 @@ h1–h4    Space Grotesk
       <p>264 woorden op de overzichtspagina van je sterkste contentblok. Zet er de vergelijkingstabel zelf op — acht criteria, alle aanbieders naast elkaar — zodat de overzichtspagina ook los citeerbaar wordt en niet alleen doorverwijst.</p>
     </div></li>
     <li><div>
-      <h3>Geef het ontwerp één eigen signaal</h3>
-      <p>Twee ingrepen die samen een dag kosten: een karakteristieke kopletter in plaats van Space Grotesk, en een diep gekleurd zwart in plaats van <span class="mono">#000000</span>. Inter, de layout en het ritme blijven staan. Daarmee lijk je niet langer op de partij waarvan je het alternatief wil zijn.</p>
+      <h3>Repareer de hero</h3>
+      <p>Vervang de video door beeld waarin iemand ín de Holobox staat — dat materiaal staat al in de HoloWall-sectie — en verschuif de tekstkolom zodat de kop het gezicht vrijlaat. Vervang "Next-gen" en "Koplopers" door één verifieerbaar feit: vaste prijzen vanaf €2.500, of zelf gebouwd in Den Haag. Dit is het eerste beeld dat elke bezoeker ziet.</p>
+    </div></li>
+    <li><div>
+      <h3>Zet de vergelijkingspagina&#39;s in de huisstijl</h3>
+      <p>Veertien pagina&#39;s met je beste teksten, gebouwd in een andere bouwstraat: ander lettertype, andere achtergrond, geen navigatiebalk, geen logo, geen knop. Laat ze het gewone stijlbestand en de gewone header laden. Dan lost dit meteen ook het hreflang-probleem uit punt 1 op, want beide komen uit dezelfde losse pijplijn.</p>
+    </div></li>
+    <li><div>
+      <h3>Twee kleine toegankelijkheidsfixes</h3>
+      <p>Geef de links in de uitklapmenu&#39;s een zichtbare focusrand — nu staat er <span class="mono">outline: none</span> zonder vervanging — en zet <span class="mono">html { scroll-padding-top: 96px }</span> zodat ankerlinks niet achter de 80px navigatiebalk landen. Samen een halve dag.</p>
     </div></li>
     <li><div>
       <h3>Comprimeer de zware video's</h3>
-      <p>14 MB voor één bestand is buiten Europa een afhaker. Lever AV1 of HEVC naast de MP4 en splits de 588 KB-bundel. De mobiele hero-variant laat zien dat het patroon er al is — pas het toe op de rest.</p>
+      <p>Gemeten: 7,6 MB over 55 requests voor de homepage alleen. Lever AV1 of HEVC naast de MP4, splits de 588 KB-bundel, en kijk naar die 688 KB aan SVG — vrijwel zeker klantlogo&#39;s die niet geoptimaliseerd zijn. De mobiele hero-variant laat zien dat het patroon er al is; pas het toe op de rest.</p>
     </div></li>
     <li><div>
       <h3>Kies bewust of "wereldwijd" ook buiten Europa geldt</h3>
@@ -592,24 +642,24 @@ h1–h4    Space Grotesk
 <section>
   <div class="sec-head">
     <span class="eyebrow">Deel 7</span>
-    <h2>Wat ik nog steeds niet heb kunnen toetsen</h2>
+    <h2>Wat nog steeds open staat</h2>
   </div>
   <div class="untested">
-    <p>Mijn netwerkomgeving mag hereweholo.nl en hereweholo.netlify.app nog altijd niet laden — een beperking van mijn sessie, <b>niet van jullie site</b>. Alles in versie 2 komt uit de broncode, de gepubliceerde build en AI-antwoordanalyse. Deze punten blijven open:</p>
+    <p>Het live domein blijft geblokkeerd in mijn omgeving — een beperking van mijn sessie, <b>niet van jullie site</b>. Ik heb daarom de gepubliceerde build lokaal gedraaid en met Chromium gerenderd. Dat geeft een eerlijk beeld van ontwerp, opbouw en gedrag, maar niet van alles:</p>
     <ul>
-      <li><b>Hoe het er daadwerkelijk uitziet</b> — ik beoordeelde het ontwerpsysteem, niet het resultaat op het scherm</li>
-      <li><b>Gemeten laadsnelheid</b> — LCP, INP en CLS in het veld; ik zag bestandsgroottes, geen echte tijden</li>
-      <li><b>Toegankelijkheid in de praktijk</b> — contrastverhoudingen, toetsenbordvolgorde en schermlezergedrag</li>
-      <li><b>Of de live site gelijk is aan deze build</b> — de laatste commit is van vanmiddag 16:05</li>
-      <li><b>Werking van formulieren</b> — Netlify Forms staat uit; er is een eigen <span class="mono">formulier.php</span></li>
-      <li><b>Cookiebanner en AVG-naleving</b></li>
+      <li><b>Echte laadtijden</b> — lokaal is er geen netwerklatency, dus LCP en INP uit het veld kan ik niet geven. De 7,6 MB en 55 requests zijn wel echt gemeten</li>
+      <li><b>Of de live site gelijk is aan deze build</b> — ik testte commit a2d60db van 16:05</li>
+      <li><b>Werking van het aanvraagformulier</b> — ik zag de velden, niet of de inzending aankomt; Netlify Forms staat uit en er is een eigen <span class="mono">formulier.php</span></li>
+      <li><b>Schermlezergedrag</b> — ik controleerde alt-teksten, focusranden en de skiplink, maar heb geen echte schermlezer gedraaid</li>
+      <li><b>Cookiebanner en AVG-naleving</b> — ik zag geen banner verschijnen; of dat terecht is hangt af van welke scripts live meedraaien</li>
+      <li><b>Videokwaliteit in beweging</b> — ik beoordeelde stilstaande frames, geen afspeelgedrag op trage verbindingen</li>
     </ul>
   </div>
 </section>
 
 <footer>
-  <p><b>Bronnen en methode.</b> Versie 2, aangevuld met de broncode uit <span class="mono">V2WHwH/HEREweHOLO-Website</span> (commit a2d60db, 21 augustus 2026 16:05) en de gepubliceerde build op de tak <span class="mono">gebouwde-site</span>. AI-zichtbaarheid uit Promptwatch: 11.158 antwoorden op 151 zoekvragen over 8 taalgebieden, 25 juli – 21 augustus 2026; crawl van 21 augustus 15:11. Off-site kansen uit 115 geanalyseerde citatiepagina's. Netlify-projectgegevens via de Netlify-koppeling.</p>
-  <p>Cijfers zijn een beoordeling op basis van dit bewijs, geen genormeerde branchestandaard. De punten in deel 7 zijn niet meegewogen. Waar versie 1 en versie 2 verschillen, geldt versie 2.</p>
+  <p><b>Bronnen en methode.</b> Versie 3, aangevuld met een lokale rendering van de gepubliceerde build in Chromium — zes pagina&#39;s op 1440&#215;900 en 390&#215;844, met contrastmeting, focustest en een netwerkmeting van de homepage. Eerder aangevuld met de broncode uit <span class="mono">V2WHwH/HEREweHOLO-Website</span> (commit a2d60db, 21 augustus 2026 16:05) en de gepubliceerde build op de tak <span class="mono">gebouwde-site</span>. AI-zichtbaarheid uit Promptwatch: 11.158 antwoorden op 151 zoekvragen over 8 taalgebieden, 25 juli – 21 augustus 2026; crawl van 21 augustus 15:11. Off-site kansen uit 115 geanalyseerde citatiepagina's. Netlify-projectgegevens via de Netlify-koppeling.</p>
+  <p>Cijfers zijn een beoordeling op basis van dit bewijs, geen genormeerde branchestandaard. De punten in deel 7 zijn niet meegewogen. Waar versies verschillen, geldt de laatste.</p>
 </footer>
 
 </div>
