@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { PRODUCTEN, vindProduct } from "../content/nl/producten";
+import { leveringLabel } from "../content/levering";
 import { PROJECTEN } from "../content/nl/projecten";
 import { ARTIKELEN } from "../content/nl/kennisbank";
 import { Beeld } from "../components/ui/Beeld";
@@ -19,11 +20,7 @@ export function ProductDetail() {
   const product = slug ? vindProduct(slug) : undefined;
   if (!product) return <NietGevonden />;
 
-  // Het huur/koop-signaal komt uit de leveringstekst van het product zelf,
-  // zodat er nooit iets staat wat de pagina niet ook uitlegt.
-  const huur = /te huur|verhuur/i.test(product.levering);
-  const koop = /te koop|koopoplossing|aankoop/i.test(product.levering);
-  const levering = huur && koop ? "Te koop en te huur" : huur ? "Te huur" : koop ? "Te koop" : null;
+  const levering = leveringLabel(product.levering);
 
   const projecten = product.projecten.map((s) => PROJECTEN.find((p) => p.slug === s)).filter(Boolean);
   const verwant = product.verwant.map((s) => PRODUCTEN.find((p) => p.slug === s)).filter(Boolean);

@@ -1,18 +1,28 @@
 import { Link } from "react-router-dom";
 import type { Product, Project, Sector } from "../../content/types";
 import { Beeld } from "../ui/Beeld";
+import { leveringLabel } from "../../content/levering";
 
 // Kaartcomponenten voor producten, projecten en sectoren: beeldgedreven,
 // hairline-kaders, subtiele zoom bij hover.
 
 export function ProductKaart({ product, sizes }: { product: Product; sizes?: string }) {
+  // Meteen op de kaart zichtbaar of iets te huur is, te koop, of allebei.
+  // Wie voor een event zoekt en wie voor een vaste opstelling zoekt, hoeft
+  // dan niet eerst elke pagina open te klikken.
+  const levering = leveringLabel(product.levering);
   return (
     <Link
       to={`/producten/${product.slug}`}
       className="kaart group block overflow-hidden rounded-kaart border border-lijn bg-nacht transition-colors duration-200 hover:border-accent/60"
     >
-      <div className="kaart-beeld aspect-[4/3] overflow-hidden">
+      <div className="kaart-beeld relative aspect-[4/3] overflow-hidden">
         <Beeld src={product.beeld.src} alt={product.beeld.alt} className="h-full w-full object-cover" sizes={sizes} />
+        {levering && (
+          <span className="absolute left-3 top-3 rounded-full border border-white/15 bg-inkt/70 px-3 py-1 font-display text-[0.7rem] font-medium uppercase tracking-[0.1em] text-tekst backdrop-blur-sm">
+            {levering}
+          </span>
+        )}
       </div>
       <div className="flex items-center justify-between gap-3 px-4 py-3.5">
         <span className="font-display text-[1rem] font-medium">{product.kaartLabel ?? product.naam}</span>
