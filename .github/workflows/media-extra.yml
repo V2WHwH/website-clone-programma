@@ -1,6 +1,9 @@
 name: media-extra
 on:
   workflow_dispatch: {}
+  push:
+    branches: [claude/vision2watch-rebuild-uf0biw]
+    paths: ["discovery/media-trigger.txt"]
 
 concurrency:
   group: media-extra
