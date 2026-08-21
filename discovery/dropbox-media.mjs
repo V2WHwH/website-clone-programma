@@ -78,6 +78,29 @@ const speelduur = (pad) => {
   return m ? Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) : 0;
 };
 
+// Veel opnames die via WhatsApp of een telefoon zijn gegaan hebben zwarte
+// balken ingebakken. Bij een schermvullende hero zie je die balken terug,
+// dus zoekt ffmpeg zelf op waar het beeld begint en eindigt. Hij kijkt naar
+// een aantal punten verspreid over het fragment en neemt het ruimste
+// voorstel, zodat een donkere passage niet te veel wegsnijdt.
+const snijmaat = (pad, start = 0) => {
+  let uitvoer = "";
+  try {
+    execFileSync(ffmpeg, ["-hide_banner", "-ss", String(start), "-i", pad, "-t", "8",
+                          "-vf", "cropdetect=24:2:0", "-f", "null", "-"],
+                 { stdio: ["ignore", "ignore", "pipe"] });
+  } catch (e) {
+    uitvoer = String(e.stderr ?? "");
+  }
+  if (!uitvoer) return null;
+  let ruimste = null;
+  for (const m of uitvoer.matchAll(/crop=(\d+):(\d+):(\d+):(\d+)/g)) {
+    const [b, h] = [Number(m[1]), Number(m[2])];
+    if (!ruimste || b * h > ruimste.b * ruimste.h) ruimste = { b, h, x: Number(m[3]), y: Number(m[4]) };
+  }
+  return ruimste ? `crop=${ruimste.b}:${ruimste.h}:${ruimste.x}:${ruimste.y}` : null;
+};
+
 const VAKKEN = 12; // 4 breed, 3 hoog
 const contactvel = async (ruw, naam) => {
   const duur = speelduur(ruw);
@@ -123,10 +146,16 @@ for (const item of selectie) {
       const knip = [];
       if (item.start) knip.push("-ss", String(item.start));
       if (item.seconden) knip.push("-t", String(item.seconden));
+
+      // Zwarte balken weghalen gebeurt alleen op verzoek: bij beeld dat ze
+      // niet heeft zou een verkeerde meting juist iets afsnijden.
+      const snij = item.bijsnijden ? snijmaat(ruw, item.start ?? 0) : null;
+      if (snij) console.log(`  balken weggesneden: ${snij}`);
+      const vf = (maat) => (snij ? `${snij},${LANGSTE(maat)}` : LANGSTE(maat));
       ff(["-y", ...knip, "-i", ruw, "-an", "-c:v", "libx264", "-crf", String(item.crf ?? 28), "-preset", "slow",
-          "-pix_fmt", "yuv420p", "-vf", LANGSTE(1280), "-movflags", "+faststart", `${UIT}/${item.naam}.mp4`]);
+          "-pix_fmt", "yuv420p", "-vf", vf(1280), "-movflags", "+faststart", `${UIT}/${item.naam}.mp4`]);
       ff(["-y", ...knip, "-i", ruw, "-an", "-c:v", "libx264", "-crf", String((item.crf ?? 28) - 1), "-preset", "slow",
-          "-pix_fmt", "yuv420p", "-vf", LANGSTE(720), "-movflags", "+faststart", `${UIT}/${item.naam}-mobiel.mp4`]);
+          "-pix_fmt", "yuv420p", "-vf", vf(720), "-movflags", "+faststart", `${UIT}/${item.naam}-mobiel.mp4`]);
       ff(["-y", "-ss", "1", "-i", `${UIT}/${item.naam}.mp4`, "-vframes", "1", "-f", "image2", `tijdelijk/${item.naam}.png`]);
       await sharp(`tijdelijk/${item.naam}.png`).webp({ quality: 75 }).toFile(`${UIT}/${item.naam}-poster.webp`);
       for (const [b, q] of [[1024, 72], [640, 70]]) {

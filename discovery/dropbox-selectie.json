@@ -1,10 +1,18 @@
 [
   {
-    "naam": "led-wand-horticenter",
+    "naam": "gebouwprojectie-amersfoort",
     "soort": "video",
-    "start": 1,
-    "seconden": 15,
-    "crf": 33,
-    "url": "https://ucafa2a858b191a0341edb26645a.dl.dropboxusercontent.com/cd/0/get/DGlVoBJO8YehXb0OFL8Kj7lhfPF3TiPLKIy8gknbaIOR70PAzdepQmmMJ-bMMydbHM-M5zl7FkOjmj0E9wZRn-u1Ymd4-fnUMHo8n1wqhb8PfFrVc9kG0szXvyMAFsyn5duQaxk6oGnO8MhEx5S0crDKU66qN_M_i2LMvKRKWoVQUw/file?c_luid=f49cd1ba"
+    "start": 2,
+    "seconden": 20,
+    "bijsnijden": true,
+    "url": "https://ucfda9970c86286b6fa791f05c4b.dl.dropboxusercontent.com/cd/0/get/DGmxJqdMHvcNA8pjeKRGP9_n6eeUnKoFf31md9q_tKm0-GWlqGMLFVoESkyOPP6y6e-3fM7tI3a-lNTzu_HvuRxCXBSl3EPAsbdxrtEhLLHroOn8FOemsnWbg31Y6mT9nqOcGtXQgiVCkdEXDqs2M8x0VFDQVcc28d0TVUgpudcJcQ/file?c_luid=f49cd1ba"
+  },
+  {
+    "naam": "amersfoort-kerkje",
+    "soort": "video",
+    "start": 2,
+    "seconden": 20,
+    "bijsnijden": true,
+    "url": "https://uc6148abb24d8a868a5cd4296a4b.dl.dropboxusercontent.com/cd/0/get/DGlG2GO3jUC2PJqwaZfLkeKu3ydu5HYSu3w4RP4dO6TflrtPdxEeMdrZ2EeTVGS1IalbP4azwd-HCb9zlBklG3Y9pl1hBr3ULROceWbLDMTKbRMRiA6VRN55r3fkM4A8M57k9fsAT2ARJjERd4d2wlmBW5Lae4ghtVQ63ZHOCtu9RA/file?c_luid=f49cd1ba"
   }
 ]
