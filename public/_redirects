@@ -15,7 +15,7 @@
 # producten: afwijkende sluggen eerst
 /product/interactieve-wand /producten/interactieve-muur             301
 /product/touchscreen       /producten/touchscreens                  301
-/product/hereweholo-mini   /producten/hereweholo                    301
+/product/hereweholo-mini   /producten/hereweholo-mini               301
 /product/*                 /producten/:splat                        301
 /interactieve-vloer        /producten/interactieve-vloer            301
 /holografische-projectie   /producten/hologram-projectie            301
@@ -49,7 +49,7 @@
 # Engelse pagina's: tijdelijk naar NL-equivalent tot de EN-taalversie live is
 /en/product/interactieve-wand /producten/interactieve-muur          301
 /en/product/touchscreen    /producten/touchscreens                  301
-/en/product/hereweholo-mini /producten/hereweholo                   301
+/en/product/hereweholo-mini /producten/hereweholo-mini              301
 /en/product/*              /producten/:splat                        301
 /en/project/pierson-college- /projecten/pierson-college             301
 /en/project/*              /projecten/:splat                        301
@@ -73,6 +73,6 @@
 /en/sketchwall             /producten/sketchwall                    301
 /en/interactieve-katapult  /producten                               301
 /en/3d-website-configurator /producten                              301
-/en/hereweholo-mini        /producten/hereweholo                    301
+/en/hereweholo-mini        /producten/hereweholo-mini               301
 /en/*                      /                                        301
 /en                        /                                        301

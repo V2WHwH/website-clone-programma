@@ -18,6 +18,14 @@ export const PRODUCTEN: Product[] = [
     waarom:
       "Op een beurs of in een publieke ruimte heeft u enkele seconden om aandacht te vangen. Een vloer die reageert op wie eroverheen loopt, stopt bezoekers letterlijk in hun loop en maakt van passanten deelnemers. Daarmee wordt de vloer een podium voor uw boodschap in plaats van dode ruimte.",
     beeld: { src: "/media/euroveiling-bloemenvloer.webp", alt: "Interactieve bloemenvloer van Vision2Watch op het jubileum van Euroveiling" },
+    demo: {
+      src: "/media/video/vloer-ouwehands.mp4",
+      poster: "/media/video/vloer-ouwehands-poster.webp",
+      label: "Een kind speelt op een interactieve rifvloer in een donkere zaal van Ouwehands Dierenpark",
+      kop: "Een gang die vanzelf een attractie wordt",
+      tekst:
+        "Bij Ouwehands Dierenpark ligt een rif over de vloer van een doorgangszaal. Kinderen blijven staan, gaan erdoorheen lopen en het water reageert. Een ruimte waar bezoekers eerst doorheen liepen, is nu zelf een bestemming.",
+    },
     video: {
       src: "/media/video/dreamhack-interactieve-vloer.mp4",
       poster: "/media/video/dreamhack-interactieve-vloer-poster.webp",
@@ -82,6 +90,11 @@ export const PRODUCTEN: Product[] = [
     waarom:
       "Muren zijn vaak de grootste onbenutte vlakken van een ruimte. Door ze interactief te maken verandert een gang, stand of showroom in een ervaring die bezoekers vasthoudt en uw merk letterlijk groot maakt.",
     beeld: { src: "/media/muurprojectie-groen.webp", alt: "Interactieve muurprojectie die reageert op een passerende bezoeker" },
+    video: {
+      src: "/media/video/muurprojectie-lounge.mp4",
+      poster: "/media/video/muurprojectie-lounge-poster.webp",
+      label: "Langgerekte muurprojectie in een lounge, van vloer tot plafond in het interieur opgenomen",
+    },
     voordelen: [
       { kop: "Entertainment én marketing", tekst: "Een krachtige combinatie: bezoekers vermaken zich terwijl uw merk en boodschap het beeld dragen." },
       { kop: "Content op maat", tekst: "Dankzij zelfontwikkelde software passen we de content volledig aan uw huisstijl aan, van logo's tot thematische werelden." },
@@ -133,6 +146,11 @@ export const PRODUCTEN: Product[] = [
     waarom:
       "Aan een tafel komen mensen vanzelf samen. Door dat moment interactief te maken, presenteert u producten en verhalen op het moment dat de aandacht er al is, in een showroom, op een stand of aan de bar.",
     beeld: { src: "/media/interactieve-tafel-kaart.webp", alt: "Interactieve overzichtstafel waar bezoekers samen content bedienen" },
+    video: {
+      src: "/media/video/interactieve-bar-bloemen.mp4",
+      poster: "/media/video/interactieve-bar-bloemen-poster.webp",
+      label: "Bezoekers tikken op een projectietafel en krijgen informatie naast de planten die erop staan",
+    },
     voordelen: [
       { kop: "Fysiek en digitaal gecombineerd", tekst: "Echte producten op het blad en digitale content eromheen versterken elkaar, zoals bij de interactieve bar voor Clinique waar het oppakken van een flesje de projectie startte." },
       { kop: "Elk oppervlak", tekst: "Van ronde tafel tot lange bar; er kan zelfs op gebogen oppervlakken geprojecteerd worden." },
@@ -183,6 +201,11 @@ export const PRODUCTEN: Product[] = [
     waarom:
       "Niets betrekt kinderen (en hun ouders) zo sterk als iets dat ze zelf hebben gemaakt. De Sketchwall verandert wachten en kijken in meedoen, en geeft locaties een attractie waar bezoekers over blijven praten.",
     beeld: { src: "/media/sketchwall-kinderen-aquarium.webp", alt: "Kinderen bekijken hun eigen getekende vissen op de Sketchwall bij Sea Life" },
+    video: {
+      src: "/media/video/sketchwall-sealife.mp4",
+      poster: "/media/video/sketchwall-sealife-poster.webp",
+      label: "Kinderen tekenen een vis en zien die even later levensgroot over de wand zwemmen",
+    },
     voordelen: [
       { kop: "Eigen creatie centraal", tekst: "Elke bezoeker ziet zijn eigen tekening tot leven komen; geen twee bezoeken zijn hetzelfde." },
       { kop: "Interactief", tekst: "Figuren reageren op aanraking: vissen schrikken, auto's toeteren. De infraroodcamera maakt de wand zelf een speelvlak." },
@@ -385,10 +408,18 @@ export const PRODUCTEN: Product[] = [
     waarom:
       "Een holobox combineert de impact van een hologram met het gemak van een kant-en-klaar product: neerzetten, aansluiten en uw presentator, product of boodschap staat er, 24 uur per dag. De compacte HEREweHOLO mini doet hetzelfde op balie- en etalageformaat.",
     beeld: { src: "/media/holobox-buiten.webp", alt: "HEREweHOLO holobox met levensgroot hologram in het veld" },
+    demo: {
+      src: "/media/video/holobox-santino.mp4",
+      poster: "/media/video/holobox-santino-poster.webp",
+      label: "Een presentator die in de holobox een collectie werkkleding toont",
+      kop: "Een verkoper die er altijd staat",
+      tekst:
+        "In deze opstelling loopt een presentator door een collectie heen: hij toont het kledingstuk, de kleurstalen verschijnen ernaast en het volgende model neemt het over. Geen personeel nodig, geen scherm te zien.",
+    },
     video: {
-      src: "/media/video/hologram-scherm-close.mp4",
-      poster: "/media/video/hologram-scherm-close-poster.webp",
-      label: "Een product dat als hologram vrij in de ruimte lijkt te zweven",
+      src: "/media/video/hologramwand-showwindow.mp4",
+      poster: "/media/video/hologramwand-showwindow-poster.webp",
+      label: "Vier holoboxen naast elkaar waarin mensen levensgroot verschijnen",
     },
     voordelen: [
       { kop: "Plug-and-play", tekst: "Complete unit met display, verlichting en geluid; geen bouwwerk op locatie nodig." },
@@ -423,7 +454,65 @@ export const PRODUCTEN: Product[] = [
       },
     ],
     projecten: [],
-    verwant: ["hologram-projectie", "holografische-molen", "virtual-host"],
+    verwant: ["hereweholo-mini", "hologram-projectie", "holografische-molen"],
+  },
+  {
+    slug: "hereweholo-mini",
+    naam: "HEREweHOLO mini",
+    kaartLabel: "Holobox mini",
+    categorie: "holografie",
+    titel: "HEREweHOLO mini: compacte holobox | Vision2Watch",
+    description:
+      "De HEREweHOLO mini toont een product of 3D-model als zwevend hologram op balie- en etalageformaat. Van HEREweHOLO, het zusterbedrijf van Vision2Watch.",
+    intro:
+      "De HEREweHOLO mini is de compacte uitvoering van de holobox: een verlichte kast waarin een product, model of animatie vrij in de ruimte lijkt te zweven. Klein genoeg voor een balie, een etalage of een beursstand van enkele vierkante meters.",
+    waarom:
+      "Niet elke ruimte heeft plek voor een levensgrote holobox, en niet elk verhaal vraagt erom. Gaat het om een product dat in een hand past, een technisch model of een doorsnede die je van alle kanten wilt laten zien, dan werkt de mini beter: hij staat op ooghoogte, vlak bij de bezoeker, precies daar waar de vraag ontstaat.",
+    beeld: {
+      src: "/media/video/holomini-hart-poster.webp",
+      alt: "HEREweHOLO mini met een zwevend anatomisch hartmodel",
+    },
+    demo: {
+      src: "/media/video/holomini-hart.mp4",
+      poster: "/media/video/holomini-hart-poster.webp",
+      label: "Een anatomisch hartmodel dat vrij in de HEREweHOLO mini lijkt te zweven",
+      kop: "Een model dat blijft hangen, letterlijk",
+      tekst:
+        "In deze opstelling draait een anatomisch hartmodel rond in de box, met de bloedvaten los eromheen. Wie langsloopt ziet het van alle kanten, zonder bril, zonder app en zonder dat er iets bediend hoeft te worden.",
+    },
+    voordelen: [
+      { kop: "Neerzetten en aansluiten", tekst: "Een complete unit met display en verlichting: geen bouwwerk, geen donkere ruimte, geen aparte projector." },
+      { kop: "Op ooghoogte", tekst: "Op een balie, in een etalage of op een sokkel staat het beeld precies waar het gesprek plaatsvindt." },
+      { kop: "Eigen content", tekst: "De animatie of productopname wordt in onze eigen studio gemaakt, in uw huisstijl." },
+      { kop: "Verplaatsbaar", tekst: "Compact genoeg om mee te nemen naar een beurs en daarna weer op de vestiging te zetten." },
+    ],
+    toepassingen: ["Retail", "Beurzen", "Ontvangstruimtes", "Productpresentaties", "Onderwijs en voorlichting"],
+    technisch: [
+      { kop: "Weergave", tekst: "Verlichte binnenruimte waarin beeld vrij in de ruimte lijkt te staan; te bekijken zonder bril of app." },
+      { kop: "Content", tekst: "Productanimaties, 3D-modellen of opnames; contentproductie in eigen huis." },
+      { kop: "Opstelling", tekst: "Geschikt voor balie, etalage of sokkel; werkt in een normaal verlichte ruimte." },
+    ],
+    levering:
+      "De HEREweHOLO mini loopt via dezelfde lijn als de holobox: te koop en te huur via Vision2Watch en HEREweHOLO, inclusief content, bezorging en installatie. Vraag de prijslijst aan voor de actuele uitvoeringen.",
+    faq: [
+      {
+        vraag: "Wat is het verschil met de gewone holobox?",
+        antwoord:
+          "Het formaat en daarmee het gebruik. De holobox toont een persoon of product op ware grootte en vraagt vloerruimte; de HEREweHOLO mini staat op een balie of in een etalage en toont een object op tafelformaat.",
+      },
+      {
+        vraag: "Kan er een echt product in?",
+        antwoord:
+          "Ja. Een fysiek product in de box wordt uitgelicht en aangevuld met een holografische laag eromheen, bijvoorbeeld zwevende specificaties of een animatie die het product opent.",
+      },
+      {
+        vraag: "Werkt het ook in een lichte winkel?",
+        antwoord:
+          "Ja. De box heeft een eigen verlichte binnenruimte, dus er is geen verduisterde ruimte nodig zoals bij een projectie-oplossing.",
+      },
+    ],
+    projecten: [],
+    verwant: ["hereweholo", "hologram-projectie", "transparant-scherm"],
   },
   {
     slug: "virtual-host",
@@ -784,6 +873,11 @@ export const PRODUCTEN: Product[] = [
     waarom:
       "Wie volledig door beeld wordt omringd, kan er niet omheen kijken: dat maakt panoramische projectie het sterkste middel voor verhalen die indruk moeten maken, in een museumzaal, op een beurs of in een experience center.",
     beeld: { src: "/media/panorama-kikkerzaal.webp", alt: "Panoramische projectiezaal met natuurbeelden op meerdere wanden" },
+    video: {
+      src: "/media/video/panorama-onderwaterzaal.mp4",
+      poster: "/media/video/panorama-onderwaterzaal-poster.webp",
+      label: "Zaal waarin alle wanden samen één doorlopend onderwaterbeeld vormen",
+    },
     voordelen: [
       { kop: "Maximale onderdompeling", tekst: "Bezoekers staan ín het verhaal in plaats van ertegenover; ideaal voor musea, merken en attracties." },
       { kop: "Schaalbaar concept", tekst: "Ook een mapping op 2 of 3 wanden geeft al een spectaculair effect; volledig 360° of een dome kan wanneer de ruimte erom vraagt." },

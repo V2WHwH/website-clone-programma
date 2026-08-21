@@ -63,6 +63,11 @@ export const PROJECTEN: Project[] = [
       "Ouwehands Dierenpark is een van de vaste partners waar onze interactieve vloeren permanent draaien. In de interactieve waterwereld lijkt het alsof bezoekers echt over het water lopen. Na een grondige update ligt de vloer er weer strak bij en kunnen de projectoren jaren vooruit; ook dat onderhoud hoort bij onze service.",
     producten: ["interactieve-vloer"],
     beeld: { src: "/media/ouwehands-stenenvloer.webp", alt: "Interactieve waterwereldvloer bij Ouwehands Dierenpark" },
+    video: {
+      src: "/media/video/vloer-ouwehands.mp4",
+      poster: "/media/video/vloer-ouwehands-poster.webp",
+      label: "Een kind speelt op de interactieve rifvloer in Ouwehands Dierenpark",
+    },
   },
   {
     slug: "dierenpark-amersfoort",
@@ -100,6 +105,11 @@ export const PROJECTEN: Project[] = [
       "Bij Sea Life installeerden we een Sketchwall waar kinderen hun eigen vis tekenen en inscannen. Daarna verschijnt hun creatie levensgroot op de interactieve muur, zwemmend door het water, en schrikt hij zelfs als je hem aanraakt. Naast de Sketchwall draait bij Sea Life ook een permanente interactieve vloer.",
     producten: ["sketchwall", "interactieve-vloer"],
     beeld: { src: "/media/sketchwall-kinderen-aquarium.webp", alt: "Kinderen bij de Sketchwall van Sea Life" },
+    video: {
+      src: "/media/video/sketchwall-sealife.mp4",
+      poster: "/media/video/sketchwall-sealife-poster.webp",
+      label: "Kinderen tekenen een vis en zien die even later over de Sketchwall zwemmen",
+    },
     galerij: [{ src: "/media/sketchwall-kinderen.webp", alt: "Getekende vissen zwemmen over de interactieve wand" }],
   },
   {
@@ -136,6 +146,11 @@ export const PROJECTEN: Project[] = [
       "Voor coffeeshop Marbella maakte Vision2Watch een muurprojectie met kleurrijke visuals en animaties. De projectie geeft de ruimte een eigen gezicht en is eenvoudig te wisselen, een directe upgrade van de bezoekerservaring.",
     producten: ["interactieve-muur", "panoramische-projectie"],
     beeld: { src: "/media/marbella-muurprojectie.webp", alt: "Brede kleurrijke muurprojectie" },
+    video: {
+      src: "/media/video/muurprojectie-lounge.mp4",
+      poster: "/media/video/muurprojectie-lounge-poster.webp",
+      label: "Langgerekte muurprojectie in het interieur van Coffeeshop Marbella",
+    },
   },
   {
     slug: "mcdonalds",
@@ -170,6 +185,11 @@ export const PROJECTEN: Project[] = [
       "Voor Outlet Store Roermond, een partner waarvoor we regelmatig terugkerende projecten realiseren, ontwierpen we meerdere interactieve vloeren. Daarnaast creëerden we interactieve etalages waarbij voorbijgangers werden omgetoverd tot astronauten terwijl ze langsliepen, extra belevingselementen die bezoekers vermaken en vasthouden.",
     producten: ["interactieve-vloer", "interactieve-etalage", "mixed-reality"],
     beeld: { src: "/media/outlet-roermond-avondvloer.webp", alt: "Vloerprojectie in de winkelstraat van Designer Outlet Roermond bij avond" },
+    video: {
+      src: "/media/video/outlet-roermond-vloer.mp4",
+      poster: "/media/video/outlet-roermond-vloer-poster.webp",
+      label: "Vloerprojectie in de winkelstraat van Designer Outlet Roermond bij avond",
+    },
     galerij: [
       { src: "/media/outlet-etalage-beren.webp", alt: "Interactieve etalages met animaties in Outlet Roermond" },
       { src: "/media/outlet-etalage-bezoekers.webp", alt: "Bezoekers bij de interactieve etalage" },
@@ -197,6 +217,11 @@ export const PROJECTEN: Project[] = [
       "Voor Adidas in Amsterdam installeerden we een interactieve vloer met sportieve content die reageert op de bewegingen van bezoekers.",
     producten: ["interactieve-vloer"],
     beeld: { src: "/media/vloer-sportteam.webp", alt: "Interactieve vloer met sportcontent" },
+    video: {
+      src: "/media/video/vloer-adidas-store.mp4",
+      poster: "/media/video/vloer-adidas-store-poster.webp",
+      label: "Interactieve vloerprojectie in de Adidas-winkel",
+    },
   },
   {
     slug: "nespresso",

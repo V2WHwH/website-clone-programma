@@ -123,11 +123,11 @@ for (const item of selectie) {
       const knip = [];
       if (item.start) knip.push("-ss", String(item.start));
       if (item.seconden) knip.push("-t", String(item.seconden));
-      ff(["-y", ...knip, "-i", ruw, "-an", "-c:v", "libx264", "-crf", "28", "-preset", "slow",
+      ff(["-y", ...knip, "-i", ruw, "-an", "-c:v", "libx264", "-crf", String(item.crf ?? 28), "-preset", "slow",
           "-pix_fmt", "yuv420p", "-vf", LANGSTE(1280), "-movflags", "+faststart", `${UIT}/${item.naam}.mp4`]);
-      ff(["-y", ...knip, "-i", ruw, "-an", "-c:v", "libx264", "-crf", "27", "-preset", "slow",
+      ff(["-y", ...knip, "-i", ruw, "-an", "-c:v", "libx264", "-crf", String((item.crf ?? 28) - 1), "-preset", "slow",
           "-pix_fmt", "yuv420p", "-vf", LANGSTE(720), "-movflags", "+faststart", `${UIT}/${item.naam}-mobiel.mp4`]);
-      ff(["-y", "-i", `${UIT}/${item.naam}.mp4`, "-vframes", "1", "-f", "image2", `tijdelijk/${item.naam}.png`]);
+      ff(["-y", "-ss", "1", "-i", `${UIT}/${item.naam}.mp4`, "-vframes", "1", "-f", "image2", `tijdelijk/${item.naam}.png`]);
       await sharp(`tijdelijk/${item.naam}.png`).webp({ quality: 75 }).toFile(`${UIT}/${item.naam}-poster.webp`);
       for (const [b, q] of [[1024, 72], [640, 70]]) {
         await sharp(`tijdelijk/${item.naam}.png`).resize({ width: b }).webp({ quality: q }).toFile(`${UIT}/${item.naam}-poster-${b}.webp`);

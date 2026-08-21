@@ -31,6 +31,9 @@ export function Achterwand({ panelen }: Props) {
   // haalt niets opnieuw op.
   const [geladen, setGeladen] = useState<number[]>([]);
   const [beweging, setBeweging] = useState(false);
+  // Op een smal scherm de lichtere versie: dat scheelt per paneel enkele
+  // megabytes, en op die breedte is het verschil toch niet te zien.
+  const [smal, setSmal] = useState(false);
   const refs = useRef<(HTMLDivElement | null)[]>([]);
   const spelers = useRef<(HTMLVideoElement | null)[]>([]);
 
@@ -41,6 +44,7 @@ export function Achterwand({ panelen }: Props) {
     const verbinding = (navigator as { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
     const zuinig = verbinding?.saveData === true || /^(slow-)?2g$/.test(verbinding?.effectiveType ?? "");
     setBeweging(!rustig && !zuinig);
+    setSmal(window.matchMedia("(max-width: 767px)").matches);
   }, []);
 
   useEffect(() => {
@@ -100,7 +104,7 @@ export function Achterwand({ panelen }: Props) {
               {p.video && beweging && geladen.includes(i) && (
                 <video
                   ref={(el) => { spelers.current[i] = el; }}
-                  src={p.video}
+                  src={smal ? p.video.replace(/\.mp4$/, "-mobiel.mp4") : p.video}
                   poster={p.beeld}
                   muted
                   loop
