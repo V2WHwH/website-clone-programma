@@ -1,23 +1,26 @@
 name: netlify-preview
 
-# Publiceert de gebouwde site naar de Netlify-preview
-# (vision2watch-rebuild-preview.netlify.app). Draait in een GitHub-runner,
-# omdat de ontwikkelomgeving zelf geen verbinding met Netlify mag maken.
+# Bouwt de volledige site en publiceert hem naar de Netlify-preview
+# vision2watch-rebuild-preview.netlify.app.
 #
-# Eenmalig instellen: zet in de repository onder
-# Settings > Secrets and variables > Actions een secret NETLIFY_AUTH_TOKEN
-# met een persoonlijk toegangstoken uit Netlify
-# (User settings > Applications > Personal access tokens).
-# Het site-id staat hieronder en hoeft niet geheim te zijn.
+# Draait in een GitHub-runner, omdat de ontwikkelomgeving waarin deze site
+# is gebouwd zelf geen verbinding met Netlify mag maken.
 #
-# Daarna draait deze workflow bij elke push naar de werkbranch, en met de
-# hand via Actions > netlify-preview > Run workflow.
+# EENMALIG INSTELLEN (daarna gaat alles vanzelf):
+#   1. Netlify > User settings > Applications > Personal access tokens:
+#      maak een token aan.
+#   2. GitHub > deze repository > Settings > Secrets and variables >
+#      Actions > New repository secret:
+#      naam NETLIFY_AUTH_TOKEN, waarde het token uit stap 1.
+#
+# Zonder dat token bouwt en controleert deze workflow de site nog steeds,
+# maar slaat hij het publiceren over. Hij faalt dan niet: zo blijft
+# zichtbaar dat de rest van de pijplijn klopt.
 
-# Draait bewust alleen met de hand: zonder het token hieronder zou elke
-# push een mislukte run opleveren. Zodra het secret er is, kan de
-# push-trigger eronder weer aangezet worden.
 on:
   workflow_dispatch: {}
+  push:
+    branches: [claude/vision2watch-rebuild-uf0biw]
 
 concurrency:
   group: netlify-preview
@@ -28,11 +31,12 @@ permissions:
 
 env:
   NETLIFY_SITE_ID: 52c62018-ab1b-4c45-826a-412cbbc5753b
+  PREVIEW_URL: https://vision2watch-rebuild-preview.netlify.app
 
 jobs:
-  preview:
+  publiceren:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -40,13 +44,6 @@ jobs:
         with:
           node-version: 22
           cache: npm
-
-      - name: Controleren of het token is ingesteld
-        run: |
-          if [ -z "${{ secrets.NETLIFY_AUTH_TOKEN }}" ]; then
-            echo "::error::NETLIFY_AUTH_TOKEN ontbreekt. Zie de uitleg boven in dit workflowbestand."
-            exit 1
-          fi
 
       - name: Afhankelijkheden installeren
         run: npm ci
@@ -62,18 +59,39 @@ jobs:
       - name: Kwaliteitscontrole
         run: npm run qa
 
+      - name: Statische audit
+        run: npm run audit:statisch
+
       - name: Preview op noindex zetten
         # Het script kijkt naar het doeladres: op vision2watch.nl doet het
         # niets, op een preview-adres zet het noindex aan.
         run: node scripts/preview-klaarzetten.mjs
         env:
-          URL: https://vision2watch-rebuild-preview.netlify.app
+          URL: ${{ env.PREVIEW_URL }}
 
       - name: Naar Netlify publiceren
-        run: npx --yes netlify-cli@27 deploy --dir=dist --prod --message "preview vanaf ${GITHUB_SHA::7}"
+        if: ${{ secrets.NETLIFY_AUTH_TOKEN != '' }}
+        run: |
+          npx --yes netlify-cli@27 deploy \
+            --dir=dist --prod --site "$NETLIFY_SITE_ID" \
+            --message "preview vanaf ${GITHUB_SHA::7}"
+          echo "### Preview bijgewerkt" >> "$GITHUB_STEP_SUMMARY"
+          echo "$PREVIEW_URL" >> "$GITHUB_STEP_SUMMARY"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ env.NETLIFY_SITE_ID }}
 
-      - name: Adres tonen
-        run: echo "Preview staat op https://vision2watch-rebuild-preview.netlify.app"
+      - name: Uitleg als het token nog ontbreekt
+        if: ${{ secrets.NETLIFY_AUTH_TOKEN == '' }}
+        run: |
+          {
+            echo "### Site gebouwd en gecontroleerd, publiceren overgeslagen"
+            echo ""
+            echo "Er staat nog geen secret \`NETLIFY_AUTH_TOKEN\` in deze repository."
+            echo "Zodra dat er is, publiceert deze workflow vanzelf naar:"
+            echo ""
+            echo "$PREVIEW_URL"
+            echo ""
+            echo "Instellen: Netlify > User settings > Applications > Personal access tokens,"
+            echo "daarna hier onder Settings > Secrets and variables > Actions."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Publiceren overgeslagen: NETLIFY_AUTH_TOKEN ontbreekt nog."
