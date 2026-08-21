@@ -1,0 +1,31 @@
+name: media-extra
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: media-extra
+
+permissions:
+  contents: write
+
+jobs:
+  ophalen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/vision2watch-rebuild-uf0biw
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Extra media ophalen
+        run: node discovery/media-extra.mjs
+      - name: Resultaat committen
+        run: |
+          git config user.name "media-runner"
+          git config user.email "actions@github.com"
+          git add discovery/media-bron/video discovery/instagram-*.txt || true
+          git commit -m "Extra bronmedia: video's in hoogste kwaliteit, Instagram-inventarisatie" || echo "niets nieuws"
+          git pull --rebase origin claude/vision2watch-rebuild-uf0biw
+          git push origin claude/vision2watch-rebuild-uf0biw
