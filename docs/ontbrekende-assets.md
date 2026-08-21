@@ -142,6 +142,32 @@ interactieve muur, interactieve tafel, de holobox, logo-animatie,
 transparant scherm en LED-displays, en projectvideo's bij Outlet Roermond,
 Sea Life, Ouwehands, Coffeeshop Marbella, Adidas en Castello.
 
+## 3f. Eén beeld op de site is niet gefilmd
+
+Achter de afsluitende oproep onderaan elke pagina loopt een laag beweging:
+lichtbundels die traag door het donker trekken, met een amberkleurige gloed
+onderin. Dat beeld is **gegenereerd** (Higgsfield, Cinema Studio Video 3.0)
+en dus geen opname van een installatie.
+
+Dat is een bewuste grens. Gegenereerd beeld staat op deze site alleen waar
+er niets te tonen valt: het is abstract, het bevat geen product, geen
+ruimte, geen mens en geen merk, en het staat nergens waar een bezoeker het
+voor een project zou kunnen aanzien. Elk beeld dat wél een oplossing van
+Vision2Watch laat zien, is een echte opname uit de eigen bibliotheek of de
+Dropbox.
+
+De opdracht was om met Higgsfield animaties te maken voor de scroll-
+achtergrond. Dat is bewust níet gebeurd: de achterwand draait nu op echte
+opnames uit de Dropbox, en die zijn per definitie sterker bewijs dan
+gegenereerd beeld. Een foto van een echte installatie laten animeren door
+een generatief model is ook overwogen en afgewezen: zo'n model verzint
+details bij, en dan staat er een installatie op de site die er nooit zo
+heeft uitgezien. In plaats daarvan krijgen pagina's zonder video een heel
+trage inzoom op de echte foto (`.beeld-adem` in `src/styles/global.css`).
+
+Bestand: `public/media/video/sfeer-lichtbundels.mp4` (102 kB), component
+`src/components/site/Sfeerlaag.tsx`.
+
 ## 4. Gegevens die niet in de bron staan
 
 Bij de contentcontrole is elke feitelijke bewering nagelopen tegen de crawl

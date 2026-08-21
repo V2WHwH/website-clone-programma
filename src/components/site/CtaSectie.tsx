@@ -1,6 +1,7 @@
 import { Knop } from "../ui/Knop";
 import { Reveal } from "../ui/Reveal";
 import { SITE } from "../../data/site";
+import { Sfeerlaag } from "./Sfeerlaag";
 
 type Props = {
   kop?: string;
@@ -18,8 +19,9 @@ export function CtaSectie({
   secundair = { label: "Prijslijst aanvragen", naar: "/prijslijst" },
 }: Props) {
   return (
-    <section className="border-t border-lijn bg-nacht">
-      <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
+    <section className="relative overflow-hidden border-t border-lijn bg-nacht">
+      <Sfeerlaag src="/media/video/sfeer-lichtbundels.mp4" poster="/media/video/sfeer-lichtbundels-poster.webp" />
+      <div className="relative mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
         <Reveal className="max-w-2xl">
           <h2 className="text-3xl font-medium md:text-4xl">{kop}</h2>
           <p className="mt-4 text-lg leading-relaxed text-zacht">{tekst}</p>
