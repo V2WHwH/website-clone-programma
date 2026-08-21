@@ -148,3 +148,25 @@ p {
 .skiplink:focus {
   transform: translateY(0);
 }
+
+/* Trage inzoom op stilstaand heldbeeld. Niet elk product heeft een opname
+   van de opstelling; een foto die heel langzaam dichterbij komt geeft die
+   pagina toch de rust en de diepte van bewegend beeld, zonder een extra
+   videobestand en zonder dat er iets aan het beeld verandert.
+   Twintig seconden heen en terug: te traag om als beweging op te vallen,
+   snel genoeg om het beeld te laten leven. */
+@media (prefers-reduced-motion: no-preference) {
+  .beeld-adem {
+    animation: beeld-adem 26s var(--ease-uit) infinite alternate;
+    will-change: transform;
+  }
+}
+
+@keyframes beeld-adem {
+  from {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1.11);
+  }
+}

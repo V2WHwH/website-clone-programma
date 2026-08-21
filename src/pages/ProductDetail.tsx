@@ -43,7 +43,7 @@ export function ProductDetail() {
               alt={product.beeld.alt}
               prioriteit
               sizes="100vw"
-              className="h-full w-full object-cover"
+              className="beeld-adem h-full w-full object-cover"
             />
           )}
         </div>
