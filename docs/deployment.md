@@ -72,6 +72,10 @@ Er staat een Netlify-site klaar voor de preview:
 - Site-id: `52c62018-ab1b-4c45-826a-412cbbc5753b`
 - Beheer: https://app.netlify.com/projects/vision2watch-rebuild-preview
 
+**Status: live sinds 21 augustus 2026.** De preview draait; publiceren
+gebeurt via GitHub Actions (route B hieronder), die bij elke push naar de
+werkbranch opnieuw bouwt en uploadt.
+
 De ontwikkelomgeving waarin deze site is gebouwd mag zelf geen verbinding
 met Netlify maken (het netwerkbeleid van die omgeving blokkeert
 `api.netlify.com` en `netlify-mcp.netlify.app`). Publiceren gebeurt daarom

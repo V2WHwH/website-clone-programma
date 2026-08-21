@@ -325,8 +325,9 @@ In volgorde:
    controleren dat de mail bij de juiste ontvanger aankomt.
 4. **Meting en cookiebeleid bepalen** en de privacyverklaring daarop
    aanpassen.
-5. **Previewomgeving publiceren** op een tijdelijk adres, met `noindex`
-   zolang het een preview is, zodat de site in het echt te beoordelen is.
+5. ~~**Previewomgeving publiceren**~~ *(gedaan)*: de site staat op
+   https://vision2watch-rebuild-preview.netlify.app, met `noindex` op alle
+   paden. Elke push naar de werkbranch publiceert daar opnieuw.
 6. **Verificatietags plaatsen** voor Search Console en Bing.
 7. **Livegang** volgens `10-checklist-livegang.md` uit de kennisbank: DNS
    omzetten, direct daarna een oud adres testen (moet 301 geven), een
