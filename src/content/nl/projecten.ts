@@ -258,6 +258,11 @@ export const PROJECTEN: Project[] = [
       "Voor de stand van Starline op beurs Ebben Inspyrium verzorgden we een interactieve vloer en wand: water dat reageert op elke stap, precies passend bij een zwembadmerk, met de merknaam als blikvanger in de projectie.",
     producten: ["interactieve-vloer", "interactieve-muur", "led-displays"],
     beeld: { src: "/media/starline-zandvloer.webp", alt: "Interactieve zandvloer met Starline-branding" },
+    video: {
+      src: "/media/video/starline-interactieve-vloer.mp4",
+      poster: "/media/video/starline-interactieve-vloer-poster.webp",
+      label: "De interactieve vloer voor Starline bij Ebben Inspyrium",
+    },
     galerij: [{ src: "/media/starline-stand-scherm.webp", alt: "Beursstand van Starline met groot projectiescherm" }],
   },
   {

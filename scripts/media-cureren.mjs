@@ -88,9 +88,15 @@ const logos = {
   "7c7e90fd8b074d45": ["bloemenbureau-holland.webp", "Bloemenbureau Holland logo"],
 };
 
+// Bronbestand in discovery/media-bron/video -> [doelnaam, omschrijving].
+// De eerste ronde pakte de laagst genoemde kwaliteit en twee downloads
+// mislukten; discovery/media-extra.mjs heeft dat rechtgezet door per video
+// van 1080p naar beneden te proberen.
 const videos = {
-  "87e7bf_33eccef94b504f27b46a76942fc68da6": ["dreamhack-interactieve-vloer", "Werken bij Defensie: interactieve vloer op DreamHack (bronvideo huidige site)"],
-  "87e7bf_03d95df2803a4e0784bc5411d3b6610b": ["hologram-displays", "Holografische productdisplays (bronvideo huidige site)"],
+  "dreamhack-1080p": ["dreamhack-interactieve-vloer", "Werken bij Defensie: interactieve vloer op DreamHack (bronvideo huidige site)"],
+  "hologram-displays-1080p": ["hologram-displays", "Holografische productdisplays (bronvideo huidige site)"],
+  "hologram-artikel-480p": ["hologram-scherm-close", "Holografische projectie van dichtbij (bronvideo huidige site)"],
+  "starline-ebben-360p": ["starline-interactieve-vloer", "Starline: interactieve vloer bij Ebben Inspyrium (bronvideo huidige site)"],
 };
 
 import { readdirSync } from "node:fs";
@@ -172,7 +178,7 @@ for (const [frag, [naam, omschrijving]] of Object.entries(logos)) {
   ok++;
 }
 for (const [id, [naam, omschrijving]] of Object.entries(videos)) {
-  const bron = `discovery/media-bron/video/${id}-ruw.mp4`;
+  const bron = `discovery/media-bron/video/${id}.mp4`;
   if (!existsSync(bron)) { console.log(`VIDEO NIET GEVONDEN: ${id}`); mis++; continue; }
   // crf 28 in plaats van 25: deze opnames zijn bewegingsrijk, waardoor crf 25
   // op ruim 2 MB uitkomt. Op 28 is het verschil op een achtergrondvideo niet

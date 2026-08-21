@@ -385,6 +385,11 @@ export const PRODUCTEN: Product[] = [
     waarom:
       "Een holobox combineert de impact van een hologram met het gemak van een kant-en-klaar product: neerzetten, aansluiten en uw presentator, product of boodschap staat er, 24 uur per dag. De compacte Holomini doet hetzelfde op balie- en etalageformaat.",
     beeld: { src: "/media/holobox-buiten.webp", alt: "HEREweHOLO holobox met levensgroot hologram in het veld" },
+    video: {
+      src: "/media/video/hologram-scherm-close.mp4",
+      poster: "/media/video/hologram-scherm-close-poster.webp",
+      label: "Een product dat als hologram vrij in de ruimte lijkt te zweven",
+    },
     voordelen: [
       { kop: "Plug-and-play", tekst: "Complete unit met display, verlichting en geluid; geen bouwwerk op locatie nodig." },
       { kop: "Brandbaar", tekst: "De box wordt uitgevoerd in uw logo en kleuren, zodat het display zelf al uw merk draagt." },

@@ -240,19 +240,35 @@
   "omschrijving": "Bloemenbureau Holland logo"
  },
  "/media/video/dreamhack-interactieve-vloer.mp4": {
-  "bron": "wixstatic video 87e7bf_33eccef94b504f27b46a76942fc68da6",
+  "bron": "wixstatic video dreamhack-1080p",
   "omschrijving": "Werken bij Defensie: interactieve vloer op DreamHack (bronvideo huidige site)"
  },
  "/media/video/dreamhack-interactieve-vloer-mobiel.mp4": {
-  "bron": "wixstatic video 87e7bf_33eccef94b504f27b46a76942fc68da6",
+  "bron": "wixstatic video dreamhack-1080p",
   "omschrijving": "Werken bij Defensie: interactieve vloer op DreamHack (bronvideo huidige site) (mobiele versie)"
  },
  "/media/video/hologram-displays.mp4": {
-  "bron": "wixstatic video 87e7bf_03d95df2803a4e0784bc5411d3b6610b",
+  "bron": "wixstatic video hologram-displays-1080p",
   "omschrijving": "Holografische productdisplays (bronvideo huidige site)"
  },
  "/media/video/hologram-displays-mobiel.mp4": {
-  "bron": "wixstatic video 87e7bf_03d95df2803a4e0784bc5411d3b6610b",
+  "bron": "wixstatic video hologram-displays-1080p",
   "omschrijving": "Holografische productdisplays (bronvideo huidige site) (mobiele versie)"
+ },
+ "/media/video/hologram-scherm-close.mp4": {
+  "bron": "wixstatic video hologram-artikel-480p",
+  "omschrijving": "Holografische projectie van dichtbij (bronvideo huidige site)"
+ },
+ "/media/video/hologram-scherm-close-mobiel.mp4": {
+  "bron": "wixstatic video hologram-artikel-480p",
+  "omschrijving": "Holografische projectie van dichtbij (bronvideo huidige site) (mobiele versie)"
+ },
+ "/media/video/starline-interactieve-vloer.mp4": {
+  "bron": "wixstatic video starline-ebben-360p",
+  "omschrijving": "Starline: interactieve vloer bij Ebben Inspyrium (bronvideo huidige site)"
+ },
+ "/media/video/starline-interactieve-vloer-mobiel.mp4": {
+  "bron": "wixstatic video starline-ebben-360p",
+  "omschrijving": "Starline: interactieve vloer bij Ebben Inspyrium (bronvideo huidige site) (mobiele versie)"
  }
 }
