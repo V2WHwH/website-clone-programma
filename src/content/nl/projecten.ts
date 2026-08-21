@@ -82,6 +82,11 @@ export const PROJECTEN: Project[] = [
       "We begonnen met het nauwkeurig opmeten van het gebouw, zodat de animaties exact aansluiten op de vormen en details van het verblijf. Het resultaat is een opvallende projectieshow die het gebouw laat stralen. Eerder ontwikkelden we voor het park ook een augmented-reality-ervaring rond attractie De Ooievaart.",
     producten: ["gebouw-projectie", "mixed-reality"],
     beeld: { src: "/media/dierenpark-gebouwprojectie.webp", alt: "Gebouwprojectie op een verblijf in DierenPark Amersfoort" },
+    video: {
+      src: "/media/video/gebouwprojectie-amersfoort.mp4",
+      poster: "/media/video/gebouwprojectie-amersfoort-poster.webp",
+      label: "Geprojecteerde leeuw op de kasteelpoort van Dierenpark Amersfoort",
+    },
   },
   {
     slug: "escher-museum",

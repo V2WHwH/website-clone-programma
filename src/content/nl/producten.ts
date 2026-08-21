@@ -834,6 +834,14 @@ export const PRODUCTEN: Product[] = [
     waarom:
       "Geen billboard haalt het bij een gevel die tot leven komt. Voor festivals, openingen en publieksevents is gebouwprojectie de manier om een locatie zelf tot attractie te maken, zichtbaar van straat tot skyline.",
     beeld: { src: "/media/gebouwprojectie-festival.webp", alt: "Grootschalige gebouwprojectie bij avond" },
+    demo: {
+      src: "/media/video/gebouwprojectie-amersfoort.mp4",
+      poster: "/media/video/gebouwprojectie-amersfoort-poster.webp",
+      label: "Bezoekers lopen door een kasteelpoort waarop een leeuw is geprojecteerd, bij avond",
+      kop: "Een muur die \u00e9\u00e9n keer per jaar iets anders is",
+      tekst:
+        "Bij Dierenpark Amersfoort loopt het winterpubliek door een poort waarop een leeuw over het metselwerk beweegt. De projectie volgt de vorm van het gebouw, dus er is geen doek te zien: het lijkt of de steen zelf leeft.",
+    },
     voordelen: [
       { kop: "Architectuur doet mee", tekst: "Door nauwkeurige mapping sluiten animaties perfect aan op ramen en pilaren; objecten lijken uit het gebouw te vliegen." },
       { kop: "Elke schaal", tekst: "Van dierenverblijf tot compleet kantoorpand: de techniek schaalt mee met de locatie." },
