@@ -11,6 +11,7 @@ import { HeroVideo } from "../components/site/HeroVideo";
 import { LogoBalk } from "../components/site/LogoBalk";
 import { ProjectKaart } from "../components/site/Kaarten";
 import { CtaSectie } from "../components/site/CtaSectie";
+import { Achterwand } from "../components/site/Achterwand";
 import { Beeld } from "../components/ui/Beeld";
 
 const UITGELICHT_PROJECT = ["werken-bij-defensie", "escher-museum", "clinique", "outlet-store-roermond"];
@@ -85,6 +86,38 @@ export function Home() {
           })}
         </div>
       </Sectie>
+
+      {/* Achterwand: het beeld blijft staan terwijl de belofte eroverheen
+          schuift. Dit is waar de bezoeker moet voelen wat de techniek met
+          een ruimte doet, in plaats van erover te lezen. */}
+      <Achterwand
+        panelen={[
+          {
+            beeld: "/media/euroveiling-bloemenvloer.webp",
+            alt: "Bezoekers lopen over een interactieve bloemenvloer bij Euroveiling",
+            kicker: "De vloer",
+            kop: "Een gangpad waar mensen blijven staan",
+            tekst: "Een interactieve vloer reageert op elke stap. Bezoekers gaan spelen, blijven langer en nemen uw boodschap mee. Op een beurs is dat het verschil tussen passeren en binnenlopen.",
+            naar: { pad: "/producten/interactieve-vloer", label: "Bekijk de interactieve vloer" },
+          },
+          {
+            beeld: "/media/hologram-groep-podium.webp",
+            alt: "Levensgrote holografische projectie van personen op een podium",
+            kicker: "Het hologram",
+            kop: "Uw product levensgroot in de lucht",
+            tekst: "Te groot, te kostbaar of nog niet gebouwd: als hologram staat het er toch. Op ware grootte, zwevend, van alle kanten te bekijken, zonder dat er een scherm te zien is.",
+            naar: { pad: "/producten/hologram-projectie", label: "Bekijk hologram-projectie" },
+          },
+          {
+            beeld: "/media/outlet-roermond-avondvloer.webp",
+            alt: "Vloerprojectie in de winkelstraat van Designer Outlet Roermond bij avond",
+            kicker: "De ruimte",
+            kop: "Ook als de deuren dicht zijn",
+            tekst: "Etalages, gevels en winkelstraten blijven werken na sluitingstijd. Wij ontwerpen de content, installeren de techniek en houden hem draaiend, het hele jaar door.",
+            naar: { pad: "/projecten", label: "Bekijk onze projecten" },
+          },
+        ]}
+      />
 
       {/* Toepassingen */}
       <section className="border-t border-lijn bg-nacht/40">
