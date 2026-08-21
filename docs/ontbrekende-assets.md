@@ -78,6 +78,41 @@ bij het hologramproduct en één bij de Starline-case. Aanleveren in de
 hoogste beschikbare resolutie; het curatiescript maakt er zelf een
 webversie en een mobiele variant van.
 
+## 3c. Productgroepen: vergelijking met de huidige site
+
+De huidige vision2watch.nl heeft achttien product-adressen, maar zeventien
+productgroepen: `/product/interactieve-wand` en `/product/interactieve-muur`
+tonen woord voor woord dezelfde pagina. In de rebuild is dat één groep
+(`/producten/interactieve-muur`), met een redirect vanaf het dubbele adres.
+
+Eén groep ontbrak wel: **HEREweHOLO mini**. Op de huidige site staat die
+groep in het productoverzicht en heeft hij een eigen adres, maar de pagina
+zelf is leeg — er staan alleen de koppen "Mogelijkheden" en "Features",
+zonder tekst. Daardoor viel de groep bij de eerste opzet weg.
+
+De mini bestaat wel degelijk: in de Dropbox staat een eigen map
+`Product_Content/Holobox Mini` met opnames. De pagina in de rebuild is
+daarom geschreven op basis van wat aantoonbaar klopt (compacte uitvoering
+van de holobox, van HEREweHOLO) plus het beeldmateriaal uit die map. Wat
+er niet is: afmetingen, gewicht, aansluitwaarden en prijzen. Zodra die er
+zijn, kunnen ze in `technisch` bij `hereweholo-mini` in
+`src/content/nl/producten.ts`.
+
+## 3d. Instagram kon niet worden gelezen
+
+Het verzoek om de opgeleverde projecten op
+[instagram.com/vision2watch](https://www.instagram.com/vision2watch/) na te
+lopen is niet gelukt. Instagram beantwoordt zowel de profielpagina als de
+achterliggende gegevens met foutcode 429 ("te veel verzoeken") zodra het
+verzoek uit een datacenter komt, en dat geldt voor elke omgeving waarin
+deze site gebouwd wordt (zie `discovery/instagram-rapport.txt`).
+
+Er is bewust geen omweg omheen gezocht: dat zou neerkomen op het omzeilen
+van een blokkade die Instagram zelf opwerpt. Wat wél werkt is aanleveren
+vanuit de bron zelf — de Dropbox-map die inmiddels wordt gebruikt bevat
+hetzelfde en beter materiaal, in hogere kwaliteit en zonder compressie van
+Instagram.
+
 ## 4. Gegevens die niet in de bron staan
 
 Bij de contentcontrole is elke feitelijke bewering nagelopen tegen de crawl
