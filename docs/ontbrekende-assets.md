@@ -115,7 +115,7 @@ Instagram.
 
 ## 3e. Wat er uit de Dropbox is gekomen, en wat niet
 
-Uit de gedeelde map "Demo Video's" zijn zestien video's beoordeeld. Dat
+Uit de gedeelde map "Demo Video's" zijn dertig video's beoordeeld. Dat
 beoordelen ging via contactvellen: van elke video maakt de runner een
 raster van twaalf beelden, dat in `discovery/contactvellen/` blijft staan.
 Zo is per bestand terug te zien waarop de keuze is gebaseerd, en is er
@@ -132,6 +132,15 @@ blokken "op locatie"). Deze vielen af, met reden:
 | interactieve wand/waterstijl | Opbouwbeelden: monteurs op de knieën naast de installatie. |
 | DigitalMoo, ARApp Live Painting | Demomateriaal van leveranciers, geen eigen werk. |
 | Nimeto - Education.mov | Bruikbaar, maar de holobox heeft al een sterker fragment (Santino). Bewaard in de Dropbox. |
+| retail display mapping | Rondloopbeelden op een beurs langs displays van andere aanbieders (Skittles, Barbie, Marlboro), met Engelstalige specificatiepanelen. Geen eigen werk. |
+| content/20251125_* (vier clips) | Productopnames van een sieraad op een witte achtergrond. Content vóór een scherm, niet een installatie. |
+| AR/VID_20191107, AR/2019-07-18 | Beursstand met projectiewand en interactieve tafel. Prima beeld, maar beide groepen hebben al een sterker fragment. |
+
+Tien fragmenten zijn na deze rondes gekoppeld: de vier panelen van de
+achterwand, producthero's voor sketchwall, panoramische projectie,
+interactieve muur, interactieve tafel, de holobox, logo-animatie,
+transparant scherm en LED-displays, en projectvideo's bij Outlet Roermond,
+Sea Life, Ouwehands, Coffeeshop Marbella, Adidas en Castello.
 
 ## 4. Gegevens die niet in de bron staan
 
