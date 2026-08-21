@@ -1,0 +1,37 @@
+name: dropbox-media
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [claude/vision2watch-rebuild-uf0biw]
+    paths: ["discovery/dropbox-selectie.json"]
+
+concurrency:
+  group: dropbox-media
+
+permissions:
+  contents: write
+
+jobs:
+  ophalen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/vision2watch-rebuild-uf0biw
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      - name: Media uit Dropbox verwerken
+        run: node discovery/dropbox-media.mjs
+      - name: Resultaat committen
+        run: |
+          git config user.name "media-runner"
+          git config user.email "actions@github.com"
+          git add public/media
+          git commit -m "Media uit Dropbox: webklare video's en beelden" || echo "niets nieuws"
+          git pull --rebase origin claude/vision2watch-rebuild-uf0biw
+          git push origin claude/vision2watch-rebuild-uf0biw

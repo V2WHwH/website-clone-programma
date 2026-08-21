@@ -18,28 +18,50 @@ export function ProductDetail() {
   const product = slug ? vindProduct(slug) : undefined;
   if (!product) return <NietGevonden />;
 
+  // Het huur/koop-signaal komt uit de leveringstekst van het product zelf,
+  // zodat er nooit iets staat wat de pagina niet ook uitlegt.
+  const huur = /te huur|verhuur/i.test(product.levering);
+  const koop = /te koop|koopoplossing|aankoop/i.test(product.levering);
+  const levering = huur && koop ? "Te koop en te huur" : huur ? "Te huur" : koop ? "Te koop" : null;
+
   const projecten = product.projecten.map((s) => PROJECTEN.find((p) => p.slug === s)).filter(Boolean);
   const verwant = product.verwant.map((s) => PRODUCTEN.find((p) => p.slug === s)).filter(Boolean);
 
   return (
     <>
-      {/* Hero */}
-      <div className="mx-auto w-full max-w-6xl px-5 pt-8 md:px-8">
-        <Kruimelpad items={[{ naam: "Producten", pad: "/producten" }, { naam: product.naam }]} />
-        <div className="grid items-center gap-10 py-10 md:grid-cols-2 md:py-16">
-          <div>
-            <h1 className="text-4xl font-medium leading-[1.1] md:text-5xl">{product.naam}</h1>
-            <p className="mt-5 text-lg leading-relaxed text-zacht">{product.intro}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Knop naar="/prijslijst">Prijslijst aanvragen</Knop>
-              <Knop naar="/contact" variant="secundair">Demonstratie aanvragen</Knop>
-            </div>
-          </div>
-          <Reveal vertraging={80} className="overflow-hidden rounded-kaart border border-lijn">
-            <Beeld src={product.beeld.src} alt={product.beeld.alt} prioriteit className="aspect-[4/3] w-full object-cover" sizes="(min-width: 768px) 50vw, 100vw" />
-          </Reveal>
+      {/* Hero: het product vult het scherm. Is er bewegend beeld, dan speelt
+          dat; anders staat de foto op volle breedte. Een productpagina moet
+          laten zien wat het doet, niet erover vertellen naast een kadertje. */}
+      <section className="relative min-h-[70svh] overflow-hidden border-b border-lijn">
+        <div className="absolute inset-0">
+          {product.video ? (
+            <HeroVideo src={product.video.src} poster={product.video.poster} label={product.video.label} className="h-full" />
+          ) : (
+            <Beeld
+              src={product.beeld.src}
+              alt={product.beeld.alt}
+              prioriteit
+              sizes="100vw"
+              className="h-full w-full object-cover"
+            />
+          )}
         </div>
-      </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-inkt via-inkt/75 to-inkt/25" aria-hidden="true" />
+        <div className="relative mx-auto flex min-h-[70svh] w-full max-w-6xl flex-col justify-end px-5 pt-24 pb-14 md:px-8 md:pb-20">
+          <Kruimelpad items={[{ naam: "Producten", pad: "/producten" }, { naam: product.naam }]} />
+          {levering && (
+            <p className="mt-6 inline-flex w-fit items-center gap-2 rounded-full border border-accent/40 bg-inkt/70 px-4 py-1.5 font-display text-[0.8rem] font-medium uppercase tracking-[0.12em] text-accent backdrop-blur-sm">
+              {levering}
+            </p>
+          )}
+          <h1 className="mt-5 max-w-3xl text-4xl font-medium leading-[1.08] md:text-6xl">{product.naam}</h1>
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-tekst/90 md:text-xl">{product.intro}</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Knop naar="/prijslijst">Prijslijst aanvragen</Knop>
+            <Knop naar="/contact" variant="secundair">Demonstratie aanvragen</Knop>
+          </div>
+        </div>
+      </section>
 
       {/* Waarom / probleem */}
       <section className="border-t border-lijn bg-nacht/40">
@@ -50,16 +72,6 @@ export function ProductDetail() {
           </Reveal>
         </div>
       </section>
-
-      {/* Video */}
-      {product.video && (
-        <div className="mx-auto w-full max-w-6xl px-5 pt-14 md:px-8">
-          <Reveal className="overflow-hidden rounded-kaart border border-lijn">
-            <HeroVideo src={product.video.src} poster={product.video.poster} label={product.video.label} className="aspect-video" />
-          </Reveal>
-          <p className="mt-3 text-[0.85rem] text-dof">{product.video.label}</p>
-        </div>
-      )}
 
       {/* Voordelen */}
       <Sectie kicker="Voordelen" kop={`Dit maakt de ${(product.kaartLabel ?? product.naam).toLowerCase()} sterk`}>
