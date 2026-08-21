@@ -1,8 +1,73 @@
 # website-clone-programma
 
-Repo voor het website-clone-programma. Op dit moment bevat de repo de configuratie
-om de **Ditto MCP-server** (`https://api.ditto.site/mcp`) te koppelen aan
-MCP-clients zoals Claude Code.
+Repo voor het website-clone-programma. De repo bevat:
+
+- **[`scripts/`](scripts/)** — tooling om een bestaande website volledig te
+  downloaden naar een offline bruikbare kopie.
+- **[`.mcp.json`](.mcp.json)** — de configuratie om de **Ditto MCP-server**
+  (`https://api.ditto.site/mcp`) te koppelen aan MCP-clients zoals Claude Code.
+
+## Website downloaden
+
+`scripts/download-site.sh` maakt een complete, offline bruikbare kopie van een
+site: alle HTML-pagina's plus de CSS, JavaScript, afbeeldingen en fonts die
+erbij horen.
+
+```bash
+# Standaard: https://hereweholo.webflow.io/ -> ./site
+./scripts/download-site.sh
+
+# Of expliciet, met een eigen doelmap:
+./scripts/download-site.sh https://voorbeeld.webflow.io/ ./mijn-kopie
+```
+
+Daarna lokaal bekijken:
+
+```bash
+./scripts/serve-site.sh site
+# -> http://localhost:8000/hereweholo.webflow.io/index.html
+```
+
+### Wat het script doet
+
+1. **Preflight** — controleert of de host bereikbaar is en meldt het expliciet
+   als een proxy of egress-policy de verbinding tegenhoudt.
+2. **Sitemap** — leest `sitemap.xml` uit als seed-lijst. Puur recursief crawlen
+   mist pagina's waar niets naartoe linkt; de sitemap vult die gaten.
+3. **Mirror** — haalt met `wget` de pagina's én hun assets op, en herschrijft de
+   links zodat alles offline werkt.
+4. **Rapport** — telt pagina's en bestanden en geeft de totale omvang. Nul
+   pagina's is een harde fout, losse 404's op assets niet.
+
+### Webflow-specifieke details
+
+- Assets staan niet op de site-host maar op CDN-domeinen
+  (`cdn.prod.website-files.com`, `assets.website-files.com`,
+  `uploads-ssl.webflow.com`, en de jQuery-CDN van Webflow). Die staan in de
+  domein-allowlist van het script; zonder die hosts krijg je wel de HTML maar
+  geen styling of beeld.
+- Host-mappen blijven staan (`site/<host>/...`). Bij `--span-hosts` zouden
+  CDN-paden anders botsen met paden van de site zelf.
+- `*.webflow.io` serveert een `robots.txt` die alles dichtzet — staging-domeinen
+  horen niet geïndexeerd te worden. Het script zet daarom `robots=off`. Gebruik
+  het alleen op sites die van jou zijn.
+
+### Status: nog niet uitgevoerd
+
+De download is **niet** gelukt vanuit deze omgeving. `hereweholo.webflow.io`
+wordt geblokkeerd door de egress-policy van de sessie (`403` op de CONNECT), net
+als `api.ditto.site` hieronder. Alleen een korte allowlist (o.a. `github.com`,
+npm, PyPI) komt er doorheen — `example.com` en `webflow.com` worden net zo goed
+geweigerd, dus het ligt niet aan de site.
+
+Om de kopie daadwerkelijk op te halen:
+
+- **Lokaal draaien** — `git clone` deze repo op je eigen machine en voer
+  `./scripts/download-site.sh` uit. Nodig: `wget`, `curl`, `python3`.
+- **Of het netwerkbeleid verruimen** — geef de omgeving een policy die
+  `hereweholo.webflow.io` en de Webflow-CDN's toestaat, en draai het script
+  opnieuw in een nieuwe sessie. Zie de
+  [documentatie over Claude Code op het web](https://code.claude.com/docs/en/claude-code-on-the-web).
 
 ## Ditto MCP-server
 

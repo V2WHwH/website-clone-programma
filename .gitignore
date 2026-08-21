@@ -17,3 +17,6 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+
+# Download-logs (de gedownloade site zelf hoort wel in de repo)
+wget.log
