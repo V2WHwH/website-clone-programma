@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { BEELDMATEN } from "../../data/beeldmaten";
 
 type Paneel = {
-  /** beeld dat achter dit paneel hoort */
+  /** beeld dat achter dit paneel hoort; ook het stilstaande beeld van de video */
   beeld: string;
   alt: string;
+  /** optioneel: echte opname van dit werk, die speelt zolang het paneel in beeld is */
+  video?: string;
   kicker: string;
   kop: string;
   tekst: string;
@@ -23,7 +25,23 @@ type Props = { panelen: Paneel[] };
 // gewoon leesbaar; er gaat dus niets verloren voor zoekmachines.
 export function Achterwand({ panelen }: Props) {
   const [actief, setActief] = useState(0);
+  // Welke video's mogen laden. Een video komt er pas bij als zijn paneel in
+  // beeld is geweest: zo kost een bezoeker die halverwege stopt ook maar de
+  // helft van de megabytes. Wat geladen is blijft geladen, dus terugscrollen
+  // haalt niets opnieuw op.
+  const [geladen, setGeladen] = useState<number[]>([]);
+  const [beweging, setBeweging] = useState(false);
   const refs = useRef<(HTMLDivElement | null)[]>([]);
+  const spelers = useRef<(HTMLVideoElement | null)[]>([]);
+
+  useEffect(() => {
+    // Wie liever geen beweging ziet of op databesparing staat, houdt de
+    // stilstaande beelden. Dat is hier geen verarming: elk paneel heeft er een.
+    const rustig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const verbinding = (navigator as { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    const zuinig = verbinding?.saveData === true || /^(slow-)?2g$/.test(verbinding?.effectiveType ?? "");
+    setBeweging(!rustig && !zuinig);
+  }, []);
 
   useEffect(() => {
     const waarnemer = new IntersectionObserver(
@@ -41,6 +59,18 @@ export function Achterwand({ panelen }: Props) {
     return () => waarnemer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!beweging) return;
+    setGeladen((eerder) => (eerder.includes(actief) ? eerder : [...eerder, actief]));
+    // Alleen het beeld dat je ziet speelt. De rest staat stil, anders draaien
+    // er vier video's tegelijk voor niets.
+    spelers.current.forEach((speler, i) => {
+      if (!speler) return;
+      if (i === actief) void speler.play().catch(() => {});
+      else speler.pause();
+    });
+  }, [actief, beweging]);
+
   return (
     <section className="relative bg-inkt" aria-label="Wat interactieve techniek met een ruimte doet">
       {/* het vaste beeld */}
@@ -49,25 +79,39 @@ export function Achterwand({ panelen }: Props) {
           const maat = BEELDMATEN[p.beeld];
           const klein = p.beeld.replace(/\.webp$/, "-640.webp");
           const middel = p.beeld.replace(/\.webp$/, "-1024.webp");
+          const zichtbaar = i === actief ? "opacity-100" : "opacity-0";
           return (
-            <img
-              key={p.beeld}
-              src={p.beeld}
-              srcSet={[
-                BEELDMATEN[klein] ? `${klein} 640w` : "",
-                BEELDMATEN[middel] ? `${middel} 1024w` : "",
-                `${p.beeld} ${maat?.[0] ?? 1600}w`,
-              ].filter(Boolean).join(", ")}
-              sizes="100vw"
-              alt={i === 0 ? p.alt : ""}
-              aria-hidden={i === 0 ? undefined : true}
-              width={maat?.[0]}
-              height={maat?.[1]}
-              loading={i === 0 ? "eager" : "lazy"}
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-uit ${
-                i === actief ? "opacity-100" : "opacity-0"
-              }`}
-            />
+            <div key={p.beeld} className={`absolute inset-0 transition-opacity duration-700 ease-uit ${zichtbaar}`}>
+              <img
+                src={p.beeld}
+                srcSet={[
+                  BEELDMATEN[klein] ? `${klein} 640w` : "",
+                  BEELDMATEN[middel] ? `${middel} 1024w` : "",
+                  `${p.beeld} ${maat?.[0] ?? 1600}w`,
+                ].filter(Boolean).join(", ")}
+                sizes="100vw"
+                alt={i === 0 ? p.alt : ""}
+                aria-hidden={i === 0 ? undefined : true}
+                width={maat?.[0]}
+                height={maat?.[1]}
+                loading={i === 0 ? "eager" : "lazy"}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              {p.video && beweging && geladen.includes(i) && (
+                <video
+                  ref={(el) => { spelers.current[i] = el; }}
+                  src={p.video}
+                  poster={p.beeld}
+                  muted
+                  loop
+                  playsInline
+                  preload="auto"
+                  aria-hidden="true"
+                  tabIndex={-1}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              )}
+            </div>
           );
         })}
         {/* Alleen de leeskant verdonkeren. Rechts blijft het beeld op volle
