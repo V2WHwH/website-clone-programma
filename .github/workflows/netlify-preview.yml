@@ -37,6 +37,10 @@ jobs:
   publiceren:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    # De secrets-context mag niet in een if-voorwaarde staan, wel hier.
+    # Zo weten de stappen hieronder of er een token is zonder het te tonen.
+    env:
+      HEEFT_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -70,7 +74,7 @@ jobs:
           URL: ${{ env.PREVIEW_URL }}
 
       - name: Naar Netlify publiceren
-        if: ${{ secrets.NETLIFY_AUTH_TOKEN != '' }}
+        if: env.HEEFT_TOKEN == 'true'
         run: |
           npx --yes netlify-cli@27 deploy \
             --dir=dist --prod --site "$NETLIFY_SITE_ID" \
@@ -81,7 +85,7 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
 
       - name: Uitleg als het token nog ontbreekt
-        if: ${{ secrets.NETLIFY_AUTH_TOKEN == '' }}
+        if: env.HEEFT_TOKEN != 'true'
         run: |
           {
             echo "### Site gebouwd en gecontroleerd, publiceren overgeslagen"
