@@ -31,7 +31,7 @@ jobs:
         run: |
           git config user.name "media-runner"
           git config user.email "actions@github.com"
-          git add public/media
-          git commit -m "Media uit Dropbox: webklare video's en beelden" || echo "niets nieuws"
+          git add public/media discovery/contactvellen
+          git commit -m "Media uit Dropbox: webklare video's, beelden en contactvellen" || echo "niets nieuws"
           git pull --rebase origin claude/vision2watch-rebuild-uf0biw
           git push origin claude/vision2watch-rebuild-uf0biw
