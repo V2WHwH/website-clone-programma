@@ -1,0 +1,36 @@
+name: verkenning
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [claude/vision2watch-rebuild-uf0biw]
+    paths: ["discovery/verken-urls.txt"]
+
+concurrency:
+  group: verkenning
+
+permissions:
+  contents: write
+
+jobs:
+  kijken:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/vision2watch-rebuild-uf0biw
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Referentiesites bekijken
+        run: node discovery/verkenning.mjs
+      - name: Resultaat committen
+        run: |
+          git config user.name "verkenner"
+          git config user.email "actions@github.com"
+          git add discovery/referenties
+          git commit -m "Referentiesites: schermafdrukken en HTML" || echo "niets nieuws"
+          git pull --rebase origin claude/vision2watch-rebuild-uf0biw
+          git push origin claude/vision2watch-rebuild-uf0biw
