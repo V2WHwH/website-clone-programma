@@ -1,0 +1,304 @@
+<!DOCTYPE html><html lang="nl" style="color-scheme:light"><head><script>window.__hfAuthOrigin="https://auth.higgsfield.app";/**
+ * Approval client SDK — the browser half of the approval flow (paired with
+ * approve.html), injected into every app page. A real file, imported as text and
+ * bundled at deploy (see injected-sdk.ts + the router wrangler). Runs in the
+ * untrusted app page: plain ES5, idempotent (window.__hfPatched), fully
+ * try/catch-wrapped, installed inline+synchronous at <head> so it's present
+ * before any app code runs.
+ *
+ * There is exactly ONE approval trigger: window.hf.requestGeneration(model,
+ * params, opts). The app calls it on the user's Generate action; the modal is
+ * visible exactly while the returned promise is pending. Approve resolves the
+ * minted single-use intent id, which the app threads to its server function and
+ * the fnf SDK adapter sends as the submit body's confirmation_token; cancel
+ * rejects with a DOMException named AbortError (a user choice, not a failure).
+ * Enforcement is entirely server-side: the outbound spend gate 403s any
+ * POST /jobs/submit that doesn't carry a matching minted approval (see
+ * outbound-worker/src/spend-gate.ts), so an app that skips the call gets a
+ * self-describing failed submit, never a silent spend. This SDK never inspects
+ * request bodies and never opens a modal on its own.
+ */
+(function () {
+  try {
+    if (window.__hfPatched) return;
+    window.__hfPatched = true;
+    var of = window.fetch;
+    if (typeof of !== "function") return;
+    // Approval surface origin (auth.<zone>, serving the consent page at
+    // /approve). Preferred source: the origin the router stamps ahead of this
+    // script (injected-sdk.ts) — apps can be served on CUSTOM DOMAINS, where
+    // deriving from the page host would fabricate a non-existent
+    // auth.<customdomain>. Host derivation stays as the fallback for stale
+    // cached HTML that predates the stamp.
+    var APPROVE =
+      typeof window.__hfAuthOrigin === "string" && window.__hfAuthOrigin.indexOf("https://") === 0
+        ? window.__hfAuthOrigin
+        : "https://auth." + location.host.split(".").slice(1).join(".");
+    window.__hfFetches = window.__hfFetches || [];
+
+    // Single-flight: at most ONE approval modal at a time. A fast double-click (or
+    // an app firing two requests) would otherwise open a second scrim+iframe stacked
+    // on the first — so a second approve() while one is open returns the in-flight
+    // promise instead of opening another modal.
+    var openModal = null;
+
+    // The modal is a cross-origin iframe of auth.<zone>/approve: the app cannot
+    // read or script it, and WHO may frame the page is pinned server-side by its
+    // frame-ancestors. The page itself obtains the authoritative price from fnf
+    // before enabling Generate; app-supplied display prices are intentionally
+    // ignored. (The app DOM could still overlay the iframe — the spend gate's
+    // server-side job binding is what makes a spoofed click worthless.)
+    function approve(job) {
+      if (openModal) return openModal;
+      openModal = new Promise(function (resolve, reject) {
+        var grant = null;
+        var ready = false;
+        var done = false;
+        var openedAt = Date.now();
+
+        // Three parent layers so the iframe body can stay fully TRANSPARENT and
+        // still show no white edge:
+        //  - scrim: full-screen div carrying the blur (backdrop-filter samples the
+        //    real app behind it) + a dark tint.
+        //  - wrap: a rounded, overflow:hidden div that CLIPS the iframe. The iframe
+        //    overlaps the backdrop-filter scrim, so Chromium backs its layer
+        //    opaquely; the iframe's OWN border-radius doesn't reliably clip that
+        //    layer (leaving white corners), but a parent clip does. So the corners
+        //    outside the radius are clipped away → the blurred scrim shows through,
+        //    no white ring.
+        //  - frame: the iframe, fully transparent, filling wrap. Its page paints
+        //    only the card (edge-to-edge, no radius — wrap provides the rounding).
+        var scrim = document.createElement("div");
+        scrim.style.cssText =
+          "position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,0.28);" +
+          "-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)";
+        var wrap = document.createElement("div");
+        // opacity:0 until the page reports its height so the modal fades in at its
+        // final size (no empty-frame flash, no height re-center / layout shift).
+        // Round with clip-path (not just border-radius + overflow): clip-path is
+        // applied in the COMPOSITOR, so it clips the cross-origin iframe's own
+        // layer edge cleanly. border-radius/overflow only clip the shape and leave
+        // the iframe's opaque WHITE base fringing at the rounded corners (the white
+        // peek). background = card color as a second line of defense. Both the wrap
+        // and the iframe carry the clip; keep 24px in sync with the card radius.
+        wrap.style.cssText =
+          "position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);" +
+          "width:min(400px,calc(100vw - 32px));height:188px;border-radius:24px;overflow:hidden;" +
+          "-webkit-clip-path:inset(0 round 24px);clip-path:inset(0 round 24px);" +
+          "background:#23262a;opacity:0;transition:opacity 0.12s ease;z-index:2147483647";
+        var frame = document.createElement("iframe");
+        // referrerPolicy="origin": the page's frame-ancestors admits a registered
+        // CUSTOM DOMAIN only when this origin arrives as the Referer (approve.ts).
+        frame.referrerPolicy = "origin";
+        frame.src = APPROVE + "/approve";
+        frame.allowTransparency = "true";
+        frame.style.cssText =
+          "display:block;width:100%;height:100%;border:0;border-radius:24px;" +
+          "-webkit-clip-path:inset(0 round 24px);clip-path:inset(0 round 24px);background:#23262a";
+        wrap.appendChild(frame);
+        var revealTimer = null;
+
+        function cleanup() {
+          if (done) return;
+          done = true;
+          clearTimeout(revealTimer);
+          window.removeEventListener("message", onMessage);
+          document.removeEventListener("keydown", onKey, true);
+          wrap.remove();
+          scrim.remove();
+        }
+
+        function beacon(outcome) {
+          if (!grant) return;
+          try {
+            var payload = JSON.stringify({
+              grant: grant,
+              outcome: outcome,
+              ms_open: Date.now() - openedAt,
+            });
+            var url = APPROVE + "/approve/outcome";
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon(url, new Blob([payload], { type: "text/plain" }));
+            } else {
+              of(url, { method: "POST", body: payload, mode: "no-cors", keepalive: true }).catch(
+                function () {},
+              );
+            }
+          } catch (e) {}
+        }
+
+        // Dismiss = the same "denied" path as the modal's Cancel button, so the
+        // caller turns it into an AbortError (a cancel, not a failure).
+        function dismiss() {
+          if (done) return;
+          cleanup();
+          beacon("denied");
+          var error = new Error("hf: denied");
+          error.hfReason = "denied";
+          reject(error);
+        }
+
+        function onKey(event) {
+          if (event.key === "Escape" || event.keyCode === 27) dismiss();
+        }
+
+        function sendRequest() {
+          if (!ready || !grant || done) return;
+          frame.contentWindow.postMessage(
+            { source: "hf-approve", type: "request", grant: grant, job: job },
+            APPROVE,
+          );
+        }
+
+        function onMessage(event) {
+          if (event.origin !== APPROVE || event.source !== frame.contentWindow) return;
+          var data = event.data || {};
+          if (data.source !== "hf-approve") return;
+          // Size the clip wrapper to the page's reported card height, and reveal
+          // ONLY once sized — modal fades in at its final height (no shift/flash).
+          if (typeof data.h === "number" && data.h > 0) {
+            wrap.style.height = data.h + "px";
+            clearTimeout(revealTimer);
+            wrap.style.opacity = "1";
+          }
+          if (data.type === "ready") {
+            ready = true;
+            sendRequest();
+            return;
+          }
+          if (data.type !== "result") return;
+          cleanup();
+          if (data.ok && typeof data.intentId === "string") {
+            resolve(data.intentId);
+            return;
+          }
+          beacon("denied");
+          var error = new Error("hf: " + (data.reason || "denied"));
+          error.hfReason = data.reason || "denied";
+          reject(error);
+        }
+
+        window.addEventListener("message", onMessage);
+        // Close on background (scrim) click and on Escape. The scrim sits behind
+        // the card (wrap), so a click on it is a click OUTSIDE the modal. Escape
+        // is captured on the parent; the page also handles Escape when focus is
+        // inside the iframe (see approve-ui).
+        scrim.addEventListener("click", dismiss);
+        document.addEventListener("keydown", onKey, true);
+        document.documentElement.appendChild(scrim);
+        document.documentElement.appendChild(wrap);
+        // Fallback: reveal at the default height if the page never reports its
+        // size, so the modal is never stuck hidden.
+        revealTimer = setTimeout(function () {
+          wrap.style.opacity = "1";
+        }, 500);
+
+        of("/__auth/approval-grant", { method: "POST" })
+          .then(function (r) {
+            return r
+              .json()
+              .catch(function () {
+                return {};
+              })
+              .then(function (b) {
+                return { s: r.status, b: b };
+              });
+          })
+          .then(function (x) {
+            if (!x.b || !x.b.grant) {
+              cleanup();
+              reject(
+                new Error(
+                  x.s === 401 ? "hf: not signed in" : "hf: approval unavailable (" + x.s + ")",
+                ),
+              );
+              return;
+            }
+            grant = x.b.grant;
+            sendRequest();
+          })
+          .catch(function (error) {
+            cleanup();
+            reject(error);
+          });
+
+        setTimeout(function () {
+          if (!done) {
+            cleanup();
+            beacon("timeout");
+            reject(new Error("hf: approval timeout"));
+          }
+        }, 120000);
+      });
+      // Release the single-flight lock once this approval settles, so the next
+      // genuine generation can open a fresh modal.
+      var release = function () {
+        openModal = null;
+      };
+      openModal.then(release, release);
+      return openModal;
+    }
+
+    // Observability-only fetch patch: request log for debugging (__hfFetches +
+    // console). No interception, no body inspection, no classification — the
+    // approval flow is driven solely by window.hf.requestGeneration.
+    window.fetch = function (input, init) {
+      try {
+        var url = typeof input === "string" ? input : (input && input.url) || String(input);
+        var method = (init && init.method) || (input && input.method) || "GET";
+        window.__hfFetches.push({ url: url, method: method, ts: Date.now() });
+        console.log("[hf-fetch]", method, url);
+      } catch (e) {}
+      return of.apply(this, arguments);
+    };
+
+    // Public SDK. The app contract (see the builder instructions and
+    // docs/generation-approval): call this on the Generate action with the SDK
+    // WIRE shape of the exact submission (wire.jobSetType + wire.params — the
+    // approval is bound server-side to the hash of {job_set_type, params} of the
+    // actual submit body), thread the resolved intent id to the server as the
+    // confirmation token, and render a cancel quietly. opts.credits is an
+    // optional display-only estimate shown in the modal. The id is a token:
+    // never logged here, and apps must not log it either.
+    window.hf = {
+      requestGeneration: function (model, params, opts) {
+        // Fail fast on a bad job identity, BEFORE any UI. The approve page
+        // (protocol.ts) silently ignores a request whose job_set_type isn't a
+        // non-empty string or whose params don't survive structured clone —
+        // which would leave the modal stuck on "Waiting for the app…" with no
+        // way to reply. A typed rejection shows the app its own bug instead.
+        if (typeof model !== "string" || !model) {
+          return Promise.reject(
+            new TypeError("hf: requestGeneration(model, params) — model must be a non-empty string"),
+          );
+        }
+        if (typeof structuredClone === "function") {
+          try {
+            structuredClone(params);
+          } catch (e) {
+            return Promise.reject(
+              new TypeError("hf: requestGeneration params must be structured-cloneable (plain JSON)"),
+            );
+          }
+        }
+        return approve({ job_set_type: model, params: params }).then(
+          function (id) {
+            console.log("[hf] approved");
+            return id;
+          },
+          // Cancel → AbortError, per the app contract ("render a quiet cancelled
+          // state"). Other failures (not signed in, unavailable, timeout) bubble
+          // as-is — those ARE failures.
+          function (e) {
+            if (e && e.hfReason === "denied") {
+              console.log("[hf] cancelled");
+              throw new DOMException("Generation cancelled", "AbortError");
+            }
+            throw e;
+          },
+        );
+      },
+    };
+  } catch (e) {}
+})();
+</script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="preload" as="image" href="/assets/brand/logo-eind.png"><link rel="stylesheet" href="/assets/styles-BSrDGgRI.css" data-precedence="default"><link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@500,700,900&amp;display=swap" data-precedence="default"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" data-precedence="default"><link rel="stylesheet" href="/assets/index-C6cMVpRJ.css" data-precedence="default"><link rel="stylesheet" href="/assets/index-dkRJSdQ3.css" data-precedence="default"><title>Laserbuster | Laserreiniging van staal, hout en beton</title><meta name="author" content="Laserbuster"><meta name="theme-color" content="#eceef0"><meta property="og:title" content="Laserbuster"><meta property="og:description" content="Laserreiniging voor staal, hout en beton. Roest, oude lak en graffiti verdwijnen laag voor laag, zonder stralen of chemie. Plan direct een afspraak."><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image"><meta property="og:image" content="https://upload.higgsfield.ai/user_3CLfFwPRdxvZEiLtDM59k5jT7uE/fc633940-79af-474b-824b-ce2a5680f406.png"><meta name="twitter:image" content="https://upload.higgsfield.ai/user_3CLfFwPRdxvZEiLtDM59k5jT7uE/fc633940-79af-474b-824b-ce2a5680f406.png"><meta name="description" content="Roest, oude lak en graffiti verdwijnen laag voor laag onder de laser, zonder chemie of straalmiddel. Op locatie in heel Nederland. Plan online een schouw."><link rel="modulepreload" href="/assets/index-CM19ot6S.js"><link rel="modulepreload" href="/assets/index-C6tQ-ZRG.js"><link rel="modulepreload" href="/assets/chrome-DAlVPJfF.js"><link rel="modulepreload" href="/assets/booking-shared-BceGcxd3.js"><link rel="modulepreload" href="/assets/StructuredData-C6GKYAxr.js"><link rel="icon" href="https://d8j0ntlcm91z4.cloudfront.net/user_3CLfFwPRdxvZEiLtDM59k5jT7uE/hf_20260727_215428_2a222ff5-3a0a-41ba-aea0-5059f43a58ea.png" sizes="32x32"><link rel="icon" href="/assets/head/favicon-32.png" type="image/png" sizes="32x32"><link rel="icon" href="/assets/head/favicon-16.png" type="image/png" sizes="16x16"><link rel="apple-touch-icon" href="/assets/head/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"></head><body class="lb-page"><!--$--><div class="lb-page"><header class="lb-nav"><div class="lb-container lb-nav__inner"><a aria-label="Laserbuster, naar de homepage" class="lb-nav__brand active" href="/" data-status="active" aria-current="page"><span class="lb-logo"><video class="lb-logo__intro" autoplay="" playsinline="" preload="auto" aria-hidden="true"><source src="/assets/brand/logo-intro.webm" type="video/webm"></video></span></a><nav class="lb-nav__links" aria-label="Hoofdnavigatie"><a href="/diensten/staal-ontroesten">Staal</a><a href="/diensten/hout-ontlakken">Hout</a><a href="/diensten/graffiti-verwijderen">Graffiti</a><a href="/faq">FAQ</a><a href="/reserveren" class="lb-nav__reserveren">Reserveren</a></nav></div></header><script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","@id":"https://laserbuster.higgsfield.app/#bedrijf","name":"Laserbuster","description":"Laserreiniging op locatie in heel Nederland: staal ontroesten, houten deuren ontlakken en graffiti verwijderen van beton, zonder chemie of straalmiddel.","url":"https://laserbuster.higgsfield.app/","email":"info@laserbuster.nl","image":"https://laserbuster.higgsfield.app/assets/world/staal-poster.jpg","logo":"https://laserbuster.higgsfield.app/assets/brand/monogram.png","areaServed":{"@type":"Country","name":"Nederland"},"openingHours":"Mo-Fr 08:00-17:00","makesOffer":[{"@type":"Offer","itemOffered":{"@type":"Service","name":"Staal ontroesten met laser","url":"https://laserbuster.higgsfield.app/diensten/staal-ontroesten"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Hout ontlakken met laser","url":"https://laserbuster.higgsfield.app/diensten/hout-ontlakken"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Graffiti verwijderen met laser","url":"https://laserbuster.higgsfield.app/diensten/graffiti-verwijderen"}}]}</script><section class="scroll-scrub" style="--ss-accent: #d8432b; --ss-bg: #eceef0; --ss-ink: #15181b; --ss-muted: #5c646c; --ss-progress: 0;" data-active-section="0"><div class="scroll-scrub__stage"><div aria-hidden="true" class="scroll-scrub__media"><figure class="scroll-scrub__layer scroll-scrub__layer--scene" data-scroll-scrub-layer="" style="--ss-mobile-position: 50% 50%; --ss-object-position: 50% 50%; opacity: 1; z-index: 2;"><picture class="scroll-scrub__picture"><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="/assets/world/intro-mobile-poster.jpg"><img alt="" class="scroll-scrub__poster" decoding="async" fetchpriority="high" loading="eager" src="/assets/world/intro-poster.jpg"></picture><video class="scroll-scrub__video" playsinline="" preload="auto" muted="" src="blob:https://laserbuster.higgsfield.app/5a9bfc83-507c-4787-9569-cfb6485f2d2a"></video></figure><figure class="scroll-scrub__layer scroll-scrub__layer--scene" data-scroll-scrub-layer="" style="--ss-mobile-position: 50% 50%; --ss-object-position: 50% 50%; opacity: 0; z-index: 1;"><picture class="scroll-scrub__picture"><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="/assets/world/staal-mobile-poster.jpg"><img alt="" class="scroll-scrub__poster" decoding="async" fetchpriority="auto" loading="lazy" src="/assets/world/staal-poster.jpg"></picture></figure><figure class="scroll-scrub__layer scroll-scrub__layer--scene" data-scroll-scrub-layer="" style="--ss-mobile-position: 50% 50%; --ss-object-position: 50% 50%; opacity: 0; z-index: 1;"><picture class="scroll-scrub__picture"><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="/assets/world/hout-mobile-poster.jpg"><img alt="" class="scroll-scrub__poster" decoding="async" fetchpriority="auto" loading="lazy" src="/assets/world/hout-poster.jpg"></picture></figure><figure class="scroll-scrub__layer scroll-scrub__layer--scene" data-scroll-scrub-layer="" style="--ss-mobile-position: 50% 50%; --ss-object-position: 50% 50%; opacity: 0; z-index: 1;"><picture class="scroll-scrub__picture"><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="/assets/world/beton-mobile-poster.jpg"><img alt="" class="scroll-scrub__poster" decoding="async" fetchpriority="auto" loading="lazy" src="/assets/world/beton-poster.jpg"></picture></figure></div><div aria-hidden="true" class="scroll-scrub__progress"><span></span></div><nav aria-label="Hoofdstukken" class="scroll-scrub__route"><button aria-current="step" class="scroll-scrub__route-button" type="button"><span>Intro</span></button><button class="scroll-scrub__route-button" type="button"><span>Staal</span></button><button class="scroll-scrub__route-button" type="button"><span>Hout</span></button><button class="scroll-scrub__route-button" type="button"><span>Beton</span></button></nav></div><div class="scroll-scrub__story"><article class="scroll-scrub__chapter" data-align="left" data-scroll-scrub-band="" id="intro" style="min-height:160dvh"><div class="scroll-scrub__chapter-pin"><div class="scroll-scrub__copy"><h1 class="scroll-scrub__title">Schoon zonder contact</h1><p class="scroll-scrub__body">Laserreiniging verwijdert roest, verf en graffiti zonder chemie of straalmiddel. Scroll mee door de werkgang.</p><ul class="scroll-scrub__tags"><li>contactloos</li><li>chemievrij</li></ul><div class="scroll-scrub__actions"><a href="/reserveren" class="lb-framedcta">Plan een schouw</a></div></div></div></article><article class="scroll-scrub__chapter" data-align="right" data-scroll-scrub-band="" id="staal" style="min-height:160dvh"><div class="scroll-scrub__chapter-pin"><div class="scroll-scrub__copy"><h2 class="scroll-scrub__title">Staal ontroesten</h2><p class="scroll-scrub__body">De brede straal haalt roest en walshuid weg tot een coatingklaar oppervlak, van Sa 2 tot Sa 2,5.</p><ul class="scroll-scrub__tags"><li>coatingklaar</li><li>Sa 2,5</li></ul><div class="scroll-scrub__actions"><a href="/diensten/staal-ontroesten" class="lb-arrowlink">Bekijk dienst <span aria-hidden="true">→</span></a></div></div></div></article><article class="scroll-scrub__chapter" data-align="left" data-scroll-scrub-band="" id="hout" style="min-height:160dvh"><div class="scroll-scrub__chapter-pin"><div class="scroll-scrub__copy"><h2 class="scroll-scrub__title">Hout ontlakken</h2><p class="scroll-scrub__body">Verf- en laklagen verdampen laag voor laag terwijl de houtnerf onbeschadigd blijft.</p><ul class="scroll-scrub__tags"><li>nerf intact</li><li>op locatie</li></ul><div class="scroll-scrub__actions"><a href="/diensten/hout-ontlakken" class="lb-arrowlink">Bekijk dienst <span aria-hidden="true">→</span></a></div></div></div></article><article class="scroll-scrub__chapter" data-align="right" data-scroll-scrub-band="" id="beton" style="min-height:160dvh"><div class="scroll-scrub__chapter-pin"><div class="scroll-scrub__copy"><h2 class="scroll-scrub__title">Graffiti van beton</h2><p class="scroll-scrub__body">Verf verdwijnt van beton en metselwerk zonder de ondergrond op te ruwen.</p><ul class="scroll-scrub__tags"><li>geen chemie</li><li>geen gruis</li></ul><div class="scroll-scrub__actions"><a href="/diensten/graffiti-verwijderen" class="lb-arrowlink">Bekijk dienst <span aria-hidden="true">→</span></a></div></div></div></article></div></section><section class="lb-section" id="waarom"><div class="lb-container"><h2 class="lb-h2">Waarom laserreinigen</h2><div class="lb-specs"><div class="lb-specs__row"><div class="lb-specs__value">0</div><p class="lb-specs__label">Nul chemicaliën en nul straalmiddel: de laser verdampt alleen de vervuiling, er blijft geen afvalstroom van gruis of oplosmiddelen achter.</p></div><div class="lb-specs__row lb-specs__row--anchor"><div class="lb-specs__value">Sa 2,5</div><p class="lb-specs__label">Reinigingsgraad tot Sa 2,5: het staal is direct coatingklaar volgens de eisen van verf- en coatingleveranciers.</p></div><div class="lb-specs__row"><div class="lb-specs__value">0 mm</div><p class="lb-specs__label">Contactloos proces: geen slijtage of vervorming van de ondergrond, ook niet bij hout, monumentaal metselwerk of dun plaatwerk.</p></div><div class="lb-specs__row"><div class="lb-specs__value">NL</div><p class="lb-specs__label">Op locatie in heel Nederland: de installatie is mobiel en werkt binnen en buiten, van werkplaats tot bouwplaats.</p></div></div></div></section><section class="lb-section lb-section--tint" id="werkwijze"><div class="lb-container"><p class="lb-eyebrow">Werkwijze</p><h2 class="lb-h2">Van schouw tot oplevering</h2><div class="lb-steps"><div class="lb-step"><div class="lb-step__media"><img src="/assets/site/werkwijze-schouw.jpg" alt="Inspectie van een roestig staaloppervlak voorafgaand aan laserreiniging" loading="lazy"></div><div><p class="lb-step__num">01</p><h3>Schouw en proefvlak</h3><p>We bekijken het object op locatie of aan de hand van foto's en reinigen een proefvlak. Zo weet u vooraf precies welk resultaat haalbaar is en wat het kost.</p></div></div><div class="lb-step"><div class="lb-step__media"><img src="/assets/site/werkwijze-uitvoering.jpg" alt="Laserreiniging in uitvoering op locatie" loading="lazy"></div><div><p class="lb-step__num">02</p><h3>Uitvoering en oplevering</h3><p>De mobiele installatie werkt binnen en buiten. Na afloop leveren we het oppervlak schoon en droog op, klaar voor coating of direct gebruik.</p></div></div></div></div></section><section class="lb-section" id="diensten"><div class="lb-container"><h2 class="lb-h2">Diensten</h2><div class="lb-diensten"><div class="lb-dienst-row"><div><h3>Staal ontroesten</h3><p>Brede straal haalt roest, walshuid en oude lak of verf weg tot een coatingklaar oppervlak, Sa 2 tot Sa 2,5.</p></div><a href="/diensten/staal-ontroesten" class="lb-arrowlink">Bekijk dienst <span aria-hidden="true">→</span></a></div><div class="lb-dienst-row"><div><h3>Hout ontlakken</h3><p>Verf- en laklagen verdampen laag voor laag terwijl de houtnerf onbeschadigd blijft.</p></div><a href="/diensten/hout-ontlakken" class="lb-arrowlink">Bekijk dienst <span aria-hidden="true">→</span></a></div><div class="lb-dienst-row"><div><h3>Graffiti verwijderen</h3><p>Verf verdwijnt van beton en metselwerk zonder de ondergrond op te ruwen.</p></div><a href="/diensten/graffiti-verwijderen" class="lb-arrowlink">Bekijk dienst <span aria-hidden="true">→</span></a></div></div></div></section><section class="lb-section lb-section--tint" id="reserveren"><div class="lb-container"><div class="lb-banner"><div><h2>Reserveer een datum</h2><p>Kies online een datum en tijdslot voor een schouw op locatie. U ontvangt direct een bevestiging met agenda-koppeling.</p></div><a href="/reserveren" class="lb-framedcta">Plan een schouw</a></div></div></section><footer class="lb-footer"><div class="lb-container lb-footer__inner"><p style="margin:0"><strong style="color:var(--lb-ink)">Laserbuster</strong> · laserreiniging op locatie in heel Nederland</p><p style="margin:0"><a href="mailto:info@laserbuster.nl">info@laserbuster.nl</a></p><p style="margin:0">Ma t/m vr, 08:00 tot 17:00</p><p style="margin:0"><a href="/voorwaarden">Huurvoorwaarden</a></p></div></footer><div class="lb-chat"><button type="button" class="lb-chat__fab" aria-expanded="false" aria-label="Chat openen">Vraag het ons</button></div></div><!--/$--><script type="module" async="" src="/assets/index-CM19ot6S.js"></script></body></html>
