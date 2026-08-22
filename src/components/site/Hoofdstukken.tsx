@@ -114,6 +114,10 @@ export function Hoofdstukken({ hoofdstukken }: Props) {
           className={`absolute inset-0 transition-opacity duration-700 ${actief % 2 === 1 ? "opacity-100" : "opacity-0"} bg-gradient-to-l from-inkt from-5% via-inkt/82 via-46% to-transparent to-78%`}
           aria-hidden="true"
         />
+        {/* Op een smal scherm loopt de tekst over de volle breedte; daar
+            helpt een verloop opzij niet. Dan verdonkeren we van onder naar
+            boven, precies waar de tekst staat. */}
+        <div className="absolute inset-0 bg-gradient-to-t from-inkt via-inkt/75 via-55% to-inkt/25 md:hidden" aria-hidden="true" />
         <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-inkt/90 to-transparent" aria-hidden="true" />
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-inkt/90 to-transparent" aria-hidden="true" />
       </div>
