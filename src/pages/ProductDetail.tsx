@@ -52,7 +52,7 @@ export function ProductDetail() {
               {levering}
             </p>
           )}
-          <h1 className="mt-5 max-w-3xl text-4xl font-medium leading-[1.08] md:text-6xl">{product.naam}</h1>
+          <h1 className="mt-5 max-w-3xl text-4xl leading-[1.08] md:text-6xl">{product.naam}</h1>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-tekst/90 md:text-xl">{product.intro}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Knop naar="/prijslijst">Prijslijst aanvragen</Knop>
@@ -76,7 +76,7 @@ export function ProductDetail() {
         <div className="mt-10 grid gap-x-10 gap-y-8 md:grid-cols-2">
           {product.voordelen.map((v, i) => (
             <Reveal key={v.kop} vertraging={i * 60} className="border-t border-lijn pt-5">
-              <h3 className="font-display text-lg font-medium">{v.kop}</h3>
+              <h3 className="font-display text-lg">{v.kop}</h3>
               <p className="mt-2 leading-relaxed text-zacht">{v.tekst}</p>
             </Reveal>
           ))}
@@ -87,7 +87,7 @@ export function ProductDetail() {
       <section className="border-t border-lijn bg-nacht/40">
         <div className="mx-auto grid w-full max-w-6xl gap-12 px-5 py-16 md:grid-cols-[1fr_1.4fr] md:px-8 md:py-24">
           <Reveal>
-            <h2 className="text-2xl font-medium md:text-3xl">Toepassingen</h2>
+            <h2 className="text-2xl md:text-3xl">Toepassingen</h2>
             <ul className="mt-6 flex flex-wrap gap-2">
               {product.toepassingen.map((t) => (
                 <li key={t} className="rounded-full border border-lijn px-4 py-2 text-[0.9rem] text-zacht">{t}</li>
@@ -98,7 +98,7 @@ export function ProductDetail() {
             </div>
           </Reveal>
           <Reveal vertraging={80}>
-            <h2 className="text-2xl font-medium md:text-3xl">Techniek & integratie</h2>
+            <h2 className="text-2xl md:text-3xl">Techniek & integratie</h2>
             <dl className="mt-6 divide-y divide-lijn border-y border-lijn">
               {product.technisch.map((t) => (
                 <div key={t.kop} className="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
@@ -120,7 +120,7 @@ export function ProductDetail() {
           <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 py-20 md:grid-cols-[1fr_minmax(0,24rem)] md:px-8 md:py-24">
             <Reveal>
               <p className="kicker mb-3">Op locatie</p>
-              <h2 className="text-3xl font-medium md:text-[2.4rem] md:leading-[1.1]">{product.demo.kop}</h2>
+              <h2 className="text-3xl md:text-[2.4rem] md:leading-[1.1]">{product.demo.kop}</h2>
               <p className="mt-5 text-lg leading-relaxed text-zacht">{product.demo.tekst}</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Knop naar="/prijslijst">Prijslijst aanvragen</Knop>
@@ -172,7 +172,7 @@ export function ProductDetail() {
           if (!artikelen.length) return null;
           return (
             <div className="mt-10 max-w-3xl">
-              <h3 className="font-display text-[0.85rem] font-medium uppercase tracking-[0.14em] text-dof">Verder lezen in de kennisbank</h3>
+              <h3 className="font-display text-[0.85rem] uppercase tracking-[0.14em] text-dof">Verder lezen in de kennisbank</h3>
               <ul className="mt-3 space-y-2">
                 {artikelen.map((a) => (
                   <li key={a.slug}>

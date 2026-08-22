@@ -29,7 +29,7 @@ export function OverOns() {
         <Kruimelpad items={[{ naam: "Over ons" }]} />
         <div className="max-w-3xl pb-10 pt-10 md:pt-14">
           <p className="kicker mb-3">Over ons</p>
-          <h1 className="text-4xl font-medium leading-[1.1] md:text-5xl">
+          <h1 className="text-4xl leading-[1.1] md:text-5xl">
             Wij laten ruimtes reageren op mensen
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-zacht">
@@ -54,7 +54,7 @@ export function OverOns() {
         <div className="mt-10 grid gap-8 md:grid-cols-3">
           {PIJLERS.map((p, i) => (
             <Reveal key={p.kop} vertraging={i * 70} className="border-t border-lijn pt-5">
-              <h3 className="font-display text-lg font-medium">{p.kop}</h3>
+              <h3 className="font-display text-lg">{p.kop}</h3>
               <p className="mt-2 leading-relaxed text-zacht">{p.tekst}</p>
             </Reveal>
           ))}
@@ -78,7 +78,7 @@ export function OverOns() {
       <Sectie kicker="Netwerk" kop="Partners en zusterbedrijf">
         <div className="mt-10 grid gap-8 md:grid-cols-2">
           <Reveal className="rounded-kaart border border-lijn bg-nacht p-7">
-            <h3 className="font-display text-xl font-medium">HEREweHOLO</h3>
+            <h3 className="font-display text-xl">HEREweHOLO</h3>
             <p className="mt-3 leading-relaxed text-zacht">
               Ons zusterbedrijf HEREweHOLO is volledig gespecialiseerd in holografische oplossingen: holoboxen, HEREweHOLO mini's en hologramwanden. Beide teams werken nauw samen; holografische projecten lopen vaak gezamenlijk.
             </p>
@@ -87,7 +87,7 @@ export function OverOns() {
             </div>
           </Reveal>
           <Reveal vertraging={80} className="rounded-kaart border border-lijn bg-nacht p-7">
-            <h3 className="font-display text-xl font-medium">Epson</h3>
+            <h3 className="font-display text-xl">Epson</h3>
             <p className="mt-3 leading-relaxed text-zacht">
               Met Epson ontwikkelden we de mobiele interactieve vloer en de Virtual Product Presenter, en namen we deel aan het Store of the Future-programma. Projectietechniek van topniveau, gecombineerd met onze interactieve software.
             </p>

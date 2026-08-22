@@ -12,7 +12,7 @@ export function Producten() {
         <Kruimelpad items={[{ naam: "Producten" }]} />
         <div className="max-w-3xl pb-4 pt-10 md:pt-14">
           <p className="kicker mb-3">Producten</p>
-          <h1 className="text-4xl font-medium leading-[1.1] md:text-5xl">
+          <h1 className="text-4xl leading-[1.1] md:text-5xl">
             Interactieve technologie, te koop en te huur
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-zacht">
@@ -38,7 +38,7 @@ export function Producten() {
           <section key={cat.slug} id={cat.slug} className="scroll-mt-24 border-t border-lijn">
             <div className="mx-auto w-full max-w-6xl px-5 py-14 md:px-8 md:py-20">
               <Reveal className="max-w-3xl">
-                <h2 className="text-2xl font-medium md:text-3xl">{cat.naam}</h2>
+                <h2 className="text-2xl md:text-3xl">{cat.naam}</h2>
                 <p className="mt-3 leading-relaxed text-zacht">{cat.omschrijving}</p>
               </Reveal>
               <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

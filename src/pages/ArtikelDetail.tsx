@@ -25,7 +25,7 @@ export function ArtikelDetail() {
         <Kruimelpad items={[{ naam: "Kennisbank", pad: "/kennisbank" }, { naam: artikel.kop }]} />
         <div className="max-w-3xl pb-14 pt-10 md:pt-14">
           <p className="kicker mb-3">Kennisbank</p>
-          <h1 className="text-3xl font-medium leading-[1.15] md:text-[2.75rem]">{artikel.kop}</h1>
+          <h1 className="text-3xl leading-[1.15] md:text-[2.75rem]">{artikel.kop}</h1>
           <p className="mt-4 text-[0.85rem] text-dof">
             Gepubliceerd {datumTekst(artikel.gepubliceerd)}
             {artikel.gewijzigd !== artikel.gepubliceerd && <> · bijgewerkt {datumTekst(artikel.gewijzigd)}</>}
@@ -38,7 +38,7 @@ export function ArtikelDetail() {
 
           {artikel.secties.map((s) => (
             <Reveal as="section" key={s.kop} className="mt-12">
-              <h2 className="text-2xl font-medium">{s.kop}</h2>
+              <h2 className="text-2xl">{s.kop}</h2>
               {s.alineas.map((al) => (
                 <p key={al.slice(0, 40)} className="mt-4 leading-relaxed text-zacht">
                   {al}
@@ -49,7 +49,7 @@ export function ArtikelDetail() {
 
           {artikel.faq && artikel.faq.length > 0 && (
             <section className="mt-14">
-              <h2 className="text-2xl font-medium">Veelgestelde vragen</h2>
+              <h2 className="text-2xl">Veelgestelde vragen</h2>
               <div className="mt-6">
                 <FaqLijst items={artikel.faq} />
               </div>

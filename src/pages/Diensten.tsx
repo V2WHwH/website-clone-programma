@@ -76,7 +76,7 @@ export function Diensten() {
         <Kruimelpad items={[{ naam: "Diensten" }]} />
         <div className="max-w-3xl pb-10 pt-10 md:pt-14">
           <p className="kicker mb-3">Diensten</p>
-          <h1 className="text-4xl font-medium leading-[1.1] md:text-5xl">
+          <h1 className="text-4xl leading-[1.1] md:text-5xl">
             Van eerste idee tot draaiende installatie
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-zacht">
@@ -92,7 +92,7 @@ export function Diensten() {
               <Reveal as="li" key={f.nummer} className={`grid gap-6 py-12 md:grid-cols-[8rem_1fr] md:gap-12 ${i > 0 ? "border-t border-lijn" : ""}`}>
                 <p className="font-display text-4xl font-medium text-accent md:text-5xl">{f.nummer}</p>
                 <div className="max-w-3xl">
-                  <h2 className="text-2xl font-medium md:text-3xl">{f.kop}</h2>
+                  <h2 className="text-2xl md:text-3xl">{f.kop}</h2>
                   <p className="mt-4 text-lg leading-relaxed text-zacht">{f.tekst}</p>
                 </div>
               </Reveal>
@@ -106,7 +106,7 @@ export function Diensten() {
           <div className="mt-10 grid gap-8 md:grid-cols-3">
             {HUUR_KOOP.map((h, i) => (
               <Reveal key={h.kop} vertraging={i * 70} className="border-t border-lijn pt-5">
-                <h3 className="font-display text-lg font-medium">{h.kop}</h3>
+                <h3 className="font-display text-lg">{h.kop}</h3>
                 <p className="mt-2 leading-relaxed text-zacht">{h.tekst}</p>
               </Reveal>
             ))}

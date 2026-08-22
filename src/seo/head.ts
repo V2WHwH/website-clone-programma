@@ -126,8 +126,7 @@ export function bouwHead(pad: string): string {
     `<meta property="og:image" content="${abs(d.og)}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`,
-    `<link rel="preload" as="font" type="font/woff2" href="/fonts/space-grotesk.woff2" crossorigin />`,
-    `<link rel="preload" as="font" type="font/woff2" href="/fonts/inter.woff2" crossorigin />`,
+    `<link rel="preload" as="font" type="font/woff2" href="/fonts/archivo.woff2" crossorigin />`,
     // De homepage-hero toont eerst de poster van de video; die is daar het
     // grootste beeld en verdient dus voorrang. Alleen op de homepage.
     pad === "/"

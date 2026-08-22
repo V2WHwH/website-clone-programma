@@ -16,9 +16,15 @@
   --color-accent-fel: #ff9a3d;
   --color-accent-diep: #c2620a;
 
-  /* typografie */
-  --font-display: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
-  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+  /* typografie
+     Eén familie voor alles: Archivo, een grotesk met een breedte-as. Koppen
+     staan breed en zwaar (poster, bewegwijzering), lopende tekst staat op
+     normale breedte. Dat geeft een stevig, industrieel karakter dat past bij
+     een bedrijf dat installaties bouwt, en het scheelt een tweede lettertype.
+     Voor korte technische labels staat er één monospace naast. */
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
 
   /* maat en ritme */
   --spacing-sectie: 7rem;
@@ -33,15 +39,16 @@
 
 /* fonts: zelf gehost, variabel, swap */
 @font-face {
-  font-family: "Space Grotesk";
-  src: url("/fonts/space-grotesk.woff2") format("woff2-variations");
-  font-weight: 300 700;
+  font-family: "Archivo";
+  src: url("/fonts/archivo.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
   font-display: swap;
 }
 @font-face {
-  font-family: "Inter";
-  src: url("/fonts/inter.woff2") format("woff2-variations");
-  font-weight: 100 900;
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/plex-mono.woff2") format("woff2");
+  font-weight: 400;
   font-display: swap;
 }
 
@@ -57,6 +64,9 @@ html {
 body {
   @apply bg-inkt text-tekst font-sans antialiased;
   text-rendering: optimizeLegibility;
+  /* Lopende tekst iets zwaarder dan standaard: op een donkere grond oogt
+     een normale 400 dun en grijzig. */
+  font-weight: 420;
 }
 
 /* zichtbare focus, overal */
@@ -71,10 +81,14 @@ body {
   color: #0b0b0e;
 }
 
-/* koppen in display-letter */
+/* Koppen: zwaar en breed. De breedte-as van Archivo doet hier het werk;
+   samen met een strakke letterafstand levert dat een kop die staat als een
+   bord aan de gevel in plaats van als een regel tekst. */
 h1, h2, h3, h4 {
   font-family: var(--font-display);
-  letter-spacing: -0.015em;
+  font-weight: 800;
+  font-stretch: 116%;
+  letter-spacing: -0.025em;
   text-wrap: balance;
   /* Nederlands zit vol lange samenstellingen ("productdemonstratie",
      "vloerprojectiesysteem"). Op een smal scherm past zo'n woord niet in de
@@ -86,6 +100,9 @@ h1, h2, h3, h4 {
 @media (max-width: 640px) {
   h1, h2, h3 {
     hyphens: auto;
+    /* Op een smal scherm kost extra breedte alleen maar regels. */
+    font-stretch: 100%;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -113,8 +130,10 @@ p {
 
 /* kicker: klein oranje label boven een kop */
 .kicker {
-  @apply text-accent font-display text-[0.8rem] font-medium uppercase;
-  letter-spacing: 0.18em;
+  @apply text-accent font-display text-[0.78rem] uppercase;
+  font-weight: 700;
+  font-stretch: 108%;
+  letter-spacing: 0.16em;
 }
 
 /* hairline-kaart met beeld dat licht inzoomt bij hover */
@@ -139,6 +158,14 @@ p {
 }
 .logo-klant:hover {
   opacity: 1;
+}
+
+/* Knoppen en menu-items dragen mee in het stevige karakter: iets zwaarder
+   en een fractie breder dan lopende tekst. */
+button,
+.knop,
+nav a {
+  font-weight: 560;
 }
 
 /* skiplink */

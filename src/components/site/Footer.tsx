@@ -30,7 +30,7 @@ export function Footer() {
           </div>
 
           <nav aria-label="Footer: menu">
-            <h2 className="font-display text-[0.85rem] font-medium uppercase tracking-[0.14em] text-dof">Menu</h2>
+            <h2 className="font-display text-[0.85rem] uppercase tracking-[0.14em] text-dof">Menu</h2>
             <ul className="mt-4 space-y-2.5">
               {HOOFDNAV.map((i) => (
                 <li key={i.pad}>
@@ -48,7 +48,7 @@ export function Footer() {
           </nav>
 
           <nav aria-label="Footer: producten">
-            <h2 className="font-display text-[0.85rem] font-medium uppercase tracking-[0.14em] text-dof">Producten</h2>
+            <h2 className="font-display text-[0.85rem] uppercase tracking-[0.14em] text-dof">Producten</h2>
             <ul className="mt-4 space-y-2.5">
               {FOOTER_PRODUCTEN.map((slug) => {
                 const p = PRODUCTEN.find((x) => x.slug === slug);
@@ -65,7 +65,7 @@ export function Footer() {
           </nav>
 
           <div>
-            <h2 className="font-display text-[0.85rem] font-medium uppercase tracking-[0.14em] text-dof">Contact</h2>
+            <h2 className="font-display text-[0.85rem] uppercase tracking-[0.14em] text-dof">Contact</h2>
             <address className="mt-4 space-y-2.5 not-italic text-[0.95rem] text-zacht">
               <p>
                 {SITE.adres.straat}

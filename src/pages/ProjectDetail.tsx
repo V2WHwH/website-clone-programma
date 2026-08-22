@@ -26,7 +26,7 @@ export function ProjectDetail() {
         <Kruimelpad items={[{ naam: "Projecten", pad: "/projecten" }, { naam: project.klant }]} />
         <div className="max-w-3xl pb-8 pt-10 md:pt-14">
           <p className="kicker mb-3">{project.klant}</p>
-          <h1 className="text-4xl font-medium leading-[1.1] md:text-5xl">{project.titel}</h1>
+          <h1 className="text-4xl leading-[1.1] md:text-5xl">{project.titel}</h1>
           <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-2 text-[0.9rem] text-zacht">
             {project.locatie && (
               <div className="flex gap-2">
@@ -67,12 +67,12 @@ export function ProjectDetail() {
         <div className="grid gap-12 md:grid-cols-[1fr_1.6fr]">
           {project.uitdaging && (
             <Reveal>
-              <h2 className="text-xl font-medium md:text-2xl">De vraag</h2>
+              <h2 className="text-xl md:text-2xl">De vraag</h2>
               <p className="mt-4 leading-relaxed text-zacht">{project.uitdaging}</p>
             </Reveal>
           )}
           <Reveal vertraging={60} className={project.uitdaging ? "" : "md:col-span-2 max-w-3xl"}>
-            <h2 className="text-xl font-medium md:text-2xl">De oplossing</h2>
+            <h2 className="text-xl md:text-2xl">De oplossing</h2>
             <p className="mt-4 text-lg leading-relaxed text-zacht">{project.oplossing}</p>
           </Reveal>
         </div>

@@ -26,7 +26,7 @@ export function SectorDetail() {
         <div className="grid items-center gap-10 py-10 md:grid-cols-2 md:py-16">
           <div>
             <p className="kicker mb-3">{sector.naam}</p>
-            <h1 className="text-4xl font-medium leading-[1.1] md:text-5xl">{sector.naam}</h1>
+            <h1 className="text-4xl leading-[1.1] md:text-5xl">{sector.naam}</h1>
             <p className="mt-5 text-lg leading-relaxed text-zacht">{sector.intro}</p>
           </div>
           <Reveal vertraging={80} className="overflow-hidden rounded-kaart border border-lijn">
@@ -40,7 +40,7 @@ export function SectorDetail() {
           <div className="mt-10 grid gap-x-10 gap-y-8 md:grid-cols-2">
             {sector.situaties.map((s, i) => (
               <Reveal key={s.kop} vertraging={i * 60} className="border-t border-lijn pt-5">
-                <h3 className="font-display text-lg font-medium">{s.kop}</h3>
+                <h3 className="font-display text-lg">{s.kop}</h3>
                 <p className="mt-2 leading-relaxed text-zacht">{s.tekst}</p>
               </Reveal>
             ))}

@@ -21,10 +21,10 @@ import { Beeld } from "../components/ui/Beeld";
 const HOOFDSTUKKEN = [
   {
     tab: "Intro",
-    kicker: "Vision2Watch \u00b7 Den Haag",
+    kicker: "Vision2Watch · Den Haag",
     kop: "De kers op de taart",
     tekst:
-      "Een interactieve vloer, wand, tafel of bar is het moment waar mensen over napraten. Wij bedenken de content, bouwen de techniek en installeren hem op locatie \u2014 zodat u niet met vier partijen hoeft te schakelen voor \u00e9\u00e9n effect.",
+      "Een interactieve vloer, wand, tafel of bar is het moment waar mensen over napraten. Wij bedenken de content, bouwen de techniek en installeren hem op locatie — zodat u niet met vier partijen hoeft te schakelen voor één effect.",
     beeld: "/media/video/dreamhack-interactieve-vloer-poster.webp",
     video: "/media/video/dreamhack-interactieve-vloer.mp4",
     alt: "Bezoekers spelen op een interactieve vloer van Vision2Watch op DreamHack in Rotterdam Ahoy",
@@ -102,15 +102,15 @@ export function Home() {
           dat antwoord zien zonder eerst een verhaal door te lezen. */}
       <Sectie
         kicker="Wat we maken"
-        kop="Zeventien productgroepen, uit \u00e9\u00e9n hand"
-        lead="Van interactieve vloer tot hologramwand. Wij bedenken de content, leveren en installeren de techniek en houden hem draaiend \u2014 te koop en te huur."
+        kop="Zeventien productgroepen, uit één hand"
+        lead="Van interactieve vloer tot hologramwand. Wij bedenken de content, leveren en installeren de techniek en houden hem draaiend — te koop en te huur."
       >
         {CATEGORIEEN.map((cat, ci) => {
           const groep = PRODUCTEN.filter((p) => p.categorie === cat.slug);
           return (
             <div key={cat.slug} id={cat.slug} className="mt-12 scroll-mt-24 first:mt-10">
               <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-lijn pb-3">
-                <h3 className="font-display text-xl font-medium">{cat.naam}</h3>
+                <h3 className="font-display text-xl">{cat.naam}</h3>
                 <p className="max-w-xl text-[0.95rem] leading-relaxed text-zacht">{cat.omschrijving}</p>
               </div>
               <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -187,7 +187,7 @@ export function Home() {
             {WERKWIJZE.map((w, i) => (
               <Reveal as="li" key={w.stap} vertraging={i * 70} className="border-t border-lijn pt-5">
                 <p className="font-display text-[0.85rem] font-medium text-accent">{w.stap}</p>
-                <h3 className="mt-2 font-display text-lg font-medium">{w.kop}</h3>
+                <h3 className="mt-2 font-display text-lg">{w.kop}</h3>
                 <p className="mt-2 text-[0.95rem] leading-relaxed text-zacht">{w.tekst}</p>
               </Reveal>
             ))}
@@ -203,7 +203,7 @@ export function Home() {
         <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 py-20 md:grid-cols-2 md:px-8 md:py-28">
           <Reveal>
             <p className="kicker mb-3">Showroom Den Haag</p>
-            <h2 className="text-3xl font-medium md:text-[2.6rem] md:leading-[1.1]">
+            <h2 className="text-3xl md:text-[2.6rem] md:leading-[1.1]">
               Zien is geloven: ervaar het zelf in onze showroom
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-zacht">

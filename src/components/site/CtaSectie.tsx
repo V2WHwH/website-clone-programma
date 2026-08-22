@@ -23,7 +23,7 @@ export function CtaSectie({
       <Sfeerlaag src="/media/video/sfeer-lichtbundels.mp4" poster="/media/video/sfeer-lichtbundels-poster.webp" />
       <div className="relative mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
         <Reveal className="max-w-2xl">
-          <h2 className="text-3xl font-medium md:text-4xl">{kop}</h2>
+          <h2 className="text-3xl md:text-4xl">{kop}</h2>
           <p className="mt-4 text-lg leading-relaxed text-zacht">{tekst}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Knop naar={primair.naar}>{primair.label}</Knop>

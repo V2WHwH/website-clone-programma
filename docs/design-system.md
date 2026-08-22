@@ -24,12 +24,25 @@ koppen); de fotografie en video's dragen de kleurbeleving.
 
 ## Typografie
 
-- **Display**: Space Grotesk (variabel, zelf gehost) voor koppen, knoppen
-  en kickers; licht negatieve letterspatiëring.
-- **Tekst**: Inter (variabel, zelf gehost).
-- Kickers: klein, kapitaal, oranje, ruime tracking, boven elke sectiekop.
-- H1 `text-4xl/5xl`, H2 `text-3xl/2.6rem`, betekenisvolle hiërarchie zonder
-  niveausprongen.
+Eén familie draagt de hele site: **Archivo** (variabel, zelf gehost, 87 kB),
+een industriële grotesk met zowel een gewicht- als een breedte-as. Daarnaast
+staat **IBM Plex Mono** (14 kB) voor korte technische labels.
+
+- **Koppen**: Archivo op gewicht 800 en breedte 116%, met strakke
+  letterspatiëring (-0.025em). Breed en zwaar, als bewegwijzering: dat past
+  bij een bedrijf dat installaties bouwt. Onder 640 px valt de breedte terug
+  naar 100%, want daar kost extra breedte alleen maar regels.
+- **Tekst**: dezelfde familie op normale breedte, gewicht 420. Op een donkere
+  grond oogt een gewone 400 dun en grijzig.
+- **Knoppen, menu en labels**: gewicht 560, zodat ze meedragen in het stevige
+  karakter in plaats van er dun naast te staan.
+- **Kickers**: klein, kapitaal, oranje, gewicht 700, ruime tracking.
+- **Chips en technische labels**: IBM Plex Mono, klein.
+- H1 `text-4xl/6xl`, H2 `text-3xl/5xl`, hiërarchie zonder niveausprongen.
+
+Bewust níet gebruikt: Inter, Space Grotesk, Manrope, Plus Jakarta en
+soortgelijke. Die zijn het standaardduo van door AI gegenereerde sites en
+maken elke pagina meteen herkenbaar als zodanig — precies wat hier niet moet.
 
 ## Ritme en vormen
 

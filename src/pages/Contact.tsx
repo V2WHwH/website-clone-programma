@@ -10,7 +10,7 @@ export function Contact() {
       <div className="grid gap-14 pb-20 pt-10 md:grid-cols-[1fr_1.2fr] md:pt-14">
         <div>
           <p className="kicker mb-3">Contact</p>
-          <h1 className="text-4xl font-medium leading-[1.1] md:text-5xl">Bespreek uw project</h1>
+          <h1 className="text-4xl leading-[1.1] md:text-5xl">Bespreek uw project</h1>
           <p className="mt-5 text-lg leading-relaxed text-zacht">
             Bel, mail of kom langs in de showroom: we denken graag mee, van eerste idee tot concreet plan.
           </p>
@@ -63,7 +63,7 @@ export function Contact() {
 
         <Reveal vertraging={80}>
           <div className="rounded-kaart border border-lijn bg-nacht p-6 md:p-8">
-            <h2 className="text-xl font-medium">Stuur een bericht</h2>
+            <h2 className="text-xl">Stuur een bericht</h2>
             <p className="mb-6 mt-2 text-[0.95rem] text-zacht">We reageren doorgaans binnen één werkdag.</p>
             <Formulier naam="contact" knoptekst="Verstuur bericht" />
           </div>

@@ -162,9 +162,9 @@ export function Hoofdstukken({ hoofdstukken }: Props) {
               <div className={`max-w-xl ${i % 2 === 1 ? "ml-auto" : ""}`}>
                 <p className="kicker mb-3">{h.kicker}</p>
                 {i === 0 ? (
-                  <h1 className="text-4xl font-medium leading-[1.05] md:text-6xl">{h.kop}</h1>
+                  <h1 className="text-4xl leading-[1.05] md:text-6xl">{h.kop}</h1>
                 ) : (
-                  <h2 className="text-3xl font-medium leading-[1.08] md:text-5xl">{h.kop}</h2>
+                  <h2 className="text-3xl leading-[1.08] md:text-5xl">{h.kop}</h2>
                 )}
                 <p className="mt-5 text-lg leading-relaxed text-zacht md:text-xl">{h.tekst}</p>
                 {h.merken && (

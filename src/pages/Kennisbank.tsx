@@ -11,7 +11,7 @@ export function Kennisbank() {
         <Kruimelpad items={[{ naam: "Kennisbank" }]} />
         <div className="max-w-3xl pb-10 pt-10 md:pt-14">
           <p className="kicker mb-3">Kennisbank</p>
-          <h1 className="text-4xl font-medium leading-[1.1] md:text-5xl">Hoe werkt het eigenlijk?</h1>
+          <h1 className="text-4xl leading-[1.1] md:text-5xl">Hoe werkt het eigenlijk?</h1>
           <p className="mt-5 text-lg leading-relaxed text-zacht">
             Heldere antwoorden op de vragen die klanten ons echt stellen: over techniek, kosten en keuzes. Geen verkooppraat, wel uitleg.
           </p>
@@ -23,7 +23,7 @@ export function Kennisbank() {
                 to={`/kennisbank/${a.slug}`}
                 className="group flex h-full flex-col rounded-kaart border border-lijn bg-nacht p-6 transition-colors hover:border-accent/60"
               >
-                <h2 className="font-display text-xl font-medium leading-snug">{a.kop}</h2>
+                <h2 className="font-display text-xl leading-snug">{a.kop}</h2>
                 <p className="mt-3 flex-1 leading-relaxed text-zacht">{a.antwoord.split(". ").slice(0, 2).join(". ")}.</p>
                 <p className="mt-5 font-display text-[0.9rem] font-medium text-accent">
                   Lees het antwoord <span aria-hidden="true" className="inline-block transition-transform duration-200 group-hover:translate-x-1">→</span>

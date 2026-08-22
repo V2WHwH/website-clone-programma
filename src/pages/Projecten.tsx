@@ -17,7 +17,7 @@ export function Projecten() {
         <Kruimelpad items={[{ naam: "Projecten" }]} />
         <div className="max-w-3xl pb-6 pt-10 md:pt-14">
           <p className="kicker mb-3">Projecten</p>
-          <h1 className="text-4xl font-medium leading-[1.1] md:text-5xl">Ons werk in de praktijk</h1>
+          <h1 className="text-4xl leading-[1.1] md:text-5xl">Ons werk in de praktijk</h1>
           <p className="mt-5 text-lg leading-relaxed text-zacht">
             Van gamevloer op DreamHack tot Sketchwall bij Sea Life: {PROJECTEN.length} projecten voor musea, merken, hotels, scholen en events.
           </p>

@@ -11,7 +11,7 @@ export function Toepassingen() {
         <Kruimelpad items={[{ naam: "Toepassingen" }]} />
         <div className="max-w-3xl pb-10 pt-10 md:pt-14">
           <p className="kicker mb-3">Toepassingen</p>
-          <h1 className="text-4xl font-medium leading-[1.1] md:text-5xl">Wat werkt waar?</h1>
+          <h1 className="text-4xl leading-[1.1] md:text-5xl">Wat werkt waar?</h1>
           <p className="mt-5 text-lg leading-relaxed text-zacht">
             Elke omgeving heeft zijn eigen dynamiek: een beursbezoeker beslist in seconden, een museumbezoeker neemt de tijd. Bekijk per sector welke technologie werkt, onderbouwd met projecten die we er echt bouwden.
           </p>
