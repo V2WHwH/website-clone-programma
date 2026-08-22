@@ -14,6 +14,7 @@ import {
   lokaalBedrijfSchema,
   organisatieSchema,
   productSchema,
+  productenLijstSchema,
   websiteSchema,
 } from "./schema";
 
@@ -36,6 +37,8 @@ export function headData(pad: string): HeadData {
     const schemas: object[] = [];
     if (pad === "/") schemas.push(organisatieSchema(), websiteSchema());
     else schemas.push(kruimelSchema([...kruimelBasis, { naam: m.titel.split("|")[0].split(":")[0].trim(), pad }]));
+    // Het productoverzicht krijgt er de volledige opsomming bij.
+    if (pad === "/producten") schemas.push(productenLijstSchema(PRODUCTEN));
     if (pad === "/contact") schemas.push(lokaalBedrijfSchema());
     return { titel: m.titel, description: m.description, og: STANDAARD_OG, noindex: m.noindex, schemas };
   }

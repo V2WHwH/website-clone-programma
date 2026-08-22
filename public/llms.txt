@@ -1,7 +1,10 @@
 # Vision2Watch
 
-> Vision2Watch (Vision 2 Watch B.V., Den Haag, KvK 27130482)
-> levert en bouwt interactieve audiovisuele oplossingen voor bedrijven:
+> Vision2Watch (Vision 2 Watch B.V., Den Haag, KvK 27130482) noemt zichzelf
+> "de kers op de taart": de partij die één opvallend moment toevoegt aan een
+> ruimte, event of winkel, en daarbij zowel de content bedenkt als de
+> hardware levert en installeert. Vision2Watch levert en bouwt interactieve
+> audiovisuele oplossingen voor bedrijven:
 > interactieve vloeren, muren, tafels en etalages, hologram-projectie,
 > holoboxen (via zusterbedrijf HEREweHOLO), holografische molens,
 > touchscreens, transparante schermen, LED-displays, gebouwprojectie,
@@ -18,11 +21,25 @@
 - [Interactieve vloer](https://www.vision2watch.nl/producten/interactieve-vloer)
 - [Hologram-projectie](https://www.vision2watch.nl/producten/hologram-projectie)
 - [Interactieve etalage](https://www.vision2watch.nl/producten/interactieve-etalage)
+- [Interactieve muur](https://www.vision2watch.nl/producten/interactieve-muur)
+- [Interactieve tafel en bar](https://www.vision2watch.nl/producten/interactieve-tafel)
+- [Holobox (HEREweHOLO)](https://www.vision2watch.nl/producten/hereweholo) en [HEREweHOLO mini](https://www.vision2watch.nl/producten/hereweholo-mini)
 - [Toepassingen per sector](https://www.vision2watch.nl/toepassingen)
 - [Diensten](https://www.vision2watch.nl/diensten): advies, content, installatie, service
 - [Projecten](https://www.vision2watch.nl/projecten): o.a. Ministerie van Defensie (DreamHack), Escher Museum, Sea Life, Clinique, RTL, Ouwehands Dierenpark
 - [Kennisbank](https://www.vision2watch.nl/kennisbank): uitleg over techniek en kosten
 - [Contact](https://www.vision2watch.nl/contact)
+
+## Alle zeventien productgroepen
+
+Interactieve projectie: interactieve vloer, interactieve muur, interactieve
+tafel en bar, sketchwall, virtual chef.
+Holografie: hologram-projectie, holografische molen, holobox (HEREweHOLO),
+HEREweHOLO mini, virtual host.
+Schermen en displays: touchscreens, interactieve etalage, transparant
+scherm, LED-displays, augmented reality op grote schermen.
+Projectie en mapping: gebouwprojectie, panoramische en 360-gradenprojectie,
+logo-animatie.
 
 ## Feiten
 

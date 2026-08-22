@@ -2,6 +2,8 @@
 // waar is; geen verzonnen prijzen, reviews of datums.
 import { SITE } from "../data/site";
 import type { Artikel, Faq, Product, Sector } from "../content/types";
+import { leveringLabel } from "../content/levering";
+import { CATEGORIEEN } from "../content/nl/categorieen";
 
 const abs = (pad: string) => `${SITE.domein}${pad}`;
 
@@ -26,6 +28,33 @@ export const organisatieSchema = () => ({
   },
   sameAs: SITE.socials.map((s) => s.url),
   knowsLanguage: ["nl", "en"],
+  slogan: "De kers op de taart",
+  areaServed: { "@type": "Country", name: "Nederland" },
+  // Waar dit bedrijf van is. Zoekmachines én AI-zoekmachines gebruiken dit
+  // om te bepalen bij welke vraag ze dit bedrijf noemen.
+  knowsAbout: [
+    "interactieve vloer",
+    "interactieve muur",
+    "interactieve tafel",
+    "interactieve bar",
+    "interactieve etalage",
+    "hologram-projectie",
+    "holobox",
+    "holografische molen",
+    "sketchwall",
+    "virtual host",
+    "virtual chef",
+    "touchscreen",
+    "transparant scherm",
+    "LED-display",
+    "gebouwprojectie",
+    "panoramische projectie",
+    "projection mapping",
+    "augmented reality op groot scherm",
+    "logo-animatie",
+    "contentproductie voor interactieve installaties",
+    "installatie en onderhoud van audiovisuele systemen",
+  ],
 });
 
 export const websiteSchema = () => ({
@@ -71,14 +100,66 @@ export const kruimelSchema = (kruimels: { naam: string; pad: string }[]) => ({
   })),
 });
 
-export const productSchema = (p: Product) => ({
+export const productSchema = (p: Product) => {
+  const levering = leveringLabel(p.levering);
+  const huur = /huur/i.test(levering ?? "");
+  const koop = /koop/i.test(levering ?? "");
+  // GoodRelations kent losse termen voor verkopen en verhuren. Zo staat er
+  // machineleesbaar wát er mogelijk is, zonder een prijs te verzinnen: die
+  // is bij ons altijd op aanvraag.
+  const functies = [
+    koop ? "http://purl.org/goodrelations/v1#Sell" : null,
+    huur ? "http://purl.org/goodrelations/v1#LeaseOut" : null,
+  ].filter(Boolean);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: p.naam,
+    description: p.intro,
+    image: abs(p.beeld.src),
+    url: abs(`/producten/${p.slug}`),
+    brand: { "@type": "Brand", name: SITE.naam },
+    manufacturer: { "@id": `${SITE.domein}/#organisatie` },
+    category: CATEGORIEEN.find((c) => c.slug === p.categorie)?.naam,
+    ...(functies.length
+      ? {
+          offers: {
+            "@type": "Offer",
+            businessFunction: functies,
+            seller: { "@id": `${SITE.domein}/#organisatie` },
+            url: abs("/prijslijst"),
+            areaServed: { "@type": "Country", name: "Nederland" },
+            availability: "https://schema.org/InStock",
+          },
+        }
+      : {}),
+    ...(levering ? { additionalProperty: [{ "@type": "PropertyValue", name: "Levering", value: levering }] } : {}),
+    isRelatedTo: p.verwant.map((slug) => ({ "@type": "Product", url: abs(`/producten/${slug}`) })),
+  };
+};
+
+// Het productoverzicht als opsomming: zo kan een zoekmachine of AI-model in
+// één keer zien welke groepen er zijn en in welke volgorde ze horen.
+export const productenLijstSchema = (producten: Product[]) => ({
   "@context": "https://schema.org",
-  "@type": "Product",
-  name: p.naam,
-  description: p.intro,
-  image: abs(p.beeld.src),
-  url: abs(`/producten/${p.slug}`),
-  brand: { "@type": "Brand", name: SITE.naam },
+  "@type": "CollectionPage",
+  "@id": `${SITE.domein}/producten#lijst`,
+  name: "Producten van Vision2Watch",
+  url: abs("/producten"),
+  isPartOf: { "@id": `${SITE.domein}/#website` },
+  about: { "@id": `${SITE.domein}/#organisatie` },
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: producten.length,
+    itemListOrder: "https://schema.org/ItemListUnordered",
+    itemListElement: producten.map((p, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: p.naam,
+      url: abs(`/producten/${p.slug}`),
+    })),
+  },
 });
 
 export const faqSchema = (faqs: Faq[]) => ({
