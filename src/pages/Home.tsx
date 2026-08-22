@@ -7,12 +7,79 @@ import { SITE } from "../data/site";
 import { Knop } from "../components/ui/Knop";
 import { Reveal } from "../components/ui/Reveal";
 import { Sectie } from "../components/ui/Sectie";
-import { HeroVideo } from "../components/site/HeroVideo";
 import { LogoBalk } from "../components/site/LogoBalk";
 import { ProjectKaart } from "../components/site/Kaarten";
 import { CtaSectie } from "../components/site/CtaSectie";
-import { Achterwand } from "../components/site/Achterwand";
+import { Hoofdstukken } from "../components/site/Hoofdstukken";
+import { ProductKaart } from "../components/site/Kaarten";
 import { Beeld } from "../components/ui/Beeld";
+
+// De opening van de site. Geen kop met een plaatje ernaast, maar meteen een
+// schermvullende opname van werk dat draait, met de productgroepen als balk
+// erboven. Wie hier binnenkomt ziet in vijf seconden wát we maken en kan er
+// direct heen; wie doorscrolt krijgt ze een voor een te zien.
+const HOOFDSTUKKEN = [
+  {
+    tab: "Intro",
+    kicker: "Vision2Watch \u00b7 Den Haag",
+    kop: "De kers op de taart",
+    tekst:
+      "Een interactieve vloer, wand, tafel of bar is het moment waar mensen over napraten. Wij bedenken de content, bouwen de techniek en installeren hem op locatie \u2014 zodat u niet met vier partijen hoeft te schakelen voor \u00e9\u00e9n effect.",
+    beeld: "/media/video/dreamhack-interactieve-vloer-poster.webp",
+    video: "/media/video/dreamhack-interactieve-vloer.mp4",
+    alt: "Bezoekers spelen op een interactieve vloer van Vision2Watch op DreamHack in Rotterdam Ahoy",
+    merken: ["eigen contentstudio", "eigen software", "installatie & service"],
+    naar: { pad: "/producten", label: "Bekijk alle productgroepen" },
+  },
+  {
+    tab: "Vloer",
+    kicker: "Interactieve vloer",
+    kop: "Een vloer waar mensen blijven staan",
+    tekst:
+      "Elke stap laat iets gebeuren: water dat rimpelt, bloemen die opzij gaan, een spel dat begint. In de winkelstraat van Designer Outlet Roermond loopt hij door tot na sluitingstijd.",
+    beeld: "/media/video/outlet-roermond-vloer-poster.webp",
+    video: "/media/video/outlet-roermond-vloer.mp4",
+    alt: "Vloerprojectie in de winkelstraat van Designer Outlet Roermond bij avond",
+    merken: ["te koop en te huur", "eigen iFloor-software", "mobiel of vast"],
+    naar: { pad: "/producten/interactieve-vloer", label: "Bekijk de interactieve vloer" },
+  },
+  {
+    tab: "Wand",
+    kicker: "Interactieve muur",
+    kop: "Een muur die terugkijkt",
+    tekst:
+      "Een blinde wand wordt beeld over de volle lengte, en reageert op wie ervoor langsloopt. Van een lounge tot een beursstand: het formaat bepaalt u, wij rekenen de projectoren aan elkaar.",
+    beeld: "/media/video/muurprojectie-lounge-poster.webp",
+    video: "/media/video/muurprojectie-lounge.mp4",
+    alt: "Langgerekte muurprojectie in een lounge, opgenomen in het interieur",
+    merken: ["reageert op beweging", "te koop en te huur", "content in uw huisstijl"],
+    naar: { pad: "/producten/interactieve-muur", label: "Bekijk de interactieve muur" },
+  },
+  {
+    tab: "Tafel & bar",
+    kicker: "Interactieve tafel en bar",
+    kop: "Een tafel waar het gesprek begint",
+    tekst:
+      "Bezoekers tikken op het tafelblad en de informatie verschijnt naast het product dat er echt op staat. Ideaal waar u iets uit te leggen heeft en niemand een folder wil lezen.",
+    beeld: "/media/video/interactieve-bar-bloemen-poster.webp",
+    video: "/media/video/interactieve-bar-bloemen.mp4",
+    alt: "Bezoekers bedienen een projectietafel met informatie naast de planten die erop staan",
+    merken: ["aanraking", "meerdere personen tegelijk", "eigen content"],
+    naar: { pad: "/producten/interactieve-tafel", label: "Bekijk de interactieve tafel" },
+  },
+  {
+    tab: "Hologram",
+    kicker: "Holografie",
+    kop: "Uw product levensgroot in de lucht",
+    tekst:
+      "Te groot, te kostbaar of nog niet gebouwd: als hologram staat het er toch. Op ware grootte, zwevend, zonder bril. Meerdere boxen naast elkaar vormen samen een hele wand.",
+    beeld: "/media/video/hologramwand-showwindow-poster.webp",
+    video: "/media/video/hologramwand-showwindow.mp4",
+    alt: "Hologramwand van vier panelen waarin mensen levensgroot verschijnen",
+    merken: ["geen bril nodig", "koppelbaar tot een wand", "met HEREweHOLO"],
+    naar: { pad: "/producten/hereweholo", label: "Bekijk de holobox" },
+  },
+];
 
 const UITGELICHT_PROJECT = ["werken-bij-defensie", "escher-museum", "clinique", "outlet-store-roermond"];
 
@@ -26,110 +93,42 @@ const WERKWIJZE = [
 export function Home() {
   return (
     <>
-      {/* Hero: video van een echt project, boodschap in enkele seconden helder */}
-      <section className="relative min-h-[82svh] overflow-hidden">
-        <div className="absolute inset-0">
-          <HeroVideo
-            src="/media/video/dreamhack-interactieve-vloer.mp4"
-            poster="/media/video/dreamhack-interactieve-vloer-poster.webp"
-            label="Interactieve vloer van Vision2Watch in actie op DreamHack, Rotterdam Ahoy"
-            className="h-full"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-inkt via-inkt/55 to-inkt/25" aria-hidden="true" />
-        <div className="relative mx-auto flex min-h-[82svh] w-full max-w-6xl flex-col justify-end px-5 pb-16 pt-28 md:px-8 md:pb-24">
-          <h1 className="max-w-3xl text-4xl font-medium leading-[1.08] md:text-6xl">
-            Wij maken ruimtes die <span className="text-accent">reageren</span> op mensen
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-tekst/90 md:text-xl">
-            Vision2Watch levert en bouwt interactieve audiovisuele oplossingen: hologrammen, interactieve vloeren en etalages, projectie en LED. Van concept en content tot installatie en service, te koop en te huur.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Knop naar="/producten">Ontdek de mogelijkheden</Knop>
-            <Knop naar="/projecten" variant="secundair">Bekijk projecten</Knop>
-          </div>
-        </div>
-      </section>
+      <Hoofdstukken hoofdstukken={HOOFDSTUKKEN} />
 
       <LogoBalk />
 
-      {/* Wat we doen: vier productclusters */}
+      {/* Alle productgroepen, hoog op de pagina. Wie hier komt met een
+          concrete vraag ("hebben jullie ook een transparant scherm?") moet
+          dat antwoord zien zonder eerst een verhaal door te lezen. */}
       <Sectie
-        kicker="Wat we doen"
-        kop="Technologie, experience, content en integratie uit één hand"
-        lead="We combineren kennis van marketing, audio en visuals tot oplossingen die opvallen én werken. Met eigen interactieve software, een eigen contentstudio en een team dat installeert en onderhoudt."
+        kicker="Wat we maken"
+        kop="Zeventien productgroepen, uit \u00e9\u00e9n hand"
+        lead="Van interactieve vloer tot hologramwand. Wij bedenken de content, leveren en installeren de techniek en houden hem draaiend \u2014 te koop en te huur."
       >
-        <div className="mt-12 grid gap-4 md:grid-cols-2">
-          {CATEGORIEEN.map((cat, i) => {
-            const eerste = PRODUCTEN.find((p) => p.categorie === cat.slug);
-            return (
-              <Reveal key={cat.slug} vertraging={i * 70}>
-                <Link
-                  to={`/producten#${cat.slug}`}
-                  className="kaart group flex h-full flex-col overflow-hidden rounded-kaart border border-lijn bg-nacht transition-colors hover:border-accent/60"
-                >
-                  {eerste && (
-                    <div className="kaart-beeld aspect-[16/8] overflow-hidden">
-                      <Beeld src={eerste.beeld.src} alt={eerste.beeld.alt} className="h-full w-full object-cover" sizes="(min-width: 768px) 50vw, 100vw" />
-                    </div>
-                  )}
-                  <div className="flex flex-1 flex-col p-6">
-                    <h3 className="font-display text-xl font-medium">{cat.naam}</h3>
-                    <p className="mt-2 flex-1 leading-relaxed text-zacht">{cat.omschrijving}</p>
-                    <p className="mt-4 font-display text-[0.9rem] font-medium text-accent">
-                      Bekijk producten <span aria-hidden="true" className="inline-block transition-transform duration-200 group-hover:translate-x-1">→</span>
-                    </p>
-                  </div>
-                </Link>
-              </Reveal>
-            );
-          })}
-        </div>
+        {CATEGORIEEN.map((cat, ci) => {
+          const groep = PRODUCTEN.filter((p) => p.categorie === cat.slug);
+          return (
+            <div key={cat.slug} id={cat.slug} className="mt-12 scroll-mt-24 first:mt-10">
+              <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-lijn pb-3">
+                <h3 className="font-display text-xl font-medium">{cat.naam}</h3>
+                <p className="max-w-xl text-[0.95rem] leading-relaxed text-zacht">{cat.omschrijving}</p>
+              </div>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {groep.map((product, i) => (
+                  <Reveal key={product.slug} vertraging={Math.min(i, 3) * 60 + ci * 20}>
+                    <ProductKaart product={product} sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" />
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        <Reveal className="mt-12">
+          <Knop naar="/producten">Alles op een rij, met techniek en prijsindicatie</Knop>
+        </Reveal>
       </Sectie>
 
-      {/* Achterwand: het beeld blijft staan terwijl de belofte eroverheen
-          schuift. Dit is waar de bezoeker moet voelen wat de techniek met
-          een ruimte doet, in plaats van erover te lezen. */}
-      <Achterwand
-        panelen={[
-          {
-            beeld: "/media/video/outlet-roermond-vloer-poster.webp",
-            video: "/media/video/outlet-roermond-vloer.mp4",
-            alt: "Vloerprojectie in de winkelstraat van Designer Outlet Roermond bij avond",
-            kicker: "De vloer",
-            kop: "Een winkelstraat waar mensen blijven staan",
-            tekst: "Een interactieve vloer reageert op elke stap. Passanten gaan spelen, blijven langer en nemen uw boodschap mee. In Roermond loopt de straat na sluitingstijd gewoon door.",
-            naar: { pad: "/producten/interactieve-vloer", label: "Bekijk de interactieve vloer" },
-          },
-          {
-            beeld: "/media/video/hologramwand-showwindow-poster.webp",
-            video: "/media/video/hologramwand-showwindow.mp4",
-            alt: "Hologramwand van vier panelen waarin mensen levensgroot verschijnen",
-            kicker: "Het hologram",
-            kop: "Uw product levensgroot in de lucht",
-            tekst: "Te groot, te kostbaar of nog niet gebouwd: als hologram staat het er toch. Op ware grootte, zwevend, zonder dat er een scherm te zien is. Meerdere boxen vormen samen een hele wand.",
-            naar: { pad: "/producten/hereweholo", label: "Bekijk de holobox" },
-          },
-          {
-            beeld: "/media/video/sketchwall-sealife-poster.webp",
-            video: "/media/video/sketchwall-sealife.mp4",
-            alt: "Kinderen zien hun eigen getekende vissen rondzwemmen op de Sketchwall bij Sea Life",
-            kicker: "De verbeelding",
-            kop: "Wat een kind tekent, zwemt even later rond",
-            tekst: "Bij Sea Life tekenen kinderen hun eigen vis en scannen die in. Even later zwemt hij levensgroot over de wand, en schrikt hij als je hem aanraakt.",
-            naar: { pad: "/projecten/sea-life", label: "Bekijk dit project" },
-          },
-          {
-            beeld: "/media/video/panorama-onderwaterzaal-poster.webp",
-            video: "/media/video/panorama-onderwaterzaal.mp4",
-            alt: "Zaal waarin alle wanden samen één onderwaterbeeld vormen",
-            kicker: "De ruimte",
-            kop: "Een zaal die van wand tot wand ergens anders is",
-            tekst: "Meerdere projectoren worden naadloos aan elkaar gerekend, tot de hele ruimte beeld is. Wie binnenstapt staat niet voor een scherm, maar erin.",
-            naar: { pad: "/producten/panoramische-projectie", label: "Bekijk panoramische projectie" },
-          },
-        ]}
-      />
+
 
       {/* Toepassingen */}
       <section className="border-t border-lijn bg-nacht/40">
