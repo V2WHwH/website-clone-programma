@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { CATEGORIEEN } from "../content/nl/categorieen";
 import { PRODUCTEN } from "../content/nl/producten";
 import { Reveal } from "../components/ui/Reveal";
@@ -16,7 +17,11 @@ export function Producten() {
             Interactieve technologie, te koop en te huur
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-zacht">
-            Alle oplossingen leveren we compleet: hardware, eigen software, content in uw huisstijl, installatie en service. Kies een categorie of blader door het volledige aanbod.
+            Alle oplossingen leveren we compleet: hardware, eigen software, content in uw huisstijl, 
+            <Link to="/diensten" className="text-accent underline decoration-accent/30 underline-offset-4 transition-colors hover:decoration-accent">
+              installatie en service
+            </Link>
+            . Kies een categorie of blader door het volledige aanbod.
           </p>
         </div>
         <nav aria-label="Categorieën" className="flex flex-wrap gap-2 pb-6 pt-2">

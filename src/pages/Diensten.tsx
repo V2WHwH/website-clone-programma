@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Reveal } from "../components/ui/Reveal";
 import { Sectie } from "../components/ui/Sectie";
 import { Beeld } from "../components/ui/Beeld";
@@ -80,7 +81,11 @@ export function Diensten() {
             Van eerste idee tot draaiende installatie
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-zacht">
-            Vision2Watch is geen doorgeefluik van hardware. We adviseren, ontwerpen content in eigen huis, installeren op locatie en blijven verantwoordelijk voor service en onderhoud. Eén partner, één aanspreekpunt, het hele traject.
+            Vision2Watch is geen doorgeefluik van hardware. We adviseren, ontwerpen content 
+            <Link to="/over-ons" className="text-accent underline decoration-accent/30 underline-offset-4 transition-colors hover:decoration-accent">
+              in eigen studio
+            </Link>
+            , installeren op locatie en blijven verantwoordelijk voor service en onderhoud. Eén partner, één aanspreekpunt, het hele traject.
           </p>
         </div>
       </div>

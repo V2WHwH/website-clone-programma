@@ -44,9 +44,21 @@ for (const route of KERNROUTES.slice(0, 4)) {
   const klein = await mob.evaluate(() => {
     let n = 0;
     const voorbeelden = [];
+    // WCAG 2.2, SC 2.5.8 Target Size (Minimum) kent een uitzondering
+    // "Inline": een doel dat in een zin staat, of waarvan de maat wordt
+    // bepaald door de regelhoogte van de omringende tekst, hoeft de 24 px
+    // niet te halen. Zonder die uitzondering keurt deze controle elke
+    // gewone tekstlink in een alinea af, en dat is strenger dan de norm.
+    const inZin = (el) => {
+      const ouder = el.parentElement;
+      if (!ouder) return false;
+      const omheen = (ouder.textContent || "").replace(el.textContent || "", "").trim();
+      return omheen.length > 0;
+    };
     for (const el of document.querySelectorAll("a,button")) {
       const b = el.getBoundingClientRect();
       if (b.width === 0 || b.height === 0 || b.top > 2500) continue;
+      if (inZin(el)) continue;
       if ((el.textContent || "").trim().length > 0 && b.height < 24) {
         n++;
         if (voorbeelden.length < 3) voorbeelden.push((el.textContent || "").trim().slice(0, 30) + ` (${Math.round(b.width)}x${Math.round(b.height)})`);

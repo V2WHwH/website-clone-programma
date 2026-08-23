@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { SITE, TEAM } from "../data/site";
 import { Beeld } from "../components/ui/Beeld";
 import { Knop } from "../components/ui/Knop";
@@ -33,7 +34,11 @@ export function OverOns() {
             Wij laten ruimtes reageren op mensen
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-zacht">
-            Vision2Watch is gespecialiseerd in denken buiten de gebaande paden. Door kennis van marketing, audio en visuals te combineren zetten we interactieve projectie, holografie en mixed reality om in oplossingen die klanten telkens weer verbazen: inspirerende ideeën, kwalitatief hoogstaand werk en volledige toewijding.
+            Vision2Watch is gespecialiseerd in denken buiten de gebaande paden. Door kennis van marketing, audio en visuals te combineren zetten we interactieve projectie, holografie en mixed reality om in oplossingen die klanten telkens weer verbazen: inspirerende ideeën, kwalitatief hoogstaand werk en volledige toewijding. Wat we daarbij precies uit handen nemen, van concept tot onderhoud, staat bij 
+            <Link to="/diensten" className="text-accent underline decoration-accent/30 underline-offset-4 transition-colors hover:decoration-accent">
+              onze diensten
+            </Link>
+            .
           </p>
         </div>
       </div>

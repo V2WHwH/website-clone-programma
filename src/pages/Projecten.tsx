@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { PROJECTEN } from "../content/nl/projecten";
 import { SECTOREN } from "../content/nl/sectoren";
@@ -19,7 +20,11 @@ export function Projecten() {
           <p className="kicker mb-3">Projecten</p>
           <h1 className="text-4xl leading-[1.1] md:text-5xl">Ons werk in de praktijk</h1>
           <p className="mt-5 text-lg leading-relaxed text-zacht">
-            Van gamevloer op DreamHack tot Sketchwall bij Sea Life: {PROJECTEN.length} projecten voor musea, merken, hotels, scholen en events.
+            Van gamevloer op DreamHack tot Sketchwall bij Sea Life: {PROJECTEN.length} projecten voor musea, merken, hotels, scholen en events. Bedacht, gebouwd en geïnstalleerd door 
+            <Link to="/over-ons" className="text-accent underline decoration-accent/30 underline-offset-4 transition-colors hover:decoration-accent">
+              ons eigen studio- en installatieteam
+            </Link>
+            .
           </p>
         </div>
 
