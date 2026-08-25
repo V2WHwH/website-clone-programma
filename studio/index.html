@@ -102,6 +102,39 @@
   .cam-dot { width: 10px; height: 10px; border-radius: 50%; background: #4b5a70; flex: none; }
   .cam-dot.present { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
 
+  /* ---- Aandachtseffecten: de knop trekt af en toe subtiel de aandacht ---- */
+  @property --fxa { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+
+  .vbtn.fx-glow { animation: fxGlow 1.8s ease-in-out; }
+  @keyframes fxGlow {
+    0%, 100% { }
+    50% { box-shadow: 0 16px 42px rgba(0,0,0,0.5), 0 0 70px var(--glow, rgba(53,208,186,0.5)),
+      0 0 28px var(--glow, rgba(53,208,186,0.5)), inset 0 1px 0 rgba(255,255,255,0.3); }
+  }
+  .vbtn.png-face.fx-glow { animation: fxGlowPng 1.8s ease-in-out; }
+  @keyframes fxGlowPng { 50% { filter: brightness(1.25) drop-shadow(0 0 34px var(--glow, rgba(53,208,186,0.6))); } }
+
+  .vbtn.fx-flash { animation: fxFlash 1.1s ease; }
+  @keyframes fxFlash {
+    0%, 100% { filter: none; }
+    12% { filter: brightness(2.1) saturate(1.3); }
+    26% { filter: brightness(1); }
+    40% { filter: brightness(1.8); }
+    56% { filter: brightness(1); }
+  }
+
+  .fx-ring { position: absolute; inset: -0.45em; border-radius: inherit; padding: 0.16em;
+    background: conic-gradient(from var(--fxa), transparent 0 70%, #ffffff 86%, var(--frame, #35d0ba) 93%, transparent 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: fxRing 1.5s linear forwards; pointer-events: none; z-index: 3; }
+  @keyframes fxRing { 0% { --fxa: 0deg; opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } 100% { --fxa: 360deg; opacity: 0; } }
+
+  .fx-shine { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3;
+    background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,0.55) 50%, transparent 58%);
+    background-size: 260% 100%; animation: fxShine 1.2s ease forwards; }
+  @keyframes fxShine { from { background-position: 130% 0; } to { background-position: -30% 0; } }
+
   /* Bewegingskader (zichtbaar in verplaats-modus bij "vrij bewegen") */
   .vframe { position: absolute; transform: translate(-50%, -50%); border: 2px dashed rgba(53,208,186,0.55);
     border-radius: 14px; pointer-events: none; display: none; }
@@ -277,6 +310,22 @@
         </select>
       </label>
     </div>
+    <h2>Effecten</h2>
+    <div class="card">
+      <label class="field">Selectie-effect (wat er gebeurt als een bezoeker een knop kiest)
+        <select id="cfgSelectFx">
+          <option value="zoom">🎬 Filmisch zoomen — gekozen knop komt naar voren, de rest vervaagt</option>
+          <option value="aside">↔️ Opzij geschoven — andere knoppen worden uit beeld getrokken</option>
+          <option value="depth">🌀 De diepte in — andere knoppen krimpen naar achteren weg</option>
+          <option value="burst">💥 Radiale burst — andere knoppen vliegen alle kanten op</option>
+          <option value="none">Geen effect (direct afspelen)</option>
+        </select>
+      </label>
+      <label class="field">Aandachtseffect gemiddeld elke … seconden (per knop, met variatie)
+        <input type="number" id="cfgFxInterval" min="3" max="120" step="1">
+      </label>
+      <p class="note">Het aandachtseffect zelf stel je per knop in op het tabblad Knoppen (gloedpuls, lichtrand, flits, glans-veeg of willekeurig).</p>
+    </div>
     <h2>3D-objecten (OBJ)</h2>
     <div class="card">
       <div class="row">
@@ -391,6 +440,8 @@ const defaultConfig = () => ({
   screensaver: { enabled: false, delaySec: 120, mediaIds: [] },
   camera: { enabled: false, dwellSec: 3, sensitivity: 5 },
   object3d: { color: '#8fa3bd', rotSpeed: 0.8, light: 1.0, shininess: 0.35, maxTriangles: 150000, autoCloseSec: 60 },
+  fxIntervalSec: 7,      // hoe vaak een knop gemiddeld een aandachtseffect speelt
+  selectFx: 'zoom',      // 'zoom' | 'aside' | 'depth' | 'burst' | 'none'
   buttons: [] // {id,label,mediaId,x,y,size,color,shape,depth,drift,showPreview}
 });
 
@@ -818,7 +869,8 @@ function playMedia(mediaId) {
   if (!m) return toast('Deze knop heeft nog geen (gevonden) video — koppel hem in het menu');
   if (m.kind === 'model') return playObject(mediaId);
   if (m.kind === 'image') return; // PNG is de knop zelf; niets om af te spelen
-  playVideo.src = m.url;
+  if (playVideo.src !== m.url) playVideo.src = m.url; // voorgeladen tijdens de overgang
+
   playOverlay.classList.add('show');
   if (config.hideButtonsDuringPlay) $('#buttonLayer').style.visibility = 'hidden';
   $('#idleVideo').pause();
@@ -856,6 +908,7 @@ function stopPlaying() {
   clearTimeout(objCloseTimer);
   objViewers.get('fullscreen')?.destroy();
   objViewers.delete('fullscreen');
+  cancelSelectAnims(); // knoppen terug naar hun plek
   playOverlay.classList.remove('show');
   setTimeout(() => {
     playOverlay.classList.remove('mode-3d');
@@ -927,8 +980,140 @@ $('#buttonLayer').addEventListener('click', (e) => {
     if (img && pngAlphaAt(img, e.clientX, e.clientY) < 16) return; // doorzichtig deel: geen klik
   }
   const b = config.buttons.find((x) => x.id === btnEl.dataset.id);
-  if (b) playMedia(b.mediaId);
+  if (!b) return;
+  const m = mediaCache.get(b.mediaId);
+  if (m && (m.kind === 'video' || m.kind === 'model')) {
+    // Tijdens de overgang alvast voorladen: video decodeert, 3D parset.
+    if (m.kind === 'video') { playVideo.src = m.url; playVideo.load(); }
+    else loadObjGeometry(b.mediaId).catch(() => {});
+    runSelectTransition(btnEl).then(() => playMedia(b.mediaId));
+  } else {
+    playMedia(b.mediaId);
+  }
 });
+
+/* ================= Selectie-effect =================
+   De gekozen knop komt naar de kijker toe; de overige knoppen verdwijnen
+   volgens het gekozen effect (vervagen, opzij, de diepte in of radiaal).
+   Additieve WAAPI-animaties bovenop de zweef-engine, dus alles blijft GPU. */
+
+let selectAnims = [];
+
+function runSelectTransition(chosenEl) {
+  const mode = config.selectFx || 'zoom';
+  if (mode === 'none' || editing) return Promise.resolve();
+  cancelSelectAnims();
+
+  const vw = innerWidth, vh = innerHeight;
+  const cR = chosenEl.getBoundingClientRect();
+  const cx = cR.left + cR.width / 2, cy = cR.top + cR.height / 2;
+  const D = 750;
+  const easeOut = 'cubic-bezier(0.33, 0.9, 0.25, 1)';
+  const easeIn = 'cubic-bezier(0.6, 0.02, 0.9, 0.4)';
+
+  for (const elB of document.querySelectorAll('.vbtn')) {
+    const r = elB.getBoundingClientRect();
+    const bx = r.left + r.width / 2, by = r.top + r.height / 2;
+    let frames, opts = { duration: D, easing: easeOut, fill: 'forwards', composite: 'add' };
+
+    if (elB === chosenEl) {
+      // Naar de kijker toe: richting het midden van het scherm groeien en aan
+      // het einde vervagen, zodat de video/het object een schoon beeld krijgt.
+      const dx = (vw / 2 - cx) * 0.7, dy = (vh / 2 - cy) * 0.7;
+      frames = [
+        { transform: 'translate(0px, 0px) scale(1)', opacity: 1 },
+        { transform: `translate(${dx * 0.7}px, ${dy * 0.7}px) scale(1.8)`, opacity: 1, offset: 0.62 },
+        { transform: `translate(${dx}px, ${dy}px) scale(2.4)`, opacity: 0 }
+      ];
+    } else if (mode === 'aside') {
+      // Uit beeld getrokken naar de dichtstbijzijnde zijkant.
+      const toLeft = bx < cx;
+      const dist = toLeft ? -(r.right + vw * 0.12) : (vw - r.left + vw * 0.12);
+      frames = [
+        { transform: 'translate(0px, 0px) rotate(0deg)', opacity: 1 },
+        { transform: `translate(${dist}px, 0px) rotate(${toLeft ? -7 : 7}deg)`, opacity: 0 }
+      ];
+      opts.easing = easeIn;
+    } else if (mode === 'burst') {
+      // Radiaal weg van de gekozen knop.
+      let dx = bx - cx, dy = by - cy;
+      const len = Math.hypot(dx, dy) || 1;
+      const fly = Math.max(vw, vh) * 1.25;
+      dx = dx / len * fly; dy = dy / len * fly;
+      frames = [
+        { transform: 'translate(0px, 0px) rotate(0deg) scale(1)', opacity: 1 },
+        { transform: `translate(${dx}px, ${dy}px) rotate(${dx > 0 ? 16 : -16}deg) scale(0.8)`, opacity: 0 }
+      ];
+      opts.easing = easeIn;
+    } else if (mode === 'depth') {
+      // Naar achteren de diepte in.
+      frames = [
+        { transform: 'translate(0px, 0px) scale(1)', opacity: 1, filter: 'blur(0px)' },
+        { transform: 'translate(0px, 26px) scale(0.3)', opacity: 0, filter: 'blur(5px)' }
+      ];
+    } else {
+      // 'zoom': ter plekke vervagen en krimpen.
+      frames = [
+        { transform: 'scale(1)', opacity: 1, filter: 'blur(0px)' },
+        { transform: 'scale(0.6)', opacity: 0, filter: 'blur(7px)' }
+      ];
+    }
+    selectAnims.push(elB.animate(frames, opts));
+  }
+  // Pas starten wanneer álle knoppen echt uit beeld zijn — de video of het
+  // 3D-object begint dus nooit terwijl er nog knoppen bewegen.
+  return Promise.all(selectAnims.map((a) => a.finished.catch(() => {})));
+}
+
+function cancelSelectAnims() {
+  for (const a of selectAnims) { try { a.cancel(); } catch {} }
+  selectAnims = [];
+}
+
+/* ================= Aandachtseffecten =================
+   Elke knop speelt af en toe (gemiddeld elke fxIntervalSec, met spreiding)
+   zijn gekozen effect: gloedpuls, lichtrand, flits of glans-veeg. */
+
+const FX_ALL = ['glow', 'sweep', 'flash', 'shine'];
+const fxNext = new Map(); // buttonId -> volgende afspeeltijd
+
+setInterval(() => {
+  if (editing || saverActive || playOverlay.classList.contains('show') || document.hidden) return;
+  const now = Date.now();
+  for (const b of config.buttons) {
+    if ((b.fx || 'random') === 'none') continue;
+    const btnEl = document.querySelector(`.vbtn[data-id="${b.id}"]`);
+    if (!btnEl) continue;
+    if (!fxNext.has(b.id)) {
+      fxNext.set(b.id, now + (0.4 + Math.random()) * config.fxIntervalSec * 1000);
+      continue;
+    }
+    if (now < fxNext.get(b.id)) continue;
+    fxNext.set(b.id, now + (0.6 + Math.random() * 0.8) * config.fxIntervalSec * 1000);
+    playFx(btnEl, b);
+  }
+}, 700);
+
+function playFx(btnEl, b) {
+  const isPng = btnEl.classList.contains('png-face');
+  // PNG-contourknoppen: alleen effecten die de vorm respecteren.
+  const pool = isPng ? ['glow', 'flash'] : FX_ALL;
+  let kind = b.fx === 'random' || !b.fx ? pool[Math.floor(Math.random() * pool.length)] : b.fx;
+  if (isPng && !pool.includes(kind)) kind = 'glow';
+
+  if (kind === 'sweep' || kind === 'shine') {
+    const span = el('span', { class: kind === 'sweep' ? 'fx-ring' : 'fx-shine' });
+    btnEl.append(span);
+    span.addEventListener('animationend', () => span.remove(), { once: true });
+    setTimeout(() => span.remove(), 2500); // vangnet
+  } else {
+    const cls = 'fx-' + kind;
+    btnEl.classList.remove(cls);
+    void btnEl.offsetWidth; // animatie herstarten
+    btnEl.classList.add(cls);
+    btnEl.addEventListener('animationend', () => btnEl.classList.remove(cls), { once: true });
+  }
+}
 
 /* Verplaats-modus: 🔒 ⇄ 🔓 */
 const lockFab = $('#lockFab');
@@ -1050,6 +1235,14 @@ function renderBtnList() {
       el('option', { value: 'yes' }, 'Aan — kader met videovoorbeeld'),
       el('option', { value: 'no' }, 'Uit — gewone knop'));
     previewSel.value = b.showPreview === false ? 'no' : 'yes';
+    const fxSel = el('select', { onchange: (e) => { b.fx = e.target.value; save(); } },
+      el('option', { value: 'random' }, '✨ Willekeurig (afwisselend)'),
+      el('option', { value: 'glow' }, 'Gloedpuls'),
+      el('option', { value: 'sweep' }, 'Lichtrand rondom'),
+      el('option', { value: 'flash' }, 'Flits'),
+      el('option', { value: 'shine' }, 'Glans-veeg'),
+      el('option', { value: 'none' }, 'Uit'));
+    fxSel.value = b.fx || 'random';
     const images = [...mediaCache.values()].filter((m) => m.kind === 'image');
     const imageSel = el('select', { onchange: (e) => { b.imageId = e.target.value || null; save(); renderStage(); } },
       el('option', { value: '' }, '— geen (kader met preview) —'),
@@ -1076,6 +1269,7 @@ function renderBtnList() {
       el('div', { class: 'row' },
         el('label', { class: 'field' }, 'Videovoorbeeld in de knop', previewSel),
         el('label', { class: 'field' }, 'Eigen PNG als knopvorm', imageSel)),
+      el('label', { class: 'field' }, 'Aandachtseffect (speelt af en toe vanzelf)', fxSel),
       swatches
     ));
   });
@@ -1086,7 +1280,7 @@ $('#addBtn').addEventListener('click', () => {
   config.buttons.push({
     id: uid(), label: 'Video ' + (n + 1), mediaId: [...mediaCache.keys()][0] || null,
     x: 50, y: 25 + (n % 5) * 13, size: 8, color: PALETTE[n % (PALETTE.length - 2)], shape: 'rounded',
-    depth: 'subtle', drift: 0, showPreview: true
+    depth: 'subtle', drift: 0, showPreview: true, fx: 'random'
   });
   save(); renderStage(); renderBtnList();
   toast('Knop toegevoegd — klik op 🔒 om hem te verslepen');
@@ -1156,6 +1350,8 @@ function renderLook() {
   $('#cfgHideBtns').value = config.hideButtonsDuringPlay ? 'yes' : 'no';
   $('#cfgClean').value = config.cleanMode ? 'yes' : 'no';
   $('#cfgOrientation').value = config.orientationMode || 'auto';
+  $('#cfgSelectFx').value = config.selectFx || 'zoom';
+  $('#cfgFxInterval').value = config.fxIntervalSec;
   const o3 = config.object3d;
   $('#o3Color').value = o3.color;
   $('#o3MaxTris').value = String(o3.maxTriangles);
@@ -1164,6 +1360,9 @@ function renderLook() {
   $('#o3Shine').value = o3.shininess;
   $('#o3Close').value = o3.autoCloseSec;
 }
+
+$('#cfgSelectFx').addEventListener('change', (e) => { config.selectFx = e.target.value; save(); });
+$('#cfgFxInterval').addEventListener('change', (e) => { config.fxIntervalSec = Math.max(3, Number(e.target.value) || 7); save(); });
 
 // 3D-parameters werken direct door in alle draaiende viewers.
 $('#o3Color').addEventListener('input', (e) => { config.object3d.color = e.target.value; save(); });
