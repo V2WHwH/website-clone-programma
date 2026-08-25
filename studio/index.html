@@ -135,6 +135,36 @@
     background-size: 260% 100%; animation: fxShine 1.2s ease forwards; }
   @keyframes fxShine { from { background-position: 130% 0; } to { background-position: -30% 0; } }
 
+  /* ---- Demo-handje: wijst knoppen aan en drukt ze "in" ---- */
+  #hand { position: absolute; left: 50%; top: 70%; z-index: 22; pointer-events: none;
+    width: calc(6.5vmin * var(--handScale, 1)); opacity: 0;
+    transition: left 1.15s cubic-bezier(0.45, 0.05, 0.3, 1), top 1.15s cubic-bezier(0.45, 0.05, 0.3, 1),
+      opacity 0.5s ease; }
+  #hand.visible { opacity: 1; }
+  #handInner { transform: rotate(-18deg) rotateX(12deg); transform-origin: 30% 10%;
+    transition: transform 0.9s ease; will-change: transform; }
+  #hand.flying #handInner { transform: rotate(-24deg) rotateX(18deg) translateY(-6%) scale(1.08); }
+  #hand.pressing #handInner { animation: handPress 0.7s cubic-bezier(0.35, 0, 0.3, 1); }
+  @keyframes handPress {
+    0%, 100% { transform: rotate(-18deg) rotateX(12deg) scale(1); }
+    38%, 55% { transform: rotate(-16deg) rotateX(4deg) translate(3%, 9%) scale(0.9); }
+  }
+  #hand svg { width: 100%; height: auto; display: block;
+    filter: drop-shadow(0 0.9vmin 1.1vmin rgba(0,0,0,0.45)); }
+  /* Losse contactschaduw onder de vingertop: hoog = groot en vaag, druk = klein en donker */
+  #handShadow { position: absolute; left: 8%; top: -4%; width: 55%; height: 14%;
+    border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.5), transparent 70%);
+    filter: blur(3px); transform: scale(1.25); opacity: 0.35; transition: transform 0.5s, opacity 0.5s; }
+  #hand.pressing #handShadow { transform: scale(0.65); opacity: 0.65; }
+
+  /* Druk-feedback op de knop zelf */
+  .hand-press { animation: handPressFx 0.5s ease; }
+  @keyframes handPressFx { 30% { filter: brightness(1.7); } }
+  .press-ripple { position: absolute; left: 50%; top: 50%; width: 2.2em; height: 2.2em;
+    margin: -1.1em 0 0 -1.1em; border-radius: 50%; border: 3px solid rgba(255,255,255,0.9);
+    pointer-events: none; z-index: 4; animation: pressRipple 0.65s ease-out forwards; }
+  @keyframes pressRipple { from { transform: scale(0.3); opacity: 0.9; } to { transform: scale(4.5); opacity: 0; } }
+
   /* Bewegingskader (zichtbaar in verplaats-modus bij "vrij bewegen") */
   .vframe { position: absolute; transform: translate(-50%, -50%); border: 2px dashed rgba(53,208,186,0.55);
     border-radius: 14px; pointer-events: none; display: none; }
@@ -243,6 +273,44 @@
        holobox-presentatie samen te stellen. Alles wordt automatisch bewaard.</p>
   </div>
   <div id="buttonLayer"></div>
+  <div id="hand">
+    <div id="handInner">
+      <svg viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffe3c4"/>
+            <stop offset="0.55" stop-color="#f4bd90"/>
+            <stop offset="1" stop-color="#d99565"/>
+          </linearGradient>
+          <linearGradient id="skinDark" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#eeb184"/>
+            <stop offset="1" stop-color="#c47f4f"/>
+          </linearGradient>
+          <radialGradient id="knuckleHi" cx="0.35" cy="0.3" r="0.9">
+            <stop offset="0" stop-color="#fff2e0" stop-opacity="0.9"/>
+            <stop offset="0.6" stop-color="#fff2e0" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- wijsvinger -->
+        <path d="M40 8 q8 -8 16 0 l1 46 -18 2 z" fill="url(#skin)" stroke="#a86d42" stroke-width="1.6"/>
+        <ellipse cx="48" cy="12" rx="6" ry="4.5" fill="#fff" opacity="0.5"/>
+        <!-- handpalm + gebalde vingers -->
+        <path d="M22 62 q-2 -14 12 -12 l5 4 18 -2 q28 -3 30 16 q2 30 -18 42 q-16 9 -30 2 q-16 -9 -17 -28 z"
+          fill="url(#skin)" stroke="#a86d42" stroke-width="1.8"/>
+        <!-- gebalde vingerknokkels -->
+        <path d="M58 54 q10 -4 14 3 M60 68 q11 -4 16 3 M60 82 q10 -3 15 4" fill="none"
+          stroke="#b97a4d" stroke-width="2.2" stroke-linecap="round"/>
+        <!-- duim -->
+        <path d="M24 66 q-14 6 -8 20 q4 10 16 8 l6 -10 q-10 -2 -14 -18 z" fill="url(#skinDark)"
+          stroke="#a86d42" stroke-width="1.8"/>
+        <!-- dieptehighlight -->
+        <ellipse cx="45" cy="70" rx="22" ry="18" fill="url(#knuckleHi)"/>
+        <!-- manchet -->
+        <path d="M30 108 q22 12 40 -4 l4 16 q-24 14 -48 2 z" fill="#2f7ff0" stroke="#1b4fa0" stroke-width="1.6"/>
+      </svg>
+    </div>
+    <div id="handShadow"></div>
+  </div>
 </div>
 
 <div id="playOverlay">
@@ -325,6 +393,19 @@
         <input type="number" id="cfgFxInterval" min="3" max="120" step="1">
       </label>
       <p class="note">Het aandachtseffect zelf stel je per knop in op het tabblad Knoppen (gloedpuls, lichtrand, flits, glans-veeg of willekeurig).</p>
+    </div>
+    <h2>Demo-handje</h2>
+    <div class="card">
+      <label class="field">Handje dat de knoppen aanwijst en indrukt
+        <select id="handEnabled"><option value="no">Uit</option><option value="yes">Aan</option></select>
+      </label>
+      <label class="field">Grootte van het handje
+        <input type="range" id="handSize" min="0.6" max="2" step="0.1">
+      </label>
+      <label class="field">Verschijnt na … seconden zonder aanraking
+        <input type="number" id="handDelay" min="3" max="120" step="1">
+      </label>
+      <p class="note">Het handje gaat knop voor knop langs en maakt een drukkende beweging. Raakt iemand het scherm aan, dan verdwijnt het direct en komt het pas terug na de ingestelde rusttijd.</p>
     </div>
     <h2>3D-objecten (OBJ)</h2>
     <div class="card">
@@ -442,6 +523,7 @@ const defaultConfig = () => ({
   object3d: { color: '#8fa3bd', rotSpeed: 0.8, light: 1.0, shininess: 0.35, maxTriangles: 150000, autoCloseSec: 60 },
   fxIntervalSec: 7,      // hoe vaak een knop gemiddeld een aandachtseffect speelt
   selectFx: 'zoom',      // 'zoom' | 'aside' | 'depth' | 'burst' | 'none'
+  hand: { enabled: false, size: 1.0, delaySec: 8 }, // demo-handje
   buttons: [] // {id,label,mediaId,x,y,size,color,shape,depth,drift,showPreview}
 });
 
@@ -453,7 +535,8 @@ function load() {
     return { ...d, ...stored,
       screensaver: { ...d.screensaver, ...stored.screensaver },
       camera: { ...d.camera, ...stored.camera },
-      object3d: { ...d.object3d, ...stored.object3d } };
+      object3d: { ...d.object3d, ...stored.object3d },
+      hand: { ...d.hand, ...stored.hand } };
   } catch { return defaultConfig(); }
 }
 function save() { localStorage.setItem(LS_KEY, JSON.stringify(config)); }
@@ -1115,6 +1198,64 @@ function playFx(btnEl, b) {
   }
 }
 
+/* ================= Demo-handje =================
+   Gaat knop voor knop langs, "vliegt" ernaartoe (hoog boven het scherm, met
+   losse contactschaduw) en maakt een drukkende beweging met druk-feedback op
+   de knop. Verdwijnt direct bij echte aanraking. */
+
+const handEl = $('#hand');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+let handVisible = false, handBusy = false, handIdx = 0;
+
+function applyHandSize() { handEl.style.setProperty('--handScale', config.hand.size); }
+
+function hideHand() {
+  handVisible = false;
+  handEl.classList.remove('visible', 'flying', 'pressing');
+}
+
+window.addEventListener('pointerdown', hideHand, { capture: true });
+
+setInterval(async () => {
+  const blocked = !config.hand.enabled || editing || saverActive || document.hidden ||
+    playOverlay.classList.contains('show') || panel.classList.contains('open') || !config.buttons.length;
+  if (blocked) { if (handVisible) hideHand(); return; }
+  if ((Date.now() - lastInteraction) / 1000 < config.hand.delaySec || handBusy) return;
+  handBusy = true;
+  try { await handCycle(); } finally { handBusy = false; }
+}, 800);
+
+async function handCycle() {
+  const b = config.buttons[handIdx++ % config.buttons.length];
+  const s = config.hand.size || 1;
+  // Vingertop van het handje op het midden van de knop richten.
+  handEl.style.left = `calc(${b.x}% - ${3.1 * s}vmin)`;
+  handEl.style.top = `calc(${b.y}% - ${0.4 * s}vmin)`;
+  if (!handVisible) { handVisible = true; handEl.classList.add('visible'); }
+  handEl.classList.add('flying');
+  await wait(1200);
+  if (!handVisible) return;
+  handEl.classList.remove('flying');
+  await wait(160);
+  if (!handVisible) return;
+  handEl.classList.add('pressing');
+  setTimeout(() => {
+    const btnEl = document.querySelector(`.vbtn[data-id="${b.id}"]`);
+    if (btnEl && handVisible) {
+      btnEl.classList.remove('hand-press');
+      void btnEl.offsetWidth;
+      btnEl.classList.add('hand-press');
+      const rip = el('span', { class: 'press-ripple' });
+      btnEl.append(rip);
+      rip.addEventListener('animationend', () => rip.remove(), { once: true });
+      setTimeout(() => rip.remove(), 1200);
+    }
+  }, 280);
+  await wait(760);
+  handEl.classList.remove('pressing');
+  await wait(520);
+}
+
 /* Verplaats-modus: 🔒 ⇄ 🔓 */
 const lockFab = $('#lockFab');
 lockFab.addEventListener('click', () => {
@@ -1352,6 +1493,9 @@ function renderLook() {
   $('#cfgOrientation').value = config.orientationMode || 'auto';
   $('#cfgSelectFx').value = config.selectFx || 'zoom';
   $('#cfgFxInterval').value = config.fxIntervalSec;
+  $('#handEnabled').value = config.hand.enabled ? 'yes' : 'no';
+  $('#handSize').value = config.hand.size;
+  $('#handDelay').value = config.hand.delaySec;
   const o3 = config.object3d;
   $('#o3Color').value = o3.color;
   $('#o3MaxTris').value = String(o3.maxTriangles);
@@ -1363,6 +1507,9 @@ function renderLook() {
 
 $('#cfgSelectFx').addEventListener('change', (e) => { config.selectFx = e.target.value; save(); });
 $('#cfgFxInterval').addEventListener('change', (e) => { config.fxIntervalSec = Math.max(3, Number(e.target.value) || 7); save(); });
+$('#handEnabled').addEventListener('change', (e) => { config.hand.enabled = e.target.value === 'yes'; save(); if (!config.hand.enabled) hideHand(); });
+$('#handSize').addEventListener('input', (e) => { config.hand.size = Number(e.target.value); save(); applyHandSize(); });
+$('#handDelay').addEventListener('change', (e) => { config.hand.delaySec = Math.max(3, Number(e.target.value) || 8); save(); });
 
 // 3D-parameters werken direct door in alle draaiende viewers.
 $('#o3Color').addEventListener('input', (e) => { config.object3d.color = e.target.value; save(); });
@@ -1706,6 +1853,7 @@ window.addEventListener('resize', applyOrientationMode);
   }
   renderStage();
   applyOrientationMode();
+  applyHandSize();
   if (config.camera.enabled) startCamera();
   try { await navigator.storage?.persist?.(); } catch {}
 })();
