@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>HereWeHolo CMS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+
+<!-- Login -->
+<div id="loginView" class="login hidden">
+  <form id="loginForm" class="login-card">
+    <h1>HereWe<span>Holo</span></h1>
+    <p>Holobox Platform CMS</p>
+    <input type="password" id="loginPassword" placeholder="Wachtwoord" autocomplete="current-password" autofocus>
+    <button type="submit" class="btn primary">Inloggen</button>
+    <div id="loginError" class="error"></div>
+  </form>
+</div>
+
+<!-- App -->
+<div id="appView" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand">HereWe<span>Holo</span></div>
+    <nav>
+      <button data-tab="dashboard" class="active">📺 Holoboxen</button>
+      <button data-tab="media">🗂️ Media &amp; mappen</button>
+      <button data-tab="playlists">🎞️ Playlists</button>
+      <button data-tab="live">📡 Live-bronnen</button>
+      <button data-tab="integratie">🔌 Integratie</button>
+      <button data-tab="instellingen">⚙️ Instellingen</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div id="connState" class="conn">●</div>
+      <button id="logoutBtn" class="btn ghost">Uitloggen</button>
+    </div>
+  </aside>
+
+  <main>
+    <div id="passwordWarning" class="banner hidden">
+      ⚠️ Het standaardwachtwoord is actief. Zet <code>ADMIN_PASSWORD</code> in <code>.env</code> en herstart de server.
+    </div>
+
+    <!-- Dashboard / devices -->
+    <section id="tab-dashboard" class="tab">
+      <header><h2>Holoboxen</h2><button id="addDeviceBtn" class="btn primary">+ Holobox toevoegen</button></header>
+      <div id="deviceList" class="cards"></div>
+    </section>
+
+    <!-- Media -->
+    <section id="tab-media" class="tab hidden">
+      <header><h2>Media &amp; mappen</h2>
+        <div class="row">
+          <button id="newFolderBtn" class="btn">+ Nieuwe map</button>
+          <label class="btn primary" for="uploadInput">⬆ Uploaden</label>
+          <input type="file" id="uploadInput" multiple accept="video/*,image/*" hidden>
+        </div>
+      </header>
+      <div class="media-layout">
+        <div class="folder-pane">
+          <div class="folder-item root" data-folder="">📁 (hoofdmap)</div>
+          <div id="folderList"></div>
+        </div>
+        <div class="file-pane">
+          <div id="uploadProgress" class="hidden"><div id="uploadBar"></div><span id="uploadText"></span></div>
+          <table class="table" id="fileTable">
+            <thead><tr><th></th><th>Bestand</th><th>Type</th><th>Grootte</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p id="fileEmpty" class="muted hidden">Geen mediabestanden in deze map.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Playlists -->
+    <section id="tab-playlists" class="tab hidden">
+      <header><h2>Playlists</h2><button id="addPlaylistBtn" class="btn primary">+ Nieuwe playlist</button></header>
+      <div class="playlist-layout">
+        <div id="playlistList" class="list-pane"></div>
+        <div id="playlistEditor" class="editor-pane muted">Selecteer of maak een playlist.</div>
+      </div>
+    </section>
+
+    <!-- Live -->
+    <section id="tab-live" class="tab hidden">
+      <header><h2>Live-bronnen</h2><button id="addLiveBtn" class="btn primary">+ Live-bron toevoegen</button></header>
+      <p class="muted">Live streams voor realtime holobox-presentaties. Ondersteund: <b>HLS</b> (.m3u8), <b>WHEP/WebRTC</b> (lage latency, o.a. MediaMTX, Cloudflare, Millicast), <b>MJPEG</b> en een externe <b>WebRTC-pagina</b> (bijv. een videocall-link).</p>
+      <div id="liveList" class="cards"></div>
+    </section>
+
+    <!-- Integratie -->
+    <section id="tab-integratie" class="tab hidden">
+      <header><h2>Integratie</h2></header>
+      <div id="integrationInfo"></div>
+    </section>
+
+    <!-- Instellingen -->
+    <section id="tab-instellingen" class="tab hidden">
+      <header><h2>Instellingen</h2></header>
+      <form id="settingsForm" class="form-card">
+        <label>Platformnaam <input name="platformName"></label>
+        <label>Poll-interval player (seconden) <input name="pollIntervalSec" type="number" min="5" max="3600"></label>
+        <label>Overgangstijd tussen items (ms) <input name="transitionMs" type="number" min="0" max="5000"></label>
+        <label>Standaard oriëntatie
+          <select name="defaultOrientation"><option value="portrait">Portrait (staand)</option><option value="landscape">Landscape (liggend)</option></select>
+        </label>
+        <button class="btn primary">Opslaan</button>
+      </form>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/admin/admin.js"></script>
+</body>
+</html>

@@ -9,6 +9,10 @@
 .vscode/
 .idea/
 
+# Runtime-data holobox-platform (database + geüploade media)
+data/
+media/
+
 # Dependencies / build
 node_modules/
 dist/

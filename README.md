@@ -1,94 +1,72 @@
-# website-clone-programma
+# HereWeHolo — 4K Holobox Platform
 
-Repo voor het website-clone-programma. Op dit moment bevat de repo de configuratie
-om de **Ditto MCP-server** (`https://api.ditto.site/mcp`) te koppelen aan
-MCP-clients zoals Claude Code.
+Softwareplatform voor de HereWeHolo-holobox: een **4K-player** (portrait én
+landscape), een **CMS** voor het beheren van media, mappen, playlists,
+live streams en holoboxen, en een **integratie-API** waarmee klanten hun eigen
+holobox-presentatie kunnen koppelen (vergelijkbaar met Portl's *Cloud Persona
+custom endpoint* en Proto's Cloud CMS/fleet-aanpak).
 
-## Ditto MCP-server
+## Mogelijkheden
 
-De server is geregistreerd in [`.mcp.json`](.mcp.json) als een remote HTTP
-MCP-server:
+- **4K-weergave** — portrait (2160×3840) en landscape (3840×2160), inclusief
+  ondersteuning voor fysiek gedraaide panelen (rotatie 90/180/270°).
+- **Fixed video & afbeeldingen** — mp4/webm/mov, gapless overgangen met fade,
+  HTTP range-streaming voor grote 4K-bestanden (tot 8 GB per upload).
+- **Live video** — HLS (universeel), WHEP/WebRTC (sub-seconde latency, o.a.
+  MediaMTX/Cloudflare/Millicast), MJPEG en externe WebRTC-pagina's.
+- **Eigen presentaties** — web-URL's fullscreen in de playlist, of een externe
+  content-endpoint per box met automatische fallback.
+- **CMS** (`/admin`, Nederlands) — mappenbeheer, uploads met voortgang,
+  playlists, live-bronnen, device-dashboard met online-status, IP-adres,
+  "speelt nu", en realtime commando's (identificeer, ververs, herstart,
+  scherm zwart).
+- **Integratie-API** (`/api/v1`) — JSON-manifest per device-key, heartbeat,
+  health-check; CORS open zodat ook boxen van derden kunnen koppelen.
+- **Realtime** — WebSocket-hub: wijzigingen in het CMS staan binnen een
+  seconde op de box.
 
-```json
-{
-  "mcpServers": {
-    "ditto": {
-      "type": "http",
-      "url": "https://api.ditto.site/mcp",
-      "headers": {
-        "Authorization": "Bearer ${DITTO_API_KEY}"
-      }
-    }
-  }
-}
-```
-
-### Instellen
-
-1. Kopieer `.env.example` naar `.env` en vul je Ditto API key in:
-
-   ```bash
-   cp .env.example .env
-   # zet DITTO_API_KEY=... in .env
-   ```
-
-2. Zorg dat de variabele in je shell staat voordat je de client start
-   (Claude Code leest `${DITTO_API_KEY}` uit de omgeving, niet uit `.env`):
-
-   ```bash
-   export DITTO_API_KEY="$(grep '^DITTO_API_KEY=' .env | cut -d= -f2-)"
-   ```
-
-3. Start Claude Code in deze map. Bij de eerste keer vraagt hij om de
-   project-MCP-servers goed te keuren. Controleer daarna met:
-
-   ```bash
-   claude mcp list
-   ```
-
-   Of binnen een sessie met `/mcp`.
-
-### Alternatief: toevoegen via de CLI
-
-Zonder `.mcp.json` kan het ook direct:
+## Snel starten
 
 ```bash
-claude mcp add --transport http ditto https://api.ditto.site/mcp \
-  --header "Authorization: Bearer $DITTO_API_KEY"
+npm install
+cp .env.example .env        # zet minimaal ADMIN_PASSWORD
+npm start                   # draait op http://localhost:8080
 ```
 
-### Handmatig testen
-
-De MCP-endpoint spreekt JSON-RPC 2.0 over HTTP (Streamable HTTP transport):
+1. Open `http://localhost:8080/admin` en log in.
+2. Maak een **holobox** aan → kopieer de player-URL.
+3. Upload media in **Media & mappen**, maak een **playlist** en koppel die
+   aan de box.
+4. Open de player-URL fullscreen op de holobox (Chromium-kiosk):
 
 ```bash
-curl -sS https://api.ditto.site/mcp \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -H "Authorization: Bearer $DITTO_API_KEY" \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "initialize",
-    "params": {
-      "protocolVersion": "2025-06-18",
-      "capabilities": {},
-      "clientInfo": { "name": "curl", "version": "1.0" }
-    }
-  }'
+chromium --kiosk --autoplay-policy=no-user-gesture-required \
+  "http://<server>:8080/player/<device-key>"
 ```
 
-Daarna `tools/list` met dezelfde headers plus de `Mcp-Session-Id` die de server
-in de response-header teruggeeft.
+## Structuur
 
-## Nog te verifiëren
+```
+server.js            Express + WebSocket entrypoint
+lib/                 db (JSON-file), auth, media, manifest-builder, ws-hub
+routes/api.js        CMS-API (/api) + publieke integratie-API (/api/v1)
+public/admin/        CMS-frontend
+public/player/       4K-player voor op de box
+media/               mediabibliotheek (mappen; niet in git)
+data/db.json         configuratie-database (niet in git)
+docs/INTEGRATIE.md   protocollen, poorten, endpoint-contracten, live-setup
+```
 
-De endpoint is **niet** getest vanuit deze omgeving: `api.ditto.site` wordt
-geblokkeerd door de egress-policy van de sessie (`403` op de CONNECT). Daardoor
-staan twee dingen nog open:
+Alle integratie-details (poorten, firewall, manifest-schema, custom endpoint,
+4K/live-richtlijnen) staan in [`docs/INTEGRATIE.md`](docs/INTEGRATIE.md).
 
-- **Auth-schema** — de config gaat uit van een bearer token. Als Ditto in plaats
-  daarvan OAuth of een andere header (bijv. `X-API-Key`) gebruikt, moet
-  `.mcp.json` daarop aangepast worden.
-- **Beschikbare tools** — de tool-namen en schema's van de server zijn nog
-  onbekend en dus nergens gedocumenteerd in deze repo.
+---
+
+## Ditto MCP-server (bestaande koppeling)
+
+De repo bevat daarnaast de configuratie om de **Ditto MCP-server**
+(`https://api.ditto.site/mcp`) te koppelen aan MCP-clients zoals Claude Code;
+zie [`.mcp.json`](.mcp.json). Zet `DITTO_API_KEY` in `.env`. De endpoint
+spreekt JSON-RPC 2.0 over HTTP (Streamable HTTP transport) met een
+bearer-token. Auth-schema en beschikbare tools zijn nog niet vanuit deze
+omgeving geverifieerd (egress geblokkeerd).
