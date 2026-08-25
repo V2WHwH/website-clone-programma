@@ -101,6 +101,8 @@
   .cam-status { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
   .cam-dot { width: 10px; height: 10px; border-radius: 50%; background: #4b5a70; flex: none; }
   .cam-dot.present { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .cam-dot.live { background: #22c55e; box-shadow: 0 0 9px #22c55e; }
+  .cam-dot.err { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
 
   /* ---- Aandachtseffecten: de knop trekt af en toe subtiel de aandacht ---- */
   @property --fxa { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
@@ -462,6 +464,13 @@
       <label class="field">Gevoeligheid (1 = alleen dichtbij/duidelijk, 10 = zeer gevoelig)
         <input type="range" id="camSens" min="1" max="10" step="1">
       </label>
+      <label class="field">Camera-keuze (bij meerdere camera's)
+        <select id="camDevice"></select>
+      </label>
+      <div class="row">
+        <button id="camTest" class="btn">📷 Camera testen</button>
+        <div class="cam-status"><span class="cam-dot" id="camLiveDot"></span><span id="camLiveText">Camerabeeld: uit</span></div>
+      </div>
       <div class="cam-status"><span class="cam-dot" id="camDot"></span><span id="camStatusText">Camera uit</span></div>
       <div id="camPreviewBox"></div>
       <p class="note">Blijft iemand langer dan de ingestelde tijd in beeld staan, dan stopt de screensaver en verschijnen de preview-knoppen. Voorbijlopende mensen worden genegeerd. Beelden worden alleen lokaal verwerkt en nooit opgeslagen of verstuurd.</p>
@@ -519,7 +528,7 @@ const defaultConfig = () => ({
   cleanMode: false,
   orientationMode: 'auto', // 'auto' | 'portrait' | 'landscape'
   screensaver: { enabled: false, delaySec: 120, mediaIds: [] },
-  camera: { enabled: false, dwellSec: 3, sensitivity: 5 },
+  camera: { enabled: false, dwellSec: 3, sensitivity: 5, deviceId: null },
   object3d: { color: '#8fa3bd', rotSpeed: 0.8, light: 1.0, shininess: 0.35, maxTriangles: 150000, autoCloseSec: 60 },
   fxIntervalSec: 7,      // hoe vaak een knop gemiddeld een aandachtseffect speelt
   selectFx: 'zoom',      // 'zoom' | 'aside' | 'depth' | 'burst' | 'none'
@@ -1551,6 +1560,8 @@ function renderSaver() {
   $('#camEnabled').value = cam.enabled ? 'yes' : 'no';
   $('#camDwell').value = cam.dwellSec;
   $('#camSens').value = cam.sensitivity;
+  renderCamDevices();
+  updateCamLive();
 }
 
 $('#svEnabled').addEventListener('change', (e) => { config.screensaver.enabled = e.target.value === 'yes'; save(); if (!config.screensaver.enabled) exitSaver(); });
@@ -1562,6 +1573,17 @@ $('#camEnabled').addEventListener('change', (e) => {
 });
 $('#camDwell').addEventListener('change', (e) => { config.camera.dwellSec = Math.max(1, Number(e.target.value) || 3); save(); });
 $('#camSens').addEventListener('change', (e) => { config.camera.sensitivity = Number(e.target.value); save(); });
+$('#camDevice').addEventListener('change', (e) => {
+  config.camera.deviceId = e.target.value || null;
+  save();
+  stopCamera();
+  startCamera();
+});
+$('#camTest').addEventListener('click', () => {
+  if (!config.camera.enabled) { config.camera.enabled = true; save(); renderSaver(); }
+  stopCamera();
+  startCamera();
+});
 
 /* ---- Tab: opslaan & verhuizen ---- */
 $('#exportBtn').addEventListener('click', () => {
@@ -1696,34 +1718,120 @@ setInterval(() => {
 
 let camStream = null, camVideoEl = null, camTimer = null;
 let camBg = null, camPrev = null, camQuiet = 0, camPresenceSince = 0, camLastPresent = 0;
+let camLastFrame = 0;
+
+// Statuslampje: groen zodra er écht camerabeeld binnenkomt van de juiste camera.
+function setCamLive(state, text) {
+  const dot = $('#camLiveDot');
+  dot.classList.remove('live', 'err');
+  if (state === 'live') dot.classList.add('live');
+  if (state === 'err') dot.classList.add('err');
+  $('#camLiveText').textContent = 'Camerabeeld: ' + text;
+}
+
+function updateCamLive() {
+  if (!camStream) return setCamLive('off', 'uit');
+  const fresh = camLastFrame && Date.now() - camLastFrame < 1500;
+  if (!fresh) return setCamLive('err', 'geen beeld — controleer de camera');
+  const actual = camStream.getVideoTracks()[0]?.getSettings?.().deviceId;
+  if (config.camera.deviceId && actual && config.camera.deviceId !== actual) {
+    return setCamLive('err', 'andere camera actief dan gekozen — klik op Camera testen');
+  }
+  setCamLive('live', '✔ werkt (juiste camera actief)');
+}
+
+// Duidelijke uitleg per foutsoort, zodat de oorzaak direct te zien is.
+function camErrorText(e) {
+  switch (e && e.name) {
+    case 'NotAllowedError':
+    case 'PermissionDeniedError':
+      return 'Toegang geweigerd. Browser: klik op het camera-icoon in de adresbalk en kies "Toestaan". ' +
+        'Windows-app: zet in Windows-instellingen → Privacy → Camera de optie "Apps toegang geven tot camera" aan.';
+    case 'NotFoundError':
+    case 'DevicesNotFoundError':
+      return 'Geen camera gevonden. Sluit een (USB-)webcam aan en klik op "Camera testen".';
+    case 'NotReadableError':
+    case 'TrackStartError':
+      return 'De camera is in gebruik door een ander programma (Teams/Zoom/OBS?). Sluit dat af en test opnieuw.';
+    case 'OverconstrainedError':
+      return 'De gekozen camera bestaat niet meer. Kies hieronder een andere camera.';
+    case 'SecurityError':
+      return 'De browser blokkeert camera-toegang op deze pagina. Open de site via https:// (Netlify) of gebruik de Windows-app.';
+    default:
+      return 'Camera niet beschikbaar (' + ((e && e.name) || e) + ').';
+  }
+}
+
+async function listCameras() {
+  try {
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    return devs.filter((d) => d.kind === 'videoinput');
+  } catch { return []; }
+}
+
+async function renderCamDevices() {
+  const sel = $('#camDevice');
+  const cams = await listCameras();
+  sel.innerHTML = '';
+  sel.append(el('option', { value: '' }, cams.length ? 'Automatisch (eerste camera)' : '— geen camera gevonden —'));
+  cams.forEach((c, i) => {
+    const o = el('option', { value: c.deviceId }, c.label || `Camera ${i + 1}`);
+    if (c.deviceId === config.camera.deviceId) o.selected = true;
+    sel.append(o);
+  });
+}
 
 async function startCamera() {
   if (camStream) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    $('#camStatusText').textContent = 'Camera-API niet beschikbaar: open de site via https:// of gebruik de Windows-app.';
+    return toast('Camera-API niet beschikbaar in deze omgeving');
+  }
+  $('#camStatusText').textContent = 'Camera wordt gestart…';
+  const video = { width: 320, height: 240 };
+  if (config.camera.deviceId) video.deviceId = { exact: config.camera.deviceId };
   try {
-    camStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 }, audio: false });
+    camStream = await navigator.mediaDevices.getUserMedia({ video, audio: false });
   } catch (e) {
-    config.camera.enabled = false;
-    save(); renderSaver();
-    $('#camStatusText').textContent = 'Camera niet beschikbaar of geweigerd';
-    return toast('Webcam niet beschikbaar: ' + (e.name || e));
+    // Specifiek gekozen camera weg? Nog één keer automatisch proberen.
+    if (config.camera.deviceId && (e.name === 'OverconstrainedError' || e.name === 'NotFoundError')) {
+      config.camera.deviceId = null; save();
+      try {
+        camStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 }, audio: false });
+      } catch (e2) { e = e2; }
+    }
+    if (!camStream) {
+      $('#camStatusText').textContent = camErrorText(e);
+      setCamLive('err', 'fout — zie melding hierboven');
+      toast('Webcam: ' + (e.name || e));
+      renderCamDevices();
+      return;
+    }
   }
   camVideoEl = el('video', { muted: '', playsinline: '', autoplay: '' });
   camVideoEl.srcObject = camStream;
   camVideoEl.muted = true;
+  camVideoEl.play().catch(() => {});
+  camStream.getVideoTracks()[0]?.addEventListener('ended', () => {
+    stopCamera();
+    $('#camStatusText').textContent = 'Camera losgekoppeld — sluit hem aan en klik op "Camera testen".';
+  });
   $('#camPreviewBox').innerHTML = '';
   $('#camPreviewBox').append(camVideoEl);
   camBg = camPrev = null; camQuiet = 0; camPresenceSince = 0;
   camTimer = setInterval(sampleCamera, 350);
   $('#camStatusText').textContent = 'Camera actief — nog niemand gedetecteerd';
+  renderCamDevices(); // na toestemming zijn de cameranamen zichtbaar
 }
 
 function stopCamera() {
   clearInterval(camTimer); camTimer = null;
   if (camStream) for (const t of camStream.getTracks()) t.stop();
-  camStream = null; camBg = null;
+  camStream = null; camBg = null; camLastFrame = 0;
   $('#camPreviewBox').innerHTML = '';
   $('#camDot').classList.remove('present');
   $('#camStatusText').textContent = 'Camera uit';
+  setCamLive('off', 'uit');
 }
 
 const camCanvas = document.createElement('canvas');
@@ -1745,7 +1853,9 @@ function fracDiff(a, b, threshold) {
 }
 
 function sampleCamera() {
-  if (!camVideoEl || camVideoEl.readyState < 2) return;
+  if (!camVideoEl || camVideoEl.readyState < 2) { updateCamLive(); return; }
+  camLastFrame = Date.now();
+  updateCamLive();
   const cur = grayFrame();
   if (!camBg) { camBg = cur.slice(); camPrev = cur; return; }
 

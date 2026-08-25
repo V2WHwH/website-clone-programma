@@ -4,7 +4,7 @@
 // rotatie, crash-herstel en een diagnosticsvenster.
 'use strict';
 
-const { app, BrowserWindow, ipcMain, globalShortcut, shell, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, shell, dialog, session } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -213,6 +213,15 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(async () => {
     loadSettings();
     initLogging();
+
+    // Webcam-toestemming expliciet toestaan voor de eigen app-pagina's
+    // (aanwezigheidsdetectie). Windows-privacy-instellingen kunnen camera-
+    // toegang voor apps alsnog blokkeren; dat logt de renderer zelf.
+    session.defaultSession.setPermissionRequestHandler((wc, permission, callback) => {
+      callback(permission === 'media' || permission === 'fullscreen' || permission === 'pointerLock');
+    });
+    session.defaultSession.setPermissionCheckHandler((wc, permission) =>
+      permission === 'media' || permission === 'fullscreen' || permission === 'pointerLock');
     log('info', 'startup', { version: app.getVersion(), electron: process.versions.electron, argv: process.argv.slice(1) });
 
     const hw = await collectHardwareInfo();
