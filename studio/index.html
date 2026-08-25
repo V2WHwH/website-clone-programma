@@ -75,6 +75,20 @@
     width: 2.1em; height: 2.1em; border-radius: 50%; background: rgba(0,0,0,0.45);
     border: 2px solid rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: center;
     font-size: 0.85em; padding-left: 0.15em; }
+  .vbtn.has-preview canvas.preview3d { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  /* PNG-knop: de contouren van de afbeelding zíjn de knop — geen kader/vlak. */
+  .vbtn.png-face { background: none; border: 0; box-shadow: none; padding: 0; overflow: visible;
+    width: var(--pw, 30vmin); min-width: 0; aspect-ratio: auto; }
+  .vbtn.png-face img { width: 100%; height: auto; display: block; pointer-events: none;
+    filter: drop-shadow(0 14px 22px rgba(0,0,0,0.55)) drop-shadow(0 0 18px var(--glow, rgba(53,208,186,0.4))); }
+  .vbtn.png-face::after { left: 14%; right: 14%; }
+  .vbtn.has-preview .pv-badge { position: absolute; top: 0.35em; right: 0.45em; font-size: 0.6em;
+    background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.35); border-radius: 999px;
+    padding: 0.15em 0.7em; letter-spacing: 0.06em; }
+  #playCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: none; touch-action: none; }
+  #playOverlay.mode-3d #playCanvas { display: block; }
+  #playOverlay.mode-3d #playVideo { display: none; }
 
   /* Screensaver-laag */
   #saver { position: absolute; inset: 0; background: #000; z-index: 25; opacity: 0;
@@ -200,6 +214,7 @@
 
 <div id="playOverlay">
   <video id="playVideo" playsinline></video>
+  <canvas id="playCanvas"></canvas>
   <button id="stopPlay" title="Stoppen">✕</button>
 </div>
 
@@ -234,9 +249,9 @@
   </div>
 
   <div class="tabpage hidden" id="page-media">
-    <button id="addMedia" class="btn primary block">+ Video's toevoegen vanaf deze computer</button>
-    <input type="file" id="mediaInput" accept="video/*" multiple hidden>
-    <p class="note">Video's worden in de browser opgeslagen en werken daarna ook zonder internet. Aanbevolen: mp4 (H.264/H.265), 4K.</p>
+    <button id="addMedia" class="btn primary block">+ Video's, PNG-knoppen of 3D-objecten (.obj) toevoegen</button>
+    <input type="file" id="mediaInput" accept="video/*,.obj,image/png" multiple hidden>
+    <p class="note">Bestanden worden in de browser opgeslagen en werken daarna ook zonder internet. Video: mp4 (H.264/H.265), 4K — liggend of staand; de knop-preview wordt automatisch gerenderd op 1280×800 of 800×1280. PNG met transparantie: wordt een knop in de vorm van de afbeelding. 3D: Wavefront .obj.</p>
     <div id="mediaList"></div>
   </div>
 
@@ -261,6 +276,35 @@
           <option value="landscape">Landscape (liggend) — roteert op een staand scherm</option>
         </select>
       </label>
+    </div>
+    <h2>3D-objecten (OBJ)</h2>
+    <div class="card">
+      <div class="row">
+        <label class="field">Kleur van het object
+          <input type="color" id="o3Color" style="width:100%">
+        </label>
+        <label class="field">Detail-limiet (performance)
+          <select id="o3MaxTris">
+            <option value="50000">Licht — max 50.000 driehoeken</option>
+            <option value="150000">Normaal — max 150.000</option>
+            <option value="500000">Hoog — max 500.000</option>
+            <option value="0">Onbeperkt (zware modellen kunnen traag zijn)</option>
+          </select>
+        </label>
+      </div>
+      <label class="field">Draaisnelheid (automatisch ronddraaien)
+        <input type="range" id="o3Rot" min="0" max="3" step="0.1">
+      </label>
+      <label class="field">Lichtsterkte
+        <input type="range" id="o3Light" min="0.3" max="2" step="0.1">
+      </label>
+      <label class="field">Glans (mat ↔ glimmend)
+        <input type="range" id="o3Shine" min="0" max="1" step="0.05">
+      </label>
+      <label class="field">Fullscreen 3D automatisch sluiten na (seconden zonder aanraking; 0 = nooit)
+        <input type="number" id="o3Close" min="0" max="600" step="5">
+      </label>
+      <p class="note">Fullscreen kan de bezoeker het object draaien (slepen) en zoomen (scrollen/knijpen). Grote modellen worden automatisch vereenvoudigd tot de detail-limiet.</p>
     </div>
   </div>
 
@@ -305,8 +349,8 @@
     <div id="relinkBox" class="card hidden">
       <b>Video's opnieuw koppelen</b>
       <p class="note" id="relinkText"></p>
-      <button id="relinkPick" class="btn primary block">Videobestanden aanwijzen…</button>
-      <input type="file" id="relinkInput" accept="video/*" multiple hidden>
+      <button id="relinkPick" class="btn primary block">Mediabestanden aanwijzen…</button>
+      <input type="file" id="relinkInput" accept="video/*,.obj,image/png" multiple hidden>
     </div>
     <h2>Opnieuw beginnen</h2>
     <button id="resetBtn" class="btn danger block">Alles wissen op deze computer</button>
@@ -346,6 +390,7 @@ const defaultConfig = () => ({
   orientationMode: 'auto', // 'auto' | 'portrait' | 'landscape'
   screensaver: { enabled: false, delaySec: 120, mediaIds: [] },
   camera: { enabled: false, dwellSec: 3, sensitivity: 5 },
+  object3d: { color: '#8fa3bd', rotSpeed: 0.8, light: 1.0, shininess: 0.35, maxTriangles: 150000, autoCloseSec: 60 },
   buttons: [] // {id,label,mediaId,x,y,size,color,shape,depth,drift,showPreview}
 });
 
@@ -356,7 +401,8 @@ function load() {
     const stored = JSON.parse(localStorage.getItem(LS_KEY)) || {};
     return { ...d, ...stored,
       screensaver: { ...d.screensaver, ...stored.screensaver },
-      camera: { ...d.camera, ...stored.camera } };
+      camera: { ...d.camera, ...stored.camera },
+      object3d: { ...d.object3d, ...stored.object3d } };
   } catch { return defaultConfig(); }
 }
 function save() { localStorage.setItem(LS_KEY, JSON.stringify(config)); }
@@ -376,7 +422,10 @@ const dbPut = (rec) => new Promise((res, rej) => { const r = tx('readwrite').put
 const dbDel = (id) => new Promise((res, rej) => { const r = tx('readwrite').delete(id); r.onsuccess = res; r.onerror = () => rej(r.error); });
 const dbAll = () => new Promise((res, rej) => { const r = tx('readonly').getAll(); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
 
-let mediaCache = new Map(); // id -> {id, name, size, url}
+let mediaCache = new Map(); // id -> {id, name, size, url, kind, aspect?}
+
+// 'model' = 3D-object (.obj), 'image' = PNG-knopafbeelding, anders video.
+const mediaKind = (name) => /\.obj$/i.test(name || '') ? 'model' : /\.png$/i.test(name || '') ? 'image' : 'video';
 
 /* ================= Hulpjes ================= */
 const $ = (s) => document.querySelector(s);
@@ -407,6 +456,254 @@ const textColorFor = (hex) => {
   return lum > 165 ? '#0b1420' : '#ffffff';
 };
 
+/* ================= Preview-renditie (1280×800 / 800×1280) =================
+   Zodra een video aan een knop wordt gekoppeld, wordt er één keer een lichte
+   preview-loop gerenderd op vaste resolutie: 1280×800 (liggend) of 800×1280
+   (staand). Die renditie bepaalt ook het formaat van de knop en scheelt veel
+   GPU: previews decoderen dan geen 4K meer. */
+
+const PREVIEW_MAX_SEC = 10;
+const renditionBusy = new Map(); // mediaId -> Promise
+
+function ensurePreviewRendition(mediaId) {
+  const m = mediaCache.get(mediaId);
+  if (!m || m.kind !== 'video' || m.previewUrl) return Promise.resolve();
+  if (renditionBusy.has(mediaId)) return renditionBusy.get(mediaId);
+  const job = renderRendition(m)
+    .then(async (result) => {
+      await dbPut({ id: 'prev_' + m.id, hidden: true, name: '__preview__', size: result.blob.size, blob: result.blob });
+      m.previewUrl = URL.createObjectURL(result.blob);
+      m.aspect = result.aspect;
+      renderStage();
+      toast(`Preview gerenderd (${result.aspect === '1280 / 800' ? '1280×800' : '800×1280'}): ${m.name}`);
+    })
+    .catch((e) => { console.warn('Preview-renditie mislukt, origineel wordt gebruikt', e); })
+    .finally(() => renditionBusy.delete(mediaId));
+  renditionBusy.set(mediaId, job);
+  toast('Preview wordt gerenderd… (' + m.name + ')');
+  return job;
+}
+
+function renderRendition(m) {
+  return new Promise((resolve, reject) => {
+    const src = document.createElement('video');
+    src.muted = true; src.playsInline = true; src.src = m.url;
+    src.addEventListener('error', () => reject(new Error('Video niet leesbaar')), { once: true });
+    src.addEventListener('loadedmetadata', () => {
+      const landscape = src.videoWidth >= src.videoHeight;
+      const W = landscape ? 1280 : 800, H = landscape ? 800 : 1280;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const g = canvas.getContext('2d');
+      // Cover-crop: het doelvlak volledig vullen zonder vervorming.
+      const scale = Math.max(W / src.videoWidth, H / src.videoHeight);
+      const dw = src.videoWidth * scale, dh = src.videoHeight * scale;
+      const dx = (W - dw) / 2, dy = (H - dh) / 2;
+
+      const rec = new MediaRecorder(canvas.captureStream(30), {
+        mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm',
+        videoBitsPerSecond: 4_000_000
+      });
+      const chunks = [];
+      rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+      rec.onstop = () => resolve({ blob: new Blob(chunks, { type: 'video/webm' }), aspect: `${W} / ${H}` });
+
+      let raf = 0;
+      const draw = () => { g.drawImage(src, dx, dy, dw, dh); raf = requestAnimationFrame(draw); };
+      const stopAll = () => { cancelAnimationFrame(raf); src.pause(); if (rec.state !== 'inactive') rec.stop(); };
+      src.addEventListener('ended', stopAll, { once: true });
+      src.play().then(() => {
+        rec.start(500);
+        draw();
+        setTimeout(stopAll, Math.min(src.duration || PREVIEW_MAX_SEC, PREVIEW_MAX_SEC) * 1000);
+      }).catch(reject);
+    }, { once: true });
+  });
+}
+
+/* ================= 3D-objecten (OBJ) — ingebouwde WebGL-viewer =================
+   Geen externe libraries: de app blijft één offline bestand. Ondersteunt
+   Wavefront .obj (v/vn/f, polygonen worden getrianguleerd); grote modellen
+   worden vereenvoudigd tot de ingestelde detail-limiet. */
+
+const objGeomCache = new Map(); // mediaId -> geometry (of Promise)
+
+function parseOBJ(text, maxTris) {
+  const vs = [], vns = [], faces = [];
+  for (const line of text.split('\n')) {
+    if (line[0] === 'v' && line[1] === ' ') {
+      const p = line.slice(2).trim().split(/\s+/);
+      vs.push(+p[0], +p[1], +p[2]);
+    } else if (line[0] === 'v' && line[1] === 'n') {
+      const p = line.slice(3).trim().split(/\s+/);
+      vns.push(+p[0], +p[1], +p[2]);
+    } else if (line[0] === 'f' && line[1] === ' ') {
+      const parts = line.slice(2).trim().split(/\s+/).map((t) => {
+        const a = t.split('/');
+        let vi = parseInt(a[0], 10); if (vi < 0) vi = vs.length / 3 + vi + 1;
+        let ni = a[2] ? parseInt(a[2], 10) : 0; if (ni < 0) ni = vns.length / 3 + ni + 1;
+        return [vi, ni];
+      });
+      for (let i = 1; i + 1 < parts.length; i++) faces.push([parts[0], parts[i], parts[i + 1]]);
+    }
+  }
+  if (!faces.length) throw new Error('Geen faces gevonden in OBJ');
+  const step = maxTris > 0 && faces.length > maxTris ? faces.length / maxTris : 1;
+  const count = Math.min(faces.length, maxTris > 0 ? maxTris : faces.length);
+  const pos = new Float32Array(count * 9), nor = new Float32Array(count * 9);
+  let w = 0;
+  for (let f = 0; w < count * 9 && f < faces.length; f += step) {
+    const tri = faces[Math.floor(f)];
+    const px = [], py = [], pz = [];
+    for (const [vi] of tri) { const o = (vi - 1) * 3; px.push(vs[o]); py.push(vs[o + 1]); pz.push(vs[o + 2]); }
+    // Vlaknormaal als het bestand geen normalen heeft.
+    const ux = px[1] - px[0], uy = py[1] - py[0], uz = pz[1] - pz[0];
+    const wx = px[2] - px[0], wy = py[2] - py[0], wz = pz[2] - pz[0];
+    let fx = uy * wz - uz * wy, fy = uz * wx - ux * wz, fz = ux * wy - uy * wx;
+    const fl = Math.hypot(fx, fy, fz) || 1; fx /= fl; fy /= fl; fz /= fl;
+    for (let k = 0; k < 3; k++) {
+      pos[w] = px[k]; pos[w + 1] = py[k]; pos[w + 2] = pz[k];
+      const ni = tri[k][1];
+      if (ni > 0) { const o = (ni - 1) * 3; nor[w] = vns[o]; nor[w + 1] = vns[o + 1]; nor[w + 2] = vns[o + 2]; }
+      else { nor[w] = fx; nor[w + 1] = fy; nor[w + 2] = fz; }
+      w += 3;
+    }
+  }
+  // Centreren en normaliseren naar een eenheidsbox.
+  let min = [1e9, 1e9, 1e9], max = [-1e9, -1e9, -1e9];
+  for (let i = 0; i < w; i += 3) for (let a = 0; a < 3; a++) {
+    if (pos[i + a] < min[a]) min[a] = pos[i + a];
+    if (pos[i + a] > max[a]) max[a] = pos[i + a];
+  }
+  const c = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
+  const s = 1.35 / (Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]) || 1);
+  for (let i = 0; i < w; i += 3) for (let a = 0; a < 3; a++) pos[i + a] = (pos[i + a] - c[a]) * s;
+  return { pos: pos.subarray(0, w), nor: nor.subarray(0, w), verts: w / 3, tris: faces.length };
+}
+
+async function loadObjGeometry(mediaId) {
+  if (objGeomCache.has(mediaId)) return objGeomCache.get(mediaId);
+  const p = (async () => {
+    const m = mediaCache.get(mediaId);
+    const text = await (await fetch(m.url)).text();
+    return parseOBJ(text, config.object3d.maxTriangles);
+  })();
+  objGeomCache.set(mediaId, p);
+  try { return await p; } catch (e) { objGeomCache.delete(mediaId); throw e; }
+}
+
+const VERT_SRC = `attribute vec3 aPos; attribute vec3 aNor;
+uniform mat4 uProj, uView; varying vec3 vNor, vPos;
+void main() { vNor = mat3(uView[0].xyz, uView[1].xyz, uView[2].xyz) * aNor;
+  vec4 p = uView * vec4(aPos, 1.0); vPos = p.xyz; gl_Position = uProj * p; }`;
+const FRAG_SRC = `precision mediump float; varying vec3 vNor, vPos;
+uniform vec3 uColor; uniform float uLight, uShin;
+void main() { vec3 n = normalize(vNor); vec3 l = normalize(vec3(0.5, 0.8, 0.6));
+  float diff = max(dot(n, l), 0.0) * 0.75 + 0.28;
+  vec3 h = normalize(l + normalize(-vPos));
+  float spec = pow(max(dot(n, h), 0.0), 40.0) * uShin;
+  gl_FragColor = vec4(uColor * diff * uLight + vec3(spec), 1.0); }`;
+
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255];
+}
+
+// Kleine mat4-helpers (kolom-major, zoals WebGL verwacht).
+function mat4Perspective(fov, aspect, near, far) {
+  const f = 1 / Math.tan(fov / 2), out = new Float32Array(16);
+  out[0] = f / aspect; out[5] = f; out[10] = (far + near) / (near - far); out[11] = -1;
+  out[14] = 2 * far * near / (near - far);
+  return out;
+}
+function mat4View(rx, ry, dist) {
+  const cx = Math.cos(rx), sx = Math.sin(rx), cy = Math.cos(ry), sy = Math.sin(ry);
+  // rotY dan rotX, daarna camera op afstand.
+  return new Float32Array([
+    cy, sx * sy, -cx * sy, 0,
+    0, cx, sx, 0,
+    sy, -sx * cy, cx * cy, 0,
+    0, 0, -dist, 1
+  ]);
+}
+
+function createObjViewer(canvas, geom, { interactive }) {
+  const gl = canvas.getContext('webgl', { antialias: true, alpha: true, preserveDrawingBuffer: true });
+  if (!gl) return null;
+  const mk = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
+  const prog = gl.createProgram();
+  gl.attachShader(prog, mk(gl.VERTEX_SHADER, VERT_SRC));
+  gl.attachShader(prog, mk(gl.FRAGMENT_SHADER, FRAG_SRC));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = (data, loc) => {
+    const b = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, b);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0);
+  };
+  buf(geom.pos, gl.getAttribLocation(prog, 'aPos'));
+  buf(geom.nor, gl.getAttribLocation(prog, 'aNor'));
+  const uProj = gl.getUniformLocation(prog, 'uProj');
+  const uView = gl.getUniformLocation(prog, 'uView');
+  const uColor = gl.getUniformLocation(prog, 'uColor');
+  const uLight = gl.getUniformLocation(prog, 'uLight');
+  const uShin = gl.getUniformLocation(prog, 'uShin');
+  gl.enable(gl.DEPTH_TEST);
+
+  const st = { rx: -0.35, ry: 0.6, dist: 3.1, dragging: false, paused: false, dead: false };
+  if (interactive) {
+    canvas.addEventListener('pointerdown', (e) => { st.dragging = true; st.lx = e.clientX; st.ly = e.clientY; canvas.setPointerCapture(e.pointerId); });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!st.dragging) return;
+      st.ry += (e.clientX - st.lx) * 0.008;
+      st.rx = Math.max(-1.5, Math.min(1.5, st.rx + (e.clientY - st.ly) * 0.008));
+      st.lx = e.clientX; st.ly = e.clientY;
+    });
+    canvas.addEventListener('pointerup', () => { st.dragging = false; });
+    canvas.addEventListener('wheel', (e) => { e.preventDefault(); st.dist = Math.max(1.6, Math.min(8, st.dist + e.deltaY * 0.002)); }, { passive: false });
+  }
+
+  let last = performance.now(), raf = 0;
+  function frame(t) {
+    if (st.dead) return;
+    raf = requestAnimationFrame(frame);
+    if (st.paused) return;
+    const dt = Math.min(100, t - last); last = t;
+    const o = config.object3d;
+    if (!st.dragging) st.ry += o.rotSpeed * dt / 1000;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(canvas.clientWidth * dpr));
+    const h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    gl.viewport(0, 0, w, h);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.uniformMatrix4fv(uProj, false, mat4Perspective(0.9, w / h, 0.1, 50));
+    gl.uniformMatrix4fv(uView, false, mat4View(st.rx, st.ry, st.dist));
+    gl.uniform3fv(uColor, hexToRgb(o.color));
+    gl.uniform1f(uLight, o.light);
+    gl.uniform1f(uShin, o.shininess);
+    gl.drawArrays(gl.TRIANGLES, 0, geom.verts);
+  }
+  raf = requestAnimationFrame(frame);
+
+  return {
+    setPaused(p) { st.paused = p; last = performance.now(); },
+    destroy() { st.dead = true; cancelAnimationFrame(raf); gl.getExtension('WEBGL_lose_context')?.loseContext(); }
+  };
+}
+
+const objViewers = new Map(); // buttonId of 'fullscreen' -> viewer
+function destroyObjViewers(previewOnly = false) {
+  for (const [key, v] of objViewers) {
+    if (previewOnly && key === 'fullscreen') continue;
+    v?.destroy();
+    objViewers.delete(key);
+  }
+}
+
 /* ================= Presentatie renderen ================= */
 function renderStage() {
   // Titel + welkomstscherm
@@ -427,6 +724,7 @@ function renderStage() {
 
   // Knoppen
   const layer = $('#buttonLayer');
+  destroyObjViewers(true); // preview-viewers opruimen vóór de laag leeggemaakt wordt
   layer.innerHTML = '';
   for (const b of config.buttons) {
     const media = mediaCache.get(b.mediaId);
@@ -438,14 +736,41 @@ function renderStage() {
              `--glow:${b.color}59; --frame:${b.color}; --pw:${(b.size || 8) * 3.2}vmin;` +
              `font-size:${(b.size || 8) * 0.42}vmin; ${preview ? '' : `min-width:${(b.size || 8) * 2.2}vmin;`}`
     });
-    if (preview) {
-      // Kader met live videovoorbeeld; de echte video start bij aanraking.
-      btn.append(
-        el('video', { class: 'preview', src: media.url, muted: '', loop: '', autoplay: '', playsinline: '', preload: 'metadata' }),
+    const faceImg = (b.imageId && mediaCache.get(b.imageId)) || (media && media.kind === 'image' ? media : null);
+    if (preview && faceImg) {
+      // PNG-knop: de afbeelding zelf is de knop, contouren blijven behouden.
+      btn.classList.remove('has-preview');
+      btn.classList.add('png-face');
+      btn.style.backgroundColor = 'transparent'; // inline kleur zou anders als vlak doorschijnen
+      btn.append(el('img', { src: faceImg.url, alt: b.label || '' }));
+      if (b.label) btn.title = b.label;
+    } else if (preview && media.kind === 'model') {
+      // 3D-object: langzaam ronddraaiend voorbeeld in het kader.
+      const cv = el('canvas', { class: 'preview3d' });
+      btn.append(cv, el('span', { class: 'pv-badge' }, '3D'),
         el('span', { class: 'pv-play' }, '▶'),
-        el('span', { class: 'pv-label' }, b.label || media.name)
-      );
-      btn.querySelector('video').muted = true; // attribuut alleen is niet genoeg voor autoplay
+        el('span', { class: 'pv-label' }, b.label || media.name));
+      if (b.shape !== 'circle') btn.style.aspectRatio = '5 / 4';
+      loadObjGeometry(b.mediaId)
+        .then((g) => { if (cv.isConnected) { const v = createObjViewer(cv, g, { interactive: false }); if (v) objViewers.set(b.id, v); } })
+        .catch(() => { btn.querySelector('.pv-label').textContent = '⚠ OBJ niet leesbaar'; });
+    } else if (preview) {
+      // Kader met live videovoorbeeld (de gerenderde 1280×800/800×1280-renditie
+      // zodra die klaar is); de echte video start fullscreen bij aanraking.
+      const v = el('video', { class: 'preview', src: media.previewUrl || media.url, muted: '', loop: '', autoplay: '', playsinline: '', preload: 'metadata' });
+      v.muted = true; // attribuut alleen is niet genoeg voor autoplay
+      btn.append(v, el('span', { class: 'pv-play' }, '▶'), el('span', { class: 'pv-label' }, b.label || media.name));
+      if (b.shape !== 'circle') {
+        // Knopformaat = renditieformaat: liggend 1280×800, staand 800×1280.
+        if (media.aspect) btn.style.aspectRatio = media.aspect;
+        v.addEventListener('loadedmetadata', () => {
+          if (!v.videoWidth || !v.videoHeight) return;
+          const ar = v.videoWidth >= v.videoHeight ? '1280 / 800' : '800 / 1280';
+          media.aspect = ar;
+          if (btn.style.aspectRatio !== ar) { btn.style.aspectRatio = ar; syncFrames(); }
+        }, { once: true });
+      }
+      if (!media.previewUrl) ensurePreviewRendition(b.mediaId);
     } else {
       btn.append(el('span', { class: 'play-ico' }, '▶'), b.shape === 'circle' ? '' : (b.label || 'Afspelen'));
       if (b.shape === 'circle' && b.label) btn.title = b.label;
@@ -485,11 +810,14 @@ function setPreviewsPaused(paused) {
   for (const v of document.querySelectorAll('.vbtn video.preview')) {
     if (paused) v.pause(); else v.play().catch(() => {});
   }
+  for (const [key, viewer] of objViewers) if (key !== 'fullscreen') viewer.setPaused(paused);
 }
 
 function playMedia(mediaId) {
   const m = mediaCache.get(mediaId);
   if (!m) return toast('Deze knop heeft nog geen (gevonden) video — koppel hem in het menu');
+  if (m.kind === 'model') return playObject(mediaId);
+  if (m.kind === 'image') return; // PNG is de knop zelf; niets om af te spelen
   playVideo.src = m.url;
   playOverlay.classList.add('show');
   if (config.hideButtonsDuringPlay) $('#buttonLayer').style.visibility = 'hidden';
@@ -497,9 +825,42 @@ function playMedia(mediaId) {
   setPreviewsPaused(true);
   playVideo.play().catch(() => {});
 }
+
+// Fullscreen 3D-weergave: bezoeker kan draaien (slepen) en zoomen (scrollen).
+let objCloseTimer = null;
+function armObjAutoClose() {
+  clearTimeout(objCloseTimer);
+  const sec = config.object3d.autoCloseSec;
+  if (sec > 0) objCloseTimer = setTimeout(stopPlaying, sec * 1000);
+}
+playOverlay.addEventListener('pointerdown', () => {
+  if (playOverlay.classList.contains('mode-3d')) armObjAutoClose();
+});
+
+function playObject(mediaId) {
+  playOverlay.classList.add('show', 'mode-3d');
+  if (config.hideButtonsDuringPlay) $('#buttonLayer').style.visibility = 'hidden';
+  $('#idleVideo').pause();
+  setPreviewsPaused(true);
+  loadObjGeometry(mediaId)
+    .then((g) => {
+      objViewers.get('fullscreen')?.destroy();
+      const v = createObjViewer($('#playCanvas'), g, { interactive: true });
+      if (v) objViewers.set('fullscreen', v);
+      armObjAutoClose();
+    })
+    .catch(() => { toast('3D-object kon niet geladen worden'); stopPlaying(); });
+}
+
 function stopPlaying() {
+  clearTimeout(objCloseTimer);
+  objViewers.get('fullscreen')?.destroy();
+  objViewers.delete('fullscreen');
   playOverlay.classList.remove('show');
-  setTimeout(() => { playVideo.pause(); playVideo.removeAttribute('src'); playVideo.load(); }, 480);
+  setTimeout(() => {
+    playOverlay.classList.remove('mode-3d');
+    playVideo.pause(); playVideo.removeAttribute('src'); playVideo.load();
+  }, 480);
   $('#buttonLayer').style.visibility = '';
   const idle = $('#idleVideo');
   if (!idle.classList.contains('hidden')) idle.play().catch(() => {});
@@ -536,9 +897,35 @@ $('#buttonLayer').addEventListener('pointerup', () => {
   if (drag && drag.moved) save();
   drag = null;
 });
+// PNG-knoppen: alleen de zichtbare contouren zijn klikbaar (alpha-test).
+const alphaCache = new Map();
+function pngAlphaAt(img, clientX, clientY) {
+  if (document.getElementById('stage').style.transform) return 255; // bij geroteerd podium: hele knop klikbaar
+  const rect = img.getBoundingClientRect();
+  const x = (clientX - rect.left) / rect.width, y = (clientY - rect.top) / rect.height;
+  if (x < 0 || x > 1 || y < 0 || y > 1) return 0;
+  let data = alphaCache.get(img.src);
+  if (data === undefined) {
+    try {
+      const c = document.createElement('canvas');
+      c.width = 128; c.height = 128;
+      const g = c.getContext('2d', { willReadFrequently: true });
+      g.drawImage(img, 0, 0, 128, 128);
+      data = g.getImageData(0, 0, 128, 128).data;
+    } catch { data = null; }
+    alphaCache.set(img.src, data);
+  }
+  if (!data) return 255;
+  return data[(Math.floor(y * 127) * 128 + Math.floor(x * 127)) * 4 + 3];
+}
+
 $('#buttonLayer').addEventListener('click', (e) => {
   const btnEl = e.target.closest('.vbtn');
   if (!btnEl || editing) return;
+  if (btnEl.classList.contains('png-face')) {
+    const img = btnEl.querySelector('img');
+    if (img && pngAlphaAt(img, e.clientX, e.clientY) < 16) return; // doorzichtig deel: geen klik
+  }
   const b = config.buttons.find((x) => x.id === btnEl.dataset.id);
   if (b) playMedia(b.mediaId);
 });
@@ -663,6 +1050,10 @@ function renderBtnList() {
       el('option', { value: 'yes' }, 'Aan — kader met videovoorbeeld'),
       el('option', { value: 'no' }, 'Uit — gewone knop'));
     previewSel.value = b.showPreview === false ? 'no' : 'yes';
+    const images = [...mediaCache.values()].filter((m) => m.kind === 'image');
+    const imageSel = el('select', { onchange: (e) => { b.imageId = e.target.value || null; save(); renderStage(); } },
+      el('option', { value: '' }, '— geen (kader met preview) —'),
+      images.map((m) => { const o = el('option', { value: m.id }, m.name); if (m.id === b.imageId) o.selected = true; return o; }));
     list.append(el('div', { class: 'card' },
       el('div', { class: 'row' },
         el('input', { type: 'text', class: 'grow', value: b.label, placeholder: 'Tekst op de knop',
@@ -670,7 +1061,8 @@ function renderBtnList() {
         el('button', { class: 'btn small danger', title: 'Knop verwijderen',
           onclick: () => { if (confirm(`Knop "${b.label}" verwijderen?`)) { config.buttons = config.buttons.filter((x) => x !== b); save(); renderStage(); renderBtnList(); } } }, '🗑')),
       el('div', { class: 'row' },
-        el('label', { class: 'field' }, 'Video die deze knop afspeelt', mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); })),
+        el('label', { class: 'field' }, 'Media die deze knop opent (video of 3D-object)',
+          mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); if (v) ensurePreviewRendition(v); renderStage(); })),
         el('label', { class: 'field', style: 'max-width:110px' }, 'Vorm',
           (() => { const s = el('select', { onchange: (e) => { b.shape = e.target.value; save(); renderStage(); } },
               el('option', { value: 'pill' }, 'Ovaal'), el('option', { value: 'rounded' }, 'Rechthoek'), el('option', { value: 'circle' }, 'Rond ▶'));
@@ -681,7 +1073,9 @@ function renderBtnList() {
       el('div', { class: 'row' },
         el('label', { class: 'field' }, 'Naar voren/achteren zweven', depthSel),
         el('label', { class: 'field' }, 'Vrij bewegen in een kader', driftSel)),
-      el('label', { class: 'field' }, 'Videovoorbeeld in de knop', previewSel),
+      el('div', { class: 'row' },
+        el('label', { class: 'field' }, 'Videovoorbeeld in de knop', previewSel),
+        el('label', { class: 'field' }, 'Eigen PNG als knopvorm', imageSel)),
       swatches
     ));
   });
@@ -704,14 +1098,26 @@ function renderMediaList() {
   list.innerHTML = '';
   if (!mediaCache.size) list.append(el('p', { class: 'note' }, 'Nog geen video’s toegevoegd.'));
   for (const m of mediaCache.values()) {
+    const thumb = m.kind === 'model'
+      ? el('div', { style: 'width:76px;height:46px;border-radius:7px;background:#0a0f16;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none' }, '🧊')
+      : m.kind === 'image'
+        ? el('img', { src: m.url, style: 'width:76px;height:46px;object-fit:contain;border-radius:7px;background:#0a0f16;flex:none' })
+        : el('video', { src: m.url, preload: 'metadata', muted: '' });
     list.append(el('div', { class: 'card media-item' },
-      el('video', { src: m.url, preload: 'metadata', muted: '' }),
-      el('div', { class: 'grow' }, el('div', { class: 'nm' }, m.name), el('div', { class: 'sz' }, fmtSize(m.size))),
+      thumb,
+      el('div', { class: 'grow' }, el('div', { class: 'nm' }, m.name), el('div', { class: 'sz' }, (m.kind === 'model' ? '3D-object · ' : '') + fmtSize(m.size))),
       el('button', { class: 'btn small danger', title: 'Verwijderen', onclick: async () => {
-        if (!confirm(`Video "${m.name}" verwijderen?`)) return;
-        await dbDel(m.id); URL.revokeObjectURL(m.url); mediaCache.delete(m.id);
+        if (!confirm(`"${m.name}" verwijderen?`)) return;
+        await dbDel(m.id); await dbDel('prev_' + m.id);
+        URL.revokeObjectURL(m.url);
+        if (m.previewUrl) URL.revokeObjectURL(m.previewUrl);
+        mediaCache.delete(m.id); objGeomCache.delete(m.id);
         if (config.idleMediaId === m.id) config.idleMediaId = null;
-        for (const b of config.buttons) if (b.mediaId === m.id) b.mediaId = null;
+        config.screensaver.mediaIds = config.screensaver.mediaIds.filter((id) => id !== m.id);
+        for (const b of config.buttons) {
+          if (b.mediaId === m.id) b.mediaId = null;
+          if (b.imageId === m.id) b.imageId = null;
+        }
         save(); renderStage(); refreshPanel();
       } }, '🗑')));
   }
@@ -732,7 +1138,7 @@ async function addMediaFile(file, fixedId) {
     toast('Opslaan mislukt (schijf vol?): ' + file.name);
     return null;
   }
-  mediaCache.set(id, { id, name: file.name, size: file.size, url: URL.createObjectURL(file) });
+  mediaCache.set(id, { id, name: file.name, size: file.size, url: URL.createObjectURL(file), kind: mediaKind(file.name) });
   return id;
 }
 
@@ -750,7 +1156,28 @@ function renderLook() {
   $('#cfgHideBtns').value = config.hideButtonsDuringPlay ? 'yes' : 'no';
   $('#cfgClean').value = config.cleanMode ? 'yes' : 'no';
   $('#cfgOrientation').value = config.orientationMode || 'auto';
+  const o3 = config.object3d;
+  $('#o3Color').value = o3.color;
+  $('#o3MaxTris').value = String(o3.maxTriangles);
+  $('#o3Rot').value = o3.rotSpeed;
+  $('#o3Light').value = o3.light;
+  $('#o3Shine').value = o3.shininess;
+  $('#o3Close').value = o3.autoCloseSec;
 }
+
+// 3D-parameters werken direct door in alle draaiende viewers.
+$('#o3Color').addEventListener('input', (e) => { config.object3d.color = e.target.value; save(); });
+$('#o3Rot').addEventListener('input', (e) => { config.object3d.rotSpeed = Number(e.target.value); save(); });
+$('#o3Light').addEventListener('input', (e) => { config.object3d.light = Number(e.target.value); save(); });
+$('#o3Shine').addEventListener('input', (e) => { config.object3d.shininess = Number(e.target.value); save(); });
+$('#o3Close').addEventListener('change', (e) => { config.object3d.autoCloseSec = Math.max(0, Number(e.target.value) || 0); save(); });
+$('#o3MaxTris').addEventListener('change', (e) => {
+  config.object3d.maxTriangles = Number(e.target.value);
+  save();
+  objGeomCache.clear(); // opnieuw parsen met nieuwe detail-limiet
+  renderStage();
+  toast('Detail-limiet aangepast — modellen worden opnieuw geladen');
+});
 $('#cfgTitle').addEventListener('input', (e) => { config.title = e.target.value; save(); renderStage(); });
 $('#cfgIdle').addEventListener('change', (e) => { config.idleMediaId = e.target.value || null; save(); renderStage(); });
 $('#cfgHideBtns').addEventListener('change', (e) => { config.hideButtonsDuringPlay = e.target.value === 'yes'; save(); });
@@ -1063,8 +1490,17 @@ window.addEventListener('resize', applyOrientationMode);
 (async () => {
   try {
     idb = await openDb();
-    for (const rec of await dbAll()) {
-      mediaCache.set(rec.id, { id: rec.id, name: rec.name, size: rec.size, url: URL.createObjectURL(rec.blob) });
+    const all = await dbAll();
+    for (const rec of all) {
+      if (rec.hidden) continue;
+      mediaCache.set(rec.id, { id: rec.id, name: rec.name, size: rec.size, url: URL.createObjectURL(rec.blob), kind: mediaKind(rec.name) });
+    }
+    // Eerder gerenderde preview-rendities weer koppelen.
+    for (const rec of all) {
+      if (!rec.hidden || !rec.id.startsWith('prev_')) continue;
+      const target = mediaCache.get(rec.id.slice(5));
+      if (target) target.previewUrl = URL.createObjectURL(rec.blob);
+      else dbDel(rec.id); // renditie van verwijderde video opruimen
     }
   } catch (e) {
     toast('Let op: video-opslag niet beschikbaar in deze browser');
