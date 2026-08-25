@@ -12,6 +12,9 @@ on:
         required: false
         default: ''
 
+permissions:
+  contents: write   # nodig om releases (met tag) aan te maken
+
 jobs:
   build-windows:
     runs-on: windows-latest
