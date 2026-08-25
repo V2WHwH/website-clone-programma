@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>HereWeHolo Studio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<!--
+  HereWeHolo Studio — standalone holobox-presentatie zonder server.
+
+  • Draait op Netlify (of elke statische host) én rechtstreeks vanaf een
+    harde schijf of USB-stick: dubbelklik op dit bestand en het werkt.
+  • Video's worden opgeslagen in de browser (IndexedDB) zodat de
+    presentatie ook zonder internet blijft werken.
+  • Configuratie (knoppen, posities, stijl) staat in localStorage en is
+    te exporteren/importeren als JSON om naar een andere pc te verhuizen.
+  • Videoweergave en animaties draaien over de GPU (hardware-decodering
+    + gecomposite transforms); zie het Help-tabblad voor kiosk-flags.
+-->
+<style>
+  :root {
+    --accent: #35d0ba;
+    --accent-dark: #1f9b8a;
+    --panel: #10161f;
+    --panel-2: #1a2331;
+    --border: #2a3648;
+    --text: #eef2f8;
+    --muted: #93a0b4;
+    --danger: #e5605e;
+    color-scheme: dark;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  button { font: inherit; cursor: pointer; }
+  .hidden { display: none !important; }
+
+  /* ============ PRESENTATIE ============ */
+  #stage { position: absolute; inset: 0; background: radial-gradient(120% 120% at 50% 20%, #10202c 0%, #050a10 70%);
+    overflow: hidden; touch-action: none; }
+  #idleVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    transform: translateZ(0); }             /* eigen GPU-layer */
+  #stageTitle { position: absolute; top: 6%; left: 50%; transform: translateX(-50%);
+    font-size: clamp(20px, 4.5vmin, 64px); font-weight: 700; letter-spacing: 0.03em;
+    text-shadow: 0 2px 18px rgba(0,0,0,0.6); text-align: center; width: 90%; pointer-events: none; }
+
+  /* Video-knoppen */
+  .vbtn { position: absolute; transform: translate(-50%, -50%) translateZ(0); will-change: transform;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    font-weight: 700; color: #fff; border: 0; user-select: none;
+    box-shadow: 0 10px 34px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.25);
+    transition: filter 0.15s, scale 0.15s; line-height: 1.25; padding: 0.4em 0.9em; overflow-wrap: anywhere; }
+  .vbtn:active { scale: 0.96; filter: brightness(1.15); }
+  .vbtn.shape-pill { border-radius: 999px; }
+  .vbtn.shape-rounded { border-radius: 0.35em; }
+  .vbtn.shape-circle { border-radius: 50%; aspect-ratio: 1; padding: 0.4em; }
+  .vbtn .play-ico { margin-right: 0.4em; font-size: 0.85em; }
+  .vbtn.shape-circle .play-ico { margin: 0; }
+
+  /* Verplaats-modus */
+  body.editing .vbtn { cursor: grab; outline: 3px dashed rgba(255,255,255,0.85); outline-offset: 4px;
+    animation: wiggle 1.6s ease-in-out infinite; }
+  body.editing .vbtn:active { cursor: grabbing; animation: none; }
+  @keyframes wiggle { 0%,100% { rotate: -0.6deg; } 50% { rotate: 0.6deg; } }
+  #editHint { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+    background: rgba(16,22,31,0.9); border: 1px solid var(--accent-dark); padding: 8px 18px;
+    border-radius: 999px; font-size: 14px; z-index: 40; pointer-events: none; }
+
+  /* Afspeel-overlay */
+  #playOverlay { position: absolute; inset: 0; background: #000; z-index: 30; opacity: 0;
+    pointer-events: none; transition: opacity 0.45s ease; }
+  #playOverlay.show { opacity: 1; pointer-events: auto; }
+  #playVideo { width: 100%; height: 100%; object-fit: contain; transform: translateZ(0); background: #000; }
+  #stopPlay { position: absolute; top: 18px; right: 18px; width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(0,0,0,0.55); color: #fff; border: 1px solid rgba(255,255,255,0.35); font-size: 22px; }
+
+  /* ============ ZWEVENDE BEDIENING ============ */
+  .fab { position: absolute; z-index: 45; width: 54px; height: 54px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.22); background: rgba(14,20,28,0.72);
+    color: #fff; font-size: 22px; backdrop-filter: blur(6px); display: flex; align-items: center;
+    justify-content: center; transition: background 0.2s, opacity 0.3s; }
+  .fab:hover { background: rgba(30,42,58,0.9); }
+  #menuFab { left: 16px; bottom: 16px; }
+  #lockFab { left: 16px; bottom: 82px; }
+  #fsFab { left: 16px; bottom: 148px; }
+  body.editing #lockFab { background: var(--accent-dark); border-color: var(--accent); }
+  body.clean .fab { opacity: 0.14; }
+  body.clean .fab:hover { opacity: 1; }
+
+  /* ============ MENU-PANEEL ============ */
+  #panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(430px, 100%);
+    background: var(--panel); border-left: 1px solid var(--border); z-index: 50;
+    transform: translateX(102%); transition: transform 0.3s ease; display: flex; flex-direction: column;
+    box-shadow: -18px 0 50px rgba(0,0,0,0.5); }
+  #panel.open { transform: translateX(0); }
+  #panelHead { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 10px; }
+  #panelHead h1 { font-size: 19px; letter-spacing: 0.02em; }
+  #panelHead h1 span { color: var(--accent); }
+  #closePanel { background: none; border: 0; color: var(--muted); font-size: 24px; padding: 4px 8px; }
+
+  #tabs { display: flex; gap: 4px; padding: 0 14px 10px; flex-wrap: wrap; }
+  #tabs button { background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 999px; padding: 7px 14px; font-size: 13.5px; }
+  #tabs button.active { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; font-weight: 600; }
+
+  .tabpage { flex: 1; overflow-y: auto; padding: 6px 18px 26px; display: flex; flex-direction: column; gap: 14px; }
+  .tabpage h2 { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 8px; }
+  .note { color: var(--muted); font-size: 13.5px; }
+  .card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 10px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .grow { flex: 1; min-width: 0; }
+  label.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); flex: 1; }
+  input[type=text], select { background: #0a0f16; border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 8px 10px; width: 100%; font: inherit; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  input[type=color] { width: 46px; height: 34px; border: 1px solid var(--border); border-radius: 8px;
+    background: none; padding: 2px; }
+  .btn { background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 9px; padding: 9px 14px; }
+  .btn.primary { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; font-weight: 600; }
+  .btn.primary:hover { background: var(--accent); color: #06231f; }
+  .btn.danger { color: var(--danger); }
+  .btn.block { width: 100%; text-align: center; }
+  .btn.small { padding: 5px 10px; font-size: 13px; }
+
+  .media-item { display: flex; align-items: center; gap: 10px; }
+  .media-item video { width: 76px; height: 46px; object-fit: cover; border-radius: 7px; background: #000; flex: none; }
+  .media-item .nm { font-size: 13.5px; overflow-wrap: anywhere; }
+  .media-item .sz { font-size: 12px; color: var(--muted); }
+
+  .swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+  .swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; }
+  .swatch.sel { border-color: #fff; }
+
+  #toast { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); z-index: 90;
+    background: var(--panel-2); border: 1px solid var(--accent-dark); border-radius: 10px;
+    padding: 10px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: opacity 0.3s; }
+
+  #welcome { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 6vmin;
+    pointer-events: none; }
+  #welcome .big { font-size: clamp(26px, 5vmin, 60px); font-weight: 700; }
+  #welcome .big span { color: var(--accent); }
+  #welcome p { color: var(--muted); max-width: 560px; }
+
+  pre.help { background: #0a0f16; border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px;
+    font-size: 12px; overflow-x: auto; white-space: pre; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <video id="idleVideo" class="hidden" autoplay muted loop playsinline></video>
+  <div id="stageTitle"></div>
+  <div id="welcome">
+    <div class="big">HereWe<span>Holo</span> Studio</div>
+    <p>Open het menu (⚙ linksonder) om video's toe te voegen en je eigen
+       holobox-presentatie samen te stellen. Alles wordt automatisch bewaard.</p>
+  </div>
+  <div id="buttonLayer"></div>
+</div>
+
+<div id="playOverlay">
+  <video id="playVideo" playsinline></video>
+  <button id="stopPlay" title="Stoppen">✕</button>
+</div>
+
+<button id="fsFab" class="fab" title="Volledig scherm">⛶</button>
+<button id="lockFab" class="fab" title="Knoppen verplaatsen / vastzetten">🔒</button>
+<button id="menuFab" class="fab" title="Menu">⚙</button>
+<div id="editHint" class="hidden">Sleep de knoppen naar hun plek en klik op 🔓 om ze vast te zetten</div>
+
+<aside id="panel">
+  <div id="panelHead">
+    <h1>HereWe<span>Holo</span> Studio</h1>
+    <button id="closePanel" title="Sluiten">✕</button>
+  </div>
+  <div id="tabs">
+    <button data-tab="buttons" class="active">Knoppen</button>
+    <button data-tab="media">Video's</button>
+    <button data-tab="look">Weergave</button>
+    <button data-tab="share">Opslaan &amp; verhuizen</button>
+    <button data-tab="help">Help</button>
+  </div>
+
+  <div class="tabpage" id="page-buttons">
+    <button id="addBtn" class="btn primary block">+ Video-knop toevoegen</button>
+    <p class="note">Klik op 🔒 linksonder in het scherm om knoppen te verslepen; klik nogmaals om ze vast te zetten.</p>
+    <div id="btnList"></div>
+  </div>
+
+  <div class="tabpage hidden" id="page-media">
+    <button id="addMedia" class="btn primary block">+ Video's toevoegen vanaf deze computer</button>
+    <input type="file" id="mediaInput" accept="video/*" multiple hidden>
+    <p class="note">Video's worden in de browser opgeslagen en werken daarna ook zonder internet. Aanbevolen: mp4 (H.264/H.265), 4K.</p>
+    <div id="mediaList"></div>
+  </div>
+
+  <div class="tabpage hidden" id="page-look">
+    <div class="card">
+      <label class="field">Titel op het scherm (optioneel)
+        <input type="text" id="cfgTitle" placeholder="bijv. Welkom bij HereWeHolo">
+      </label>
+      <label class="field">Achtergrondvideo (loopt gedempt in een lus)
+        <select id="cfgIdle"></select>
+      </label>
+      <label class="field">Knoppen verbergen tijdens afspelen
+        <select id="cfgHideBtns"><option value="yes">Ja</option><option value="no">Nee</option></select>
+      </label>
+      <label class="field">Bedieningsknoppen (⚙/🔒/⛶) vrijwel onzichtbaar maken (kiosk)
+        <select id="cfgClean"><option value="no">Nee</option><option value="yes">Ja — verschijnen bij aanwijzen</option></select>
+      </label>
+    </div>
+  </div>
+
+  <div class="tabpage hidden" id="page-share">
+    <h2>Op deze computer</h2>
+    <p class="note">Alles wordt automatisch bewaard in deze browser — ook offline. Sluit je de app af, dan staat alles er bij het openen weer.</p>
+    <h2>Naar een andere computer verhuizen</h2>
+    <p class="note">1. Exporteer het ontwerp (klein bestand). 2. Neem je videobestanden mee (map of USB). 3. Importeer op de andere pc het ontwerp en wijs dezelfde video's aan.</p>
+    <button id="exportBtn" class="btn block">⬇ Ontwerp exporteren (.json)</button>
+    <button id="importBtn" class="btn block">⬆ Ontwerp importeren</button>
+    <input type="file" id="importInput" accept="application/json" hidden>
+    <div id="relinkBox" class="card hidden">
+      <b>Video's opnieuw koppelen</b>
+      <p class="note" id="relinkText"></p>
+      <button id="relinkPick" class="btn primary block">Videobestanden aanwijzen…</button>
+      <input type="file" id="relinkInput" accept="video/*" multiple hidden>
+    </div>
+    <h2>Opnieuw beginnen</h2>
+    <button id="resetBtn" class="btn danger block">Alles wissen op deze computer</button>
+  </div>
+
+  <div class="tabpage hidden" id="page-help">
+    <h2>Snel aan de slag</h2>
+    <p class="note">1. <b>Video's</b>: voeg je videobestanden toe.<br>
+       2. <b>Knoppen</b>: maak een knop en kies welke video hij afspeelt.<br>
+       3. Klik op <b>🔒</b> linksonder, sleep de knoppen naar hun plek en klik nogmaals om vast te zetten.<br>
+       4. Klik op <b>⛶</b> voor volledig scherm — klaar voor de holobox.</p>
+    <h2>Op een willekeurige pc afspelen (offline)</h2>
+    <p class="note">Kopieer de map van deze app naar de pc (of USB), dubbelklik op <code>index.html</code>, importeer je ontwerp en wijs de video's aan. Internet is daarna niet nodig.</p>
+    <h2>Soepel 4K (GPU)</h2>
+    <p class="note">Video wordt door de browser standaard op de videokaart (GPU) gedecodeerd; de knoppen en overgangen renderen ook op de GPU. Hapert 4K op een trage pc, start Chrome/Edge dan zo:</p>
+    <pre class="help">chrome --kiosk --autoplay-policy=no-user-gesture-required ^
+  --ignore-gpu-blocklist --enable-gpu-rasterization ^
+  --enable-zero-copy "pad\naar\index.html"</pre>
+    <p class="note">Controleer via <code>chrome://gpu</code> of "Video Decode: Hardware accelerated" groen is. Gebruik H.264/H.265 mp4-bestanden; die hebben op vrijwel elke GPU hardware-decodering.</p>
+  </div>
+</aside>
+
+<div id="toast" class="hidden"></div>
+
+<script>
+'use strict';
+
+/* ================= Opslag ================= */
+const LS_KEY = 'hwh_studio_config_v1';
+
+const defaultConfig = () => ({
+  version: 1,
+  title: '',
+  idleMediaId: null,
+  hideButtonsDuringPlay: true,
+  cleanMode: false,
+  buttons: [] // {id,label,mediaId,x,y,size,color,shape}
+});
+
+let config = load();
+function load() {
+  try { return { ...defaultConfig(), ...JSON.parse(localStorage.getItem(LS_KEY)) }; }
+  catch { return defaultConfig(); }
+}
+function save() { localStorage.setItem(LS_KEY, JSON.stringify(config)); }
+
+// IndexedDB voor videobestanden (blobs) — blijft offline beschikbaar.
+let idb;
+function openDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('hwh_studio', 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('media', { keyPath: 'id' });
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+const tx = (mode) => idb.transaction('media', mode).objectStore('media');
+const dbPut = (rec) => new Promise((res, rej) => { const r = tx('readwrite').put(rec); r.onsuccess = res; r.onerror = () => rej(r.error); });
+const dbDel = (id) => new Promise((res, rej) => { const r = tx('readwrite').delete(id); r.onsuccess = res; r.onerror = () => rej(r.error); });
+const dbAll = () => new Promise((res, rej) => { const r = tx('readonly').getAll(); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+
+let mediaCache = new Map(); // id -> {id, name, size, url}
+
+/* ================= Hulpjes ================= */
+const $ = (s) => document.querySelector(s);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k != null) n.append(k.nodeType ? k : document.createTextNode(k));
+  return n;
+};
+const uid = () => 'x' + Math.random().toString(36).slice(2, 9);
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg; t.classList.remove('hidden'); t.style.opacity = 1;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.classList.add('hidden'), 350); }, 2400);
+}
+const fmtSize = (b) => b > 1e9 ? (b / 1e9).toFixed(2) + ' GB' : b > 1e6 ? (b / 1e6).toFixed(0) + ' MB' : Math.round(b / 1e3) + ' kB';
+
+const PALETTE = ['#35d0ba', '#2f7ff0', '#8b5cf6', '#ef5da8', '#f0762f', '#eab308', '#22c55e', '#0f172a', '#ffffff'];
+const textColorFor = (hex) => {
+  const n = parseInt(hex.slice(1), 16);
+  const lum = 0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255);
+  return lum > 165 ? '#0b1420' : '#ffffff';
+};
+
+/* ================= Presentatie renderen ================= */
+function renderStage() {
+  // Titel + welkomstscherm
+  $('#stageTitle').textContent = config.title || '';
+  $('#welcome').classList.toggle('hidden', config.buttons.length > 0 || !!config.idleMediaId || !!config.title);
+  document.body.classList.toggle('clean', !!config.cleanMode);
+
+  // Achtergrondvideo
+  const idle = $('#idleVideo');
+  const m = mediaCache.get(config.idleMediaId);
+  if (m) {
+    if (idle.dataset.mid !== m.id) { idle.src = m.url; idle.dataset.mid = m.id; }
+    idle.classList.remove('hidden');
+    idle.play().catch(() => {});
+  } else {
+    idle.classList.add('hidden'); idle.removeAttribute('src'); idle.dataset.mid = '';
+  }
+
+  // Knoppen
+  const layer = $('#buttonLayer');
+  layer.innerHTML = '';
+  for (const b of config.buttons) {
+    const btn = el('button', {
+      class: `vbtn shape-${b.shape || 'pill'}`,
+      'data-id': b.id,
+      style: `left:${b.x}%; top:${b.y}%; background:${b.color}; color:${textColorFor(b.color)};` +
+             `font-size:${(b.size || 8) * 0.42}vmin; min-width:${(b.size || 8) * 2.2}vmin;`
+    }, el('span', { class: 'play-ico' }, '▶'), b.shape === 'circle' ? '' : (b.label || 'Afspelen'));
+    if (b.shape === 'circle' && b.label) btn.title = b.label;
+    layer.append(btn);
+  }
+}
+
+/* ================= Afspelen ================= */
+const playOverlay = $('#playOverlay');
+const playVideo = $('#playVideo');
+
+function playMedia(mediaId) {
+  const m = mediaCache.get(mediaId);
+  if (!m) return toast('Deze knop heeft nog geen (gevonden) video — koppel hem in het menu');
+  playVideo.src = m.url;
+  playOverlay.classList.add('show');
+  if (config.hideButtonsDuringPlay) $('#buttonLayer').style.visibility = 'hidden';
+  $('#idleVideo').pause();
+  playVideo.play().catch(() => {});
+}
+function stopPlaying() {
+  playOverlay.classList.remove('show');
+  setTimeout(() => { playVideo.pause(); playVideo.removeAttribute('src'); playVideo.load(); }, 480);
+  $('#buttonLayer').style.visibility = '';
+  const idle = $('#idleVideo');
+  if (!idle.classList.contains('hidden')) idle.play().catch(() => {});
+}
+playVideo.addEventListener('ended', stopPlaying);
+$('#stopPlay').addEventListener('click', stopPlaying);
+
+/* ================= Klik & sleep op knoppen ================= */
+let editing = false;
+let drag = null;
+
+$('#buttonLayer').addEventListener('pointerdown', (e) => {
+  const btnEl = e.target.closest('.vbtn');
+  if (!btnEl || !editing) return;
+  const b = config.buttons.find((x) => x.id === btnEl.dataset.id);
+  drag = { b, el: btnEl, moved: false };
+  btnEl.setPointerCapture(e.pointerId);
+  e.preventDefault();
+});
+$('#buttonLayer').addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  const r = $('#stage').getBoundingClientRect();
+  drag.moved = true;
+  drag.b.x = Math.min(98, Math.max(2, ((e.clientX - r.left) / r.width) * 100));
+  drag.b.y = Math.min(98, Math.max(2, ((e.clientY - r.top) / r.height) * 100));
+  drag.el.style.left = drag.b.x + '%';
+  drag.el.style.top = drag.b.y + '%';
+});
+$('#buttonLayer').addEventListener('pointerup', () => {
+  if (drag && drag.moved) save();
+  drag = null;
+});
+$('#buttonLayer').addEventListener('click', (e) => {
+  const btnEl = e.target.closest('.vbtn');
+  if (!btnEl || editing) return;
+  const b = config.buttons.find((x) => x.id === btnEl.dataset.id);
+  if (b) playMedia(b.mediaId);
+});
+
+/* Verplaats-modus: 🔒 ⇄ 🔓 */
+const lockFab = $('#lockFab');
+lockFab.addEventListener('click', () => {
+  editing = !editing;
+  document.body.classList.toggle('editing', editing);
+  lockFab.textContent = editing ? '🔓' : '🔒';
+  $('#editHint').classList.toggle('hidden', !editing);
+  if (!editing) { save(); toast('Knoppen vastgezet'); }
+});
+
+/* ================= Menu ================= */
+const panel = $('#panel');
+$('#menuFab').addEventListener('click', () => { panel.classList.add('open'); refreshPanel(); });
+$('#closePanel').addEventListener('click', () => panel.classList.remove('open'));
+$('#fsFab').addEventListener('click', () => {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen().catch(() => toast('Volledig scherm niet toegestaan'));
+});
+document.querySelectorAll('#tabs button').forEach((t) => t.addEventListener('click', () => {
+  document.querySelectorAll('#tabs button').forEach((x) => x.classList.toggle('active', x === t));
+  document.querySelectorAll('.tabpage').forEach((p) => p.classList.toggle('hidden', p.id !== 'page-' + t.dataset.tab));
+}));
+
+function refreshPanel() { renderBtnList(); renderMediaList(); renderLook(); }
+
+/* ---- Tab: knoppen ---- */
+function mediaSelect(selectedId, onchange) {
+  const sel = el('select', { onchange: (e) => onchange(e.target.value || null) },
+    el('option', { value: '' }, '— kies een video —'),
+    [...mediaCache.values()].map((m) => {
+      const o = el('option', { value: m.id }, m.name);
+      if (m.id === selectedId) o.selected = true;
+      return o;
+    }));
+  return sel;
+}
+
+function renderBtnList() {
+  const list = $('#btnList');
+  list.innerHTML = '';
+  if (!config.buttons.length) list.append(el('p', { class: 'note' }, 'Nog geen knoppen. Voeg er één toe en koppel een video.'));
+  config.buttons.forEach((b) => {
+    const swatches = el('div', { class: 'swatches' }, PALETTE.map((c) =>
+      el('button', { class: 'swatch' + (b.color === c ? ' sel' : ''), style: `background:${c}`,
+        onclick: () => { b.color = c; save(); renderStage(); renderBtnList(); } })));
+    list.append(el('div', { class: 'card' },
+      el('div', { class: 'row' },
+        el('input', { type: 'text', class: 'grow', value: b.label, placeholder: 'Tekst op de knop',
+          oninput: (e) => { b.label = e.target.value; save(); renderStage(); } }),
+        el('button', { class: 'btn small danger', title: 'Knop verwijderen',
+          onclick: () => { if (confirm(`Knop "${b.label}" verwijderen?`)) { config.buttons = config.buttons.filter((x) => x !== b); save(); renderStage(); renderBtnList(); } } }, '🗑')),
+      el('div', { class: 'row' },
+        el('label', { class: 'field' }, 'Video die deze knop afspeelt', mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); })),
+        el('label', { class: 'field', style: 'max-width:110px' }, 'Vorm',
+          (() => { const s = el('select', { onchange: (e) => { b.shape = e.target.value; save(); renderStage(); } },
+              el('option', { value: 'pill' }, 'Ovaal'), el('option', { value: 'rounded' }, 'Rechthoek'), el('option', { value: 'circle' }, 'Rond ▶'));
+            s.value = b.shape || 'pill'; return s; })())),
+      el('label', { class: 'field' }, 'Grootte',
+        el('input', { type: 'range', min: 4, max: 20, step: 0.5, value: b.size || 8,
+          oninput: (e) => { b.size = Number(e.target.value); save(); renderStage(); } })),
+      swatches
+    ));
+  });
+}
+
+$('#addBtn').addEventListener('click', () => {
+  const n = config.buttons.length;
+  config.buttons.push({
+    id: uid(), label: 'Video ' + (n + 1), mediaId: [...mediaCache.keys()][0] || null,
+    x: 50, y: 25 + (n % 5) * 13, size: 8, color: PALETTE[n % (PALETTE.length - 2)], shape: 'pill'
+  });
+  save(); renderStage(); renderBtnList();
+  toast('Knop toegevoegd — klik op 🔒 om hem te verslepen');
+});
+
+/* ---- Tab: media ---- */
+function renderMediaList() {
+  const list = $('#mediaList');
+  list.innerHTML = '';
+  if (!mediaCache.size) list.append(el('p', { class: 'note' }, 'Nog geen video’s toegevoegd.'));
+  for (const m of mediaCache.values()) {
+    list.append(el('div', { class: 'card media-item' },
+      el('video', { src: m.url, preload: 'metadata', muted: '' }),
+      el('div', { class: 'grow' }, el('div', { class: 'nm' }, m.name), el('div', { class: 'sz' }, fmtSize(m.size))),
+      el('button', { class: 'btn small danger', title: 'Verwijderen', onclick: async () => {
+        if (!confirm(`Video "${m.name}" verwijderen?`)) return;
+        await dbDel(m.id); URL.revokeObjectURL(m.url); mediaCache.delete(m.id);
+        if (config.idleMediaId === m.id) config.idleMediaId = null;
+        for (const b of config.buttons) if (b.mediaId === m.id) b.mediaId = null;
+        save(); renderStage(); refreshPanel();
+      } }, '🗑')));
+  }
+}
+
+$('#addMedia').addEventListener('click', () => $('#mediaInput').click());
+$('#mediaInput').addEventListener('change', async (e) => {
+  for (const f of e.target.files) await addMediaFile(f);
+  e.target.value = '';
+  renderStage(); refreshPanel();
+});
+
+async function addMediaFile(file, fixedId) {
+  const id = fixedId || uid();
+  try {
+    await dbPut({ id, name: file.name, size: file.size, blob: file });
+  } catch (err) {
+    toast('Opslaan mislukt (schijf vol?): ' + file.name);
+    return null;
+  }
+  mediaCache.set(id, { id, name: file.name, size: file.size, url: URL.createObjectURL(file) });
+  return id;
+}
+
+/* ---- Tab: weergave ---- */
+function renderLook() {
+  $('#cfgTitle').value = config.title || '';
+  const idleSel = $('#cfgIdle');
+  idleSel.innerHTML = '';
+  idleSel.append(el('option', { value: '' }, '— geen —'));
+  for (const m of mediaCache.values()) {
+    const o = el('option', { value: m.id }, m.name);
+    if (m.id === config.idleMediaId) o.selected = true;
+    idleSel.append(o);
+  }
+  $('#cfgHideBtns').value = config.hideButtonsDuringPlay ? 'yes' : 'no';
+  $('#cfgClean').value = config.cleanMode ? 'yes' : 'no';
+}
+$('#cfgTitle').addEventListener('input', (e) => { config.title = e.target.value; save(); renderStage(); });
+$('#cfgIdle').addEventListener('change', (e) => { config.idleMediaId = e.target.value || null; save(); renderStage(); });
+$('#cfgHideBtns').addEventListener('change', (e) => { config.hideButtonsDuringPlay = e.target.value === 'yes'; save(); });
+$('#cfgClean').addEventListener('change', (e) => { config.cleanMode = e.target.value === 'yes'; save(); renderStage(); });
+
+/* ---- Tab: opslaan & verhuizen ---- */
+$('#exportBtn').addEventListener('click', () => {
+  const data = { ...config, mediaFiles: [...mediaCache.values()].map((m) => ({ id: m.id, name: m.name, size: m.size })) };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = el('a', { href: URL.createObjectURL(blob), download: 'holobox-presentatie.json' });
+  document.body.append(a); a.click(); a.remove();
+  toast('Ontwerp geëxporteerd — bewaar het bestand samen met je video’s');
+});
+
+$('#importBtn').addEventListener('click', () => $('#importInput').click());
+$('#importInput').addEventListener('change', async (e) => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  let data;
+  try { data = JSON.parse(await f.text()); } catch { return toast('Ongeldig bestand'); }
+  if (!Array.isArray(data.buttons)) return toast('Dit is geen Studio-exportbestand');
+  const { mediaFiles = [], ...rest } = data;
+  config = { ...defaultConfig(), ...rest };
+  save(); renderStage(); refreshPanel();
+  pendingRelink = mediaFiles.filter((m) => !mediaCache.has(m.id));
+  updateRelinkBox();
+  toast('Ontwerp geïmporteerd');
+});
+
+// Ontbrekende video's opnieuw koppelen (op bestandsnaam).
+let pendingRelink = [];
+function updateRelinkBox() {
+  const box = $('#relinkBox');
+  if (!pendingRelink.length) return box.classList.add('hidden');
+  box.classList.remove('hidden');
+  $('#relinkText').textContent = `Nog ${pendingRelink.length} video('s) niet gevonden op deze computer: ` +
+    pendingRelink.map((m) => m.name).join(', ');
+}
+$('#relinkPick').addEventListener('click', () => $('#relinkInput').click());
+$('#relinkInput').addEventListener('change', async (e) => {
+  const files = [...e.target.files];
+  e.target.value = '';
+  let linked = 0;
+  for (const want of [...pendingRelink]) {
+    const match = files.find((f) => f.name === want.name);
+    if (match) {
+      await addMediaFile(match, want.id);
+      pendingRelink = pendingRelink.filter((m) => m !== want);
+      linked++;
+    }
+  }
+  updateRelinkBox(); renderStage(); refreshPanel();
+  toast(linked ? `${linked} video('s) gekoppeld` : 'Geen bestandsnamen kwamen overeen');
+});
+
+$('#resetBtn').addEventListener('click', async () => {
+  if (!confirm('Alles wissen: knoppen, instellingen én opgeslagen video’s op deze computer?')) return;
+  for (const m of mediaCache.values()) { await dbDel(m.id); URL.revokeObjectURL(m.url); }
+  mediaCache.clear();
+  config = defaultConfig();
+  save(); renderStage(); refreshPanel();
+  toast('Alles gewist');
+});
+
+/* ================= Start ================= */
+(async () => {
+  try {
+    idb = await openDb();
+    for (const rec of await dbAll()) {
+      mediaCache.set(rec.id, { id: rec.id, name: rec.name, size: rec.size, url: URL.createObjectURL(rec.blob) });
+    }
+  } catch (e) {
+    toast('Let op: video-opslag niet beschikbaar in deze browser');
+  }
+  renderStage();
+  try { await navigator.storage?.persist?.(); } catch {}
+})();
+</script>
+</body>
+</html>
