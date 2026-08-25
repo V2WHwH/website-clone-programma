@@ -63,6 +63,31 @@
   .vbtn .play-ico { margin-right: 0.4em; font-size: 0.85em; }
   .vbtn.shape-circle .play-ico { margin: 0; }
 
+  /* Preview-knoppen: kader met live videovoorbeeld erin */
+  .vbtn.has-preview { padding: 0; aspect-ratio: 16 / 9; width: var(--pw, 30vmin); min-width: 0;
+    overflow: hidden; border: 0.22em solid var(--frame, #35d0ba); background-color: #000; }
+  .vbtn.has-preview.shape-circle { aspect-ratio: 1; }
+  .vbtn.has-preview video.preview { position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; pointer-events: none; }
+  .vbtn.has-preview .pv-label { position: absolute; left: 0; right: 0; bottom: 0; padding: 0.4em 0.6em 0.35em;
+    background: linear-gradient(transparent, rgba(0,0,0,0.78)); font-size: 0.78em; text-align: center; }
+  .vbtn.has-preview .pv-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 2.1em; height: 2.1em; border-radius: 50%; background: rgba(0,0,0,0.45);
+    border: 2px solid rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: center;
+    font-size: 0.85em; padding-left: 0.15em; }
+
+  /* Screensaver-laag */
+  #saver { position: absolute; inset: 0; background: #000; z-index: 25; opacity: 0;
+    pointer-events: none; transition: opacity 0.8s ease; }
+  #saver.show { opacity: 1; pointer-events: auto; }
+  #saver video { width: 100%; height: 100%; object-fit: cover; transform: translateZ(0); }
+
+  /* Camera-status in het menu */
+  #camPreviewBox video { width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px; background: #000; }
+  .cam-status { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+  .cam-dot { width: 10px; height: 10px; border-radius: 50%; background: #4b5a70; flex: none; }
+  .cam-dot.present { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
   /* Bewegingskader (zichtbaar in verplaats-modus bij "vrij bewegen") */
   .vframe { position: absolute; transform: translate(-50%, -50%); border: 2px dashed rgba(53,208,186,0.55);
     border-radius: 14px; pointer-events: none; display: none; }
@@ -86,6 +111,7 @@
     background: rgba(0,0,0,0.55); color: #fff; border: 1px solid rgba(255,255,255,0.35); font-size: 22px; }
 
   /* ============ ZWEVENDE BEDIENING ============ */
+  #orFab { left: 16px; bottom: 214px; font-size: 17px; }
   .fab { position: absolute; z-index: 45; width: 54px; height: 54px; border-radius: 50%;
     border: 1px solid rgba(255,255,255,0.22); background: rgba(14,20,28,0.72);
     color: #fff; font-size: 22px; backdrop-filter: blur(6px); display: flex; align-items: center;
@@ -177,6 +203,11 @@
   <button id="stopPlay" title="Stoppen">✕</button>
 </div>
 
+<div id="saver">
+  <video id="saverVideo" playsinline muted></video>
+</div>
+
+<button id="orFab" class="fab" title="Oriëntatie: automatisch / portrait / landscape">AUTO</button>
 <button id="fsFab" class="fab" title="Volledig scherm">⛶</button>
 <button id="lockFab" class="fab" title="Knoppen verplaatsen / vastzetten">🔒</button>
 <button id="menuFab" class="fab" title="Menu">⚙</button>
@@ -191,6 +222,7 @@
     <button data-tab="buttons" class="active">Knoppen</button>
     <button data-tab="media">Video's</button>
     <button data-tab="look">Weergave</button>
+    <button data-tab="saver">Screensaver &amp; sensor</button>
     <button data-tab="share">Opslaan &amp; verhuizen</button>
     <button data-tab="help">Help</button>
   </div>
@@ -222,6 +254,43 @@
       <label class="field">Bedieningsknoppen (⚙/🔒/⛶) vrijwel onzichtbaar maken (kiosk)
         <select id="cfgClean"><option value="no">Nee</option><option value="yes">Ja — verschijnen bij aanwijzen</option></select>
       </label>
+      <label class="field">Oriëntatie (ook via de AUTO/⇱-knop linksonder)
+        <select id="cfgOrientation">
+          <option value="auto">Automatisch (volgt het scherm)</option>
+          <option value="portrait">Portrait (staand) — roteert op een liggend scherm</option>
+          <option value="landscape">Landscape (liggend) — roteert op een staand scherm</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="tabpage hidden" id="page-saver">
+    <h2>Screensaver</h2>
+    <div class="card">
+      <label class="field">Screensaver
+        <select id="svEnabled"><option value="no">Uit</option><option value="yes">Aan</option></select>
+      </label>
+      <label class="field">Start na (seconden zonder aanraking)
+        <input type="number" id="svDelay" min="10" max="3600" step="5">
+      </label>
+      <div class="field">Video's voor de screensaver (één of meer; meerdere spelen om de beurt)</div>
+      <div id="svMediaList"></div>
+      <p class="note">Raakt iemand het scherm aan, dan verschijnen de preview-knoppen weer direct.</p>
+    </div>
+    <h2>Aanwezigheidsdetectie (webcam)</h2>
+    <div class="card">
+      <label class="field">Webcam-detectie
+        <select id="camEnabled"><option value="no">Uit</option><option value="yes">Aan</option></select>
+      </label>
+      <label class="field">Iemand moet minimaal zó lang voor de holobox staan (seconden)
+        <input type="number" id="camDwell" min="1" max="30" step="0.5">
+      </label>
+      <label class="field">Gevoeligheid (1 = alleen dichtbij/duidelijk, 10 = zeer gevoelig)
+        <input type="range" id="camSens" min="1" max="10" step="1">
+      </label>
+      <div class="cam-status"><span class="cam-dot" id="camDot"></span><span id="camStatusText">Camera uit</span></div>
+      <div id="camPreviewBox"></div>
+      <p class="note">Blijft iemand langer dan de ingestelde tijd in beeld staan, dan stopt de screensaver en verschijnen de preview-knoppen. Voorbijlopende mensen worden genegeerd. Beelden worden alleen lokaal verwerkt en nooit opgeslagen of verstuurd.</p>
     </div>
   </div>
 
@@ -269,18 +338,26 @@
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 1,
+  version: 2,
   title: '',
   idleMediaId: null,
   hideButtonsDuringPlay: true,
   cleanMode: false,
-  buttons: [] // {id,label,mediaId,x,y,size,color,shape}
+  orientationMode: 'auto', // 'auto' | 'portrait' | 'landscape'
+  screensaver: { enabled: false, delaySec: 120, mediaIds: [] },
+  camera: { enabled: false, dwellSec: 3, sensitivity: 5 },
+  buttons: [] // {id,label,mediaId,x,y,size,color,shape,depth,drift,showPreview}
 });
 
 let config = load();
 function load() {
-  try { return { ...defaultConfig(), ...JSON.parse(localStorage.getItem(LS_KEY)) }; }
-  catch { return defaultConfig(); }
+  try {
+    const d = defaultConfig();
+    const stored = JSON.parse(localStorage.getItem(LS_KEY)) || {};
+    return { ...d, ...stored,
+      screensaver: { ...d.screensaver, ...stored.screensaver },
+      camera: { ...d.camera, ...stored.camera } };
+  } catch { return defaultConfig(); }
 }
 function save() { localStorage.setItem(LS_KEY, JSON.stringify(config)); }
 
@@ -352,13 +429,27 @@ function renderStage() {
   const layer = $('#buttonLayer');
   layer.innerHTML = '';
   for (const b of config.buttons) {
+    const media = mediaCache.get(b.mediaId);
+    const preview = b.showPreview !== false && !!media;
     const btn = el('button', {
-      class: `vbtn shape-${b.shape || 'pill'}`,
+      class: `vbtn shape-${b.shape || 'pill'}` + (preview ? ' has-preview' : ''),
       'data-id': b.id,
       style: `left:${b.x}%; top:${b.y}%; background-color:${b.color}; color:${textColorFor(b.color)};` +
-             `--glow:${b.color}59; font-size:${(b.size || 8) * 0.42}vmin; min-width:${(b.size || 8) * 2.2}vmin;`
-    }, el('span', { class: 'play-ico' }, '▶'), b.shape === 'circle' ? '' : (b.label || 'Afspelen'));
-    if (b.shape === 'circle' && b.label) btn.title = b.label;
+             `--glow:${b.color}59; --frame:${b.color}; --pw:${(b.size || 8) * 3.2}vmin;` +
+             `font-size:${(b.size || 8) * 0.42}vmin; ${preview ? '' : `min-width:${(b.size || 8) * 2.2}vmin;`}`
+    });
+    if (preview) {
+      // Kader met live videovoorbeeld; de echte video start bij aanraking.
+      btn.append(
+        el('video', { class: 'preview', src: media.url, muted: '', loop: '', autoplay: '', playsinline: '', preload: 'metadata' }),
+        el('span', { class: 'pv-play' }, '▶'),
+        el('span', { class: 'pv-label' }, b.label || media.name)
+      );
+      btn.querySelector('video').muted = true; // attribuut alleen is niet genoeg voor autoplay
+    } else {
+      btn.append(el('span', { class: 'play-ico' }, '▶'), b.shape === 'circle' ? '' : (b.label || 'Afspelen'));
+      if (b.shape === 'circle' && b.label) btn.title = b.label;
+    }
     layer.append(btn);
     // Bewegingskader tonen in verplaats-modus wanneer "vrij bewegen" aanstaat.
     if ((b.drift || 0) > 0) {
@@ -389,6 +480,13 @@ function syncFrames() {
 const playOverlay = $('#playOverlay');
 const playVideo = $('#playVideo');
 
+// Previews pauzeren tijdens afspelen/screensaver scheelt GPU-decodering.
+function setPreviewsPaused(paused) {
+  for (const v of document.querySelectorAll('.vbtn video.preview')) {
+    if (paused) v.pause(); else v.play().catch(() => {});
+  }
+}
+
 function playMedia(mediaId) {
   const m = mediaCache.get(mediaId);
   if (!m) return toast('Deze knop heeft nog geen (gevonden) video — koppel hem in het menu');
@@ -396,6 +494,7 @@ function playMedia(mediaId) {
   playOverlay.classList.add('show');
   if (config.hideButtonsDuringPlay) $('#buttonLayer').style.visibility = 'hidden';
   $('#idleVideo').pause();
+  setPreviewsPaused(true);
   playVideo.play().catch(() => {});
 }
 function stopPlaying() {
@@ -404,6 +503,8 @@ function stopPlaying() {
   $('#buttonLayer').style.visibility = '';
   const idle = $('#idleVideo');
   if (!idle.classList.contains('hidden')) idle.play().catch(() => {});
+  setPreviewsPaused(false);
+  lastInteraction = Date.now();
 }
 playVideo.addEventListener('ended', stopPlaying);
 $('#stopPlay').addEventListener('click', stopPlaying);
@@ -449,6 +550,7 @@ lockFab.addEventListener('click', () => {
   document.body.classList.toggle('editing', editing);
   lockFab.textContent = editing ? '🔓' : '🔒';
   $('#editHint').classList.toggle('hidden', !editing);
+  applyOrientationMode(); // tijdens verplaatsen niet roteren, daarna weer wel
   syncFrames();
   if (!editing) { save(); toast('Knoppen vastgezet'); }
 });
@@ -521,7 +623,7 @@ document.querySelectorAll('#tabs button').forEach((t) => t.addEventListener('cli
   document.querySelectorAll('.tabpage').forEach((p) => p.classList.toggle('hidden', p.id !== 'page-' + t.dataset.tab));
 }));
 
-function refreshPanel() { renderBtnList(); renderMediaList(); renderLook(); }
+function refreshPanel() { renderBtnList(); renderMediaList(); renderLook(); renderSaver(); }
 
 /* ---- Tab: knoppen ---- */
 function mediaSelect(selectedId, onchange) {
@@ -557,6 +659,10 @@ function renderBtnList() {
       el('option', { value: 6 }, 'Middel kader'),
       el('option', { value: 10 }, 'Groot kader'));
     driftSel.value = String(b.drift || 0);
+    const previewSel = el('select', { onchange: (e) => { b.showPreview = e.target.value === 'yes'; save(); renderStage(); } },
+      el('option', { value: 'yes' }, 'Aan — kader met videovoorbeeld'),
+      el('option', { value: 'no' }, 'Uit — gewone knop'));
+    previewSel.value = b.showPreview === false ? 'no' : 'yes';
     list.append(el('div', { class: 'card' },
       el('div', { class: 'row' },
         el('input', { type: 'text', class: 'grow', value: b.label, placeholder: 'Tekst op de knop',
@@ -575,6 +681,7 @@ function renderBtnList() {
       el('div', { class: 'row' },
         el('label', { class: 'field' }, 'Naar voren/achteren zweven', depthSel),
         el('label', { class: 'field' }, 'Vrij bewegen in een kader', driftSel)),
+      el('label', { class: 'field' }, 'Videovoorbeeld in de knop', previewSel),
       swatches
     ));
   });
@@ -584,8 +691,8 @@ $('#addBtn').addEventListener('click', () => {
   const n = config.buttons.length;
   config.buttons.push({
     id: uid(), label: 'Video ' + (n + 1), mediaId: [...mediaCache.keys()][0] || null,
-    x: 50, y: 25 + (n % 5) * 13, size: 8, color: PALETTE[n % (PALETTE.length - 2)], shape: 'pill',
-    depth: 'subtle', drift: 0
+    x: 50, y: 25 + (n % 5) * 13, size: 8, color: PALETTE[n % (PALETTE.length - 2)], shape: 'rounded',
+    depth: 'subtle', drift: 0, showPreview: true
   });
   save(); renderStage(); renderBtnList();
   toast('Knop toegevoegd — klik op 🔒 om hem te verslepen');
@@ -642,11 +749,46 @@ function renderLook() {
   }
   $('#cfgHideBtns').value = config.hideButtonsDuringPlay ? 'yes' : 'no';
   $('#cfgClean').value = config.cleanMode ? 'yes' : 'no';
+  $('#cfgOrientation').value = config.orientationMode || 'auto';
 }
 $('#cfgTitle').addEventListener('input', (e) => { config.title = e.target.value; save(); renderStage(); });
 $('#cfgIdle').addEventListener('change', (e) => { config.idleMediaId = e.target.value || null; save(); renderStage(); });
 $('#cfgHideBtns').addEventListener('change', (e) => { config.hideButtonsDuringPlay = e.target.value === 'yes'; save(); });
 $('#cfgClean').addEventListener('change', (e) => { config.cleanMode = e.target.value === 'yes'; save(); renderStage(); });
+$('#cfgOrientation').addEventListener('change', (e) => { setOrientationMode(e.target.value); });
+
+/* ---- Tab: screensaver & sensor ---- */
+function renderSaver() {
+  const sv = config.screensaver, cam = config.camera;
+  $('#svEnabled').value = sv.enabled ? 'yes' : 'no';
+  $('#svDelay').value = sv.delaySec;
+  const list = $('#svMediaList');
+  list.innerHTML = '';
+  if (!mediaCache.size) list.append(el('p', { class: 'note' }, 'Voeg eerst video’s toe op het tabblad Video’s.'));
+  for (const m of mediaCache.values()) {
+    const checked = sv.mediaIds.includes(m.id);
+    list.append(el('label', { class: 'row', style: 'flex-direction:row;align-items:center;color:var(--text);font-size:13.5px' },
+      el('input', { type: 'checkbox', style: 'width:auto', ...(checked ? { checked: '' } : {}), onchange: (e) => {
+        if (e.target.checked) sv.mediaIds.push(m.id);
+        else sv.mediaIds = sv.mediaIds.filter((id) => id !== m.id);
+        save();
+      } }),
+      ' ' + m.name));
+  }
+  $('#camEnabled').value = cam.enabled ? 'yes' : 'no';
+  $('#camDwell').value = cam.dwellSec;
+  $('#camSens').value = cam.sensitivity;
+}
+
+$('#svEnabled').addEventListener('change', (e) => { config.screensaver.enabled = e.target.value === 'yes'; save(); if (!config.screensaver.enabled) exitSaver(); });
+$('#svDelay').addEventListener('change', (e) => { config.screensaver.delaySec = Math.max(10, Number(e.target.value) || 120); save(); });
+$('#camEnabled').addEventListener('change', (e) => {
+  config.camera.enabled = e.target.value === 'yes';
+  save();
+  config.camera.enabled ? startCamera() : stopCamera();
+});
+$('#camDwell').addEventListener('change', (e) => { config.camera.dwellSec = Math.max(1, Number(e.target.value) || 3); save(); });
+$('#camSens').addEventListener('change', (e) => { config.camera.sensitivity = Number(e.target.value); save(); });
 
 /* ---- Tab: opslaan & verhuizen ---- */
 $('#exportBtn').addEventListener('click', () => {
@@ -708,6 +850,215 @@ $('#resetBtn').addEventListener('click', async () => {
   toast('Alles gewist');
 });
 
+/* ================= Screensaver ================= */
+
+let lastInteraction = Date.now();
+let saverActive = false;
+let saverIndex = 0;
+const saverEl = $('#saver');
+const saverVideo = $('#saverVideo');
+
+// Elke aanraking telt als activiteit; tijdens de screensaver wekt hij het menu.
+for (const evt of ['pointerdown', 'keydown']) {
+  window.addEventListener(evt, () => {
+    lastInteraction = Date.now();
+    if (saverActive) exitSaver();
+  }, { capture: true });
+}
+
+function saverPlaylist() {
+  return (config.screensaver.mediaIds || []).map((id) => mediaCache.get(id)).filter(Boolean);
+}
+
+function enterSaver() {
+  const list = saverPlaylist();
+  if (!list.length || saverActive) return;
+  saverActive = true;
+  saverIndex = 0;
+  saverEl.classList.add('show');
+  setPreviewsPaused(true);
+  $('#idleVideo').pause();
+  playSaverItem(list);
+}
+
+function playSaverItem(list) {
+  const m = list[saverIndex % list.length];
+  saverVideo.loop = list.length === 1; // één video: naadloos loopen
+  saverVideo.src = m.url;
+  saverVideo.play().catch(() => {});
+}
+
+saverVideo.addEventListener('ended', () => {
+  if (!saverActive) return;
+  const list = saverPlaylist();
+  if (!list.length) return exitSaver();
+  saverIndex = (saverIndex + 1) % list.length;
+  playSaverItem(list);
+});
+
+function exitSaver() {
+  if (!saverActive) return;
+  saverActive = false;
+  saverEl.classList.remove('show');
+  setTimeout(() => { saverVideo.pause(); saverVideo.removeAttribute('src'); saverVideo.load(); }, 850);
+  setPreviewsPaused(false);
+  const idle = $('#idleVideo');
+  if (!idle.classList.contains('hidden')) idle.play().catch(() => {});
+  lastInteraction = Date.now();
+}
+
+// Bewaker: start de screensaver na de ingestelde tijd zonder aanraking.
+setInterval(() => {
+  if (!config.screensaver.enabled || saverActive || editing) return;
+  if (panel.classList.contains('open') || playOverlay.classList.contains('show')) return;
+  if ((Date.now() - lastInteraction) / 1000 >= config.screensaver.delaySec) enterSaver();
+}, 1000);
+
+/* ================= Webcam-aanwezigheidsdetectie =================
+   Lokale beeldanalyse (niets wordt opgeslagen of verstuurd):
+   - "aanwezigheid" = verschil t.o.v. een achtergrondmodel dat alleen wordt
+     ververst wanneer de scène een tijdje rustig is;
+   - pas wanneer iemand langer dan dwellSec aanwezig blijft, telt het als
+     bezoeker en stopt de screensaver — voorbijlopers halen dat niet. */
+
+let camStream = null, camVideoEl = null, camTimer = null;
+let camBg = null, camPrev = null, camQuiet = 0, camPresenceSince = 0, camLastPresent = 0;
+
+async function startCamera() {
+  if (camStream) return;
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 }, audio: false });
+  } catch (e) {
+    config.camera.enabled = false;
+    save(); renderSaver();
+    $('#camStatusText').textContent = 'Camera niet beschikbaar of geweigerd';
+    return toast('Webcam niet beschikbaar: ' + (e.name || e));
+  }
+  camVideoEl = el('video', { muted: '', playsinline: '', autoplay: '' });
+  camVideoEl.srcObject = camStream;
+  camVideoEl.muted = true;
+  $('#camPreviewBox').innerHTML = '';
+  $('#camPreviewBox').append(camVideoEl);
+  camBg = camPrev = null; camQuiet = 0; camPresenceSince = 0;
+  camTimer = setInterval(sampleCamera, 350);
+  $('#camStatusText').textContent = 'Camera actief — nog niemand gedetecteerd';
+}
+
+function stopCamera() {
+  clearInterval(camTimer); camTimer = null;
+  if (camStream) for (const t of camStream.getTracks()) t.stop();
+  camStream = null; camBg = null;
+  $('#camPreviewBox').innerHTML = '';
+  $('#camDot').classList.remove('present');
+  $('#camStatusText').textContent = 'Camera uit';
+}
+
+const camCanvas = document.createElement('canvas');
+camCanvas.width = 48; camCanvas.height = 36;
+const camCtx = camCanvas.getContext('2d', { willReadFrequently: true });
+
+function grayFrame() {
+  camCtx.drawImage(camVideoEl, 0, 0, 48, 36);
+  const d = camCtx.getImageData(0, 0, 48, 36).data;
+  const g = new Float32Array(48 * 36);
+  for (let i = 0; i < g.length; i++) g[i] = (d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 3;
+  return g;
+}
+
+function fracDiff(a, b, threshold) {
+  let n = 0;
+  for (let i = 0; i < a.length; i++) if (Math.abs(a[i] - b[i]) > threshold) n++;
+  return n / a.length;
+}
+
+function sampleCamera() {
+  if (!camVideoEl || camVideoEl.readyState < 2) return;
+  const cur = grayFrame();
+  if (!camBg) { camBg = cur.slice(); camPrev = cur; return; }
+
+  const sens = config.camera.sensitivity || 5;          // 1 (ongevoelig) .. 10 (gevoelig)
+  const pixelTh = 14 + (10 - sens) * 2.5;               // hoeveel een pixel moet verschillen
+  const presenceTh = 0.03 + (10 - sens) * 0.012;        // hoeveel % pixels anders moet zijn
+  const motion = fracDiff(cur, camPrev, pixelTh);
+  const presence = fracDiff(cur, camBg, pixelTh);
+  camPrev = cur;
+
+  // Achtergrondmodel alleen verversen als de scène echt rustig is (±5s),
+  // zodat een stilstaande bezoeker niet in de achtergrond "opgaat".
+  if (motion < 0.01 && presence < presenceTh) {
+    if (++camQuiet >= 14) for (let i = 0; i < camBg.length; i++) camBg[i] = camBg[i] * 0.7 + cur[i] * 0.3;
+  } else {
+    camQuiet = 0;
+  }
+
+  const now = Date.now();
+  if (presence >= presenceTh) {
+    camLastPresent = now;
+    if (!camPresenceSince) camPresenceSince = now;
+    const standingSec = (now - camPresenceSince) / 1000;
+    if (standingSec >= config.camera.dwellSec) {
+      lastInteraction = now;               // houdt de screensaver ook wég zolang iemand blijft staan
+      if (saverActive) exitSaver();
+      $('#camStatusText').textContent = `Bezoeker aanwezig (${standingSec.toFixed(1)}s)`;
+    } else {
+      $('#camStatusText').textContent = `Beweging gezien… (${standingSec.toFixed(1)}s van ${config.camera.dwellSec}s)`;
+    }
+    $('#camDot').classList.add('present');
+  } else {
+    if (camPresenceSince && now - camLastPresent > 1500) camPresenceSince = 0; // korte uitval overbruggen
+    if (!camPresenceSince) {
+      $('#camDot').classList.remove('present');
+      if (camStream) $('#camStatusText').textContent = 'Camera actief — nog niemand gedetecteerd';
+    }
+  }
+}
+
+/* ================= Oriëntatie (portrait/landscape) ================= */
+
+const orFab = $('#orFab');
+const OR_LABELS = { auto: 'AUTO', portrait: '⬍', landscape: '⬌' };
+
+function setOrientationMode(mode) {
+  config.orientationMode = mode;
+  save();
+  applyOrientationMode();
+  $('#cfgOrientation').value = mode;
+  toast({ auto: 'Oriëntatie: automatisch', portrait: 'Oriëntatie: portrait (staand)', landscape: 'Oriëntatie: landscape (liggend)' }[mode]);
+}
+
+orFab.addEventListener('click', () => {
+  const order = ['auto', 'portrait', 'landscape'];
+  setOrientationMode(order[(order.indexOf(config.orientationMode || 'auto') + 1) % order.length]);
+});
+
+// Draait het podium 90° wanneer de gekozen oriëntatie niet bij het scherm past
+// (bijv. portrait-content op een liggend gemonteerd paneel).
+function applyOrientationMode() {
+  orFab.textContent = OR_LABELS[config.orientationMode || 'auto'];
+  const mode = config.orientationMode || 'auto';
+  const landscapeScreen = window.innerWidth >= window.innerHeight;
+  const rotate = !editing && ((mode === 'portrait' && landscapeScreen) || (mode === 'landscape' && !landscapeScreen));
+  for (const target of [document.getElementById('stage'), playOverlay, saverEl]) {
+    if (rotate) {
+      target.style.width = window.innerHeight + 'px';
+      target.style.height = window.innerWidth + 'px';
+      target.style.left = (window.innerWidth - window.innerHeight) / 2 + 'px';
+      target.style.top = (window.innerHeight - window.innerWidth) / 2 + 'px';
+      target.style.right = 'auto';
+      target.style.bottom = 'auto';
+      target.style.transform = 'rotate(90deg)';
+    } else {
+      target.style.width = ''; target.style.height = '';
+      target.style.left = ''; target.style.top = '';
+      target.style.right = ''; target.style.bottom = '';
+      target.style.transform = '';
+    }
+  }
+  syncFrames();
+}
+
+window.addEventListener('resize', applyOrientationMode);
+
 /* ================= Start ================= */
 (async () => {
   try {
@@ -719,6 +1070,8 @@ $('#resetBtn').addEventListener('click', async () => {
     toast('Let op: video-opslag niet beschikbaar in deze browser');
   }
   renderStage();
+  applyOrientationMode();
+  if (config.camera.enabled) startCamera();
   try { await navigator.storage?.persist?.(); } catch {}
 })();
 </script>
