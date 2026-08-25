@@ -16,7 +16,7 @@ media/
 # Dependencies / build
 node_modules/
 dist/
-build/
+/build/
 __pycache__/
 *.py[cod]
 .venv/
