@@ -21,3 +21,9 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+
+# Desktop-app (Electron)
+desktop/node_modules/
+desktop/app/
+desktop/release/
+desktop/smoke-result.json

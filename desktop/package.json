@@ -1,0 +1,53 @@
+{
+  "name": "hereweholo-player",
+  "productName": "HereWeHolo Player",
+  "version": "1.0.0",
+  "description": "HereWeHolo holobox-presentatieplayer voor Windows: offline 4K-videoplayer met GPU-versnelling",
+  "main": "main.js",
+  "author": "HereWeHolo",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "sync": "node sync-app.js",
+    "start": "npm run sync && electron .",
+    "check": "node --check main.js && node --check preload.js && node --check sync-app.js",
+    "dist": "npm run sync && electron-builder --win nsis zip",
+    "pack": "npm run sync && electron-builder --win --dir"
+  },
+  "devDependencies": {
+    "electron": "^38.2.1",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "nl.hereweholo.player",
+    "productName": "HereWeHolo Player",
+    "copyright": "© HereWeHolo",
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "diagnostics.html",
+      "app/**"
+    ],
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "zip", "arch": ["x64"] }
+      ],
+      "artifactName": "HereWeHolo-Player-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "HereWeHolo-Player-Setup-${version}.${ext}",
+      "shortcutName": "HereWeHolo Player",
+      "createDesktopShortcut": true,
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

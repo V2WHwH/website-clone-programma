@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Diagnostiek</title>
+<style>
+  :root { color-scheme: dark; }
+  * { margin: 0; box-sizing: border-box; }
+  body { background: #0c1118; color: #e8ecf4; font: 14px/1.55 system-ui, "Segoe UI", sans-serif; padding: 22px 26px; }
+  h1 { font-size: 18px; margin-bottom: 4px; }
+  h1 span { color: #35d0ba; }
+  .muted { color: #8b97ab; font-size: 12.5px; }
+  h2 { font-size: 12.5px; color: #8b97ab; text-transform: uppercase; letter-spacing: 0.07em; margin: 18px 0 6px; }
+  dl { display: grid; grid-template-columns: 210px 1fr; gap: 3px 12px; background: #141b26;
+    border: 1px solid #263245; border-radius: 10px; padding: 12px 14px; font-size: 13px; }
+  dt { color: #8b97ab; }
+  dd { overflow-wrap: anywhere; }
+  .ok { color: #35d0ba; } .warn { color: #eab308; } .bad { color: #e5605e; }
+  .row { display: flex; gap: 8px; margin-top: 18px; }
+  button { background: #1b2432; color: #e8ecf4; border: 1px solid #263245; border-radius: 8px;
+    padding: 8px 14px; font: inherit; cursor: pointer; }
+  button:hover { border-color: #1f9b8a; }
+</style>
+</head>
+<body>
+  <h1>HereWe<span>Holo</span> Player — Diagnostiek</h1>
+  <div class="muted" id="sub">Laden…</div>
+  <div id="content"></div>
+  <div class="row">
+    <button id="copyBtn">Diagnostiek kopiëren</button>
+    <button id="logsBtn">Logmap openen</button>
+    <button id="gpuToggle"></button>
+  </div>
+<script>
+  let data;
+  const esc = (s) => String(s ?? '—').replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+
+  // Chromium-featurestatus vertalen naar leesbare badge.
+  function badge(v) {
+    if (!v) return '<span class="muted">onbekend</span>';
+    if (String(v).includes('enabled')) return '<span class="ok">hardware ✔ (' + esc(v) + ')</span>';
+    if (String(v).includes('software')) return '<span class="warn">software-fallback (' + esc(v) + ')</span>';
+    return '<span class="bad">' + esc(v) + '</span>';
+  }
+
+  async function refresh() {
+    data = await window.hwhDesktop.getDiagnostics();
+    document.getElementById('sub').textContent =
+      `${data.app.name} ${data.app.version} · uptime ${data.uptimeSec}s`;
+    const gf = data.gpuFeatures || {};
+    const gpuName = data.gpu?.auxAttributes?.glRenderer || data.gpu?.devices?.find((d) => d.active)?.name || 'onbekend';
+    document.getElementById('content').innerHTML = `
+      <h2>Systeem</h2>
+      <dl>
+        <dt>Besturingssysteem</dt><dd>${esc(data.os.platform)} ${esc(data.os.release)} (${esc(data.os.arch)})</dd>
+        <dt>CPU</dt><dd>${esc(data.cpu.model)} · ${esc(data.cpu.logicalCores)} threads</dd>
+        <dt>RAM</dt><dd>${esc(data.ramGB)} GB</dd>
+        <dt>GPU</dt><dd>${esc(gpuName)}</dd>
+        <dt>Runtime</dt><dd>Electron ${esc(data.runtime.electron)} · Chromium ${esc(data.runtime.chromium)}</dd>
+      </dl>
+      <h2>GPU-versnelling</h2>
+      <dl>
+        <dt>Video-decodering</dt><dd>${badge(gf.video_decode)}</dd>
+        <dt>Video-encodering</dt><dd>${badge(gf.video_encode)}</dd>
+        <dt>2D canvas</dt><dd>${badge(gf['2d_canvas'])}</dd>
+        <dt>Rasterization</dt><dd>${badge(gf.rasterization)}</dd>
+        <dt>WebGL</dt><dd>${badge(gf.webgl)}</dd>
+        <dt>Compositing</dt><dd>${badge(gf.gpu_compositing)}</dd>
+      </dl>
+      <h2>Instellingen</h2>
+      <dl>
+        <dt>Kioskmodus</dt><dd>${data.settings.kiosk ? 'aan (F11 wisselt)' : 'uit (F11 wisselt)'}</dd>
+        <dt>Hardwareversnelling</dt><dd>${data.settings.hardwareAcceleration ? '<span class="ok">aan</span>' : '<span class="warn">uit (CPU-modus)</span>'}</dd>
+        <dt>Logmap</dt><dd>${esc(data.logDir)}</dd>
+      </dl>`;
+    const t = document.getElementById('gpuToggle');
+    t.textContent = data.settings.hardwareAcceleration
+      ? 'GPU-versnelling uitzetten (na herstart)'
+      : 'GPU-versnelling aanzetten (na herstart)';
+  }
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+  });
+  document.getElementById('logsBtn').addEventListener('click', () => window.hwhDesktop.openLogs());
+  document.getElementById('gpuToggle').addEventListener('click', async () => {
+    await window.hwhDesktop.setSettings({ hardwareAcceleration: !data.settings.hardwareAcceleration });
+    refresh();
+  });
+
+  refresh();
+</script>
+</body>
+</html>
