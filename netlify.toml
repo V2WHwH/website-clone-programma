@@ -1,0 +1,6 @@
+# Netlify-configuratie: publiceer alleen de statische Studio-app.
+# Het Node.js-platform (server.js) is niet geschikt voor Netlify en wordt
+# bewust niet gedeployed.
+[build]
+  publish = "studio"
+  command = ""
