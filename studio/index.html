@@ -43,18 +43,30 @@
     font-size: clamp(20px, 4.5vmin, 64px); font-weight: 700; letter-spacing: 0.03em;
     text-shadow: 0 2px 18px rgba(0,0,0,0.6); text-align: center; width: 90%; pointer-events: none; }
 
-  /* Video-knoppen */
+  /* Video-knoppen — "zwevend in de holobox": glans bovenop, gekleurde gloed
+     rondom en een losse slagschaduw eronder die met de beweging mee ademt. */
   .vbtn { position: absolute; transform: translate(-50%, -50%) translateZ(0); will-change: transform;
     display: flex; align-items: center; justify-content: center; text-align: center;
     font-weight: 700; color: #fff; border: 0; user-select: none;
-    box-shadow: 0 10px 34px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.25);
-    transition: filter 0.15s, scale 0.15s; line-height: 1.25; padding: 0.4em 0.9em; overflow-wrap: anywhere; }
-  .vbtn:active { scale: 0.96; filter: brightness(1.15); }
+    background-image: linear-gradient(rgba(255,255,255,0.22), rgba(255,255,255,0) 48%);
+    box-shadow: 0 16px 42px rgba(0,0,0,0.5), 0 0 30px var(--glow, rgba(53,208,186,0.35)),
+      inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -0.35em 0.6em rgba(0,0,0,0.18);
+    transition: filter 0.15s; line-height: 1.25; padding: 0.4em 0.9em; overflow-wrap: anywhere; }
+  .vbtn:active { filter: brightness(1.2); }
+  /* Losse "grondschaduw" onder de knop: dit verkoopt het zweefeffect. */
+  .vbtn::after { content: ''; position: absolute; left: 6%; right: 6%; bottom: -1.15em; height: 0.5em;
+    border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.55), transparent 72%);
+    filter: blur(3px); transform: scale(var(--gs, 1)); opacity: var(--go, 0.8); pointer-events: none; }
   .vbtn.shape-pill { border-radius: 999px; }
   .vbtn.shape-rounded { border-radius: 0.35em; }
   .vbtn.shape-circle { border-radius: 50%; aspect-ratio: 1; padding: 0.4em; }
   .vbtn .play-ico { margin-right: 0.4em; font-size: 0.85em; }
   .vbtn.shape-circle .play-ico { margin: 0; }
+
+  /* Bewegingskader (zichtbaar in verplaats-modus bij "vrij bewegen") */
+  .vframe { position: absolute; transform: translate(-50%, -50%); border: 2px dashed rgba(53,208,186,0.55);
+    border-radius: 14px; pointer-events: none; display: none; }
+  body.editing .vframe { display: block; }
 
   /* Verplaats-modus */
   body.editing .vbtn { cursor: grab; outline: 3px dashed rgba(255,255,255,0.85); outline-offset: 4px;
@@ -343,12 +355,34 @@ function renderStage() {
     const btn = el('button', {
       class: `vbtn shape-${b.shape || 'pill'}`,
       'data-id': b.id,
-      style: `left:${b.x}%; top:${b.y}%; background:${b.color}; color:${textColorFor(b.color)};` +
-             `font-size:${(b.size || 8) * 0.42}vmin; min-width:${(b.size || 8) * 2.2}vmin;`
+      style: `left:${b.x}%; top:${b.y}%; background-color:${b.color}; color:${textColorFor(b.color)};` +
+             `--glow:${b.color}59; font-size:${(b.size || 8) * 0.42}vmin; min-width:${(b.size || 8) * 2.2}vmin;`
     }, el('span', { class: 'play-ico' }, '▶'), b.shape === 'circle' ? '' : (b.label || 'Afspelen'));
     if (b.shape === 'circle' && b.label) btn.title = b.label;
     layer.append(btn);
+    // Bewegingskader tonen in verplaats-modus wanneer "vrij bewegen" aanstaat.
+    if ((b.drift || 0) > 0) {
+      layer.append(el('div', { class: 'vframe', 'data-frame': b.id, style: `left:${b.x}%; top:${b.y}%;` }));
+    }
   }
+  syncFrames();
+}
+
+// Kaders even groot maken als knop + bewegingsruimte (in px, na layout).
+function syncFrames() {
+  requestAnimationFrame(() => {
+    const vmin = Math.min(innerWidth, innerHeight) / 100;
+    for (const f of document.querySelectorAll('.vframe')) {
+      const b = config.buttons.find((x) => x.id === f.dataset.frame);
+      const btn = document.querySelector(`.vbtn[data-id="${f.dataset.frame}"]`);
+      if (!b || !btn) continue;
+      const r = (b.drift || 0) * vmin;
+      f.style.width = btn.offsetWidth + 2 * r + 'px';
+      f.style.height = btn.offsetHeight + 2 * r + 'px';
+      f.style.left = b.x + '%';
+      f.style.top = b.y + '%';
+    }
+  });
 }
 
 /* ================= Afspelen ================= */
@@ -394,6 +428,8 @@ $('#buttonLayer').addEventListener('pointermove', (e) => {
   drag.b.y = Math.min(98, Math.max(2, ((e.clientY - r.top) / r.height) * 100));
   drag.el.style.left = drag.b.x + '%';
   drag.el.style.top = drag.b.y + '%';
+  const frame = document.querySelector(`.vframe[data-frame="${drag.b.id}"]`);
+  if (frame) { frame.style.left = drag.b.x + '%'; frame.style.top = drag.b.y + '%'; }
 });
 $('#buttonLayer').addEventListener('pointerup', () => {
   if (drag && drag.moved) save();
@@ -413,8 +449,64 @@ lockFab.addEventListener('click', () => {
   document.body.classList.toggle('editing', editing);
   lockFab.textContent = editing ? '🔓' : '🔒';
   $('#editHint').classList.toggle('hidden', !editing);
+  syncFrames();
   if (!editing) { save(); toast('Knoppen vastgezet'); }
 });
+
+/* ================= Zweef-animaties =================
+   - "Diepte": knop schaalt langzaam groter/kleiner (komt naar voren en gaat
+     naar achteren) en deint licht op en neer; de grondschaduw ademt mee.
+   - "Vrij bewegen": knop dwaalt rustig naar steeds een nieuw doelpunt binnen
+     zijn kader. Alles via transform → GPU-gecomposite, geen layout-werk.
+   - Pauzeert automatisch tijdens verplaats-modus en tijdens het afspelen. */
+const animState = new Map(); // id -> {phase, dx, dy, tx, ty}
+const DEPTH_AMP = { off: 0, subtle: 0.045, strong: 0.1 };
+let lastT = 0;
+
+function animate(t) {
+  const dt = Math.min(50, t - lastT);
+  lastT = t;
+  const vmin = Math.min(innerWidth, innerHeight) / 100;
+  const active = !editing && !playOverlay.classList.contains('show') && !document.hidden;
+
+  for (const btnEl of document.querySelectorAll('.vbtn')) {
+    const b = config.buttons.find((x) => x.id === btnEl.dataset.id);
+    if (!b) continue;
+    let st = animState.get(b.id);
+    if (!st) { st = { phase: Math.random() * 6.28, dx: 0, dy: 0, tx: 0, ty: 0 }; animState.set(b.id, st); }
+
+    const amp = DEPTH_AMP[b.depth || 'subtle'] || 0;
+    let s = 1, bob = 0;
+    if (active && amp) {
+      s = 1 + amp * Math.sin(t / 1600 + st.phase);
+      bob = amp * 90 * Math.sin(t / 2300 + st.phase * 1.7);
+    }
+
+    const R = active ? (b.drift || 0) * vmin : 0;
+    if (R > 0) {
+      if (Math.hypot(st.tx - st.dx, st.ty - st.dy) < 4) {
+        st.tx = (Math.random() * 2 - 1) * R;
+        st.ty = (Math.random() * 2 - 1) * R;
+      }
+      const k = 1 - Math.pow(0.9985, dt); // framerate-onafhankelijke demping
+      st.dx += (st.tx - st.dx) * k;
+      st.dy += (st.ty - st.dy) * k;
+    } else {
+      st.dx *= 0.9; st.dy *= 0.9;
+      if (Math.abs(st.dx) < 0.3) st.dx = 0;
+      if (Math.abs(st.dy) < 0.3) st.dy = 0;
+    }
+
+    btnEl.style.transform = `translate(-50%, -50%) translate(${st.dx.toFixed(1)}px, ${(st.dy + bob).toFixed(1)}px) scale(${s.toFixed(3)}) translateZ(0)`;
+    // Dichterbij (groter) = grondschaduw kleiner en donkerder; verder weg = groter en vager.
+    const lift = amp ? (s - 1) / amp : 0;
+    btnEl.style.setProperty('--gs', (1 - lift * 0.18).toFixed(2));
+    btnEl.style.setProperty('--go', (0.75 - lift * 0.3).toFixed(2));
+  }
+  requestAnimationFrame(animate);
+}
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(animate);
+window.addEventListener('resize', syncFrames);
 
 /* ================= Menu ================= */
 const panel = $('#panel');
@@ -448,9 +540,23 @@ function renderBtnList() {
   list.innerHTML = '';
   if (!config.buttons.length) list.append(el('p', { class: 'note' }, 'Nog geen knoppen. Voeg er één toe en koppel een video.'));
   config.buttons.forEach((b) => {
-    const swatches = el('div', { class: 'swatches' }, PALETTE.map((c) =>
-      el('button', { class: 'swatch' + (b.color === c ? ' sel' : ''), style: `background:${c}`,
-        onclick: () => { b.color = c; save(); renderStage(); renderBtnList(); } })));
+    const swatches = el('div', { class: 'swatches' },
+      PALETTE.map((c) =>
+        el('button', { class: 'swatch' + (b.color === c ? ' sel' : ''), style: `background:${c}`,
+          onclick: () => { b.color = c; save(); renderStage(); renderBtnList(); } })),
+      el('input', { type: 'color', value: b.color, title: 'Eigen kleur kiezen',
+        oninput: (e) => { b.color = e.target.value; save(); renderStage(); } }));
+    const depthSel = el('select', { onchange: (e) => { b.depth = e.target.value; save(); } },
+      el('option', { value: 'off' }, 'Uit'),
+      el('option', { value: 'subtle' }, 'Subtiel'),
+      el('option', { value: 'strong' }, 'Duidelijk'));
+    depthSel.value = b.depth || 'subtle';
+    const driftSel = el('select', { onchange: (e) => { b.drift = Number(e.target.value); save(); renderStage(); } },
+      el('option', { value: 0 }, 'Uit'),
+      el('option', { value: 3 }, 'Klein kader'),
+      el('option', { value: 6 }, 'Middel kader'),
+      el('option', { value: 10 }, 'Groot kader'));
+    driftSel.value = String(b.drift || 0);
     list.append(el('div', { class: 'card' },
       el('div', { class: 'row' },
         el('input', { type: 'text', class: 'grow', value: b.label, placeholder: 'Tekst op de knop',
@@ -466,6 +572,9 @@ function renderBtnList() {
       el('label', { class: 'field' }, 'Grootte',
         el('input', { type: 'range', min: 4, max: 20, step: 0.5, value: b.size || 8,
           oninput: (e) => { b.size = Number(e.target.value); save(); renderStage(); } })),
+      el('div', { class: 'row' },
+        el('label', { class: 'field' }, 'Naar voren/achteren zweven', depthSel),
+        el('label', { class: 'field' }, 'Vrij bewegen in een kader', driftSel)),
       swatches
     ));
   });
@@ -475,7 +584,8 @@ $('#addBtn').addEventListener('click', () => {
   const n = config.buttons.length;
   config.buttons.push({
     id: uid(), label: 'Video ' + (n + 1), mediaId: [...mediaCache.keys()][0] || null,
-    x: 50, y: 25 + (n % 5) * 13, size: 8, color: PALETTE[n % (PALETTE.length - 2)], shape: 'pill'
+    x: 50, y: 25 + (n % 5) * 13, size: 8, color: PALETTE[n % (PALETTE.length - 2)], shape: 'pill',
+    depth: 'subtle', drift: 0
   });
   save(); renderStage(); renderBtnList();
   toast('Knop toegevoegd — klik op 🔒 om hem te verslepen');
