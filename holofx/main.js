@@ -10,6 +10,12 @@
 const { app, BrowserWindow, globalShortcut } = require("electron");
 const path = require("path");
 
+/* GPU-rasterisatie afdwingen voor vloeiende canvas-animatie */
+app.commandLine.appendSwitch("ignore-gpu-blocklist");
+app.commandLine.appendSwitch("enable-gpu-rasterization");
+app.commandLine.appendSwitch("enable-zero-copy");
+app.commandLine.appendSwitch("canvas-oop-rasterization");
+
 function argValue(name) {
   const pref = `--${name}=`;
   const hit = process.argv.find(a => a.startsWith(pref));
