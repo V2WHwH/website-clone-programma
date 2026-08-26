@@ -208,55 +208,108 @@
   body.clean .fab { opacity: 0.14; }
   body.clean .fab:hover { opacity: 1; }
 
-  /* ============ MENU-PANEEL ============ */
-  #panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(430px, 100%);
-    background: var(--panel); border-left: 1px solid var(--border); z-index: 50;
-    transform: translateX(102%); transition: transform 0.3s ease; display: flex; flex-direction: column;
-    box-shadow: -18px 0 50px rgba(0,0,0,0.5); }
+  /* ============ MENU-PANEEL — professioneel controlepaneel ============
+     Rustige typografie, hairlines, subtiele reliëftextuur (ingebed, offline)
+     en echte schakelaars. Eén samenhangend systeem i.p.v. losse formulieren. */
+  :root {
+    --p-bg: #0e1319;
+    --p-card: #151c26;
+    --p-card-2: #10161f;
+    --p-line: #232d3b;
+    --p-line-soft: #1b2431;
+    --p-ink: #e9edf3;
+    --p-ink-2: #a7b2c2;
+    --p-ink-3: #7d8899;
+  }
+  #panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(440px, 100%);
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.025 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E"),
+      linear-gradient(180deg, #121926 0%, var(--p-bg) 34%);
+    border-left: 1px solid var(--p-line); z-index: 50;
+    transform: translateX(102%); transition: transform 0.32s cubic-bezier(0.3, 0.8, 0.3, 1);
+    display: flex; flex-direction: column;
+    box-shadow: -24px 0 60px rgba(0, 0, 0, 0.55); }
   #panel.open { transform: translateX(0); }
-  #panelHead { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 10px; }
-  #panelHead h1 { font-size: 19px; letter-spacing: 0.02em; }
+  #panelHead { display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px 12px; border-bottom: 1px solid var(--p-line-soft); }
+  #panelHead h1 { font-size: 16px; font-weight: 650; letter-spacing: 0.01em; color: var(--p-ink); }
   #panelHead h1 span { color: var(--accent); }
-  #closePanel { background: none; border: 0; color: var(--muted); font-size: 24px; padding: 4px 8px; }
+  #panelHead .sub { font-size: 11.5px; color: var(--p-ink-3); margin-top: 1px; letter-spacing: 0.02em; }
+  #closePanel { background: none; border: 0; color: var(--p-ink-3); font-size: 20px; padding: 6px 8px;
+    border-radius: 8px; }
+  #closePanel:hover { color: var(--p-ink); background: var(--p-card); }
 
-  #tabs { display: flex; gap: 4px; padding: 0 14px 10px; flex-wrap: wrap; }
-  #tabs button { background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
-    border-radius: 999px; padding: 7px 14px; font-size: 13.5px; }
-  #tabs button.active { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; font-weight: 600; }
+  #tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--p-line-soft); border-bottom: 1px solid var(--p-line-soft); }
+  #tabs button { background: var(--p-bg); border: 0; color: var(--p-ink-3);
+    padding: 10px 2px 9px; font-size: 12px; font-weight: 550; letter-spacing: 0.01em;
+    border-bottom: 2px solid transparent; }
+  #tabs button:hover { color: var(--p-ink-2); }
+  #tabs button.active { color: var(--accent); border-bottom-color: var(--accent);
+    background: linear-gradient(180deg, rgba(53, 208, 186, 0.05), transparent); }
 
-  .tabpage { flex: 1; overflow-y: auto; padding: 6px 18px 26px; display: flex; flex-direction: column; gap: 14px; }
-  .tabpage h2 { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 8px; }
-  .note { color: var(--muted); font-size: 13.5px; }
-  .card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
-    display: flex; flex-direction: column; gap: 10px; }
-  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .tabpage { flex: 1; overflow-y: auto; padding: 16px 18px 30px; display: flex;
+    flex-direction: column; gap: 14px; scrollbar-width: thin; scrollbar-color: var(--p-line) transparent; }
+  .tabpage h2 { font-size: 11px; color: var(--p-ink-3); text-transform: uppercase;
+    letter-spacing: 0.1em; font-weight: 650; margin: 6px 2px 0; }
+  .note { color: var(--p-ink-3); font-size: 12.5px; line-height: 1.55; }
+  .card { background: linear-gradient(180deg, rgba(255,255,255,0.022), transparent 42%), var(--p-card);
+    border: 1px solid var(--p-line); border-radius: 12px; padding: 14px 15px;
+    display: flex; flex-direction: column; gap: 12px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 8px 22px rgba(0,0,0,0.22); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .grow { flex: 1; min-width: 0; }
-  label.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); flex: 1; }
-  input[type=text], select { background: #0a0f16; border: 1px solid var(--border); color: var(--text);
-    border-radius: 8px; padding: 8px 10px; width: 100%; font: inherit; }
+  label.field, .field { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px;
+    color: var(--p-ink-2); flex: 1; font-weight: 500; }
+  input[type=text], input[type=number], select { background: var(--p-card-2); border: 1px solid var(--p-line);
+    color: var(--p-ink); border-radius: 8px; padding: 8px 10px; width: 100%; font: inherit; font-size: 13.5px;
+    transition: border-color 0.15s; }
+  input:focus, select:focus { outline: none; border-color: var(--accent-dark); }
   input[type=range] { width: 100%; accent-color: var(--accent); }
-  input[type=color] { width: 46px; height: 34px; border: 1px solid var(--border); border-radius: 8px;
-    background: none; padding: 2px; }
-  .btn { background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
-    border-radius: 9px; padding: 9px 14px; }
-  .btn.primary { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; font-weight: 600; }
-  .btn.primary:hover { background: var(--accent); color: #06231f; }
+  input[type=color] { width: 44px; height: 32px; border: 1px solid var(--p-line); border-radius: 8px;
+    background: var(--p-card-2); padding: 2px; }
+  .btn { background: var(--p-card); border: 1px solid var(--p-line); color: var(--p-ink);
+    border-radius: 9px; padding: 9px 14px; font-size: 13.5px; font-weight: 550;
+    transition: border-color 0.15s, background 0.15s; }
+  .btn:hover { border-color: #33455c; }
+  .btn.primary { background: linear-gradient(180deg, #27ad97, var(--accent-dark));
+    border-color: rgba(255,255,255,0.14); color: #fff;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.2) inset, 0 6px 16px rgba(31, 155, 138, 0.25); }
+  .btn.primary:hover { background: linear-gradient(180deg, #2fc4ab, #23a18c); }
   .btn.danger { color: var(--danger); }
   .btn.block { width: 100%; text-align: center; }
-  .btn.small { padding: 5px 10px; font-size: 13px; }
+  .btn.small { padding: 5px 10px; font-size: 12.5px; }
+
+  /* Schakelaar */
+  .switch { position: relative; display: inline-flex; flex: none; width: 40px; height: 22px; }
+  .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .switch i { position: absolute; inset: 0; border-radius: 999px; background: #2a3546;
+    border: 1px solid var(--p-line); transition: background 0.18s, border-color 0.18s; pointer-events: none; }
+  .switch i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+    border-radius: 50%; background: #8b97a8; transition: transform 0.18s, background 0.18s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+  .switch input:checked + i { background: var(--accent-dark); border-color: var(--accent-dark); }
+  .switch input:checked + i::after { transform: translateX(18px); background: #fff; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .toggle-row .t-label { font-size: 13.5px; color: var(--p-ink); font-weight: 550; }
+  .toggle-row .t-sub { font-size: 12px; color: var(--p-ink-3); margin-top: 1px; }
+
+  .divider { height: 1px; background: var(--p-line-soft); margin: 2px -15px; }
 
   .media-item { display: flex; align-items: center; gap: 10px; }
   .media-item video { width: 76px; height: 46px; object-fit: cover; border-radius: 7px; background: #000; flex: none; }
-  .media-item .nm { font-size: 13.5px; overflow-wrap: anywhere; }
-  .media-item .sz { font-size: 12px; color: var(--muted); }
+  .media-item .nm { font-size: 13px; overflow-wrap: anywhere; color: var(--p-ink); }
+  .media-item .sz { font-size: 11.5px; color: var(--p-ink-3); }
 
-  .swatches { display: flex; gap: 6px; flex-wrap: wrap; }
-  .swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; }
+  .swatches { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.12) inset; }
   .swatch.sel { border-color: #fff; }
 
   #toast { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); z-index: 90;
-    background: var(--panel-2); border: 1px solid var(--accent-dark); border-radius: 10px;
-    padding: 10px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: opacity 0.3s; }
+    background: var(--p-card); border: 1px solid var(--accent-dark); border-radius: 10px;
+    padding: 10px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: opacity 0.3s;
+    font-size: 13.5px; }
 
   #welcome { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 6vmin;
@@ -341,182 +394,229 @@
 
 <aside id="panel">
   <div id="panelHead">
-    <h1>HereWe<span>Holo</span> Studio</h1>
-    <button id="closePanel" title="Sluiten">✕</button>
+    <div>
+      <h1>HereWe<span>Holo</span> Studio</h1>
+      <div class="sub">Beheer van de holobox-presentatie</div>
+    </div>
+    <button id="closePanel" title="Sluiten">&#10005;</button>
   </div>
   <div id="tabs">
     <button data-tab="buttons" class="active">Knoppen</button>
-    <button data-tab="media">Video's</button>
-    <button data-tab="look">Weergave</button>
-    <button data-tab="saver">Screensaver &amp; sensor</button>
-    <button data-tab="share">Opslaan &amp; verhuizen</button>
+    <button data-tab="media">Media</button>
+    <button data-tab="look">Presentatie</button>
+    <button data-tab="fx">Effecten</button>
+    <button data-tab="saver">Screensaver</button>
+    <button data-tab="cam">Camera</button>
+    <button data-tab="share">Opslaan</button>
     <button data-tab="help">Help</button>
   </div>
 
+  <!-- ================= KNOPPEN ================= -->
   <div class="tabpage" id="page-buttons">
-    <button id="addBtn" class="btn primary block">+ Video-knop toevoegen</button>
-    <p class="note">Klik op 🔒 linksonder in het scherm om knoppen te verslepen; klik nogmaals om ze vast te zetten.</p>
+    <button id="addBtn" class="btn primary block">+ Knop toevoegen</button>
+    <p class="note">Verslepen: klik op het slot linksonder in het scherm, sleep de knoppen naar hun plek en klik nogmaals om ze vast te zetten.</p>
     <div id="btnList"></div>
   </div>
 
+  <!-- ================= MEDIA ================= -->
   <div class="tabpage hidden" id="page-media">
-    <button id="addMedia" class="btn primary block">+ Video's, PNG-knoppen of 3D-objecten (.obj) toevoegen</button>
+    <button id="addMedia" class="btn primary block">+ Bestanden toevoegen</button>
     <input type="file" id="mediaInput" accept="video/*,.obj,image/png" multiple hidden>
-    <p class="note">Bestanden worden in de browser opgeslagen en werken daarna ook zonder internet. Video: mp4 (H.264/H.265), 4K — liggend of staand; de knop-preview wordt automatisch gerenderd op 1280×800 of 800×1280. PNG met transparantie: wordt een knop in de vorm van de afbeelding. 3D: Wavefront .obj.</p>
+    <p class="note">Video (mp4 H.264/H.265, 4K, liggend of staand) &middot; PNG met transparantie (wordt een knop in de vorm van de afbeelding) &middot; 3D-object (Wavefront .obj). Alles wordt in de browser opgeslagen en werkt daarna ook offline.</p>
     <div id="mediaList"></div>
   </div>
 
+  <!-- ================= PRESENTATIE ================= -->
   <div class="tabpage hidden" id="page-look">
+    <h2>Scherm</h2>
     <div class="card">
-      <label class="field">Titel op het scherm (optioneel)
-        <input type="text" id="cfgTitle" placeholder="bijv. Welkom bij HereWeHolo">
+      <label class="field">Titel op het scherm
+        <input type="text" id="cfgTitle" placeholder="Optioneel &mdash; bijv. Welkom bij HereWeHolo">
       </label>
-      <label class="field">Achtergrondvideo (loopt gedempt in een lus)
+      <label class="field">Achtergrondvideo (gedempt, in een lus)
         <select id="cfgIdle"></select>
       </label>
-      <label class="field">Knoppen verbergen tijdens afspelen
-        <select id="cfgHideBtns"><option value="yes">Ja</option><option value="no">Nee</option></select>
-      </label>
-      <label class="field">Bedieningsknoppen (⚙/🔒/⛶) vrijwel onzichtbaar maken (kiosk)
-        <select id="cfgClean"><option value="no">Nee</option><option value="yes">Ja — verschijnen bij aanwijzen</option></select>
-      </label>
-      <label class="field">Oriëntatie (ook via de AUTO/⇱-knop linksonder)
+      <label class="field">Ori&euml;ntatie
         <select id="cfgOrientation">
           <option value="auto">Automatisch (volgt het scherm)</option>
-          <option value="portrait">Portrait (staand) — roteert op een liggend scherm</option>
-          <option value="landscape">Landscape (liggend) — roteert op een staand scherm</option>
+          <option value="portrait">Portrait &mdash; roteert op een liggend scherm</option>
+          <option value="landscape">Landscape &mdash; roteert op een staand scherm</option>
         </select>
       </label>
+      <div class="divider"></div>
+      <div class="toggle-row">
+        <div><div class="t-label">Knoppen verbergen tijdens afspelen</div></div>
+        <label class="switch"><input type="checkbox" id="cfgHideBtns"><i></i></label>
+      </div>
+      <div class="toggle-row">
+        <div><div class="t-label">Kioskmodus</div>
+          <div class="t-sub">Bedieningsknoppen vrijwel onzichtbaar; verschijnen bij aanwijzen</div></div>
+        <label class="switch"><input type="checkbox" id="cfgClean"><i></i></label>
+      </div>
     </div>
-    <h2>Effecten</h2>
-    <div class="card">
-      <label class="field">Selectie-effect (wat er gebeurt als een bezoeker een knop kiest)
-        <select id="cfgSelectFx">
-          <option value="zoom">🎬 Filmisch zoomen — gekozen knop komt naar voren, de rest vervaagt</option>
-          <option value="aside">↔️ Opzij geschoven — andere knoppen worden uit beeld getrokken</option>
-          <option value="depth">🌀 De diepte in — andere knoppen krimpen naar achteren weg</option>
-          <option value="burst">💥 Radiale burst — andere knoppen vliegen alle kanten op</option>
-          <option value="none">Geen effect (direct afspelen)</option>
-        </select>
-      </label>
-      <label class="field">Aandachtseffect gemiddeld elke … seconden (per knop, met variatie)
-        <input type="number" id="cfgFxInterval" min="3" max="120" step="1">
-      </label>
-      <p class="note">Het aandachtseffect zelf stel je per knop in op het tabblad Knoppen (gloedpuls, lichtrand, flits, glans-veeg of willekeurig).</p>
-    </div>
-    <h2>Demo-handje</h2>
-    <div class="card">
-      <label class="field">Handje dat de knoppen aanwijst en indrukt
-        <select id="handEnabled"><option value="no">Uit</option><option value="yes">Aan</option></select>
-      </label>
-      <label class="field">Grootte van het handje
-        <input type="range" id="handSize" min="0.6" max="2" step="0.1">
-      </label>
-      <label class="field">Verschijnt na … seconden zonder aanraking
-        <input type="number" id="handDelay" min="3" max="120" step="1">
-      </label>
-      <p class="note">Het handje gaat knop voor knop langs en maakt een drukkende beweging. Raakt iemand het scherm aan, dan verdwijnt het direct en komt het pas terug na de ingestelde rusttijd.</p>
-    </div>
-    <h2>3D-objecten (OBJ)</h2>
+    <h2>3D-objecten</h2>
     <div class="card">
       <div class="row">
-        <label class="field">Kleur van het object
+        <label class="field">Kleur
           <input type="color" id="o3Color" style="width:100%">
         </label>
-        <label class="field">Detail-limiet (performance)
+        <label class="field">Detail-limiet
           <select id="o3MaxTris">
-            <option value="50000">Licht — max 50.000 driehoeken</option>
-            <option value="150000">Normaal — max 150.000</option>
-            <option value="500000">Hoog — max 500.000</option>
-            <option value="0">Onbeperkt (zware modellen kunnen traag zijn)</option>
+            <option value="50000">Licht &mdash; 50k driehoeken</option>
+            <option value="150000">Normaal &mdash; 150k</option>
+            <option value="500000">Hoog &mdash; 500k</option>
+            <option value="0">Onbeperkt</option>
           </select>
         </label>
       </div>
-      <label class="field">Draaisnelheid (automatisch ronddraaien)
+      <label class="field">Draaisnelheid
         <input type="range" id="o3Rot" min="0" max="3" step="0.1">
       </label>
-      <label class="field">Lichtsterkte
-        <input type="range" id="o3Light" min="0.3" max="2" step="0.1">
-      </label>
-      <label class="field">Glans (mat ↔ glimmend)
-        <input type="range" id="o3Shine" min="0" max="1" step="0.05">
-      </label>
-      <label class="field">Fullscreen 3D automatisch sluiten na (seconden zonder aanraking; 0 = nooit)
+      <div class="row">
+        <label class="field">Lichtsterkte
+          <input type="range" id="o3Light" min="0.3" max="2" step="0.1">
+        </label>
+        <label class="field">Glans
+          <input type="range" id="o3Shine" min="0" max="1" step="0.05">
+        </label>
+      </div>
+      <label class="field">Fullscreen automatisch sluiten na (sec; 0 = nooit)
         <input type="number" id="o3Close" min="0" max="600" step="5">
       </label>
-      <p class="note">Fullscreen kan de bezoeker het object draaien (slepen) en zoomen (scrollen/knijpen). Grote modellen worden automatisch vereenvoudigd tot de detail-limiet.</p>
+      <p class="note">Fullscreen kan de bezoeker het object draaien (slepen) en zoomen. Grote modellen worden automatisch vereenvoudigd tot de detail-limiet.</p>
     </div>
   </div>
 
-  <div class="tabpage hidden" id="page-saver">
-    <h2>Screensaver</h2>
+  <!-- ================= EFFECTEN ================= -->
+  <div class="tabpage hidden" id="page-fx">
+    <h2>Bij het kiezen van een knop</h2>
     <div class="card">
-      <label class="field">Screensaver
-        <select id="svEnabled"><option value="no">Uit</option><option value="yes">Aan</option></select>
+      <label class="field">Selectie-effect
+        <select id="cfgSelectFx">
+          <option value="zoom">Filmisch zoomen &mdash; gekozen knop komt naar voren, de rest vervaagt</option>
+          <option value="aside">Opzij geschoven &mdash; andere knoppen uit beeld getrokken</option>
+          <option value="depth">De diepte in &mdash; andere knoppen krimpen naar achteren</option>
+          <option value="burst">Radiale burst &mdash; andere knoppen vliegen alle kanten op</option>
+          <option value="none">Geen effect &mdash; direct afspelen</option>
+        </select>
       </label>
+      <p class="note">De video of het 3D-object start pas wanneer alle knoppen uit beeld zijn.</p>
+    </div>
+    <h2>Aandachtseffecten</h2>
+    <div class="card">
+      <label class="field">Gemiddeld interval per knop (seconden)
+        <input type="number" id="cfgFxInterval" min="3" max="120" step="1">
+      </label>
+      <p class="note">Welk effect een knop speelt (gloedpuls, lichtrand, flits, glans-veeg) stel je per knop in op het tabblad Knoppen.</p>
+    </div>
+    <h2>Demo-handje</h2>
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Handje aan</div>
+          <div class="t-sub">Wijst de knoppen aan en maakt een drukkende beweging</div></div>
+        <label class="switch"><input type="checkbox" id="handEnabled"><i></i></label>
+      </div>
+      <div class="row">
+        <label class="field">Grootte
+          <input type="range" id="handSize" min="0.6" max="2" step="0.1">
+        </label>
+        <label class="field">Verschijnt na (sec rust)
+          <input type="number" id="handDelay" min="3" max="120" step="1">
+        </label>
+      </div>
+      <p class="note">Verdwijnt direct wanneer iemand het scherm aanraakt.</p>
+    </div>
+  </div>
+
+  <!-- ================= SCREENSAVER ================= -->
+  <div class="tabpage hidden" id="page-saver">
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Screensaver aan</div>
+          <div class="t-sub">Aanraking brengt de knoppen direct terug</div></div>
+        <label class="switch"><input type="checkbox" id="svEnabled"><i></i></label>
+      </div>
       <label class="field">Start na (seconden zonder aanraking)
         <input type="number" id="svDelay" min="10" max="3600" step="5">
       </label>
-      <div class="field">Video's voor de screensaver (één of meer; meerdere spelen om de beurt)</div>
+      <div class="divider"></div>
+      <div class="field">Video's (meerdere spelen om de beurt)</div>
       <div id="svMediaList"></div>
-      <p class="note">Raakt iemand het scherm aan, dan verschijnen de preview-knoppen weer direct.</p>
-    </div>
-    <h2>Aanwezigheidsdetectie (webcam)</h2>
-    <div class="card">
-      <label class="field">Webcam-detectie
-        <select id="camEnabled"><option value="no">Uit</option><option value="yes">Aan</option></select>
-      </label>
-      <label class="field">Iemand moet minimaal zó lang voor de holobox staan (seconden)
-        <input type="number" id="camDwell" min="1" max="30" step="0.5">
-      </label>
-      <label class="field">Gevoeligheid (1 = alleen dichtbij/duidelijk, 10 = zeer gevoelig)
-        <input type="range" id="camSens" min="1" max="10" step="1">
-      </label>
-      <label class="field">Camera-keuze (bij meerdere camera's)
-        <select id="camDevice"></select>
-      </label>
-      <div class="row">
-        <button id="camTest" class="btn">📷 Camera testen</button>
-        <div class="cam-status"><span class="cam-dot" id="camLiveDot"></span><span id="camLiveText">Camerabeeld: uit</span></div>
-      </div>
-      <div class="cam-status"><span class="cam-dot" id="camDot"></span><span id="camStatusText">Camera uit</span></div>
-      <div id="camPreviewBox"></div>
-      <p class="note">Blijft iemand langer dan de ingestelde tijd in beeld staan, dan stopt de screensaver en verschijnen de preview-knoppen. Voorbijlopende mensen worden genegeerd. Beelden worden alleen lokaal verwerkt en nooit opgeslagen of verstuurd.</p>
     </div>
   </div>
 
+  <!-- ================= CAMERA ================= -->
+  <div class="tabpage hidden" id="page-cam">
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Aanwezigheidsdetectie aan</div>
+          <div class="t-sub">Wekt de knoppen wanneer iemand voor de holobox blijft staan</div></div>
+        <label class="switch"><input type="checkbox" id="camEnabled"><i></i></label>
+      </div>
+      <button id="camTest" class="btn primary block">Camera inschakelen &amp; testen</button>
+      <div class="cam-status"><span class="cam-dot" id="camLiveDot"></span><span id="camLiveText">Camerabeeld: uit</span></div>
+      <div class="cam-status"><span class="cam-dot" id="camDot"></span><span id="camStatusText">Camera uit</span></div>
+      <div id="camPreviewBox"></div>
+    </div>
+    <h2>Instellingen</h2>
+    <div class="card">
+      <label class="field">Camera
+        <select id="camDevice"></select>
+      </label>
+      <div class="row">
+        <label class="field">Minimale sta-tijd (seconden)
+          <input type="number" id="camDwell" min="1" max="30" step="0.5">
+        </label>
+        <label class="field">Gevoeligheid (1&ndash;10)
+          <input type="range" id="camSens" min="1" max="10" step="1">
+        </label>
+      </div>
+      <p class="note">Alleen wie langer dan de sta-tijd in beeld blijft telt als bezoeker; voorbijgangers worden genegeerd. Beelden worden uitsluitend lokaal verwerkt en nooit opgeslagen of verstuurd.</p>
+    </div>
+  </div>
+
+  <!-- ================= OPSLAAN ================= -->
   <div class="tabpage hidden" id="page-share">
     <h2>Op deze computer</h2>
-    <p class="note">Alles wordt automatisch bewaard in deze browser — ook offline. Sluit je de app af, dan staat alles er bij het openen weer.</p>
-    <h2>Naar een andere computer verhuizen</h2>
-    <p class="note">1. Exporteer het ontwerp (klein bestand). 2. Neem je videobestanden mee (map of USB). 3. Importeer op de andere pc het ontwerp en wijs dezelfde video's aan.</p>
-    <button id="exportBtn" class="btn block">⬇ Ontwerp exporteren (.json)</button>
-    <button id="importBtn" class="btn block">⬆ Ontwerp importeren</button>
-    <input type="file" id="importInput" accept="application/json" hidden>
+    <p class="note">Alles wordt automatisch bewaard in deze browser, ook offline. Na afsluiten staat alles er bij het openen weer.</p>
+    <h2>Naar een andere computer</h2>
+    <div class="card">
+      <p class="note">1. Exporteer het ontwerp (klein bestand) &middot; 2. Neem de mediabestanden mee (map of USB) &middot; 3. Importeer op de andere pc en wijs dezelfde bestanden aan.</p>
+      <button id="exportBtn" class="btn block">Ontwerp exporteren (.json)</button>
+      <button id="importBtn" class="btn block">Ontwerp importeren</button>
+      <input type="file" id="importInput" accept="application/json" hidden>
+    </div>
     <div id="relinkBox" class="card hidden">
-      <b>Video's opnieuw koppelen</b>
+      <div class="t-label">Media opnieuw koppelen</div>
       <p class="note" id="relinkText"></p>
-      <button id="relinkPick" class="btn primary block">Mediabestanden aanwijzen…</button>
+      <button id="relinkPick" class="btn primary block">Mediabestanden aanwijzen&hellip;</button>
       <input type="file" id="relinkInput" accept="video/*,.obj,image/png" multiple hidden>
     </div>
     <h2>Opnieuw beginnen</h2>
     <button id="resetBtn" class="btn danger block">Alles wissen op deze computer</button>
   </div>
 
+  <!-- ================= HELP ================= -->
   <div class="tabpage hidden" id="page-help">
     <h2>Snel aan de slag</h2>
-    <p class="note">1. <b>Video's</b>: voeg je videobestanden toe.<br>
-       2. <b>Knoppen</b>: maak een knop en kies welke video hij afspeelt.<br>
-       3. Klik op <b>🔒</b> linksonder, sleep de knoppen naar hun plek en klik nogmaals om vast te zetten.<br>
-       4. Klik op <b>⛶</b> voor volledig scherm — klaar voor de holobox.</p>
-    <h2>Op een willekeurige pc afspelen (offline)</h2>
-    <p class="note">Kopieer de map van deze app naar de pc (of USB), dubbelklik op <code>index.html</code>, importeer je ontwerp en wijs de video's aan. Internet is daarna niet nodig.</p>
+    <div class="card">
+      <p class="note">1. <b>Media</b> &mdash; voeg je videobestanden toe.<br>
+        2. <b>Knoppen</b> &mdash; maak een knop en kies welke media hij opent.<br>
+        3. Klik op het <b>slot</b> linksonder, sleep de knoppen op hun plek en zet ze vast.<br>
+        4. Klik op <b>volledig scherm</b> &mdash; klaar voor de holobox.</p>
+    </div>
+    <h2>Offline op een andere pc</h2>
+    <div class="card">
+      <p class="note">Kopieer de app-map naar de pc of USB, dubbelklik op <code>index.html</code>, importeer je ontwerp en wijs de media aan. Internet is daarna niet nodig.</p>
+    </div>
     <h2>Soepel 4K (GPU)</h2>
-    <p class="note">Video wordt door de browser standaard op de videokaart (GPU) gedecodeerd; de knoppen en overgangen renderen ook op de GPU. Hapert 4K op een trage pc, start Chrome/Edge dan zo:</p>
-    <pre class="help">chrome --kiosk --autoplay-policy=no-user-gesture-required ^
+    <div class="card">
+      <p class="note">Video decodeert standaard op de videokaart. Hapert 4K op een trage pc, start Chrome/Edge dan met:</p>
+      <pre class="help">chrome --kiosk --autoplay-policy=no-user-gesture-required ^
   --ignore-gpu-blocklist --enable-gpu-rasterization ^
   --enable-zero-copy "pad\naar\index.html"</pre>
-    <p class="note">Controleer via <code>chrome://gpu</code> of "Video Decode: Hardware accelerated" groen is. Gebruik H.264/H.265 mp4-bestanden; die hebben op vrijwel elke GPU hardware-decodering.</p>
+      <p class="note">Controleer via <code>chrome://gpu</code> of "Video Decode: Hardware accelerated" groen is.</p>
+    </div>
   </div>
 </aside>
 
@@ -1524,12 +1624,12 @@ function renderLook() {
     if (m.id === config.idleMediaId) o.selected = true;
     idleSel.append(o);
   }
-  $('#cfgHideBtns').value = config.hideButtonsDuringPlay ? 'yes' : 'no';
-  $('#cfgClean').value = config.cleanMode ? 'yes' : 'no';
+  $('#cfgHideBtns').checked = config.hideButtonsDuringPlay;
+  $('#cfgClean').checked = config.cleanMode;
   $('#cfgOrientation').value = config.orientationMode || 'auto';
   $('#cfgSelectFx').value = config.selectFx || 'zoom';
   $('#cfgFxInterval').value = config.fxIntervalSec;
-  $('#handEnabled').value = config.hand.enabled ? 'yes' : 'no';
+  $('#handEnabled').checked = config.hand.enabled;
   $('#handSize').value = config.hand.size;
   $('#handDelay').value = config.hand.delaySec;
   const o3 = config.object3d;
@@ -1543,7 +1643,7 @@ function renderLook() {
 
 $('#cfgSelectFx').addEventListener('change', (e) => { config.selectFx = e.target.value; save(); });
 $('#cfgFxInterval').addEventListener('change', (e) => { config.fxIntervalSec = Math.max(3, Number(e.target.value) || 7); save(); });
-$('#handEnabled').addEventListener('change', (e) => { config.hand.enabled = e.target.value === 'yes'; save(); if (!config.hand.enabled) hideHand(); });
+$('#handEnabled').addEventListener('change', (e) => { config.hand.enabled = e.target.checked; save(); if (!config.hand.enabled) hideHand(); });
 $('#handSize').addEventListener('input', (e) => { config.hand.size = Number(e.target.value); save(); applyHandSize(); });
 $('#handDelay').addEventListener('change', (e) => { config.hand.delaySec = Math.max(3, Number(e.target.value) || 8); save(); });
 
@@ -1562,14 +1662,14 @@ $('#o3MaxTris').addEventListener('change', (e) => {
 });
 $('#cfgTitle').addEventListener('input', (e) => { config.title = e.target.value; save(); renderStage(); });
 $('#cfgIdle').addEventListener('change', (e) => { config.idleMediaId = e.target.value || null; save(); renderStage(); });
-$('#cfgHideBtns').addEventListener('change', (e) => { config.hideButtonsDuringPlay = e.target.value === 'yes'; save(); });
-$('#cfgClean').addEventListener('change', (e) => { config.cleanMode = e.target.value === 'yes'; save(); renderStage(); });
+$('#cfgHideBtns').addEventListener('change', (e) => { config.hideButtonsDuringPlay = e.target.checked; save(); });
+$('#cfgClean').addEventListener('change', (e) => { config.cleanMode = e.target.checked; save(); renderStage(); });
 $('#cfgOrientation').addEventListener('change', (e) => { setOrientationMode(e.target.value); });
 
 /* ---- Tab: screensaver & sensor ---- */
 function renderSaver() {
   const sv = config.screensaver, cam = config.camera;
-  $('#svEnabled').value = sv.enabled ? 'yes' : 'no';
+  $('#svEnabled').checked = sv.enabled;
   $('#svDelay').value = sv.delaySec;
   const list = $('#svMediaList');
   list.innerHTML = '';
@@ -1584,17 +1684,17 @@ function renderSaver() {
       } }),
       ' ' + m.name));
   }
-  $('#camEnabled').value = cam.enabled ? 'yes' : 'no';
+  $('#camEnabled').checked = cam.enabled;
   $('#camDwell').value = cam.dwellSec;
   $('#camSens').value = cam.sensitivity;
   renderCamDevices();
   updateCamLive();
 }
 
-$('#svEnabled').addEventListener('change', (e) => { config.screensaver.enabled = e.target.value === 'yes'; save(); if (!config.screensaver.enabled) exitSaver(); });
+$('#svEnabled').addEventListener('change', (e) => { config.screensaver.enabled = e.target.checked; save(); if (!config.screensaver.enabled) exitSaver(); });
 $('#svDelay').addEventListener('change', (e) => { config.screensaver.delaySec = Math.max(10, Number(e.target.value) || 120); save(); });
 $('#camEnabled').addEventListener('change', (e) => {
-  config.camera.enabled = e.target.value === 'yes';
+  config.camera.enabled = e.target.checked;
   save();
   config.camera.enabled ? startCamera() : stopCamera();
 });
@@ -1800,13 +1900,27 @@ async function renderCamDevices() {
   const sel = $('#camDevice');
   const cams = await listCameras();
   sel.innerHTML = '';
-  sel.append(el('option', { value: '' }, cams.length ? 'Automatisch (eerste camera)' : '— geen camera gevonden —'));
-  cams.forEach((c, i) => {
+  // Vóór de eerste toestemming geeft de browser lege namen/id's terug —
+  // dan valt er niets te kiezen en leggen we uit wat te doen.
+  const usable = cams.filter((c) => c.deviceId);
+  if (!cams.length) {
+    sel.append(el('option', { value: '' }, 'Geen camera gevonden'));
+    return;
+  }
+  if (!usable.length) {
+    sel.append(el('option', { value: '' }, `${cams.length} camera('s) — namen zichtbaar na "Camera inschakelen & testen"`));
+    return;
+  }
+  sel.append(el('option', { value: '' }, 'Automatisch (eerste camera)'));
+  usable.forEach((c, i) => {
     const o = el('option', { value: c.deviceId }, c.label || `Camera ${i + 1}`);
     if (c.deviceId === config.camera.deviceId) o.selected = true;
     sel.append(o);
   });
 }
+
+// Lijst automatisch verversen wanneer een camera wordt aangesloten of losgekoppeld.
+navigator.mediaDevices?.addEventListener?.('devicechange', () => renderCamDevices());
 
 async function startCamera() {
   if (camStream) return;
