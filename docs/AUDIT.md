@@ -62,57 +62,45 @@ Legenda: ✅ EXISTING · ◐ PARTIAL · ✗ MISSING · ⟳ REQUIRES REFACTOR
 - **Motion Engine**: één `runEntrance(elementen, cfg)`/presetlaag (WAAPI, alleen transform/opacity/filter), gebruikt bij laden, scènewissel, terugkeer na content en na de screensaver.
 - **Figma-workflow**: gereserveerd voor de volgende fase — het editor-IDE-herontwerp (sidebar 240 px, topbar 56 px, canvas, inspector 320 px) wordt eerst als Figma-componentsysteem ontworpen en daarna geïmplementeerd, conform spec-fasen C–H.
 
-## 4. Openstaande taken (stand v2.4.0)
+## 4. Openstaande taken (stand v2.5.0)
 
-Geverifieerd tegen de code. Legenda: ✗ open · ◐ deels aanwezig.
-
-### Verwerkt in v2.3.0
-- **Blok 1 (editor, deels)**: snap-to-grid met rasteroverlay, slimme
-  uitlijnhulplijnen, veilige zones, knop dupliceren, undo/redo (Ctrl+Z / Ctrl+Y,
-  50 stappen).
-- **Blok 2 (afspelen)**: begin/eind bijsnijden, volume per video, audio in- en
-  uitfaden, herhalen, stoppen op laatste frame, playlist per knop met
-  automatische opvolging.
-- **Blok 3 (thema's)**: lettertypekiezer (6 families), tekstgewicht,
-  klantlogo met positie en grootte, 6 complete themapresets die kleuren,
-  frame, motion en typografie in één keer zetten.
-- **Blok 5**: naadloze tegel-naar-videovlak-overgang (spec 212/223).
-- **Blok 6 (analytics)**: knop-heatmap, actieve sessieduur, interacties per uur,
-  voltooiingspercentage.
-- **Blok 7**: transparante hotspot-knop (onzichtbaar tikvlak).
-- **Blok 8**: 10 extra entrance-effecten — 26 van de 34.
+Geverifieerd tegen de code én tegen de testsuites (14 suites, allemaal groen).
 
 ### Verwerkt in v2.4.0
-- **Blok 1 (editor, afgerond op het IDE-herontwerp na)**: meervoudige selectie
-  (shift/ctrl-klik, groep verslepen als één geheel), uitlijnen links/midden/
-  rechts/boven/midden/onder plus schermcentrering, gelijkmatig verdelen
-  horizontaal en verticaal, lagenpaneel met z-volgorde (knoppen naar voren/
-  achteren, laagnummer per knop) en zes layout-templates (raster 2/3/4 kolommen,
-  rij, kolom, cirkel).
-- **Blok 2 (afspelen)**: playlist in willekeurige volgorde per knop.
-- **Blok 3 (uiterlijk)**: achtergrond-transparantie per knop (10–100 %),
-  instelbare gloed-intensiteit globaal én per knop, en een outline-variant
-  van de Video Frame Style (open frame, alleen een lichtgevende rand).
-- **Blok 4 (meertaligheid, spec 84–85)**: zes talen, per knop en per scène een
-  vertaald label/titel, taalbalk op het scherm, `SetLanguage`-actie voor een
-  eigen taalknop en automatische herkenning van de systeemtaal.
-- **Blok 7 (interactie)**: kruimelpad met klikbare route, veegnavigatie
-  (naar rechts vegen = terug) en de HTML5/web-contentmodule — een knop met
-  actie `Webpagina / HTML tonen` opent een URL of lokaal HTML-bestand
-  in de presentatie.
-- **Blok 8 (motion)**: entrance-catalogus compleet op 34 effecten (rise & float,
-  swing-in, zoom blur, vanuit de hoek, gordijn, uitvouwen, vallen met stuiter,
-  sluiter), 14 groepssequenties (van rechts, van buiten naar binnen, twee
-  diagonalen, per kolom, per rij, spiraal) en 20 exit-effecten met eigen
-  keuzelijst en dezelfde sequentie-choreografie als de entrance.
+Multi-select, uitlijnen/verdelen, lagen, layout-templates, transparantie en
+gloed per knop, outline-frame, meertaligheid (6 talen + autodetectie),
+kruimelpad, veegnavigatie, webcontent-module, motion-catalogus
+(34 entrances, 14 sequenties, 20 exits), playlist-shuffle.
 
-### Nog open
-| Blok | Wat rest |
+### Verwerkt in v2.5.0
+- **Blok 1 · Editor — afgerond**: benoemde groepen (groeperen/opheffen; één
+  klik selecteert de hele groep, samen verslepen als één geheel).
+- **Blok 2 · Afspelen — afgerond**: geplande content (per knop een tijdvenster
+  met dagen + van/tot, ook over middernacht), gelaagde video-overlay per scène
+  (dekking + mengmodus), en écht gapless wisselen via een dubbele A/B-speler:
+  de volgende playlistvideo buffert vooraf en neemt het beeld in hetzelfde
+  frame over.
+- **Blok 6 · Beheer op afstand — afgerond**: koppeling Studio ↔ Node-platform.
+  De box meldt zich met een device-key (menu → Opslaan → Beheer op afstand);
+  het beheerpaneel kan per box live status zien, een schermafdruk opvragen,
+  het hoofdvolume zetten, herstarten, identificeren en een ontwerp publiceren
+  dat de box automatisch overneemt. Zie docs/INTEGRATIE.md §4.4.
+- **Blok 9 · Productie (software-kant)**: verborgen admin-gebaar (5× tikken
+  linksboven), hoofdvolume-instelling, kiosk-vergrendelingsscript op OS-niveau
+  (tools/windows-kiosk-setup.ps1: eigen account, autologon, shell-vervanging,
+  Taakbeheer-blokkade) en een geautomatiseerde soaktest
+  (scratch: soaktest.js — geheugen/DOM/animaties stabiel over lange runs).
+- **Bugfixes uit de dubbelcontrole**: import accepteerde zijn eigen
+  exportbestanden niet meer sinds het scènemodel (validatie keek naar het oude
+  vlakke veld); een verouderde CSS-regel bedekte het Video Frame Style-kader
+  volledig met het videobeeld (framedikte werkte alleen als schaduw).
+
+### Nog open (vergt zaken buiten de software)
+| Punt | Waarom open |
 |---|---|
-| 1 · Editor | Groeperen als benoemd object, Figma-componentsysteem en de IDE-layout (sidebar/topbar/inspector) |
-| 2 · Afspelen | Geplande playlists (op tijdstip), gelaagde video-overlay, echt gapless wisselen |
-| 6 · Device/afstand | Remote screenshot, remote volume, remote publiceren, scheduling, meerdere boxen/groepen; koppeling Studio ↔ Node-platform |
-| 9 · Productie | Code-signing-certificaat, kiosk-vergrendeling op OS-niveau, soaktest 8–24 u op doelhardware, visuele QA tegen Figma, verborgen admin-gebaar |
+| Code-signing-certificaat | Aanschaf bij een CA (±€200–400/jaar); pipeline is er klaar voor — secrets CSC_LINK/CSC_KEY_PASSWORD zetten en elke build wordt automatisch ondertekend |
+| Soaktest 8–24 u op doelhardware | Vergt de echte holobox; de geautomatiseerde soaktest draait als generale repetitie in elke omgeving |
+| Visuele QA tegen Figma / Figma-componentsysteem | Er bestaat nog geen Figma-ontwerp; het editor-IDE-herontwerp (sidebar/topbar/inspector) is bewust uitgesteld tot dat ontwerp er is |
 
 ## 5. Roadmap na v2.0.0
 

@@ -26,7 +26,7 @@ media.ensureRoot();
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', true);
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '6mb' })); // ruim genoeg voor een schermafdruk-dataURL
 
 // Mediabestanden met range-requests (nodig voor scrubben en grote 4K-files).
 // CORS open: externe holoboxen moeten media rechtstreeks kunnen laden.

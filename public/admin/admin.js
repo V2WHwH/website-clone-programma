@@ -149,6 +149,44 @@ function deviceCard(d) {
 
   const cmd = (command) => async () => { const r = await api(`/api/devices/${d.id}/command`, { method: 'POST', body: { command } }); toast(r.delivered ? 'Verzonden' : 'Box is offline'); };
 
+  // Studio-besturing (remote beheer van de Studio-app op de box).
+  const scmd = (type, value) => api(`/api/devices/${d.id}/studio/command`, { method: 'POST', body: { type, value } });
+  const studioBox = el('div', { class: 'actions', style: 'margin-top:6px' },
+    el('span', { class: 'muted', style: 'align-self:center;font-size:12px' }, 'Studio:'),
+    el('button', { class: 'btn small', title: 'Vraagt bij de volgende hartslag een schermafdruk op en toont hem daarna', onclick: async () => {
+      await scmd('screenshot');
+      toast('Schermafdruk aangevraagd — verschijnt na de volgende hartslag');
+      setTimeout(async () => {
+        const st = await api(`/api/devices/${d.id}/studio?screenshot=1`);
+        if (st.screenshot) {
+          const w = window.open('', '_blank');
+          w.document.write(`<title>${d.name} — schermafdruk</title><body style="margin:0;background:#000"><img src="${st.screenshot}" style="max-width:100%">`);
+        } else toast('Nog geen schermafdruk ontvangen — is de Studio-koppeling actief?');
+      }, 15000);
+    } }, '📷 Schermafdruk'),
+    el('button', { class: 'btn small', onclick: async () => {
+      const v = prompt('Hoofdvolume (0–100):', '80');
+      if (v === null) return;
+      await scmd('setVolume', Math.max(0, Math.min(100, Number(v) || 0)));
+      toast('Volume in de wachtrij gezet');
+    } }, '🔊 Volume'),
+    el('button', { class: 'btn small', onclick: () => {
+      const inp = el('input', { type: 'file', accept: 'application/json' });
+      inp.onchange = async () => {
+        const f = inp.files[0];
+        if (!f) return;
+        try {
+          const json = JSON.parse(await f.text());
+          const cfg = json.config || json; // Studio-export bevat {config, ...}
+          const r = await api(`/api/devices/${d.id}/studio/config`, { method: 'PUT', body: { config: cfg } });
+          toast(`Ontwerp gepubliceerd (revisie ${r.configRev}) — de box haalt het bij de volgende hartslag op`);
+        } catch (e) { toast('Geen geldig Studio-exportbestand'); }
+      };
+      inp.click();
+    } }, '📤 Ontwerp publiceren'),
+    el('button', { class: 'btn small', onclick: async () => { await scmd('identify'); toast('Identificatie in de wachtrij'); } }, 'Identificeer'),
+    el('button', { class: 'btn small', onclick: async () => { await scmd('reload'); toast('Herstart in de wachtrij'); } }, 'Herstart'));
+
   return el('div', { class: 'card' },
     el('h3', {},
       el('span', { class: 'status-dot' + (d.online ? ' online' : '') }),
@@ -161,6 +199,9 @@ function deviceCard(d) {
       el('dt', {}, 'Status'), el('dd', {}, d.online ? 'Online' : `Offline (laatst gezien: ${fmtAgo(d.lastSeen)})`),
       el('dt', {}, 'IP-adres'), el('dd', {}, d.lastIp || 'onbekend'),
       el('dt', {}, 'Speelt nu'), el('dd', {}, d.nowPlaying ? `${d.nowPlaying.name} (${d.nowPlaying.type})` : '—'),
+      el('dt', {}, 'Studio'), el('dd', {}, d.studio && d.studio.lastStatus
+        ? `v${d.studio.lastStatus.version} · scène "${d.studio.lastStatus.scene}" · ${d.studio.lastStatus.buttons} knoppen · volume ${d.studio.lastStatus.volume}% · ${d.studio.lastStatus.playing ? 'speelt af' : 'menu'} (${fmtAgo(d.studio.lastStatusAt)})`
+        : 'niet gekoppeld'),
       el('dt', {}, 'Playlist'), el('dd', {}, plSelect),
       el('dt', {}, 'Oriëntatie'), el('dd', {}, orSelect),
       el('dt', {}, 'Paneelrotatie'), el('dd', {}, rotSelect),
@@ -181,7 +222,8 @@ function deviceCard(d) {
       el('button', { class: 'btn small', onclick: cmd('reload') }, 'Herstart player'),
       el('button', { class: 'btn small', onclick: cmd('black') }, 'Scherm zwart aan/uit'),
       el('button', { class: 'btn small danger', onclick: async () => { if (confirm(`Holobox "${d.name}" verwijderen?`)) { await api(`/api/devices/${d.id}`, { method: 'DELETE' }); loadDevices(); } } }, 'Verwijderen')
-    )
+    ),
+    studioBox
   );
 }
 

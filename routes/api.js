@@ -48,6 +48,16 @@ router.get('/api/session', (req, res) => {
   res.json({ authed: auth.isAuthed(req), defaultPassword: auth.usingDefaultPassword() });
 });
 
+// De publieke v1-API is per device-key benaderbaar vanuit de Studio-app,
+// die vanaf file:// of een kiosk-profiel draait — dus met CORS open.
+router.use('/api/v1', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  next();
+});
+
 // Alles hieronder onder /api (behalve /api/v1) vereist een sessie.
 router.use('/api', (req, res, next) => {
   if (req.path.startsWith('/v1/')) return next();
@@ -169,7 +179,18 @@ router.delete('/api/playlists/:id', (req, res) => {
 
 router.get('/api/devices', (req, res) => {
   const state = db.load();
-  res.json(state.devices.map((d) => ({ ...d, online: hub.isOnline(d.id) })));
+  // studio-blok niet integraal meesturen: de schermafdruk kan megabytes zijn.
+  res.json(state.devices.map(({ studio, ...d }) => ({
+    ...d,
+    online: hub.isOnline(d.id),
+    studio: studio ? {
+      lastStatus: studio.lastStatus || null,
+      lastStatusAt: studio.lastStatusAt || null,
+      configRev: studio.configRev || 0,
+      pendingCommands: (studio.commands || []).length,
+      screenshotAt: studio.screenshotAt || null
+    } : null
+  })));
 });
 
 router.post('/api/devices', (req, res) => {
@@ -216,6 +237,112 @@ router.post('/api/devices/:id/command', (req, res) => {
   if (!allowed.includes(req.body.command)) return res.status(400).json({ error: `command moet één van ${allowed.join(', ')} zijn` });
   const delivered = hub.sendToDevice(dev.id, { type: req.body.command });
   res.json({ ok: true, delivered });
+});
+
+/* ---------------- Studio-koppeling (remote beheer, spec 108-115) ----------------
+   Een Studio-box meldt zich met zijn device-key. De beheerder zet commando's
+   in de wachtrij (volume, schermafdruk, herstart, identificeren) en publiceert
+   ontwerpen; de Studio haalt ze bij de eerstvolgende hartslag op. */
+
+function studioState(dev) {
+  dev.studio = dev.studio || { commands: [], configRev: 0 };
+  dev.studio.commands = dev.studio.commands || [];
+  return dev.studio;
+}
+
+const STUDIO_COMMANDS = ['setVolume', 'screenshot', 'reload', 'identify', 'publishConfig'];
+
+// Beheerder: status + laatste schermafdruk van een Studio-box inzien.
+router.get('/api/devices/:id/studio', (req, res) => {
+  const dev = db.load().devices.find((d) => d.id === req.params.id);
+  if (!dev) return res.status(404).json({ error: 'Niet gevonden' });
+  const st = studioState(dev);
+  res.json({
+    lastStatus: st.lastStatus || null,
+    lastStatusAt: st.lastStatusAt || null,
+    configRev: st.configRev || 0,
+    pendingCommands: st.commands.length,
+    screenshotAt: st.screenshotAt || null,
+    screenshot: req.query.screenshot === '1' ? (st.screenshot || null) : undefined
+  });
+});
+
+// Beheerder: commando in de wachtrij zetten voor de volgende hartslag.
+router.post('/api/devices/:id/studio/command', (req, res) => {
+  const dev = db.load().devices.find((d) => d.id === req.params.id);
+  if (!dev) return res.status(404).json({ error: 'Niet gevonden' });
+  const { type, value } = req.body || {};
+  if (!STUDIO_COMMANDS.includes(type)) {
+    return res.status(400).json({ error: `type moet één van ${STUDIO_COMMANDS.join(', ')} zijn` });
+  }
+  const st = studioState(dev);
+  st.commands = st.commands.filter((c) => c.type !== type); // nieuwste wint
+  st.commands.push({ type, value: value ?? null, queuedAt: Date.now() });
+  db.save();
+  res.json({ ok: true, pending: st.commands.length });
+});
+
+// Beheerder: een Studio-ontwerp (config-JSON) publiceren naar deze box.
+router.put('/api/devices/:id/studio/config', (req, res) => {
+  const dev = db.load().devices.find((d) => d.id === req.params.id);
+  if (!dev) return res.status(404).json({ error: 'Niet gevonden' });
+  if (!req.body || typeof req.body.config !== 'object' || req.body.config === null) {
+    return res.status(400).json({ error: 'body.config (JSON-ontwerp) ontbreekt' });
+  }
+  const st = studioState(dev);
+  st.config = req.body.config;
+  st.configRev = (st.configRev || 0) + 1;
+  st.commands = st.commands.filter((c) => c.type !== 'publishConfig');
+  st.commands.push({ type: 'publishConfig', queuedAt: Date.now() });
+  db.save();
+  res.json({ ok: true, configRev: st.configRev });
+});
+
+// Studio-box: hartslag met status; antwoord bevat de commandowachtrij.
+router.post('/api/v1/studio/:key/heartbeat', (req, res) => {
+  const dev = findDeviceByKey(req.params.key);
+  if (!dev) return res.status(404).json({ error: 'Onbekende device-key' });
+  const st = studioState(dev);
+  dev.lastSeen = Date.now();
+  dev.lastIp = req.ip?.replace('::ffff:', '') || null;
+  if (req.body && typeof req.body.status === 'object') {
+    st.lastStatus = req.body.status;
+    st.lastStatusAt = Date.now();
+  }
+  const commands = st.commands;
+  st.commands = [];
+  db.save();
+  res.json({
+    ok: true,
+    commands,
+    configRev: st.configRev || 0,
+    pollIntervalSec: db.load().settings.pollIntervalSec
+  });
+});
+
+// Studio-box: gepubliceerd ontwerp ophalen.
+router.get('/api/v1/studio/:key/config', (req, res) => {
+  const dev = findDeviceByKey(req.params.key);
+  if (!dev) return res.status(404).json({ error: 'Onbekende device-key' });
+  const st = studioState(dev);
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ rev: st.configRev || 0, config: st.config || null });
+});
+
+// Studio-box: schermafdruk aanleveren (JPEG-dataURL, max ~3 MB).
+router.post('/api/v1/studio/:key/screenshot', (req, res) => {
+  const dev = findDeviceByKey(req.params.key);
+  if (!dev) return res.status(404).json({ error: 'Onbekende device-key' });
+  const img = req.body && req.body.image;
+  if (typeof img !== 'string' || !img.startsWith('data:image/')) {
+    return res.status(400).json({ error: 'body.image (dataURL) ontbreekt' });
+  }
+  if (img.length > 3 * 1024 * 1024) return res.status(413).json({ error: 'Schermafdruk te groot' });
+  const st = studioState(dev);
+  st.screenshot = img;
+  st.screenshotAt = Date.now();
+  db.save();
+  res.json({ ok: true });
 });
 
 /* ---------------- Instellingen & systeeminfo ---------------- */

@@ -163,6 +163,34 @@ JSON-berichten van platform → box:
 Box → platform: `{ "type": "status", "nowPlaying": {...}, "info": {...} }`
 (elke ±20s).
 
+### 4.4 Studio-koppeling (remote beheer van de Studio-app)
+
+De offline **Studio-app** (studio/index.html of de Windows Player) kan zich
+met een device-key aan dit platform koppelen: menu → **Opslaan → Beheer op
+afstand** (serveradres + device-key uit het beheerpaneel). De Studio meldt
+zich dan elke 5–120 s en voert commando's uit de wachtrij uit.
+
+Studio-box → platform (publiek, per device-key, CORS open):
+
+| Endpoint | Doel |
+|---|---|
+| `POST /api/v1/studio/:key/heartbeat` | Status melden (`{status:{…}}`); antwoord bevat `commands[]`, `configRev` en `pollIntervalSec` |
+| `GET  /api/v1/studio/:key/config` | Gepubliceerd ontwerp ophalen (`{rev, config}`) |
+| `POST /api/v1/studio/:key/screenshot` | Schermafdruk aanleveren (`{image:"data:image/jpeg;…"}`, max 3 MB) |
+
+Beheerder → platform (sessie vereist):
+
+| Endpoint | Doel |
+|---|---|
+| `GET  /api/devices/:id/studio` | Laatste status; met `?screenshot=1` ook de laatste schermafdruk |
+| `POST /api/devices/:id/studio/command` | Commando in de wachtrij: `setVolume` (value 0–100), `screenshot`, `reload`, `identify`, `publishConfig` |
+| `PUT  /api/devices/:id/studio/config` | Ontwerp publiceren (`{config:<Studio-export>}`); verhoogt `configRev`, box past het bij de volgende hartslag toe |
+
+In het beheerpaneel (Holoboxen) zit dit achter de knoppen **Schermafdruk**,
+**Volume**, **Ontwerp publiceren**, **Identificeer** en **Herstart** op elke
+device-kaart. Commando's worden bij de eerstvolgende hartslag opgehaald;
+de wachtrij bewaart per type alleen het nieuwste commando.
+
 ## 5. Eigen presentatie koppelen ("custom endpoint")
 
 Vergelijkbaar met Portl's *Cloud Persona custom endpoint*: per holobox kan in
