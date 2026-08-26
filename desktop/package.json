@@ -1,7 +1,7 @@
 {
   "name": "hereweholo-player",
   "productName": "HereWeHolo Player",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "description": "HereWeHolo holobox-presentatieplayer voor Windows: offline 4K-videoplayer met GPU-versnelling",
   "main": "main.js",
   "author": "HereWeHolo",

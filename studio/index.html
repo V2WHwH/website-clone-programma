@@ -413,6 +413,17 @@
 
   <!-- ================= KNOPPEN ================= -->
   <div class="tabpage" id="page-buttons">
+    <div class="card">
+      <label class="field">Sc&egrave;ne
+        <select id="sceneSelect"></select>
+      </label>
+      <div class="row">
+        <button id="sceneAdd" class="btn small">+ Nieuwe sc&egrave;ne</button>
+        <button id="sceneRename" class="btn small">Hernoemen</button>
+        <button id="sceneDelete" class="btn small danger">Verwijderen</button>
+      </div>
+      <p class="note">Een knop kan media afspelen &oacute;f naar een andere sc&egrave;ne navigeren (actie per knop hieronder). De homescène is het startpunt.</p>
+    </div>
     <button id="addBtn" class="btn primary block">+ Knop toevoegen</button>
     <p class="note">Verslepen: klik op het slot linksonder in het scherm, sleep de knoppen naar hun plek en klik nogmaals om ze vast te zetten.</p>
     <div id="btnList"></div>
@@ -489,10 +500,42 @@
 
   <!-- ================= EFFECTEN ================= -->
   <div class="tabpage hidden" id="page-fx">
+    <h2>Motion</h2>
+    <div class="card">
+      <div class="row">
+        <label class="field">Preset
+          <select id="mpPreset"></select>
+        </label>
+        <label class="field">Intensiteit
+          <select id="mpIntensity">
+            <option value="subtle">Subtle</option>
+            <option value="immersive">Immersive</option>
+            <option value="showcase">Showcase</option>
+          </select>
+        </label>
+      </div>
+      <label class="field">Entrance-effect
+        <select id="mpEffect"></select>
+      </label>
+      <div class="row">
+        <label class="field">Duur (ms)
+          <input type="number" id="mpDuration" min="0" max="2000" step="10" placeholder="preset">
+        </label>
+        <label class="field">Stagger (ms)
+          <input type="number" id="mpStagger" min="0" max="500" step="10" placeholder="preset">
+        </label>
+        <label class="field">Volgorde
+          <select id="mpSequence"></select>
+        </label>
+      </div>
+      <button id="mpPreview" class="btn block">Voorbeeld afspelen</button>
+      <p class="note">De preset bepaalt entrance, timing en het standaard selectie-effect; losse velden overschrijven de preset.</p>
+    </div>
     <h2>Bij het kiezen van een knop</h2>
     <div class="card">
       <label class="field">Selectie-effect
         <select id="cfgSelectFx">
+          <option value="preset">Volgens motionpreset</option>
           <option value="zoom">Filmisch zoomen &mdash; gekozen knop komt naar voren, de rest vervaagt</option>
           <option value="aside">Opzij geschoven &mdash; andere knoppen uit beeld getrokken</option>
           <option value="depth">De diepte in &mdash; andere knoppen krimpen naar achteren</option>
@@ -592,6 +635,25 @@
       <button id="relinkPick" class="btn primary block">Mediabestanden aanwijzen&hellip;</button>
       <input type="file" id="relinkInput" accept="video/*,.obj,image/png" multiple hidden>
     </div>
+    <h2>Beveiliging</h2>
+    <div class="card">
+      <p class="note" id="pinStatus"></p>
+      <div class="row">
+        <button id="pinSet" class="btn">PIN instellen / wijzigen</button>
+        <button id="pinClear" class="btn danger">PIN verwijderen</button>
+      </div>
+      <p class="note">Met een PIN zijn het menu en de verplaats-modus vergrendeld voor bezoekers (kiosk).</p>
+    </div>
+    <h2>Statistieken</h2>
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Lokale statistieken bijhouden</div>
+          <div class="t-sub">Knopinteracties, starts en voltooiingen &mdash; alleen op dit apparaat</div></div>
+        <label class="switch"><input type="checkbox" id="statsEnabled"><i></i></label>
+      </div>
+      <div id="statsView" class="note"></div>
+      <button id="statsReset" class="btn small">Statistieken wissen</button>
+    </div>
     <h2>Opnieuw beginnen</h2>
     <button id="resetBtn" class="btn danger block">Alles wissen op deze computer</button>
   </div>
@@ -625,11 +687,37 @@
 <script>
 'use strict';
 
+/* ================= Feature-flags (masterspec §0) ================= */
+// Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
+const ACTIVE_FEATURES = new Set([
+  1, 2, 4, 5, 7, 8, 9, 13, 15, 16, 17, 27, 29,            // knoppen, navigatie, video
+  31, 32, 39, 45, 49, 50, 51, 52, 54, 55, 58, 59, 62,     // editor & uiterlijk
+  69, 70, 71, 72, 74, 76, 78, 79, 80, 99,                 // attract + camera
+  102, 103, 104, 105, 106, 120,                           // analytics + PIN
+  127, 128, 129, 130, 131, 132, 133, 134, 135, 139, 141, 146, 147, 151, // entrances
+  161, 162, 164, 165, 166, 167, 168,                      // groepssequenties
+  175, 179, 181, 189, 193, 195, 198, 207,                 // press + exits
+  224, 228, 229, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242 // return + presets
+]);
+const hasFeature = (n) => ACTIVE_FEATURES.has(n);
+
+/* ================= State machine (masterspec §7) ================= */
+const AppState = {
+  current: 'BOOT',
+  set(next) { if (next !== this.current) this.current = next; },
+  is(s) { return this.current === s; }
+};
+
 /* ================= Opslag ================= */
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 2,
+  version: 3,
+  scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
+  homeSceneId: null,
+  motion: { preset: 'corporate', intensity: 'immersive', overrides: {} },
+  security: { pinHash: null },
+  analytics: { enabled: false },
   title: '',
   idleMediaId: null,
   hideButtonsDuringPlay: true,
@@ -639,23 +727,52 @@ const defaultConfig = () => ({
   camera: { enabled: false, dwellSec: 3, sensitivity: 5, deviceId: null },
   object3d: { color: '#8fa3bd', rotSpeed: 0.8, light: 1.0, shininess: 0.35, maxTriangles: 150000, autoCloseSec: 60 },
   fxIntervalSec: 7,      // hoe vaak een knop gemiddeld een aandachtseffect speelt
-  selectFx: 'zoom',      // 'zoom' | 'aside' | 'depth' | 'burst' | 'none'
+  selectFx: 'preset',    // 'preset' volgt de motionpreset | zoom | aside | depth | burst | none
   hand: { enabled: false, size: 1.0, delaySec: 8 }, // demo-handje
   buttons: [] // {id,label,mediaId,x,y,size,color,shape,depth,drift,showPreview}
 });
 
-let config = load();
-function load() {
-  try {
-    const d = defaultConfig();
-    const stored = JSON.parse(localStorage.getItem(LS_KEY)) || {};
-    return { ...d, ...stored,
-      screensaver: { ...d.screensaver, ...stored.screensaver },
-      camera: { ...d.camera, ...stored.camera },
-      object3d: { ...d.object3d, ...stored.object3d },
-      hand: { ...d.hand, ...stored.hand } };
-  } catch { return defaultConfig(); }
+// Migratie: oude vlakke configs (v1/v2) worden een project met één Home-scène.
+function migrateConfig(stored) {
+  const d = defaultConfig();
+  const c = { ...d, ...stored,
+    screensaver: { ...d.screensaver, ...stored.screensaver },
+    camera: { ...d.camera, ...stored.camera },
+    object3d: { ...d.object3d, ...stored.object3d },
+    hand: { ...d.hand, ...stored.hand },
+    motion: { ...d.motion, ...stored.motion, overrides: { ...(stored.motion?.overrides || {}) } },
+    security: { ...d.security, ...stored.security },
+    analytics: { ...d.analytics, ...stored.analytics } };
+  if (!Array.isArray(c.scenes) || !c.scenes.length) {
+    c.scenes = [{
+      id: 'scn_home', name: 'Home',
+      title: c.title || '', idleMediaId: c.idleMediaId || null,
+      buttons: Array.isArray(c.buttons) ? c.buttons : []
+    }];
+  }
+  if (!c.homeSceneId || !c.scenes.find((sc) => sc.id === c.homeSceneId)) c.homeSceneId = c.scenes[0].id;
+  c.version = 3;
+  delete c.buttons; delete c.title; delete c.idleMediaId;
+  return c;
 }
+
+let config = load();
+// Migratie direct persisteren zodat opslag en runtime dezelfde versie hebben.
+try {
+  if ((JSON.parse(localStorage.getItem(LS_KEY)) || {}).version !== config.version) {
+    localStorage.setItem(LS_KEY, JSON.stringify(config));
+  }
+} catch { /* opslag niet beschikbaar */ }
+function load() {
+  try { return migrateConfig(JSON.parse(localStorage.getItem(LS_KEY)) || {}); }
+  catch { return migrateConfig({}); }
+}
+
+// Actieve scène (runtime) + navigatiestack voor Terug/Home.
+let currentSceneId = config.homeSceneId;
+let sceneStack = [];
+const curScene = () => config.scenes.find((sc) => sc.id === currentSceneId) || config.scenes[0];
+const curButtons = () => curScene().buttons;
 function save() { localStorage.setItem(LS_KEY, JSON.stringify(config)); }
 
 // IndexedDB voor videobestanden (blobs) — blijft offline beschikbaar.
@@ -958,13 +1075,13 @@ function destroyObjViewers(previewOnly = false) {
 /* ================= Presentatie renderen ================= */
 function renderStage() {
   // Titel + welkomstscherm
-  $('#stageTitle').textContent = config.title || '';
-  $('#welcome').classList.toggle('hidden', config.buttons.length > 0 || !!config.idleMediaId || !!config.title);
+  $('#stageTitle').textContent = curScene().title || '';
+  $('#welcome').classList.toggle('hidden', curButtons().length > 0 || !!curScene().idleMediaId || !!curScene().title);
   document.body.classList.toggle('clean', !!config.cleanMode);
 
   // Achtergrondvideo
   const idle = $('#idleVideo');
-  const m = mediaCache.get(config.idleMediaId);
+  const m = mediaCache.get(curScene().idleMediaId);
   if (m) {
     if (idle.dataset.mid !== m.id) { idle.src = m.url; idle.dataset.mid = m.id; }
     idle.classList.remove('hidden');
@@ -977,7 +1094,7 @@ function renderStage() {
   const layer = $('#buttonLayer');
   destroyObjViewers(true); // preview-viewers opruimen vóór de laag leeggemaakt wordt
   layer.innerHTML = '';
-  for (const b of config.buttons) {
+  for (const b of curButtons()) {
     const media = mediaCache.get(b.mediaId);
     const preview = b.showPreview !== false && !!media;
     const btn = el('button', {
@@ -1040,7 +1157,7 @@ function syncFrames() {
   requestAnimationFrame(() => {
     const vmin = Math.min(innerWidth, innerHeight) / 100;
     for (const f of document.querySelectorAll('.vframe')) {
-      const b = config.buttons.find((x) => x.id === f.dataset.frame);
+      const b = curButtons().find((x) => x.id === f.dataset.frame);
       const btn = document.querySelector(`.vbtn[data-id="${f.dataset.frame}"]`);
       if (!b || !btn) continue;
       const r = (b.drift || 0) * vmin;
@@ -1070,7 +1187,8 @@ function playMedia(mediaId) {
   if (m.kind === 'model') return playObject(mediaId);
   if (m.kind === 'image') return; // PNG is de knop zelf; niets om af te spelen
   if (playVideo.src !== m.url) playVideo.src = m.url; // voorgeladen tijdens de overgang
-
+  AppState.set('CONTENT_PLAYBACK');
+  track('playStart', m.name);
   playOverlay.classList.add('show');
   if (config.hideButtonsDuringPlay) $('#buttonLayer').style.visibility = 'hidden';
   $('#idleVideo').pause();
@@ -1119,8 +1237,14 @@ function stopPlaying() {
   if (!idle.classList.contains('hidden')) idle.play().catch(() => {});
   setPreviewsPaused(false);
   lastInteraction = Date.now();
+  // Contextual return (spec 229): gekozen knop keert eerst terug, de rest
+  // volgt met stagger; aandachtseffecten blijven even uit.
+  AppState.set('RETURN_TRANSITION');
+  fxSuppressUntil = Date.now() + 6000;
+  runEntrance(lastChosenId).then(() => AppState.set('IDLE'));
+  lastChosenId = null;
 }
-playVideo.addEventListener('ended', stopPlaying);
+playVideo.addEventListener('ended', () => { track('playComplete'); stopPlaying(); });
 $('#stopPlay').addEventListener('click', stopPlaying);
 
 /* ================= Klik & sleep op knoppen ================= */
@@ -1130,7 +1254,7 @@ let drag = null;
 $('#buttonLayer').addEventListener('pointerdown', (e) => {
   const btnEl = e.target.closest('.vbtn');
   if (!btnEl || !editing) return;
-  const b = config.buttons.find((x) => x.id === btnEl.dataset.id);
+  const b = curButtons().find((x) => x.id === btnEl.dataset.id);
   drag = { b, el: btnEl, moved: false };
   btnEl.setPointerCapture(e.pointerId);
   e.preventDefault();
@@ -1179,17 +1303,9 @@ $('#buttonLayer').addEventListener('click', (e) => {
     const img = btnEl.querySelector('img');
     if (img && pngAlphaAt(img, e.clientX, e.clientY) < 16) return; // doorzichtig deel: geen klik
   }
-  const b = config.buttons.find((x) => x.id === btnEl.dataset.id);
+  const b = curButtons().find((x) => x.id === btnEl.dataset.id);
   if (!b) return;
-  const m = mediaCache.get(b.mediaId);
-  if (m && (m.kind === 'video' || m.kind === 'model')) {
-    // Tijdens de overgang alvast voorladen: video decodeert, 3D parset.
-    if (m.kind === 'video') { playVideo.src = m.url; playVideo.load(); }
-    else loadObjGeometry(b.mediaId).catch(() => {});
-    runSelectTransition(btnEl).then(() => playMedia(b.mediaId));
-  } else {
-    playMedia(b.mediaId);
-  }
+  runAction(b, btnEl);
 });
 
 /* ================= Selectie-effect =================
@@ -1200,7 +1316,7 @@ $('#buttonLayer').addEventListener('click', (e) => {
 let selectAnims = [];
 
 function runSelectTransition(chosenEl) {
-  const mode = config.selectFx || 'zoom';
+  const mode = activeSelectFx();
   if (mode === 'none' || editing) return Promise.resolve();
   cancelSelectAnims();
 
@@ -1270,6 +1386,200 @@ function cancelSelectAnims() {
   selectAnims = [];
 }
 
+/* ================= Motion Engine (masterspec §10–19) =================
+   Eén centrale laag voor entrance-, groeps- en return-choreografie.
+   Uitsluitend transform/opacity/filter/clip-path (GPU-composited);
+   transforms additief bovenop de zweef-engine. */
+
+const EASE = {
+  standard: 'cubic-bezier(0.33, 0.9, 0.25, 1)',
+  luxury: 'cubic-bezier(0.22, 0.8, 0.2, 1)',
+  precise: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  pop: 'cubic-bezier(0.34, 1.3, 0.4, 1)'
+};
+
+// Entrance-effecten (spec 127–151). d = afstand in px.
+const ENTRANCES = {
+  fade: () => ({ rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  fadeScale: () => ({ tf: [{ transform: 'scale(0.94)' }, { transform: 'scale(1)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  blurReveal: () => ({ rest: [{ opacity: 0, filter: 'blur(10px)' }, { opacity: 1, filter: 'blur(0px)' }] }),
+  slideUp: (d) => ({ tf: [{ transform: `translateY(${d}px)` }, { transform: 'translateY(0px)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  slideDown: (d) => ({ tf: [{ transform: `translateY(${-d}px)` }, { transform: 'translateY(0px)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  slideLeft: (d) => ({ tf: [{ transform: `translateX(${d}px)` }, { transform: 'translateX(0px)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  slideRight: (d) => ({ tf: [{ transform: `translateX(${-d}px)` }, { transform: 'translateX(0px)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  depthIn: () => ({ tf: [{ transform: 'scale(1.22)' }, { transform: 'scale(1)' }], rest: [{ opacity: 0, filter: 'blur(4px)' }, { opacity: 1, filter: 'blur(0px)' }] }),
+  depthBack: () => ({ tf: [{ transform: 'scale(0.6)' }, { transform: 'scale(1)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  scalePop: () => ({ tf: [{ transform: 'scale(0.5)' }, { transform: 'scale(1)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  maskReveal: () => ({ rest: [{ opacity: 0.4, clipPath: 'inset(0 100% 0 0)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)' }] }),
+  glowMaterialize: () => ({ rest: [{ opacity: 0, filter: 'brightness(2.6) blur(7px)' }, { opacity: 1, filter: 'brightness(1) blur(0px)' }] }),
+  lightSweep: () => ({ rest: [{ opacity: 0 }, { opacity: 1 }], after: 'shine' }),
+  holoScan: () => ({ rest: [{ opacity: 0, clipPath: 'inset(0 0 100% 0)', filter: 'brightness(1.9)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)', filter: 'brightness(1)' }] })
+};
+
+// Groepssequenties (spec 161–168): geven per element een volgorde-rang.
+const SEQUENCES = {
+  stagger: (els) => els.map((e, i) => i),
+  topDown: (els) => rankBy(els, (r) => r.top),
+  bottomUp: (els) => rankBy(els, (r) => -r.top),
+  leftRight: (els) => rankBy(els, (r) => r.left),
+  centerOut: (els) => rankBy(els, (r) => Math.hypot(r.left + r.width / 2 - innerWidth / 2, r.top + r.height / 2 - innerHeight / 2)),
+  wave: (els) => rankBy(els, (r) => r.top * 0.7 + r.left * 0.3),
+  random: (els) => {
+    const idx = els.map((e, i) => i);
+    for (let i = idx.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
+    return idx;
+  }
+};
+function rankBy(els, keyFn) {
+  const keyed = els.map((e, i) => ({ i, k: keyFn(e.getBoundingClientRect()) }));
+  keyed.sort((a, b) => a.k - b.k);
+  const ranks = [];
+  keyed.forEach((entry, rank) => { ranks[entry.i] = rank; });
+  return ranks;
+}
+
+// Motionpresets (spec 233–242).
+const MOTION_PRESETS = {
+  corporate:  { label: 'Corporate Smooth', entrance: { effect: 'fadeScale', duration: 330, stagger: 80, sequence: 'topDown', easing: 'standard', distance: 24 }, selectFx: 'zoom' },
+  luxury:     { label: 'Luxury', entrance: { effect: 'blurReveal', duration: 520, stagger: 110, sequence: 'centerOut', easing: 'luxury', distance: 24 }, selectFx: 'depth' },
+  technology: { label: 'Technology', entrance: { effect: 'holoScan', duration: 380, stagger: 70, sequence: 'topDown', easing: 'precise', distance: 24 }, selectFx: 'zoom' },
+  cyber:      { label: 'Cyber', entrance: { effect: 'holoScan', duration: 290, stagger: 50, sequence: 'random', easing: 'precise', distance: 24 }, selectFx: 'burst' },
+  minimal:    { label: 'Minimal', entrance: { effect: 'fade', duration: 250, stagger: 55, sequence: 'stagger', easing: 'standard', distance: 0 }, selectFx: 'zoom' },
+  dynamic:    { label: 'Dynamic Event', entrance: { effect: 'slideUp', duration: 280, stagger: 60, sequence: 'wave', easing: 'pop', distance: 44 }, selectFx: 'burst' },
+  museum:     { label: 'Museum', entrance: { effect: 'fade', duration: 600, stagger: 140, sequence: 'centerOut', easing: 'luxury', distance: 0 }, selectFx: 'depth' },
+  automotive: { label: 'Automotive', entrance: { effect: 'slideLeft', duration: 340, stagger: 70, sequence: 'leftRight', easing: 'precise', distance: 60 }, selectFx: 'aside' },
+  healthcare: { label: 'Healthcare', entrance: { effect: 'fade', duration: 340, stagger: 95, sequence: 'topDown', easing: 'standard', distance: 0 }, selectFx: 'zoom' },
+  retail:     { label: 'Retail', entrance: { effect: 'scalePop', duration: 300, stagger: 70, sequence: 'centerOut', easing: 'pop', distance: 0 }, selectFx: 'zoom' }
+};
+const INTENSITY = { subtle: 0.78, immersive: 1, showcase: 1.28 };
+
+// Effectieve entrance-config: preset → intensiteit → handmatige overrides.
+function entranceCfg() {
+  const preset = MOTION_PRESETS[config.motion.preset] || MOTION_PRESETS.corporate;
+  const o = config.motion.overrides || {};
+  const mul = INTENSITY[config.motion.intensity] || 1;
+  return {
+    effect: o.effect || preset.entrance.effect,
+    duration: Math.round((o.duration || preset.entrance.duration) * mul),
+    stagger: Math.round((o.stagger || preset.entrance.stagger) * mul),
+    sequence: o.sequence || preset.entrance.sequence,
+    easing: preset.entrance.easing,
+    distance: preset.entrance.distance
+  };
+}
+
+// Actief selectie-effect: 'preset' volgt de motionpreset.
+function activeSelectFx() {
+  if (!config.selectFx || config.selectFx === 'preset') {
+    return (MOTION_PRESETS[config.motion.preset] || MOTION_PRESETS.corporate).selectFx;
+  }
+  return config.selectFx;
+}
+
+// Entrance-choreografie. firstId (optioneel) = element dat vóór de rest
+// binnenkomt (contextual return, spec 229).
+function runEntrance(firstId = null) {
+  const els = [...document.querySelectorAll('.vbtn')];
+  if (!els.length || matchMedia('(prefers-reduced-motion: reduce)').matches) return Promise.resolve();
+  const cfg = entranceCfg();
+  const fx = ENTRANCES[cfg.effect] || ENTRANCES.fade;
+  const ranks = (SEQUENCES[cfg.sequence] || SEQUENCES.stagger)(els);
+  const anims = [];
+  els.forEach((elB, i) => {
+    const isFirst = firstId && elB.dataset.id === firstId;
+    const delay = isFirst ? 0 : ranks[i] * cfg.stagger + (firstId ? 120 : 0);
+    const frames = fx(cfg.distance);
+    const opts = { duration: cfg.duration, delay, easing: EASE[cfg.easing], fill: 'backwards' };
+    if (frames.tf) anims.push(elB.animate(frames.tf, { ...opts, composite: 'add' }));
+    if (frames.rest) anims.push(elB.animate(frames.rest, opts));
+    if (frames.after === 'shine') setTimeout(() => {
+      const span = el('span', { class: 'fx-shine' });
+      elB.append(span);
+      span.addEventListener('animationend', () => span.remove(), { once: true });
+    }, delay + cfg.duration * 0.6);
+  });
+  return Promise.all(anims.map((a) => a.finished.catch(() => {})));
+}
+
+// Exit van de hele scène (bij scènewissel): kort en gecontroleerd.
+function runSceneExit() {
+  const els = [...document.querySelectorAll('.vbtn')];
+  if (!els.length) return Promise.resolve();
+  const anims = els.map((elB) => elB.animate(
+    [{ opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: 'blur(5px)' }],
+    { duration: 240, easing: EASE.precise, fill: 'forwards' }));
+  return Promise.all(anims.map((a) => a.finished.catch(() => {})));
+}
+
+/* ================= Action engine + scène-navigatie (masterspec §8) ================= */
+
+function buttonAction(b) {
+  return b.action && b.action.type ? b.action : { type: 'PlayMedia', mediaId: b.mediaId };
+}
+
+let lastChosenId = null;
+let fxSuppressUntil = 0; // attract-gedrag kort uit na terugkeer (spec 229)
+
+function runAction(b, btnEl) {
+  const a = buttonAction(b);
+  track('press', b.label || b.id);
+  AppState.set('USER_INTERACTION');
+  switch (a.type) {
+    case 'OpenScene': return gotoScene(a.sceneId, { push: true });
+    case 'Back': return goBack();
+    case 'Home': return gotoScene(config.homeSceneId, { reset: true });
+    case 'PlayMedia':
+    default: {
+      const m = mediaCache.get(a.mediaId ?? b.mediaId);
+      if (m && (m.kind === 'video' || m.kind === 'model')) {
+        if (m.kind === 'video') { playVideo.src = m.url; playVideo.load(); }
+        else loadObjGeometry(m.id).catch(() => {});
+        lastChosenId = b.id;
+        AppState.set('CONTENT_TRANSITION');
+        runSelectTransition(btnEl).then(() => playMedia(m.id));
+      } else {
+        playMedia(a.mediaId ?? b.mediaId);
+      }
+    }
+  }
+}
+
+async function gotoScene(sceneId, opts = {}) {
+  const target = config.scenes.find((sc) => sc.id === sceneId);
+  if (!target || sceneId === currentSceneId) return;
+  AppState.set('CONTENT_TRANSITION');
+  await runSceneExit();
+  if (opts.reset) sceneStack = [];
+  else if (opts.push) sceneStack.push(currentSceneId);
+  currentSceneId = sceneId;
+  renderStage();
+  refreshSceneUI();
+  await runEntrance();
+  AppState.set('IDLE');
+}
+
+function goBack() {
+  const prev = sceneStack.pop();
+  return gotoScene(prev || config.homeSceneId, {});
+}
+
+/* ================= Lokale analytics (masterspec §28, opties 102–106) ================= */
+
+const STATS_KEY = 'hwh_stats_v1';
+let stats = (() => {
+  try { return JSON.parse(localStorage.getItem(STATS_KEY)) || {}; } catch { return {}; }
+})();
+if (!stats.since) stats = { since: Date.now(), presses: {}, playStarts: 0, playCompletions: 0, sessions: 0 };
+stats.sessions = (stats.sessions || 0) + 1;
+
+function track(event, key) {
+  if (!config.analytics.enabled) return;
+  if (event === 'press') stats.presses[key] = (stats.presses[key] || 0) + 1;
+  if (event === 'playStart') stats.playStarts++;
+  if (event === 'playComplete') stats.playCompletions++;
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch {}
+}
+
 /* ================= Aandachtseffecten =================
    Elke knop speelt af en toe (gemiddeld elke fxIntervalSec, met spreiding)
    zijn gekozen effect: gloedpuls, lichtrand, flits of glans-veeg. */
@@ -1280,7 +1590,8 @@ const fxNext = new Map(); // buttonId -> volgende afspeeltijd
 setInterval(() => {
   if (editing || saverActive || playOverlay.classList.contains('show') || document.hidden) return;
   const now = Date.now();
-  for (const b of config.buttons) {
+  if (now < fxSuppressUntil) return;
+  for (const b of curButtons()) {
     if ((b.fx || 'random') === 'none') continue;
     const btnEl = document.querySelector(`.vbtn[data-id="${b.id}"]`);
     if (!btnEl) continue;
@@ -1335,7 +1646,7 @@ window.addEventListener('pointerdown', hideHand, { capture: true });
 
 setInterval(async () => {
   const blocked = !config.hand.enabled || editing || saverActive || document.hidden ||
-    playOverlay.classList.contains('show') || panel.classList.contains('open') || !config.buttons.length;
+    playOverlay.classList.contains('show') || panel.classList.contains('open') || !curButtons().length;
   if (blocked) { if (handVisible) hideHand(); return; }
   if ((Date.now() - lastInteraction) / 1000 < config.hand.delaySec || handBusy) return;
   handBusy = true;
@@ -1358,7 +1669,7 @@ function aimHandLight(dx, dy) {
 }
 
 async function handCycle() {
-  const b = config.buttons[handIdx++ % config.buttons.length];
+  const b = curButtons()[handIdx++ % curButtons().length];
   const s = config.hand.size || 1;
   const stageRect = document.getElementById('stage').getBoundingClientRect();
   const tx = stageRect.width * b.x / 100, ty = stageRect.height * b.y / 100;
@@ -1394,7 +1705,8 @@ async function handCycle() {
 
 /* Verplaats-modus: 🔒 ⇄ 🔓 */
 const lockFab = $('#lockFab');
-lockFab.addEventListener('click', () => {
+lockFab.addEventListener('click', async () => {
+  if (!editing && !(await requireAdmin())) return;
   editing = !editing;
   document.body.classList.toggle('editing', editing);
   lockFab.textContent = editing ? '🔓' : '🔒';
@@ -1421,7 +1733,7 @@ function animate(t) {
   const active = !editing && !playOverlay.classList.contains('show') && !document.hidden;
 
   for (const btnEl of document.querySelectorAll('.vbtn')) {
-    const b = config.buttons.find((x) => x.id === btnEl.dataset.id);
+    const b = curButtons().find((x) => x.id === btnEl.dataset.id);
     if (!b) continue;
     let st = animState.get(b.id);
     if (!st) { st = { phase: Math.random() * 6.28, dx: 0, dy: 0, tx: 0, ty: 0 }; animState.set(b.id, st); }
@@ -1461,7 +1773,7 @@ window.addEventListener('resize', syncFrames);
 
 /* ================= Menu ================= */
 const panel = $('#panel');
-$('#menuFab').addEventListener('click', () => { panel.classList.add('open'); refreshPanel(); });
+$('#menuFab').addEventListener('click', async () => { if (!(await requireAdmin())) return; panel.classList.add('open'); refreshPanel(); });
 $('#closePanel').addEventListener('click', () => panel.classList.remove('open'));
 $('#fsFab').addEventListener('click', () => {
   if (document.fullscreenElement) document.exitFullscreen();
@@ -1472,7 +1784,7 @@ document.querySelectorAll('#tabs button').forEach((t) => t.addEventListener('cli
   document.querySelectorAll('.tabpage').forEach((p) => p.classList.toggle('hidden', p.id !== 'page-' + t.dataset.tab));
 }));
 
-function refreshPanel() { renderBtnList(); renderMediaList(); renderLook(); renderSaver(); }
+function refreshPanel() { refreshSceneUI(); renderBtnList(); renderMediaList(); renderLook(); renderSaver(); renderMotion(); renderShare(); }
 
 /* ---- Tab: knoppen ---- */
 function mediaSelect(selectedId, onchange) {
@@ -1489,8 +1801,8 @@ function mediaSelect(selectedId, onchange) {
 function renderBtnList() {
   const list = $('#btnList');
   list.innerHTML = '';
-  if (!config.buttons.length) list.append(el('p', { class: 'note' }, 'Nog geen knoppen. Voeg er één toe en koppel een video.'));
-  config.buttons.forEach((b) => {
+  if (!curButtons().length) list.append(el('p', { class: 'note' }, 'Nog geen knoppen. Voeg er één toe en koppel een video.'));
+  curButtons().forEach((b) => {
     const swatches = el('div', { class: 'swatches' },
       PALETTE.map((c) =>
         el('button', { class: 'swatch' + (b.color === c ? ' sel' : ''), style: `background:${c}`,
@@ -1529,7 +1841,35 @@ function renderBtnList() {
         el('input', { type: 'text', class: 'grow', value: b.label, placeholder: 'Tekst op de knop',
           oninput: (e) => { b.label = e.target.value; save(); renderStage(); } }),
         el('button', { class: 'btn small danger', title: 'Knop verwijderen',
-          onclick: () => { if (confirm(`Knop "${b.label}" verwijderen?`)) { config.buttons = config.buttons.filter((x) => x !== b); save(); renderStage(); renderBtnList(); } } }, '🗑')),
+          onclick: () => { if (confirm(`Knop "${b.label}" verwijderen?`)) { curScene().buttons = curScene().buttons.filter((x) => x !== b); save(); renderStage(); renderBtnList(); } } }, '🗑')),
+      el('div', { class: 'row' },
+        el('label', { class: 'field' }, 'Actie', (() => {
+          const act = buttonAction(b);
+          const sel = el('select', { onchange: (e) => {
+            const t = e.target.value;
+            if (t === 'PlayMedia') delete b.action;
+            else if (t === 'OpenScene') b.action = { type: 'OpenScene', sceneId: (config.scenes.find((sc) => sc.id !== currentSceneId) || config.scenes[0]).id };
+            else b.action = { type: t };
+            save(); renderStage(); renderBtnList();
+          } },
+            el('option', { value: 'PlayMedia' }, 'Media afspelen'),
+            el('option', { value: 'OpenScene' }, 'Ga naar sc\u00e8ne'),
+            el('option', { value: 'Back' }, 'Terug (vorige sc\u00e8ne)'),
+            el('option', { value: 'Home' }, 'Naar de homesc\u00e8ne'));
+          sel.value = act.type;
+          return sel;
+        })()),
+        buttonAction(b).type === 'OpenScene'
+          ? el('label', { class: 'field' }, 'Doel-sc\u00e8ne', (() => {
+              const sel = el('select', { onchange: (e) => { b.action.sceneId = e.target.value; save(); } },
+                config.scenes.filter((sc) => sc.id !== currentSceneId).map((sc) => {
+                  const o = el('option', { value: sc.id }, sc.name);
+                  if (b.action.sceneId === sc.id) o.selected = true;
+                  return o;
+                }));
+              return sel;
+            })())
+          : null),
       el('div', { class: 'row' },
         el('label', { class: 'field' }, 'Media die deze knop opent (video of 3D-object)',
           mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); if (v) ensurePreviewRendition(v); renderStage(); })),
@@ -1553,8 +1893,8 @@ function renderBtnList() {
 }
 
 $('#addBtn').addEventListener('click', () => {
-  const n = config.buttons.length;
-  config.buttons.push({
+  const n = curButtons().length;
+  curButtons().push({
     id: uid(), label: 'Video ' + (n + 1), mediaId: [...mediaCache.keys()][0] || null,
     x: 50, y: 25 + (n % 5) * 13, size: 8, color: PALETTE[n % (PALETTE.length - 2)], shape: 'rounded',
     depth: 'subtle', drift: 0, showPreview: true, fx: 'random'
@@ -1583,9 +1923,9 @@ function renderMediaList() {
         URL.revokeObjectURL(m.url);
         if (m.previewUrl) URL.revokeObjectURL(m.previewUrl);
         mediaCache.delete(m.id); objGeomCache.delete(m.id);
-        if (config.idleMediaId === m.id) config.idleMediaId = null;
+        for (const sc of config.scenes) if (sc.idleMediaId === m.id) sc.idleMediaId = null;
         config.screensaver.mediaIds = config.screensaver.mediaIds.filter((id) => id !== m.id);
-        for (const b of config.buttons) {
+        for (const sc of config.scenes) for (const b of sc.buttons) {
           if (b.mediaId === m.id) b.mediaId = null;
           if (b.imageId === m.id) b.imageId = null;
         }
@@ -1615,13 +1955,13 @@ async function addMediaFile(file, fixedId) {
 
 /* ---- Tab: weergave ---- */
 function renderLook() {
-  $('#cfgTitle').value = config.title || '';
+  $('#cfgTitle').value = curScene().title || '';
   const idleSel = $('#cfgIdle');
   idleSel.innerHTML = '';
   idleSel.append(el('option', { value: '' }, '— geen —'));
   for (const m of mediaCache.values()) {
     const o = el('option', { value: m.id }, m.name);
-    if (m.id === config.idleMediaId) o.selected = true;
+    if (m.id === curScene().idleMediaId) o.selected = true;
     idleSel.append(o);
   }
   $('#cfgHideBtns').checked = config.hideButtonsDuringPlay;
@@ -1660,11 +2000,175 @@ $('#o3MaxTris').addEventListener('change', (e) => {
   renderStage();
   toast('Detail-limiet aangepast — modellen worden opnieuw geladen');
 });
-$('#cfgTitle').addEventListener('input', (e) => { config.title = e.target.value; save(); renderStage(); });
-$('#cfgIdle').addEventListener('change', (e) => { config.idleMediaId = e.target.value || null; save(); renderStage(); });
+$('#cfgTitle').addEventListener('input', (e) => { curScene().title = e.target.value; save(); renderStage(); });
+$('#cfgIdle').addEventListener('change', (e) => { curScene().idleMediaId = e.target.value || null; save(); renderStage(); });
 $('#cfgHideBtns').addEventListener('change', (e) => { config.hideButtonsDuringPlay = e.target.checked; save(); });
 $('#cfgClean').addEventListener('change', (e) => { config.cleanMode = e.target.checked; save(); renderStage(); });
 $('#cfgOrientation').addEventListener('change', (e) => { setOrientationMode(e.target.value); });
+
+/* ---- Scènebeheer ---- */
+function refreshSceneUI() {
+  const sel = $('#sceneSelect');
+  sel.innerHTML = '';
+  for (const sc of config.scenes) {
+    const o = el('option', { value: sc.id }, sc.name + (sc.id === config.homeSceneId ? ' (home)' : ''));
+    if (sc.id === currentSceneId) o.selected = true;
+    sel.append(o);
+  }
+}
+
+$('#sceneSelect').addEventListener('change', (e) => {
+  currentSceneId = e.target.value;
+  sceneStack = [];
+  renderStage();
+  refreshPanel();
+});
+
+$('#sceneAdd').addEventListener('click', () => {
+  const name = prompt('Naam van de nieuwe scène:', 'Scène ' + (config.scenes.length + 1));
+  if (!name) return;
+  const sc = { id: uid(), name, title: '', idleMediaId: null, buttons: [] };
+  config.scenes.push(sc);
+  currentSceneId = sc.id;
+  save(); renderStage(); refreshPanel();
+  toast('Scène toegevoegd — maak knoppen en koppel er vanaf een andere scène naartoe');
+});
+
+$('#sceneRename').addEventListener('click', () => {
+  const name = prompt('Nieuwe naam:', curScene().name);
+  if (!name) return;
+  curScene().name = name;
+  save(); refreshPanel();
+});
+
+$('#sceneDelete').addEventListener('click', () => {
+  if (config.scenes.length <= 1) return toast('De laatste scène kan niet verwijderd worden');
+  if (currentSceneId === config.homeSceneId) return toast('De homescène kan niet verwijderd worden');
+  if (!confirm(`Scène "${curScene().name}" en alle knoppen erin verwijderen?`)) return;
+  const removed = currentSceneId;
+  config.scenes = config.scenes.filter((sc) => sc.id !== removed);
+  // Verwijzingen naar de verwijderde scène opruimen.
+  for (const sc of config.scenes) for (const b of sc.buttons) {
+    if (b.action?.type === 'OpenScene' && b.action.sceneId === removed) delete b.action;
+  }
+  currentSceneId = config.homeSceneId;
+  sceneStack = [];
+  save(); renderStage(); refreshPanel();
+});
+
+/* ---- Motion-instellingen ---- */
+function renderMotion() {
+  const mp = $('#mpPreset');
+  mp.innerHTML = '';
+  for (const [key, preset] of Object.entries(MOTION_PRESETS)) {
+    const o = el('option', { value: key }, preset.label);
+    if (key === config.motion.preset) o.selected = true;
+    mp.append(o);
+  }
+  $('#mpIntensity').value = config.motion.intensity;
+  const eff = $('#mpEffect');
+  eff.innerHTML = '';
+  eff.append(el('option', { value: '' }, 'Volgens preset'));
+  const EFFECT_LABELS = {
+    fade: 'Soft fade', fadeScale: 'Fade + scale', blurReveal: 'Blur reveal',
+    slideUp: 'Slide omhoog', slideDown: 'Slide omlaag', slideLeft: 'Slide van rechts', slideRight: 'Slide van links',
+    depthIn: 'Depth push-in', depthBack: 'Depth pull-back', scalePop: 'Scale pop',
+    maskReveal: 'Mask reveal', glowMaterialize: 'Glow materialize', lightSweep: 'Light sweep', holoScan: 'Holografische scan'
+  };
+  for (const key of Object.keys(ENTRANCES)) {
+    const o = el('option', { value: key }, EFFECT_LABELS[key] || key);
+    if (config.motion.overrides.effect === key) o.selected = true;
+    eff.append(o);
+  }
+  const seq = $('#mpSequence');
+  seq.innerHTML = '';
+  seq.append(el('option', { value: '' }, 'Volgens preset'));
+  const SEQ_LABELS = { stagger: 'Stagger', topDown: 'Van boven naar beneden', bottomUp: 'Van beneden naar boven', leftRight: 'Van links naar rechts', centerOut: 'Vanuit het midden', wave: 'Golf', random: 'Willekeurig' };
+  for (const key of Object.keys(SEQUENCES)) {
+    const o = el('option', { value: key }, SEQ_LABELS[key] || key);
+    if (config.motion.overrides.sequence === key) o.selected = true;
+    seq.append(o);
+  }
+  $('#mpDuration').value = config.motion.overrides.duration || '';
+  $('#mpStagger').value = config.motion.overrides.stagger || '';
+}
+
+function setMotionOverride(key, value) {
+  if (value) config.motion.overrides[key] = value;
+  else delete config.motion.overrides[key];
+  save();
+}
+$('#mpPreset').addEventListener('change', (e) => { config.motion.preset = e.target.value; save(); runEntrance(); });
+$('#mpIntensity').addEventListener('change', (e) => { config.motion.intensity = e.target.value; save(); });
+$('#mpEffect').addEventListener('change', (e) => { setMotionOverride('effect', e.target.value || null); runEntrance(); });
+$('#mpSequence').addEventListener('change', (e) => { setMotionOverride('sequence', e.target.value || null); });
+$('#mpDuration').addEventListener('change', (e) => { setMotionOverride('duration', Number(e.target.value) || null); });
+$('#mpStagger').addEventListener('change', (e) => { setMotionOverride('stagger', Number(e.target.value) || null); });
+$('#mpPreview').addEventListener('click', () => { panel.classList.remove('open'); setTimeout(() => runEntrance(), 250); });
+
+/* ---- PIN-beveiliging (spec 120) ---- */
+async function sha256(text) {
+  if (!crypto.subtle) return 'plain:' + text; // uiterste fallback op niet-secure contexts
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+let adminUnlockedUntil = 0;
+async function requireAdmin() {
+  if (!config.security.pinHash) return true;
+  if (Date.now() < adminUnlockedUntil) return true;
+  const pin = prompt('Voer de admin-PIN in:');
+  if (pin === null) return false;
+  if (await sha256(pin) === config.security.pinHash) {
+    adminUnlockedUntil = Date.now() + 10 * 60 * 1000; // 10 min ontgrendeld
+    return true;
+  }
+  toast('Onjuiste PIN');
+  return false;
+}
+
+function renderShare() {
+  $('#pinStatus').textContent = config.security.pinHash
+    ? 'PIN is actief — menu en verplaats-modus zijn vergrendeld.'
+    : 'Geen PIN ingesteld — het menu is vrij toegankelijk.';
+  $('#statsEnabled').checked = config.analytics.enabled;
+  renderStats();
+}
+
+$('#pinSet').addEventListener('click', async () => {
+  if (!(await requireAdmin())) return;
+  const pin = prompt('Nieuwe PIN (4–8 cijfers):');
+  if (!pin || !/^\d{4,8}$/.test(pin)) return toast('PIN moet 4–8 cijfers zijn');
+  config.security.pinHash = await sha256(pin);
+  adminUnlockedUntil = Date.now() + 10 * 60 * 1000;
+  save(); renderShare();
+  toast('PIN ingesteld');
+});
+
+$('#pinClear').addEventListener('click', async () => {
+  if (!(await requireAdmin())) return;
+  config.security.pinHash = null;
+  save(); renderShare();
+  toast('PIN verwijderd');
+});
+
+/* ---- Statistieken ---- */
+function renderStats() {
+  const top = Object.entries(stats.presses || {}).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  $('#statsView').innerHTML = '';
+  $('#statsView').append(
+    el('div', {}, `Sinds ${new Date(stats.since).toLocaleDateString('nl-NL')} · ${stats.sessions || 1} sessies`),
+    el('div', {}, `Video/3D gestart: ${stats.playStarts || 0} · volledig bekeken: ${stats.playCompletions || 0}`),
+    top.length ? el('div', {}, 'Meest gekozen: ' + top.map(([k, v]) => `${k} (${v}×)`).join(' · ')) : el('div', {}, 'Nog geen knopinteracties geregistreerd.')
+  );
+}
+$('#statsEnabled').addEventListener('change', (e) => { config.analytics.enabled = e.target.checked; save(); });
+$('#statsReset').addEventListener('click', () => {
+  stats = { since: Date.now(), presses: {}, playStarts: 0, playCompletions: 0, sessions: 1 };
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch {}
+  renderStats();
+  toast('Statistieken gewist');
+});
 
 /* ---- Tab: screensaver & sensor ---- */
 function renderSaver() {
@@ -1730,7 +2234,9 @@ $('#importInput').addEventListener('change', async (e) => {
   try { data = JSON.parse(await f.text()); } catch { return toast('Ongeldig bestand'); }
   if (!Array.isArray(data.buttons)) return toast('Dit is geen Studio-exportbestand');
   const { mediaFiles = [], ...rest } = data;
-  config = { ...defaultConfig(), ...rest };
+  config = migrateConfig(rest);
+  currentSceneId = config.homeSceneId;
+  sceneStack = [];
   save(); renderStage(); refreshPanel();
   pendingRelink = mediaFiles.filter((m) => !mediaCache.has(m.id));
   updateRelinkBox();
@@ -1767,7 +2273,9 @@ $('#resetBtn').addEventListener('click', async () => {
   if (!confirm('Alles wissen: knoppen, instellingen én opgeslagen video’s op deze computer?')) return;
   for (const m of mediaCache.values()) { await dbDel(m.id); URL.revokeObjectURL(m.url); }
   mediaCache.clear();
-  config = defaultConfig();
+  config = migrateConfig({});
+  currentSceneId = config.homeSceneId;
+  sceneStack = [];
   save(); renderStage(); refreshPanel();
   toast('Alles gewist');
 });
@@ -1796,6 +2304,7 @@ function enterSaver() {
   const list = saverPlaylist();
   if (!list.length || saverActive) return;
   saverActive = true;
+  AppState.set('ATTRACT');
   saverIndex = 0;
   saverEl.classList.add('show');
   setPreviewsPaused(true);
@@ -1821,6 +2330,8 @@ saverVideo.addEventListener('ended', () => {
 function exitSaver() {
   if (!saverActive) return;
   saverActive = false;
+  AppState.set('IDLE');
+  runEntrance();
   saverEl.classList.remove('show');
   setTimeout(() => { saverVideo.pause(); saverVideo.removeAttribute('src'); saverVideo.load(); }, 850);
   setPreviewsPaused(false);
@@ -2105,6 +2616,8 @@ window.addEventListener('resize', applyOrientationMode);
   renderStage();
   applyOrientationMode();
   applyHandSize();
+  AppState.set('IDLE');
+  runEntrance();
   if (config.camera.enabled) startCamera();
   try { await navigator.storage?.persist?.(); } catch {}
 })();
