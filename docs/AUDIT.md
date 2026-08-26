@@ -62,7 +62,7 @@ Legenda: ✅ EXISTING · ◐ PARTIAL · ✗ MISSING · ⟳ REQUIRES REFACTOR
 - **Motion Engine**: één `runEntrance(elementen, cfg)`/presetlaag (WAAPI, alleen transform/opacity/filter), gebruikt bij laden, scènewissel, terugkeer na content en na de screensaver.
 - **Figma-workflow**: gereserveerd voor de volgende fase — het editor-IDE-herontwerp (sidebar 240 px, topbar 56 px, canvas, inspector 320 px) wordt eerst als Figma-componentsysteem ontworpen en daarna geïmplementeerd, conform spec-fasen C–H.
 
-## 4. Openstaande taken (stand v2.3.0)
+## 4. Openstaande taken (stand v2.4.0)
 
 Geverifieerd tegen de code. Legenda: ✗ open · ◐ deels aanwezig.
 
@@ -76,26 +76,42 @@ Geverifieerd tegen de code. Legenda: ✗ open · ◐ deels aanwezig.
 - **Blok 3 (thema's)**: lettertypekiezer (6 families), tekstgewicht,
   klantlogo met positie en grootte, 6 complete themapresets die kleuren,
   frame, motion en typografie in één keer zetten.
-- **Blok 5**: naadloze tegel-naar-videovlak-overgang (spec 212/223) — de
-  gekozen tegel groeit door tot fullscreen en de echte video neemt het met een
-  crossfade over, zonder zwart frame.
+- **Blok 5**: naadloze tegel-naar-videovlak-overgang (spec 212/223).
 - **Blok 6 (analytics)**: knop-heatmap, actieve sessieduur, interacties per uur,
   voltooiingspercentage.
 - **Blok 7**: transparante hotspot-knop (onzichtbaar tikvlak).
-- **Blok 8**: 10 extra entrance-effecten (perspectief, flips, elastisch,
-  verticale mask, center expand, radiale mask, diagonaal, focus pull,
-  spotlight) — nu 26 van de 34.
+- **Blok 8**: 10 extra entrance-effecten — 26 van de 34.
+
+### Verwerkt in v2.4.0
+- **Blok 1 (editor, afgerond op het IDE-herontwerp na)**: meervoudige selectie
+  (shift/ctrl-klik, groep verslepen als één geheel), uitlijnen links/midden/
+  rechts/boven/midden/onder plus schermcentrering, gelijkmatig verdelen
+  horizontaal en verticaal, lagenpaneel met z-volgorde (knoppen naar voren/
+  achteren, laagnummer per knop) en zes layout-templates (raster 2/3/4 kolommen,
+  rij, kolom, cirkel).
+- **Blok 2 (afspelen)**: playlist in willekeurige volgorde per knop.
+- **Blok 3 (uiterlijk)**: achtergrond-transparantie per knop (10–100 %),
+  instelbare gloed-intensiteit globaal én per knop, en een outline-variant
+  van de Video Frame Style (open frame, alleen een lichtgevende rand).
+- **Blok 4 (meertaligheid, spec 84–85)**: zes talen, per knop en per scène een
+  vertaald label/titel, taalbalk op het scherm, `SetLanguage`-actie voor een
+  eigen taalknop en automatische herkenning van de systeemtaal.
+- **Blok 7 (interactie)**: kruimelpad met klikbare route, veegnavigatie
+  (naar rechts vegen = terug) en de HTML5/web-contentmodule — een knop met
+  actie `Webpagina / HTML tonen` opent een URL of lokaal HTML-bestand
+  in de presentatie.
+- **Blok 8 (motion)**: entrance-catalogus compleet op 34 effecten (rise & float,
+  swing-in, zoom blur, vanuit de hoek, gordijn, uitvouwen, vallen met stuiter,
+  sluiter), 14 groepssequenties (van rechts, van buiten naar binnen, twee
+  diagonalen, per kolom, per rij, spiraal) en 20 exit-effecten met eigen
+  keuzelijst en dezelfde sequentie-choreografie als de entrance.
 
 ### Nog open
 | Blok | Wat rest |
 |---|---|
-| 1 · Editor | Multi-select, groeperen, uitlijnknoppen/verdelen, lagenpaneel, z-volgorde, layout-templates, Figma-componentsysteem en de IDE-layout (sidebar/topbar/inspector) |
-| 2 · Afspelen | Willekeurige en geplande playlists, gelaagde video-overlay, echt gapless wisselen |
-| 3 · Uiterlijk | Achtergrond-transparantie per knop, instelbare gloed-intensiteit, outline-variant |
-| 4 · Meertaligheid | Taalkeuze en automatische taaldetectie (spec 84–85) |
+| 1 · Editor | Groeperen als benoemd object, Figma-componentsysteem en de IDE-layout (sidebar/topbar/inspector) |
+| 2 · Afspelen | Geplande playlists (op tijdstip), gelaagde video-overlay, echt gapless wisselen |
 | 6 · Device/afstand | Remote screenshot, remote volume, remote publiceren, scheduling, meerdere boxen/groepen; koppeling Studio ↔ Node-platform |
-| 7 · Interactie | Breadcrumb-navigatie, swipe-navigatie, HTML5/web-content-module |
-| 8 · Motion | 8 resterende entrances, 7 resterende groepssequenties, 18 resterende exit-effecten |
 | 9 · Productie | Code-signing-certificaat, kiosk-vergrendeling op OS-niveau, soaktest 8–24 u op doelhardware, visuele QA tegen Figma, verborgen admin-gebaar |
 
 ## 5. Roadmap na v2.0.0

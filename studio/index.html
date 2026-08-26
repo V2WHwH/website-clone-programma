@@ -58,7 +58,7 @@
     display: flex; align-items: center; justify-content: center; text-align: center;
     font-weight: var(--uiWeight, 700); color: #fff; border: 0; user-select: none;
     background-image: linear-gradient(rgba(255,255,255,0.22), rgba(255,255,255,0) 48%);
-    box-shadow: 0 16px 42px rgba(0,0,0,0.5), 0 0 30px var(--glow, rgba(53,208,186,0.35)),
+    box-shadow: 0 16px 42px rgba(0,0,0,0.5), 0 0 calc(30px * var(--glowI, 1)) var(--glow, rgba(53,208,186,0.35)),
       inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -0.35em 0.6em rgba(0,0,0,0.18);
     transition: filter 0.15s; line-height: 1.25; padding: 0.4em 0.9em; overflow-wrap: anywhere; }
   .vbtn:active { filter: brightness(1.2); }
@@ -76,6 +76,8 @@
   .vbtn.shape-hotspot::after { display: none; }
   body.editing .vbtn.shape-hotspot { background: rgba(53,208,186,0.12) !important;
     outline: 2px dashed rgba(53,208,186,0.8); color: var(--text); }
+  /* Meervoudige selectie in de editor */
+  body.editing .vbtn.multi-sel { outline: 3px solid var(--accent); outline-offset: 3px; }
   .vbtn .play-ico { margin-right: 0.4em; font-size: 0.85em; }
   .vbtn.shape-circle .play-ico { margin: 0; }
 
@@ -86,9 +88,14 @@
     overflow: hidden; border: 0; background-color: var(--frame, #35d0ba);
     border-radius: var(--frad, 0.6em);
     box-shadow:
-      0 16px 42px rgba(0,0,0,0.5), 0 0 30px var(--glow, rgba(53,208,186,0.35)),
+      0 16px 42px rgba(0,0,0,0.5), 0 0 calc(30px * var(--glowI, 1)) var(--glow, rgba(53,208,186,0.35)),
       0 0 0 0.12em rgba(0,0,0,0.4),
       inset 0 1px 0 rgba(255,255,255,var(--fhl, 0.35)); }
+  /* Outline-variant: alleen een lichtgevende rand, geen gevuld kader (spec 55). */
+  .vbtn.has-preview.frame-outline { background-color: transparent !important; background-image: none;
+    box-shadow: 0 16px 42px rgba(0,0,0,0.45), 0 0 calc(26px * var(--glowI, 1)) var(--glow, rgba(53,208,186,0.35)),
+      inset 0 0 0 max(2px, calc(var(--fpad, 0.45em) * 0.42)) var(--frame, #35d0ba); }
+  .vbtn.has-preview.frame-outline::before { opacity: 0.35; }
   /* Gloss-laag over het frame */
   .vbtn.has-preview::before { content: ''; position: absolute; inset: 0; border-radius: inherit;
     background: linear-gradient(178deg, rgba(255,255,255,var(--fgloss, 0.28)) 0%,
@@ -122,7 +129,7 @@
   .vbtn.png-face { background: none; border: 0; box-shadow: none; padding: 0; overflow: visible;
     width: var(--pw, 30vmin); min-width: 0; aspect-ratio: auto; }
   .vbtn.png-face img { width: 100%; height: auto; display: block; pointer-events: none;
-    filter: drop-shadow(0 14px 22px rgba(0,0,0,0.55)) drop-shadow(0 0 18px var(--glow, rgba(53,208,186,0.4))); }
+    filter: drop-shadow(0 14px 22px rgba(0,0,0,0.55)) drop-shadow(0 0 calc(18px * var(--glowI, 1)) var(--glow, rgba(53,208,186,0.4))); }
   .vbtn.png-face::after { left: 14%; right: 14%; }
   .vbtn.has-preview .pv-badge { position: absolute; top: 0.35em; right: 0.45em; font-size: 0.6em;
     background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.35); border-radius: 999px;
@@ -213,6 +220,26 @@
   @keyframes pressRipple { from { transform: scale(0.3); opacity: 0.9; } to { transform: scale(4.5); opacity: 0; } }
 
   /* Raster en veilige zones (alleen zichtbaar in verplaats-modus) */
+  /* Kruimelpad (spec 11) en taalkeuze (spec 84) */
+  #breadcrumb { position: absolute; top: 2.2vmin; left: 50%; transform: translateX(-50%); z-index: 13;
+    display: flex; gap: 0.5em; align-items: center; font-size: clamp(11px, 1.5vmin, 18px);
+    color: rgba(255,255,255,0.82); background: rgba(0,0,0,0.32); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 999px; padding: 0.35em 1em; backdrop-filter: blur(6px); max-width: 80%; }
+  #breadcrumb b { font-weight: 700; color: #fff; }
+  #breadcrumb button { background: none; border: 0; color: inherit; font: inherit; padding: 0;
+    text-decoration: underline; opacity: 0.85; }
+  #breadcrumb .sep { opacity: 0.45; }
+  #langBar { position: absolute; right: 2.4vmin; bottom: 2.4vmin; z-index: 13; display: flex; gap: 0.4em; }
+  #langBar button { border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.35); color: #fff;
+    border-radius: 999px; padding: 0.35em 0.9em; font-size: clamp(11px, 1.5vmin, 17px);
+    backdrop-filter: blur(6px); text-transform: uppercase; letter-spacing: 0.06em; }
+  #langBar button.sel { background: var(--accent); color: #05201c; border-color: transparent; font-weight: 700; }
+  body.clean #breadcrumb { display: none; }
+  /* Webcontent-overlay */
+  #webOverlay { position: absolute; inset: 0; z-index: 40; background: #05080d; display: flex;
+    flex-direction: column; }
+  #webOverlay #webClose { position: absolute; top: 2vmin; right: 2vmin; z-index: 2; }
+  #webOverlay iframe { flex: 1; width: 100%; border: 0; background: #fff; }
   #gridOverlay { position: absolute; inset: 0; z-index: 8; pointer-events: none; display: none;
     background-image: linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px);
@@ -399,11 +426,20 @@
     <p>Open het menu (⚙ linksonder) om video's toe te voegen en je eigen
        holobox-presentatie samen te stellen. Alles wordt automatisch bewaard.</p>
   </div>
+  <div id="breadcrumb" class="hidden"></div>
+  <div id="langBar" class="hidden"></div>
   <div id="gridOverlay"></div>
   <div id="safeZone"></div>
   <div id="alignGuideV"></div>
   <div id="alignGuideH"></div>
   <div id="buttonLayer"></div>
+  <!-- HTML5/web-contentmodule (spec 30): toont een webpagina of lokaal
+       HTML-bestand in de presentatie, zonder de app te verlaten. -->
+  <div id="webOverlay" class="hidden">
+    <button id="webClose" class="btn small" type="button">&times; Sluiten</button>
+    <iframe id="webFrame" title="Webinhoud" referrerpolicy="no-referrer"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+  </div>
   <div id="hand">
     <div id="handInner">
       <!-- Uitgesneden contour-hand: transparante binnenkant, gloss op de
@@ -517,6 +553,30 @@
       <p class="note">Verslepen: klik op het slot linksonder in het scherm. Raster,
       hulplijnen en de veilige marge zijn dan zichtbaar.</p>
     </div>
+    <div class="card">
+      <div class="t-label">Uitlijnen, verdelen &amp; layout</div>
+      <p class="note" id="selInfo">Geen selectie &mdash; klik in verplaats-modus op knoppen (shift = meerdere)</p>
+      <div class="row" style="flex-wrap:wrap">
+        <button class="btn small" data-align="left" title="Links uitlijnen">&#8676;</button>
+        <button class="btn small" data-align="hcenter" title="Horizontaal centreren">&#8596;</button>
+        <button class="btn small" data-align="right" title="Rechts uitlijnen">&#8677;</button>
+        <button class="btn small" data-align="top" title="Boven uitlijnen">&#8679;</button>
+        <button class="btn small" data-align="vcenter" title="Verticaal centreren">&#8597;</button>
+        <button class="btn small" data-align="bottom" title="Onder uitlijnen">&#8681;</button>
+        <button class="btn small" data-align="screenH" title="Midden van het scherm (horizontaal)">&#9678; H</button>
+        <button class="btn small" data-align="screenV" title="Midden van het scherm (verticaal)">&#9678; V</button>
+      </div>
+      <div class="row" style="flex-wrap:wrap">
+        <button class="btn small" data-dist="h">Horizontaal verdelen</button>
+        <button class="btn small" data-dist="v">Verticaal verdelen</button>
+        <button class="btn small" id="selAll">Alles selecteren</button>
+        <button class="btn small" id="selNone">Selectie wissen</button>
+      </div>
+      <label class="field">Layout-template
+        <select id="edLayout"></select>
+      </label>
+      <p class="note">Zonder selectie gelden deze knoppen voor alle knoppen in de sc&egrave;ne.</p>
+    </div>
     <div id="btnList"></div>
   </div>
 
@@ -535,6 +595,7 @@
       <label class="field">Titel op het scherm
         <input type="text" id="cfgTitle" placeholder="Optioneel &mdash; bijv. Welkom bij HereWeHolo">
       </label>
+      <div id="titleTrans"></div>
       <label class="field">Achtergrondvideo (gedempt, in een lus)
         <select id="cfgIdle"></select>
       </label>
@@ -608,6 +669,39 @@
         </select>
       </label>
     </div>
+    <h2>Taal &amp; navigatie</h2>
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Meertalig</div>
+          <div class="t-sub">Knoplabels en titels per taal; bezoekers kiezen rechtsonder</div></div>
+        <label class="switch"><input type="checkbox" id="lgEnabled"><i></i></label>
+      </div>
+      <label class="field">Beschikbare talen
+        <div id="lgList" class="row" style="flex-wrap:wrap;gap:10px"></div>
+      </label>
+      <div class="row">
+        <label class="field">Standaardtaal
+          <select id="lgCurrent"></select>
+        </label>
+        <label class="field">Taal automatisch herkennen
+          <select id="lgAuto">
+            <option value="yes">Ja &mdash; volg de systeemtaal</option>
+            <option value="no">Nee &mdash; altijd de standaardtaal</option>
+          </select>
+        </label>
+      </div>
+      <div class="divider"></div>
+      <div class="toggle-row">
+        <div><div class="t-label">Kruimelpad tonen</div>
+          <div class="t-sub">Toont de route Home &rsaquo; sc&egrave;ne &rsaquo; sc&egrave;ne bovenin</div></div>
+        <label class="switch"><input type="checkbox" id="navCrumb"><i></i></label>
+      </div>
+      <div class="toggle-row">
+        <div><div class="t-label">Vegen om terug te gaan</div>
+          <div class="t-sub">Naar rechts vegen opent de vorige sc&egrave;ne</div></div>
+        <label class="switch"><input type="checkbox" id="navSwipe"><i></i></label>
+      </div>
+    </div>
     <h2>Video Frame Style</h2>
     <div class="card">
       <label class="field">Framekleur
@@ -615,6 +709,7 @@
           <option value="button">Knopkleur (per knop instelbaar)</option>
           <option value="solid">Effen kleur (globaal)</option>
           <option value="gradient">Kleurverloop (globaal)</option>
+          <option value="outline">Alleen omlijning (open frame)</option>
         </select>
       </label>
       <div class="row">
@@ -652,6 +747,9 @@
           <input type="range" id="fsShadow" min="0" max="1" step="0.05">
         </label>
       </div>
+      <label class="field">Gloed-intensiteit (globaal, per knop bij te stellen)
+        <input type="range" id="fsGlow" min="0" max="2.5" step="0.1">
+      </label>
       <p class="note">Deze stijl geldt automatisch voor alle videoknoppen in de experience. Per knop kun je op het tabblad Knoppen kiezen om toch de eigen knopkleur te gebruiken.</p>
     </div>
     <h2>3D-objecten</h2>
@@ -717,6 +815,9 @@
           <select id="mpSequence"></select>
         </label>
       </div>
+      <label class="field">Exit-effect bij sc&egrave;newissel
+        <select id="mpExit"></select>
+      </label>
       <button id="mpPreview" class="btn block">Voorbeeld afspelen</button>
       <p class="note">De preset bepaalt entrance, timing en het standaard selectie-effect; losse velden overschrijven de preset.</p>
     </div>
@@ -880,13 +981,18 @@
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
 const ACTIVE_FEATURES = new Set([
-  1, 2, 4, 5, 7, 8, 9, 13, 15, 16, 17, 27, 29,            // knoppen, navigatie, video
-  31, 32, 39, 45, 49, 50, 51, 52, 54, 55, 58, 59, 62,     // editor & uiterlijk
-  69, 70, 71, 72, 74, 76, 78, 79, 80, 99,                 // attract + camera
+  1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 15, 16, 17, 19, 20, 21, 27, 29, 30,  // knoppen, navigatie, video
+  31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47,          // editor
+  49, 50, 51, 52, 53, 54, 55, 58, 59, 62, 63, 64, 66, 67, 68,              // uiterlijk & thema
+  69, 70, 71, 72, 74, 76, 78, 79, 80, 84, 85, 99,         // attract, taal, camera
   102, 103, 104, 105, 106, 120,                           // analytics + PIN
-  127, 128, 129, 130, 131, 132, 133, 134, 135, 139, 141, 146, 147, 151, // entrances
-  161, 162, 164, 165, 166, 167, 168,                      // groepssequenties
-  175, 179, 181, 189, 193, 195, 198, 207,                 // press + exits
+  127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140,
+  141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, // entrances (34)
+  161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, // groepssequenties (14)
+  175, 179, 181,                                          // press
+  189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200,
+  201, 202, 203, 204, 205, 206, 207, 208,                 // exits (20)
+  211, 212, 223,                                          // selected-transities incl. morph
   224, 228, 229, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242 // return + presets
 ]);
 const hasFeature = (n) => ACTIVE_FEATURES.has(n);
@@ -902,14 +1008,19 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 4,
+  version: 5,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
   // Globale Video Frame Style (per knop te overriden met de knopkleur).
   mediaSettings: {},   // per mediaId: trimStart, trimEnd, volume, fadeSec, loop, holdLastFrame
   frameStyle: { mode: 'button', color1: '#1b2a5e', color2: '#7b2ff0', angle: 135,
-    radius: 14, thickness: 9, depth: 8, gloss: 0.3, highlight: 0.35, shadow: 0.55 },
+    radius: 14, thickness: 9, depth: 8, gloss: 0.3, highlight: 0.35, shadow: 0.55, glow: 1 },
+  // Meertaligheid (spec 84-85): labels en titels per taal, met autodetectie.
+  lang: { enabled: false, current: 'nl', available: ['nl', 'en'], autoDetect: true },
+  // Navigatiehulp (spec 11-12): kruimelpad en veegbeweging terug.
+  nav: { breadcrumb: false, swipeBack: false },
+  exitFx: 'blurOut',   // exit-choreografie bij scenewissel (spec 189-210)
   security: { pinHash: null },
   analytics: { enabled: false },
   title: '',
@@ -942,6 +1053,8 @@ function migrateConfig(stored) {
     editor: { ...d.editor, ...stored.editor },
     theme: { ...d.theme, ...stored.theme },
     security: { ...d.security, ...stored.security },
+    lang: { ...d.lang, ...stored.lang, available: (stored.lang?.available || d.lang.available).slice() },
+    nav: { ...d.nav, ...stored.nav },
     analytics: { ...d.analytics, ...stored.analytics } };
   if (!Array.isArray(c.scenes) || !c.scenes.length) {
     c.scenes = [{
@@ -952,7 +1065,11 @@ function migrateConfig(stored) {
   }
   if (!c.homeSceneId || !c.scenes.find((sc) => sc.id === c.homeSceneId)) c.homeSceneId = c.scenes[0].id;
   if ((stored.version || 0) < 4 && !c.motion.overrides.effect) c.motion.overrides.effect = 'galaxyTiles';
-  c.version = 4;
+  // v5: z-volgorde vastleggen op de bestaande tekenvolgorde zodat lagen stabiel zijn.
+  for (const sc of c.scenes) {
+    (sc.buttons || []).forEach((b, i) => { if (typeof b.z !== 'number') b.z = i; });
+  }
+  c.version = 5;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -1018,7 +1135,46 @@ function toast(msg) {
 }
 const fmtSize = (b) => b > 1e9 ? (b / 1e9).toFixed(2) + ' GB' : b > 1e6 ? (b / 1e6).toFixed(0) + ' MB' : Math.round(b / 1e3) + ' kB';
 
+/* ================= Meertaligheid (spec 84-85) =================
+   Labels en titels worden per taal opgeslagen als {nl:'…', en:'…'}. Zonder
+   vertaling valt alles terug op de basistekst, dus bestaande projecten
+   blijven ongewijzigd werken. */
+const LANGS = { nl: 'Nederlands', en: 'English', de: 'Deutsch', fr: 'Français', es: 'Español', it: 'Italiano' };
+const curLang = () => (config.lang.enabled ? (config.lang.current || 'nl') : 'nl');
+function tr(map, fallback) {
+  const l = curLang();
+  if (map && typeof map === 'object' && typeof map[l] === 'string' && map[l].trim()) return map[l];
+  return fallback || '';
+}
+const btnLabel = (b) => tr(b.labels, b.label);
+const sceneTitle = (sc) => tr(sc.titles, sc.title);
+
+// Autodetectie op basis van de browser-/systeemtaal (spec 85).
+function autoDetectLanguage() {
+  if (!config.lang.enabled || !config.lang.autoDetect) return;
+  const want = (navigator.language || 'nl').slice(0, 2).toLowerCase();
+  if (config.lang.available.includes(want) && config.lang.current !== want) {
+    config.lang.current = want;
+    save();
+  }
+}
+
+function setLanguage(code) {
+  if (!config.lang.available.includes(code)) return;
+  config.lang.current = code;
+  save();
+  renderStage();
+  if (panel.classList.contains('open')) refreshPanel();
+}
+
 const PALETTE = ['#35d0ba', '#2f7ff0', '#8b5cf6', '#ef5da8', '#f0762f', '#eab308', '#22c55e', '#0f172a', '#ffffff'];
+// #rrggbb + dekkingspercentage -> rgba() (achtergrondtransparantie, spec 53).
+function withAlpha(hex, alpha) {
+  if (alpha == null || alpha >= 100 || !/^#[0-9a-f]{6}$/i.test(hex || '')) return hex;
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${n >> 16 & 255}, ${n >> 8 & 255}, ${n & 255}, ${Math.max(0, alpha) / 100})`;
+}
+
 const textColorFor = (hex) => {
   const n = parseInt(hex.slice(1), 16);
   const lum = 0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255);
@@ -1276,12 +1432,14 @@ function destroyObjViewers(previewOnly = false) {
 /* ---- Video Frame Style: globale stijl, per knop te overriden ---- */
 function frameFor(b) {
   const f = config.frameStyle;
+  const outline = f.mode === 'outline' && b.frameOwn !== true;
   const useOwn = b.frameOwn === true || f.mode === 'button';
-  const bg = useOwn ? b.color
+  const bg = outline ? 'transparent'
+    : useOwn ? withAlpha(b.color, b.alpha)
     : f.mode === 'solid' ? f.color1
     : `linear-gradient(${f.angle}deg, ${f.color1}, ${f.color2})`;
   return {
-    bg,
+    bg, outline,
     glowColor: useOwn ? b.color : f.color1,
     radius: (f.radius / 24).toFixed(3),          // 0–48 → 0–2em
     thickness: (f.thickness / 20).toFixed(3),    // 2–18 → 0.1–0.9em
@@ -1294,7 +1452,7 @@ function frameFor(b) {
 /* ================= Presentatie renderen ================= */
 function renderStage() {
   // Titel + welkomstscherm
-  $('#stageTitle').textContent = curScene().title || '';
+  $('#stageTitle').textContent = sceneTitle(curScene());
   // Thema: lettertype, tekstgewicht en klantlogo (spec 63-64, 67).
   const FONTS = {
     system: 'system-ui, -apple-system, "Segoe UI", sans-serif',
@@ -1317,8 +1475,10 @@ function renderStage() {
     logo.className = 'hidden';
     logo.removeAttribute('src');
   }
-  $('#welcome').classList.toggle('hidden', curButtons().length > 0 || !!curScene().idleMediaId || !!curScene().title);
+  $('#welcome').classList.toggle('hidden', curButtons().length > 0 || !!curScene().idleMediaId || !!sceneTitle(curScene()));
   document.body.classList.toggle('clean', !!config.cleanMode);
+  renderBreadcrumb();
+  renderLangBar();
 
   // Achtergrondvideo
   const idle = $('#idleVideo');
@@ -1335,16 +1495,21 @@ function renderStage() {
   const layer = $('#buttonLayer');
   destroyObjViewers(true); // preview-viewers opruimen vóór de laag leeggemaakt wordt
   layer.innerHTML = '';
-  for (const b of curButtons()) {
+  // Lagen (spec 41-43): lage z eerst tekenen, hoge z ligt bovenop.
+  const ordered = [...curButtons()].sort((a, b) => (a.z || 0) - (b.z || 0));
+  for (const b of ordered) {
     const media = mediaCache.get(b.mediaId);
     const preview = b.showPreview !== false && !!media && b.shape !== 'hotspot';
+    const glowI = (config.frameStyle.glow ?? 1) * (b.glow ?? 1);
     const btn = el('button', {
       class: `vbtn shape-${b.shape || 'pill'}` + (preview ? ' has-preview' : ''),
       'data-id': b.id,
-      style: `left:${b.x}%; top:${b.y}%; background-color:${b.color}; color:${textColorFor(b.color)};` +
+      style: `left:${b.x}%; top:${b.y}%; background-color:${withAlpha(b.color, b.alpha)}; color:${textColorFor(b.color)};` +
+             `z-index:${20 + (b.z || 0)}; --glowI:${glowI.toFixed(2)};` +
              `--glow:${b.color}59; --frame:${b.color}; --pw:${(b.size || 8) * 3.2}vmin;` +
              `font-size:${(b.size || 8) * 0.42}vmin; ${preview ? '' : `min-width:${(b.size || 8) * 2.2}vmin;`}`
     });
+    if (selectedIds.has(b.id)) btn.classList.add('multi-sel');
     if (preview && media && media.kind !== 'image' && !(b.imageId && mediaCache.get(b.imageId))) {
       const fr = frameFor(b);
       btn.style.setProperty('--frad', fr.radius + 'em');
@@ -1356,6 +1521,8 @@ function renderStage() {
       btn.style.setProperty('--glow', fr.glowColor + '59');
       btn.style.setProperty('--frame', fr.glowColor);
       btn.style.background = fr.bg;
+      if (fr.outline) btn.classList.add('frame-outline');
+      else if (b.alpha != null && b.alpha < 100) btn.style.opacity = Math.max(0.15, b.alpha / 100);
     }
     const faceImg = (b.imageId && mediaCache.get(b.imageId)) || (media && media.kind === 'image' ? media : null);
     if (preview && faceImg) {
@@ -1363,14 +1530,14 @@ function renderStage() {
       btn.classList.remove('has-preview');
       btn.classList.add('png-face');
       btn.style.backgroundColor = 'transparent'; // inline kleur zou anders als vlak doorschijnen
-      btn.append(el('img', { src: faceImg.url, alt: b.label || '' }));
-      if (b.label) btn.title = b.label;
+      btn.append(el('img', { src: faceImg.url, alt: btnLabel(b) }));
+      if (btnLabel(b)) btn.title = btnLabel(b);
     } else if (preview && media.kind === 'model') {
       // 3D-object: langzaam ronddraaiend voorbeeld in het kader.
       const cv = el('canvas', { class: 'preview3d' });
       btn.append(cv, el('span', { class: 'pv-well' }), el('span', { class: 'pv-badge' }, '3D'),
         el('span', { class: 'pv-play' }, '▶'),
-        el('span', { class: 'pv-label' }, b.label || media.name));
+        el('span', { class: 'pv-label' }, btnLabel(b) || media.name));
       if (b.shape !== 'circle') btn.style.aspectRatio = '5 / 4';
       loadObjGeometry(b.mediaId)
         .then((g) => { if (cv.isConnected) { const v = createObjViewer(cv, g, { interactive: false }); if (v) objViewers.set(b.id, v); } })
@@ -1380,7 +1547,7 @@ function renderStage() {
       // zodra die klaar is); de echte video start fullscreen bij aanraking.
       const v = el('video', { class: 'preview', src: media.previewUrl || media.url, muted: '', loop: '', autoplay: '', playsinline: '', preload: 'metadata' });
       v.muted = true; // attribuut alleen is niet genoeg voor autoplay
-      btn.append(v, el('span', { class: 'pv-well' }), el('span', { class: 'pv-play' }, '▶'), el('span', { class: 'pv-label' }, b.label || media.name));
+      btn.append(v, el('span', { class: 'pv-well' }), el('span', { class: 'pv-play' }, '▶'), el('span', { class: 'pv-label' }, btnLabel(b) || media.name));
       if (b.shape !== 'circle') {
         // Knopformaat = renditieformaat: liggend 1280×800, staand 800×1280.
         if (media.aspect) btn.style.aspectRatio = media.aspect;
@@ -1393,8 +1560,8 @@ function renderStage() {
       }
       if (!media.previewUrl) ensurePreviewRendition(b.mediaId);
     } else {
-      btn.append(el('span', { class: 'play-ico' }, '▶'), b.shape === 'circle' ? '' : (b.label || 'Afspelen'));
-      if (b.shape === 'circle' && b.label) btn.title = b.label;
+      btn.append(el('span', { class: 'play-ico' }, '▶'), b.shape === 'circle' ? '' : (btnLabel(b) || 'Afspelen'));
+      if (b.shape === 'circle' && btnLabel(b)) btn.title = btnLabel(b);
     }
     layer.append(btn);
     // Bewegingskader tonen in verplaats-modus wanneer "vrij bewegen" aanstaat.
@@ -1421,6 +1588,60 @@ function syncFrames() {
     }
   });
 }
+
+/* ---- Kruimelpad (spec 11) ---- */
+function scenePath() {
+  const ids = [...sceneStack, currentSceneId];
+  return ids.map((id) => config.scenes.find((sc) => sc.id === id)).filter(Boolean);
+}
+
+function renderBreadcrumb() {
+  const bc = $('#breadcrumb');
+  const path = scenePath();
+  if (!config.nav.breadcrumb || path.length < 2) { bc.classList.add('hidden'); bc.innerHTML = ''; return; }
+  bc.classList.remove('hidden');
+  bc.innerHTML = '';
+  path.forEach((sc, i) => {
+    if (i) bc.append(el('span', { class: 'sep' }, '\u203a'));
+    if (i === path.length - 1) bc.append(el('b', {}, sc.name));
+    else bc.append(el('button', { type: 'button', onclick: () => {
+      sceneStack = sceneStack.slice(0, i);
+      gotoScene(sc.id, {});
+    } }, sc.name));
+  });
+}
+
+/* ---- Taalkeuze op het scherm (spec 84) ---- */
+function renderLangBar() {
+  const bar = $('#langBar');
+  const av = config.lang.available || [];
+  if (!config.lang.enabled || av.length < 2) { bar.classList.add('hidden'); bar.innerHTML = ''; return; }
+  bar.classList.remove('hidden');
+  bar.innerHTML = '';
+  for (const code of av) {
+    bar.append(el('button', { type: 'button', class: code === curLang() ? 'sel' : '',
+      title: LANGS[code] || code, onclick: () => setLanguage(code) }, code));
+  }
+}
+
+/* ---- Webcontent-module (spec 30) ---- */
+function openWebContent(url) {
+  if (!url) return toast('Geen adres ingesteld voor deze knop');
+  const ov = $('#webOverlay');
+  $('#webFrame').src = url;
+  ov.classList.remove('hidden');
+  AppState.set('CONTENT_PLAYBACK');
+}
+
+function closeWebContent() {
+  const ov = $('#webOverlay');
+  if (ov.classList.contains('hidden')) return;
+  ov.classList.add('hidden');
+  $('#webFrame').removeAttribute('src');
+  AppState.set('IDLE');
+  runEntrance(lastChosenId);
+}
+$('#webClose').addEventListener('click', closeWebContent);
 
 /* ================= Afspelen ================= */
 const playOverlay = $('#playOverlay');
@@ -1581,21 +1802,58 @@ $('#stopPlay').addEventListener('click', stopPlaying);
 /* ================= Klik & sleep op knoppen ================= */
 let editing = false;
 let drag = null;
+// Meervoudige selectie in de editor (spec 35): shift/ctrl-klik voegt toe of
+// haalt weg; slepen verplaatst de hele selectie als één geheel.
+const selectedIds = new Set();
+
+function markSelection() {
+  for (const elB of document.querySelectorAll('.vbtn')) {
+    elB.classList.toggle('multi-sel', selectedIds.has(elB.dataset.id));
+  }
+  const info = document.getElementById('selInfo');
+  if (info) info.textContent = selectedIds.size
+    ? `${selectedIds.size} knop${selectedIds.size === 1 ? '' : 'pen'} geselecteerd`
+    : 'Geen selectie — klik in verplaats-modus op knoppen (shift = meerdere)';
+}
+
+function clearSelection() { selectedIds.clear(); markSelection(); }
+const selectedButtons = () => curButtons().filter((b) => selectedIds.has(b.id));
+
+// Positie in het podium in procenten.
+function stagePct(e) {
+  const r = $('#stage').getBoundingClientRect();
+  return { x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100, r };
+}
 
 $('#buttonLayer').addEventListener('pointerdown', (e) => {
   const btnEl = e.target.closest('.vbtn');
   if (!btnEl || !editing) return;
-  const b = curButtons().find((x) => x.id === btnEl.dataset.id);
-  drag = { b, el: btnEl, moved: false };
+  const id = btnEl.dataset.id;
+  if (e.shiftKey || e.ctrlKey || e.metaKey) {
+    if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+    markSelection();
+    e.preventDefault();
+    return;
+  }
+  if (!selectedIds.has(id)) { selectedIds.clear(); selectedIds.add(id); markSelection(); }
+  const group = selectedButtons();
+  const p = stagePct(e);
+  drag = {
+    lead: curButtons().find((x) => x.id === id),
+    group: group.map((b) => ({ b, x0: b.x, y0: b.y })),
+    px: p.x, py: p.y, moved: false
+  };
   btnEl.setPointerCapture(e.pointerId);
   e.preventDefault();
 });
+
 $('#buttonLayer').addEventListener('pointermove', (e) => {
   if (!drag) return;
-  const r = $('#stage').getBoundingClientRect();
+  const p = stagePct(e);
   drag.moved = true;
-  let nx = Math.min(98, Math.max(2, ((e.clientX - r.left) / r.width) * 100));
-  let ny = Math.min(98, Math.max(2, ((e.clientY - r.top) / r.height) * 100));
+  const lead = drag.group.find((g) => g.b === drag.lead) || drag.group[0];
+  let nx = Math.min(98, Math.max(2, lead.x0 + (p.x - drag.px)));
+  let ny = Math.min(98, Math.max(2, lead.y0 + (p.y - drag.py)));
   // Snap-to-grid (spec 33) en slimme uitlijning op andere knoppen (spec 34).
   const gv = $('#alignGuideV'), gh = $('#alignGuideH');
   gv.style.display = gh.style.display = 'none';
@@ -1605,22 +1863,110 @@ $('#buttonLayer').addEventListener('pointermove', (e) => {
     ny = Math.round(ny / g) * g;
   }
   for (const other of curButtons()) {
-    if (other.id === drag.b.id) continue;
-    if (Math.abs(other.x - nx) < 1.6) { nx = other.x; gv.style.left = (r.width * nx / 100) + 'px'; gv.style.display = 'block'; }
-    if (Math.abs(other.y - ny) < 1.6) { ny = other.y; gh.style.top = (r.height * ny / 100) + 'px'; gh.style.display = 'block'; }
+    if (selectedIds.has(other.id)) continue;
+    if (Math.abs(other.x - nx) < 1.6) { nx = other.x; gv.style.left = (p.r.width * nx / 100) + 'px'; gv.style.display = 'block'; }
+    if (Math.abs(other.y - ny) < 1.6) { ny = other.y; gh.style.top = (p.r.height * ny / 100) + 'px'; gh.style.display = 'block'; }
   }
-  drag.b.x = nx;
-  drag.b.y = ny;
-  drag.el.style.left = drag.b.x + '%';
-  drag.el.style.top = drag.b.y + '%';
-  const frame = document.querySelector(`.vframe[data-frame="${drag.b.id}"]`);
-  if (frame) { frame.style.left = drag.b.x + '%'; frame.style.top = drag.b.y + '%'; }
+  const dx = nx - lead.x0, dy = ny - lead.y0;
+  for (const g of drag.group) {
+    g.b.x = Math.min(98, Math.max(2, g.x0 + dx));
+    g.b.y = Math.min(98, Math.max(2, g.y0 + dy));
+    const elB = document.querySelector(`.vbtn[data-id="${g.b.id}"]`);
+    if (elB) { elB.style.left = g.b.x + '%'; elB.style.top = g.b.y + '%'; }
+    const frame = document.querySelector(`.vframe[data-frame="${g.b.id}"]`);
+    if (frame) { frame.style.left = g.b.x + '%'; frame.style.top = g.b.y + '%'; }
+  }
 });
+
 $('#buttonLayer').addEventListener('pointerup', () => {
   if (drag && drag.moved) { pushUndo(); save(); }
   $('#alignGuideV').style.display = $('#alignGuideH').style.display = 'none';
   drag = null;
 });
+
+/* ---- Uitlijnen, verdelen en lagen (spec 36-43) ---- */
+function alignSelection(how) {
+  const list = selectedIds.size >= 2 ? selectedButtons() : curButtons();
+  if (list.length < 2) return toast('Selecteer minstens twee knoppen');
+  pushUndo();
+  const xs = list.map((b) => b.x), ys = list.map((b) => b.y);
+  const min = (a) => Math.min(...a), max = (a) => Math.max(...a);
+  const mid = (a) => (min(a) + max(a)) / 2;
+  for (const b of list) {
+    if (how === 'left') b.x = min(xs);
+    else if (how === 'hcenter') b.x = mid(xs);
+    else if (how === 'right') b.x = max(xs);
+    else if (how === 'top') b.y = min(ys);
+    else if (how === 'vcenter') b.y = mid(ys);
+    else if (how === 'bottom') b.y = max(ys);
+    else if (how === 'screenH') b.x = 50;
+    else if (how === 'screenV') b.y = 50;
+  }
+  save(); renderStage(); markSelection();
+  toast('Uitgelijnd');
+}
+
+function distributeSelection(axis) {
+  const list = selectedIds.size >= 3 ? selectedButtons() : curButtons();
+  if (list.length < 3) return toast('Verdelen vraagt minstens drie knoppen');
+  pushUndo();
+  const key = axis === 'h' ? 'x' : 'y';
+  const sorted = [...list].sort((a, b) => a[key] - b[key]);
+  const first = sorted[0][key], last = sorted[sorted.length - 1][key];
+  const step = (last - first) / (sorted.length - 1);
+  sorted.forEach((b, i) => { b[key] = first + step * i; });
+  save(); renderStage(); markSelection();
+  toast('Gelijkmatig verdeeld');
+}
+
+function reorderButton(b, dir) {
+  const list = [...curButtons()].sort((a, c) => (a.z || 0) - (c.z || 0));
+  const i = list.indexOf(b);
+  const j = dir === 'front' ? list.length - 1 : dir === 'back' ? 0 : i + (dir === 'up' ? 1 : -1);
+  if (j < 0 || j > list.length - 1 || j === i) return;
+  pushUndo();
+  list.splice(i, 1);
+  list.splice(j, 0, b);
+  list.forEach((x, k) => { x.z = k; });
+  save(); renderStage(); renderBtnList();
+}
+
+// Layout-templates (spec 47): knoppen in één klik netjes neerzetten.
+const LAYOUTS = {
+  grid2: { label: 'Raster 2 kolommen', cols: 2 },
+  grid3: { label: 'Raster 3 kolommen', cols: 3 },
+  grid4: { label: 'Raster 4 kolommen', cols: 4 },
+  row: { label: 'Eén rij', cols: 0 },
+  column: { label: 'Eén kolom', cols: 1 },
+  circle: { label: 'Cirkel', cols: -1 }
+};
+
+function applyLayout(kind) {
+  const list = selectedIds.size >= 2 ? selectedButtons() : curButtons();
+  if (!list.length) return toast('Geen knoppen om te ordenen');
+  const def = LAYOUTS[kind];
+  if (!def) return;
+  pushUndo();
+  const m = Math.max(8, (config.editor.safeZone || 0) + 10);
+  if (def.cols === -1) {
+    const rad = 32;
+    list.forEach((b, i) => {
+      const a = (i / list.length) * Math.PI * 2 - Math.PI / 2;
+      b.x = 50 + Math.cos(a) * rad;
+      b.y = 52 + Math.sin(a) * rad * 0.82;
+    });
+  } else {
+    const cols = def.cols === 0 ? list.length : def.cols;
+    const rows = Math.ceil(list.length / cols);
+    list.forEach((b, i) => {
+      const c = i % cols, r = Math.floor(i / cols);
+      b.x = cols === 1 ? 50 : m + (100 - 2 * m) * (c / (cols - 1));
+      b.y = rows === 1 ? 50 : m + (100 - 2 * m) * (r / (rows - 1));
+    });
+  }
+  save(); renderStage(); renderBtnList();
+  toast('Layout toegepast: ' + def.label);
+}
 // PNG-knoppen: alleen de zichtbare contouren zijn klikbaar (alpha-test).
 const alphaCache = new Map();
 function pngAlphaAt(img, clientX, clientY) {
@@ -1654,6 +2000,23 @@ $('#buttonLayer').addEventListener('click', (e) => {
   if (!b) return;
   runAction(b, btnEl);
 });
+
+/* ---- Veegnavigatie (spec 12): naar rechts vegen = terug ---- */
+let swipe = null;
+$('#stage').addEventListener('pointerdown', (e) => {
+  if (editing || !config.nav.swipeBack) return;
+  swipe = { x: e.clientX, y: e.clientY, t: performance.now() };
+}, { passive: true });
+$('#stage').addEventListener('pointerup', (e) => {
+  if (!swipe) return;
+  const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y, dt = performance.now() - swipe.t;
+  swipe = null;
+  if (dt > 800 || Math.abs(dx) < Math.min(120, innerWidth * 0.12) || Math.abs(dy) > Math.abs(dx) * 0.6) return;
+  if (dx <= 0) return;                                   // alleen naar rechts
+  if (!$('#webOverlay').classList.contains('hidden')) return closeWebContent();
+  if (playOverlay.classList.contains('show') || saverActive) return; // niet tijdens video/screensaver
+  if (sceneStack.length) goBack();
+}, { passive: true });
 
 /* ================= Undo / redo (spec-editor) ================= */
 const undoStack = [];
@@ -1875,6 +2238,14 @@ const ENTRANCES = {
   diagonal: () => ({ rest: [{ opacity: 0.4, clipPath: 'polygon(0 0, 0 0, 0 0, 0 0)' }, { opacity: 1, clipPath: 'polygon(0 0, 140% 0, 0 140%, 0 0)' }] }),
   focusPull: () => ({ tf: [{ transform: 'scale(1.08)' }, { transform: 'scale(1)' }], rest: [{ opacity: 0, filter: 'blur(16px)' }, { opacity: 1, filter: 'blur(0px)' }] }),
   spotlight: () => ({ rest: [{ opacity: 0, filter: 'brightness(0.2)' }, { opacity: 1, filter: 'brightness(1.5)', offset: 0.6 }, { opacity: 1, filter: 'brightness(1)' }] }),
+  riseFloat: (d) => ({ tf: [{ transform: `translateY(${d * 1.8}px) scale(0.9)` }, { transform: 'translateY(-4px) scale(1.01)', offset: 0.72 }, { transform: 'translateY(0px) scale(1)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  swing: () => ({ tf: [{ transform: 'perspective(1000px) rotateX(-58deg) translateY(-14%)' }, { transform: 'perspective(1000px) rotateX(9deg)', offset: 0.66 }, { transform: 'perspective(1000px) rotateX(0deg) translateY(0)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  zoomBlur: () => ({ tf: [{ transform: 'scale(1.6)' }, { transform: 'scale(1)' }], rest: [{ opacity: 0, filter: 'blur(22px) brightness(1.4)' }, { opacity: 1, filter: 'blur(0px) brightness(1)' }] }),
+  cornerIn: (d) => ({ tf: [{ transform: `translate(${-d * 2}px, ${-d * 2}px) rotate(-9deg) scale(0.72)` }, { transform: 'translate(0px, 0px) rotate(0deg) scale(1)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  curtain: () => ({ rest: [{ opacity: 0.35, clipPath: 'inset(0 50% 0 50%)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)' }] }),
+  fold: () => ({ tf: [{ transform: 'perspective(900px) rotateY(-72deg) translateX(22%)' }, { transform: 'perspective(900px) rotateY(6deg)', offset: 0.72 }, { transform: 'perspective(900px) rotateY(0deg) translateX(0)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  dropBounce: (d) => ({ tf: [{ transform: `translateY(${-d * 3}px)` }, { transform: 'translateY(0px)', offset: 0.62 }, { transform: 'translateY(-14%)', offset: 0.78 }, { transform: 'translateY(0px)' }], rest: [{ opacity: 0 }, { opacity: 1, offset: 0.35 }, { opacity: 1 }] }),
+  shutter: () => ({ rest: [{ opacity: 0.4, clipPath: 'inset(50% 0 50% 0)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)' }] }),
   galaxyTiles: () => ({ special: 'galaxy' }),   // afgehandeld in runGalaxyTiles
   extremeGalaxy: () => ({ special: 'galaxy' })  // idem, met volledige 360°+-flips
 };
@@ -1891,7 +2262,17 @@ const SEQUENCES = {
     const idx = els.map((e, i) => i);
     for (let i = idx.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
     return idx;
-  }
+  },
+  rightLeft: (els) => rankBy(els, (r) => -r.left),
+  outsideIn: (els) => rankBy(els, (r) => -Math.hypot(r.left + r.width / 2 - innerWidth / 2, r.top + r.height / 2 - innerHeight / 2)),
+  diagonalTL: (els) => rankBy(els, (r) => r.left + r.top),
+  diagonalTR: (els) => rankBy(els, (r) => (innerWidth - r.left) + r.top),
+  columns: (els) => rankBy(els, (r) => Math.round(r.left / Math.max(1, innerWidth / 6)) * 1e5 + r.top),
+  rows: (els) => rankBy(els, (r) => Math.round(r.top / Math.max(1, innerHeight / 6)) * 1e5 + r.left),
+  spiral: (els) => rankBy(els, (r) => {
+    const cx = r.left + r.width / 2 - innerWidth / 2, cy = r.top + r.height / 2 - innerHeight / 2;
+    return Math.hypot(cx, cy) * 0.6 + (Math.atan2(cy, cx) + Math.PI) * 90;
+  })
 };
 function rankBy(els, keyFn) {
   const keyed = els.map((e, i) => ({ i, k: keyFn(e.getBoundingClientRect()) }));
@@ -2007,13 +2388,56 @@ function runGalaxyTiles(els, firstId = null, extreme = false) {
   return Promise.all(anims.map((a) => a.finished.catch(() => {})));
 }
 
+// Exit-effecten (spec 189–210): choreografie waarmee knoppen het beeld
+// verlaten bij een scenewissel. tf = additief bovenop de zweef-engine.
+const EXITS = {
+  fadeOut: () => ({ rest: [{ opacity: 1 }, { opacity: 0 }] }),
+  blurOut: () => ({ rest: [{ opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: 'blur(6px)' }] }),
+  scaleDown: () => ({ tf: [{ transform: 'scale(1)' }, { transform: 'scale(0.72)' }], rest: [{ opacity: 1 }, { opacity: 0 }] }),
+  scaleUp: () => ({ tf: [{ transform: 'scale(1)' }, { transform: 'scale(1.35)' }], rest: [{ opacity: 1 }, { opacity: 0 }] }),
+  slideDownOut: (d) => ({ tf: [{ transform: 'translateY(0px)' }, { transform: `translateY(${d * 3}px)` }], rest: [{ opacity: 1 }, { opacity: 0 }] }),
+  slideUpOut: (d) => ({ tf: [{ transform: 'translateY(0px)' }, { transform: `translateY(${-d * 3}px)` }], rest: [{ opacity: 1 }, { opacity: 0 }] }),
+  slideLeftOut: (d) => ({ tf: [{ transform: 'translateX(0px)' }, { transform: `translateX(${-d * 4}px)` }], rest: [{ opacity: 1 }, { opacity: 0 }] }),
+  slideRightOut: (d) => ({ tf: [{ transform: 'translateX(0px)' }, { transform: `translateX(${d * 4}px)` }], rest: [{ opacity: 1 }, { opacity: 0 }] }),
+  depthAway: () => ({ tf: [{ transform: 'scale(1)' }, { transform: 'scale(0.35)' }], rest: [{ opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: 'blur(5px)' }] }),
+  spinOut: () => ({ tf: [{ transform: 'rotate(0deg) scale(1)' }, { transform: 'rotate(240deg) scale(0.4)' }], rest: [{ opacity: 1 }, { opacity: 0 }] }),
+  flipOut: () => ({ tf: [{ transform: 'perspective(900px) rotateY(0deg)' }, { transform: 'perspective(900px) rotateY(96deg)' }], rest: [{ opacity: 1 }, { opacity: 0 }] }),
+  flipOutV: () => ({ tf: [{ transform: 'perspective(900px) rotateX(0deg)' }, { transform: 'perspective(900px) rotateX(-96deg)' }], rest: [{ opacity: 1 }, { opacity: 0 }] }),
+  maskOut: () => ({ rest: [{ opacity: 1, clipPath: 'inset(0 0 0 0)' }, { opacity: 0.6, clipPath: 'inset(0 0 0 100%)' }] }),
+  maskVerticalOut: () => ({ rest: [{ opacity: 1, clipPath: 'inset(0 0 0 0)' }, { opacity: 0.6, clipPath: 'inset(0 0 100% 0)' }] }),
+  radialOut: () => ({ rest: [{ opacity: 1, clipPath: 'circle(80% at 50% 50%)' }, { opacity: 0.7, clipPath: 'circle(0% at 50% 50%)' }] }),
+  shutterOut: () => ({ rest: [{ opacity: 1, clipPath: 'inset(0 0 0 0)' }, { opacity: 0.7, clipPath: 'inset(50% 0 50% 0)' }] }),
+  curtainOut: () => ({ rest: [{ opacity: 1, clipPath: 'inset(0 0 0 0)' }, { opacity: 0.7, clipPath: 'inset(0 50% 0 50%)' }] }),
+  dropAway: (d) => ({ tf: [{ transform: 'translateY(0px) rotate(0deg)' }, { transform: `translateY(${d * 4}px) rotate(14deg)` }], rest: [{ opacity: 1 }, { opacity: 0 }] }),
+  dissolveGlow: () => ({ rest: [{ opacity: 1, filter: 'brightness(1) blur(0px)' }, { opacity: 0, filter: 'brightness(2.8) blur(9px)' }] }),
+  burstOut: () => ({ special: 'burst' })
+};
+
 // Exit van de hele scène (bij scènewissel): kort en gecontroleerd.
 function runSceneExit() {
   const els = [...document.querySelectorAll('.vbtn')];
   if (!els.length) return Promise.resolve();
-  const anims = els.map((elB) => elB.animate(
-    [{ opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: 'blur(5px)' }],
-    { duration: 240, easing: EASE.precise, fill: 'forwards' }));
+  const cfg = entranceCfg();
+  const key = config.exitFx && EXITS[config.exitFx] ? config.exitFx : 'blurOut';
+  const ranks = (SEQUENCES[cfg.sequence] || SEQUENCES.stagger)(els);
+  const stagger = Math.min(60, Math.round(cfg.stagger * 0.45));
+  const dur = Math.max(180, Math.round(cfg.duration * 0.75));
+  const frames = EXITS[key](24);
+  const anims = [];
+  els.forEach((elB, i) => {
+    const opts = { duration: dur, delay: ranks[i] * stagger, easing: EASE.precise, fill: 'forwards' };
+    if (frames.special === 'burst') {
+      const r = elB.getBoundingClientRect();
+      const ang = Math.atan2(r.top + r.height / 2 - innerHeight / 2, r.left + r.width / 2 - innerWidth / 2);
+      anims.push(elB.animate([{ transform: 'translate(0px, 0px) scale(1)' },
+        { transform: `translate(${Math.cos(ang) * innerWidth * 0.7}px, ${Math.sin(ang) * innerHeight * 0.7}px) scale(0.6)` }],
+        { ...opts, composite: 'add' }));
+      anims.push(elB.animate([{ opacity: 1 }, { opacity: 0 }], opts));
+      return;
+    }
+    if (frames.tf) anims.push(elB.animate(frames.tf, { ...opts, composite: 'add' }));
+    if (frames.rest) anims.push(elB.animate(frames.rest, opts));
+  });
   return Promise.all(anims.map((a) => a.finished.catch(() => {})));
 }
 
@@ -2035,6 +2459,8 @@ function runAction(b, btnEl) {
     case 'OpenScene': return gotoScene(a.sceneId, { push: true });
     case 'Back': return goBack();
     case 'Home': return gotoScene(config.homeSceneId, { reset: true });
+    case 'OpenURL': lastChosenId = b.id; return openWebContent(a.url);
+    case 'SetLanguage': return setLanguage(a.langCode || 'nl');
     case 'PlayMedia':
     default: {
       const m = mediaCache.get(a.mediaId ?? b.mediaId);
@@ -2043,8 +2469,15 @@ function runAction(b, btnEl) {
         else loadObjGeometry(m.id).catch(() => {});
         lastChosenId = b.id;
         AppState.set('CONTENT_TRANSITION');
-        // Playlist: meerdere media achter elkaar (spec 19-20).
+        // Playlist: meerdere media achter elkaar (spec 19-20), optioneel in
+        // willekeurige volgorde (spec 21).
         playQueue = (Array.isArray(b.mediaIds) ? b.mediaIds.slice(1) : []).filter((id) => mediaCache.has(id));
+        if (b.shuffle && playQueue.length > 1) {
+          for (let i = playQueue.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [playQueue[i], playQueue[j]] = [playQueue[j], playQueue[i]];
+          }
+        }
         runSelectTransition(btnEl).then(() => {
           if (morphPending === btnEl && m.kind === 'video') {
             const grown = morphTileToVideo(btnEl, m);
@@ -2070,6 +2503,7 @@ async function gotoScene(sceneId, opts = {}) {
   if (opts.reset) sceneStack = [];
   else if (opts.push) sceneStack.push(currentSceneId);
   currentSceneId = sceneId;
+  clearSelection();
   renderStage();
   refreshSceneUI();
   await runEntrance();
@@ -2251,7 +2685,8 @@ lockFab.addEventListener('click', async () => {
   $('#editHint').classList.toggle('hidden', !editing);
   applyOrientationMode(); // tijdens verplaatsen niet roteren, daarna weer wel
   syncFrames();
-  if (!editing) { save(); toast('Knoppen vastgezet'); }
+  if (!editing) { clearSelection(); save(); toast('Knoppen vastgezet'); }
+  else { markSelection(); toast('Shift-klik selecteert meerdere knoppen tegelijk'); }
 });
 
 /* ================= Zweef-animaties =================
@@ -2419,11 +2854,15 @@ function renderBtnList() {
       el('div', { class: 'row' },
         el('input', { type: 'text', class: 'grow', value: b.label, placeholder: 'Tekst op de knop',
           oninput: (e) => { b.label = e.target.value; save(); renderStage(); } }),
+        el('button', { class: 'btn small', title: 'Naar voren halen (laag omhoog)',
+          onclick: () => reorderButton(b, 'up') }, '\u2191'),
+        el('button', { class: 'btn small', title: 'Naar achteren (laag omlaag)',
+          onclick: () => reorderButton(b, 'down') }, '\u2193'),
         el('button', { class: 'btn small', title: 'Knop dupliceren',
           onclick: () => {
             pushUndo();
             const copy = { ...structuredClone(b), id: uid(), label: (b.label || 'Knop') + ' kopie',
-              x: Math.min(96, b.x + 4), y: Math.min(96, b.y + 4) };
+              x: Math.min(96, b.x + 4), y: Math.min(96, b.y + 4), z: curButtons().length };
             curScene().buttons.push(copy);
             save(); renderStage(); renderBtnList();
             toast('Knop gedupliceerd');
@@ -2437,16 +2876,37 @@ function renderBtnList() {
             const t = e.target.value;
             if (t === 'PlayMedia') delete b.action;
             else if (t === 'OpenScene') b.action = { type: 'OpenScene', sceneId: (config.scenes.find((sc) => sc.id !== currentSceneId) || config.scenes[0]).id };
+            else if (t === 'OpenURL') b.action = { type: 'OpenURL', url: '' };
+            else if (t === 'SetLanguage') b.action = { type: 'SetLanguage', langCode: (config.lang.available || ['nl'])[0] };
             else b.action = { type: t };
             save(); renderStage(); renderBtnList();
           } },
             el('option', { value: 'PlayMedia' }, 'Media afspelen'),
             el('option', { value: 'OpenScene' }, 'Ga naar sc\u00e8ne'),
             el('option', { value: 'Back' }, 'Terug (vorige sc\u00e8ne)'),
-            el('option', { value: 'Home' }, 'Naar de homesc\u00e8ne'));
+            el('option', { value: 'Home' }, 'Naar de homesc\u00e8ne'),
+            el('option', { value: 'OpenURL' }, 'Webpagina / HTML tonen'),
+            el('option', { value: 'SetLanguage' }, 'Taal omschakelen'));
           sel.value = act.type;
           return sel;
         })()),
+        buttonAction(b).type === 'OpenURL'
+          ? el('label', { class: 'field' }, 'Adres (https:// of lokaal bestand)',
+              el('input', { type: 'text', 'data-role': 'url', value: b.action.url || '',
+                placeholder: 'https://… of ./map/pagina.html',
+                oninput: (e) => { b.action.url = e.target.value.trim(); save(); } }))
+          : null,
+        buttonAction(b).type === 'SetLanguage'
+          ? el('label', { class: 'field' }, 'Taal', (() => {
+              const sel = el('select', { 'data-role': 'langcode', onchange: (e) => { b.action.langCode = e.target.value; save(); } },
+                (config.lang.available || ['nl']).map((code) => {
+                  const o = el('option', { value: code }, LANGS[code] || code);
+                  if ((b.action.langCode || 'nl') === code) o.selected = true;
+                  return o;
+                }));
+              return sel;
+            })())
+          : null,
         buttonAction(b).type === 'OpenScene'
           ? el('label', { class: 'field' }, 'Doel-sc\u00e8ne', (() => {
               const sel = el('select', { 'data-role': 'scene', onchange: (e) => { b.action.sceneId = e.target.value; save(); } },
@@ -2477,12 +2937,59 @@ function renderBtnList() {
         el('label', { class: 'field' }, 'Videovoorbeeld in de knop', previewSel),
         el('label', { class: 'field' }, 'Eigen PNG als knopvorm', imageSel)),
       el('div', { class: 'row' },
+        el('label', { class: 'field' }, `Achtergrond-dekking (${b.alpha ?? 100}%)`,
+          el('input', { type: 'range', min: 10, max: 100, step: 5, value: b.alpha ?? 100,
+            oninput: (e) => { b.alpha = Number(e.target.value); save(); renderStage(); },
+            onchange: () => renderBtnList() })),
+        el('label', { class: 'field' }, `Gloed-intensiteit (${(b.glow ?? 1).toFixed(1)}\u00d7)`,
+          el('input', { type: 'range', min: 0, max: 2.5, step: 0.1, value: b.glow ?? 1,
+            oninput: (e) => { b.glow = Number(e.target.value); save(); renderStage(); },
+            onchange: () => renderBtnList() })),
+        el('label', { class: 'field', style: 'max-width:120px' }, 'Laag',
+          el('input', { type: 'number', value: (b.z || 0) + 1, min: 1, max: curButtons().length,
+            title: 'Volgorde van achter naar voren',
+            onchange: (e) => {
+              const want = Math.max(1, Math.min(curButtons().length, Number(e.target.value) || 1)) - 1;
+              const list = [...curButtons()].sort((x, y) => (x.z || 0) - (y.z || 0));
+              const i = list.indexOf(b);
+              if (i === want) return;
+              pushUndo();
+              list.splice(i, 1); list.splice(want, 0, b);
+              list.forEach((x, k) => { x.z = k; });
+              save(); renderStage(); renderBtnList();
+            } }))),
+      el('div', { class: 'row' },
         el('div', { class: 'field' }, 'Playlist (speelt na elkaar af)', playlistEditor(b)),
       el('label', { class: 'field' }, 'Aandachtseffect (speelt af en toe vanzelf)', fxSel),
         el('label', { class: 'field' }, 'Frame', frameSel)),
+      el('div', { class: 'toggle-row' },
+        el('div', {}, el('div', { class: 't-label' }, 'Playlist in willekeurige volgorde'),
+          el('div', { class: 't-sub' }, 'Na de eerste video volgt de rest geschud')),
+        (() => {
+          const sw = el('label', { class: 'switch' });
+          const cb = el('input', { type: 'checkbox', 'data-role': 'shuffle',
+            onchange: (e) => { b.shuffle = e.target.checked; if (!b.shuffle) delete b.shuffle; save(); } });
+          cb.checked = !!b.shuffle;
+          sw.append(cb, el('i'));
+          return sw;
+        })()),
+      config.lang.enabled ? el('div', { class: 'field' }, 'Vertalingen van het label',
+        el('div', { class: 'row', style: 'flex-wrap:wrap' },
+          (config.lang.available || []).map((code) =>
+            el('label', { class: 'field', style: 'min-width:130px' }, LANGS[code] || code,
+              el('input', { type: 'text', 'data-lang': code, value: (b.labels && b.labels[code]) || '',
+                placeholder: b.label || '',
+                oninput: (e) => {
+                  b.labels = b.labels || {};
+                  if (e.target.value.trim()) b.labels[code] = e.target.value;
+                  else delete b.labels[code];
+                  if (!Object.keys(b.labels).length) delete b.labels;
+                  save(); renderStage();
+                } }))))) : null,
       swatches
     ));
   });
+  markSelection();
 }
 
 $('#addBtn').addEventListener('click', () => {
@@ -2491,7 +2998,7 @@ $('#addBtn').addEventListener('click', () => {
   curButtons().push({
     id: uid(), label: 'Video ' + (n + 1), mediaId: [...mediaCache.keys()][0] || null,
     x: 50, y: 25 + (n % 5) * 13, size: 8, color: PALETTE[n % (PALETTE.length - 2)], shape: 'rounded',
-    depth: 'subtle', drift: 0, showPreview: true, fx: 'random'
+    depth: 'subtle', drift: 0, showPreview: true, fx: 'random', z: n
   });
   save(); renderStage(); renderBtnList();
   toast('Knop toegevoegd — klik op 🔒 om hem te verslepen');
@@ -2620,6 +3127,11 @@ function renderLook() {
   $('#fsGloss').value = fs.gloss;
   $('#fsHighlight').value = fs.highlight;
   $('#fsShadow').value = fs.shadow;
+  $('#fsGlow').value = fs.glow ?? 1;
+  renderLangSettings();
+  renderTitleTranslations();
+  $('#navCrumb').checked = !!config.nav.breadcrumb;
+  $('#navSwipe').checked = !!config.nav.swipeBack;
   $('#cfgSelectFx').value = config.selectFx || 'zoom';
   $('#cfgFxInterval').value = config.fxIntervalSec;
   $('#handEnabled').checked = config.hand.enabled;
@@ -2662,11 +3174,82 @@ $('#thPreset').addEventListener('change', (e) => {
   e.target.value = '';
 });
 
+// Titelvertalingen per scène (spec 84).
+function renderTitleTranslations() {
+  const box = $('#titleTrans');
+  box.innerHTML = '';
+  if (!config.lang.enabled) return;
+  const sc = curScene();
+  box.append(el('div', { class: 'row', style: 'flex-wrap:wrap' },
+    (config.lang.available || []).map((code) =>
+      el('label', { class: 'field', style: 'min-width:140px' }, LANGS[code] || code,
+        el('input', { type: 'text', 'data-title-lang': code, value: (sc.titles && sc.titles[code]) || '',
+          placeholder: sc.title || '',
+          oninput: (e) => {
+            sc.titles = sc.titles || {};
+            if (e.target.value.trim()) sc.titles[code] = e.target.value;
+            else delete sc.titles[code];
+            if (!Object.keys(sc.titles).length) delete sc.titles;
+            save(); renderStage();
+          } })))));
+}
+
+/* ---- Taal- en navigatie-instellingen ---- */
+function renderLangSettings() {
+  $('#lgEnabled').checked = !!config.lang.enabled;
+  $('#lgAuto').value = config.lang.autoDetect ? 'yes' : 'no';
+  const list = $('#lgList');
+  list.innerHTML = '';
+  for (const [code, name] of Object.entries(LANGS)) {
+    const cb = el('input', { type: 'checkbox', onchange: (e) => {
+      const av = new Set(config.lang.available);
+      if (e.target.checked) av.add(code); else av.delete(code);
+      if (!av.size) av.add('nl');
+      config.lang.available = [...av];
+      if (!config.lang.available.includes(config.lang.current)) config.lang.current = config.lang.available[0];
+      save(); renderStage(); renderLangSettings(); renderBtnList();
+    } });
+    cb.checked = config.lang.available.includes(code);
+    list.append(el('label', { style: 'display:flex;align-items:center;gap:6px;font-size:13px' }, cb, `${name} (${code})`));
+  }
+  const cur = $('#lgCurrent');
+  cur.innerHTML = '';
+  for (const code of config.lang.available) {
+    const o = el('option', { value: code }, LANGS[code] || code);
+    if (code === config.lang.current) o.selected = true;
+    cur.append(o);
+  }
+}
+
+$('#lgEnabled').addEventListener('change', (e) => { config.lang.enabled = e.target.checked; save(); renderStage(); renderBtnList(); });
+$('#lgAuto').addEventListener('change', (e) => { config.lang.autoDetect = e.target.value === 'yes'; save(); });
+$('#lgCurrent').addEventListener('change', (e) => { setLanguage(e.target.value); });
+$('#navCrumb').addEventListener('change', (e) => { config.nav.breadcrumb = e.target.checked; save(); renderBreadcrumb(); });
+$('#navSwipe').addEventListener('change', (e) => { config.nav.swipeBack = e.target.checked; save(); });
+
+/* ---- Uitlijnen/verdelen/layout-bediening ---- */
+document.querySelectorAll('[data-align]').forEach((btn) =>
+  btn.addEventListener('click', () => alignSelection(btn.dataset.align)));
+document.querySelectorAll('[data-dist]').forEach((btn) =>
+  btn.addEventListener('click', () => distributeSelection(btn.dataset.dist)));
+$('#selAll').addEventListener('click', () => {
+  selectedIds.clear();
+  for (const b of curButtons()) selectedIds.add(b.id);
+  markSelection();
+});
+$('#selNone').addEventListener('click', clearSelection);
+(() => {
+  const sel = $('#edLayout');
+  sel.append(el('option', { value: '' }, '— kies een template —'));
+  for (const [k, v] of Object.entries(LAYOUTS)) sel.append(el('option', { value: k }, v.label));
+  sel.addEventListener('change', (e) => { if (e.target.value) applyLayout(e.target.value); e.target.value = ''; });
+})();
+
 for (const [id, key, num] of [
   ['fsMode', 'mode', false], ['fsColor1', 'color1', false], ['fsColor2', 'color2', false],
   ['fsAngle', 'angle', true], ['fsRadius', 'radius', true], ['fsThickness', 'thickness', true],
   ['fsDepth', 'depth', true], ['fsGloss', 'gloss', true], ['fsHighlight', 'highlight', true],
-  ['fsShadow', 'shadow', true]
+  ['fsShadow', 'shadow', true], ['fsGlow', 'glow', true]
 ]) {
   $('#' + id).addEventListener('input', (e) => {
     config.frameStyle[key] = num ? Number(e.target.value) : e.target.value;
@@ -2788,6 +3371,9 @@ function renderMotion() {
     perspective: 'Perspectief reveal', flipH: 'Horizontale flip', flipV: 'Verticale flip',
     elastic: 'Elastisch', maskVertical: 'Verticale mask', centerExpand: 'Center expand',
     radialMask: 'Radiale mask', diagonal: 'Diagonaal', focusPull: 'Focus pull', spotlight: 'Spotlight',
+    riseFloat: 'Rise & float', swing: 'Swing-in van boven', zoomBlur: 'Zoom blur',
+    cornerIn: 'Vanuit de hoek', curtain: 'Gordijn opent', fold: 'Uitvouwen',
+    dropBounce: 'Vallen met stuiter', shutter: 'Sluiter opent',
     galaxyTiles: 'Galaxy Tiles \u2726 (3D, van onderaf)',
     extremeGalaxy: 'Extreme Galaxy \u2726\u2726 (volledige flip omhoog)'
   };
@@ -2799,11 +3385,30 @@ function renderMotion() {
   const seq = $('#mpSequence');
   seq.innerHTML = '';
   seq.append(el('option', { value: '' }, 'Volgens preset'));
-  const SEQ_LABELS = { stagger: 'Stagger', topDown: 'Van boven naar beneden', bottomUp: 'Van beneden naar boven', leftRight: 'Van links naar rechts', centerOut: 'Vanuit het midden', wave: 'Golf', random: 'Willekeurig' };
+  const SEQ_LABELS = { stagger: 'Stagger', topDown: 'Van boven naar beneden', bottomUp: 'Van beneden naar boven',
+    leftRight: 'Van links naar rechts', centerOut: 'Vanuit het midden', wave: 'Golf', random: 'Willekeurig',
+    rightLeft: 'Van rechts naar links', outsideIn: 'Van buiten naar binnen', diagonalTL: 'Diagonaal linksboven',
+    diagonalTR: 'Diagonaal rechtsboven', columns: 'Per kolom', rows: 'Per rij', spiral: 'Spiraal' };
   for (const key of Object.keys(SEQUENCES)) {
     const o = el('option', { value: key }, SEQ_LABELS[key] || key);
     if (config.motion.overrides.sequence === key) o.selected = true;
     seq.append(o);
+  }
+  const ex = $('#mpExit');
+  ex.innerHTML = '';
+  const EXIT_LABELS = {
+    fadeOut: 'Vervagen', blurOut: 'Vervagen + blur', scaleDown: 'Krimpen', scaleUp: 'Naar de kijker weg',
+    slideDownOut: 'Naar beneden uit beeld', slideUpOut: 'Naar boven uit beeld',
+    slideLeftOut: 'Naar links uit beeld', slideRightOut: 'Naar rechts uit beeld',
+    depthAway: 'De diepte in', spinOut: 'Wegdraaien', flipOut: 'Flip opzij', flipOutV: 'Flip omlaag',
+    maskOut: 'Mask naar rechts', maskVerticalOut: 'Mask omlaag', radialOut: 'Radiaal dichtklappen',
+    shutterOut: 'Sluiter sluit', curtainOut: 'Gordijn sluit', dropAway: 'Wegvallen',
+    dissolveGlow: 'Oplossen in licht', burstOut: 'Radiale burst'
+  };
+  for (const key of Object.keys(EXITS)) {
+    const o = el('option', { value: key }, EXIT_LABELS[key] || key);
+    if ((config.exitFx || 'blurOut') === key) o.selected = true;
+    ex.append(o);
   }
   $('#mpDuration').value = config.motion.overrides.duration || '';
   $('#mpStagger').value = config.motion.overrides.stagger || '';
@@ -2820,6 +3425,7 @@ $('#mpEffect').addEventListener('change', (e) => { setMotionOverride('effect', e
 $('#mpSequence').addEventListener('change', (e) => { setMotionOverride('sequence', e.target.value || null); });
 $('#mpDuration').addEventListener('change', (e) => { setMotionOverride('duration', Number(e.target.value) || null); });
 $('#mpStagger').addEventListener('change', (e) => { setMotionOverride('stagger', Number(e.target.value) || null); });
+$('#mpExit').addEventListener('change', (e) => { config.exitFx = e.target.value; save(); });
 $('#mpPreview').addEventListener('click', () => { panel.classList.remove('open'); setTimeout(() => runEntrance(), 250); });
 
 /* ---- PIN-beveiliging (spec 120) ---- */
@@ -3354,6 +3960,7 @@ window.addEventListener('resize', applyOrientationMode);
   } catch (e) {
     toast('Let op: video-opslag niet beschikbaar in deze browser');
   }
+  autoDetectLanguage();
   renderStage();
   applyOrientationMode();
   applyHandSize();
