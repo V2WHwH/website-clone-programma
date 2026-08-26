@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cylinder Motion Graphics</title>
+<style>
+  :root {
+    --bg: #04060c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    overflow: hidden;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  canvas#stage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .hud {
+    position: absolute;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    color: rgba(210, 225, 255, 0.55);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-align: center;
+    user-select: none;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .hud strong {
+    display: block;
+    font-size: 14px;
+    letter-spacing: 0.32em;
+    color: rgba(235, 242, 255, 0.85);
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div class="hud">
+  <strong>Cylinder Motion Graphics</strong>
+  klik = pauze &nbsp;•&nbsp; scroll = zoom
+</div>
+<script>
+"use strict";
+
+/* ============================================================
+ * Spiralende 3D-cilinder banners — webversie van het
+ * After Effects "CC Cylinder" motion-graphics effect:
+ * lange banner-strips worden procedureel getekend, gestapeld
+ * tot een super-banner, eindeloos gescrold (Motion Tile) en
+ * kolom-voor-kolom om een cilinder gewikkeld met helix-twist.
+ * ============================================================ */
+
+const stage = document.getElementById("stage");
+const ctx = stage.getContext("2d");
+let W = 0, H = 0, DPR = 1;
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth;
+  H = window.innerHeight;
+  stage.width = Math.round(W * DPR);
+  stage.height = Math.round(H * DPR);
+}
+window.addEventListener("resize", resize);
+resize();
+
+/* ---------- banner-texturen (elk een lange strip) ---------- */
+
+const BANNER_W = 2048;
+
+function makeBanner(height, draw) {
+  const c = document.createElement("canvas");
+  c.width = BANNER_W;
+  c.height = height;
+  const g = c.getContext("2d");
+  draw(g, BANNER_W, height);
+  return c;
+}
+
+function repeatText(g, text, y, size, color, gap, phase) {
+  g.save();
+  g.fillStyle = color;
+  g.font = `900 ${size}px "Arial Black", Arial, sans-serif`;
+  g.textBaseline = "middle";
+  const step = g.measureText(text).width + gap;
+  for (let x = -step * phase; x < BANNER_W + step; x += step) {
+    g.fillText(text, x, y);
+  }
+  g.restore();
+}
+
+/* blauwe banner met witte vormen en tekst */
+const bannerBlue = makeBanner(150, (g, w, h) => {
+  g.fillStyle = "#1746e0";
+  g.fillRect(0, 0, w, h);
+  const grad = g.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, "rgba(255,255,255,0.14)");
+  grad.addColorStop(0.5, "rgba(255,255,255,0)");
+  grad.addColorStop(1, "rgba(0,0,40,0.25)");
+  g.fillStyle = grad;
+  g.fillRect(0, 0, w, h);
+  repeatText(g, "MOTION GRAPHICS ★", h / 2, 62, "#ffffff", 90, 0);
+  g.fillStyle = "rgba(255,255,255,0.9)";
+  for (let x = 40; x < w; x += 256) {
+    g.beginPath();
+    g.arc(x, 26, 8, 0, Math.PI * 2);
+    g.fill();
+    g.beginPath();
+    g.arc(x + 128, h - 26, 8, 0, Math.PI * 2);
+    g.fill();
+  }
+});
+
+/* zwarte banner met witte diagonale strepen */
+const bannerBlack = makeBanner(90, (g, w, h) => {
+  g.fillStyle = "#0a0a0f";
+  g.fillRect(0, 0, w, h);
+  g.strokeStyle = "#f2f2f5";
+  g.lineWidth = 14;
+  for (let x = -h; x < w + h; x += 56) {
+    g.beginPath();
+    g.moveTo(x, h + 10);
+    g.lineTo(x + h, -10);
+    g.stroke();
+  }
+  g.fillStyle = "#0a0a0f";
+  g.fillRect(0, h / 2 - 22, w, 44);
+  repeatText(g, "AFTER EFFECTS", h / 2 + 1, 30, "#ffffff", 70, 0.3);
+});
+
+/* gele banner met zwarte patronen */
+const bannerYellow = makeBanner(120, (g, w, h) => {
+  g.fillStyle = "#ffd200";
+  g.fillRect(0, 0, w, h);
+  g.fillStyle = "#111111";
+  const s = 24;
+  for (let x = 0; x < w; x += s * 2) {
+    g.fillRect(x, 0, s, s);
+    g.fillRect(x + s, h - s, s, s);
+  }
+  repeatText(g, "CC CYLINDER ▲▲", h / 2, 46, "#111111", 80, 0.6);
+});
+
+/* witte banner met blauwe blokken */
+const bannerWhite = makeBanner(70, (g, w, h) => {
+  g.fillStyle = "#eef1f7";
+  g.fillRect(0, 0, w, h);
+  g.fillStyle = "#1746e0";
+  for (let x = 12; x < w; x += 150) {
+    g.fillRect(x, h / 2 - 14, 96, 28);
+  }
+  g.fillStyle = "#ff3d2e";
+  for (let x = 120; x < w; x += 300) {
+    g.beginPath();
+    g.arc(x, h / 2, 10, 0, Math.PI * 2);
+    g.fill();
+  }
+});
+
+/* super-banner: alle strips verticaal op elkaar uitgelijnd */
+function makeSuperBanner(strips, gap) {
+  const total = strips.reduce((t, s) => t + s.height, 0) + gap * (strips.length - 1);
+  const c = document.createElement("canvas");
+  c.width = BANNER_W;
+  c.height = total;
+  const g = c.getContext("2d");
+  let y = 0;
+  for (const s of strips) {
+    g.drawImage(s, 0, y);
+    y += s.height + gap;
+  }
+  return c;
+}
+
+const superBannerA = makeSuperBanner([bannerBlack, bannerBlue, bannerYellow, bannerBlack], 6);
+const superBannerB = makeSuperBanner([bannerYellow, bannerWhite, bannerBlue], 6);
+const superBannerC = makeSuperBanner([bannerBlue, bannerBlack, bannerWhite, bannerYellow], 6);
+
+/* ---------- achtergrond: donkere ruimte + blauwe LED-bokeh ---------- */
+
+const bokeh = [];
+for (let i = 0; i < 26; i++) {
+  bokeh.push({
+    x: Math.random(),
+    y: Math.random(),
+    r: 20 + Math.random() * 70,
+    hue: 205 + Math.random() * 40,
+    a: 0.04 + Math.random() * 0.08,
+    drift: (Math.random() - 0.5) * 0.012,
+    phase: Math.random() * Math.PI * 2,
+  });
+}
+
+function drawBackground(t) {
+  const grad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.75);
+  grad.addColorStop(0, "#0a1020");
+  grad.addColorStop(1, "#03040a");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  for (const b of bokeh) {
+    const x = ((b.x + b.drift * t) % 1 + 1) % 1 * W;
+    const y = b.y * H;
+    const pulse = 0.75 + 0.25 * Math.sin(t * 0.8 + b.phase);
+    const g = ctx.createRadialGradient(x, y, 0, x, y, b.r);
+    g.addColorStop(0, `hsla(${b.hue}, 90%, 62%, ${b.a * pulse})`);
+    g.addColorStop(1, "hsla(220, 90%, 60%, 0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, b.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+/* ---------- cilinder-rendering (het CC Cylinder-effect) ----------
+ * De super-banner wikkelt horizontaal om een verticale cilinder.
+ * Per schermkolom x wordt de hoek θ = asin(x/R) bepaald en de
+ * bijbehorende textuurkolom getekend, met:
+ *  - cos(θ)-shading voor rondheid,
+ *  - een verticale helix-offset (twist) per hoek voor de spiraal,
+ *  - scroll-offset in de tijd (de Motion Tile-keyframes).
+ * ------------------------------------------------------------------ */
+
+function drawCylinder(tex, opts, t) {
+  const { cx, cy, radius, height, tilt, speed, twist, dir } = opts;
+  const R = radius;
+  const scroll = ((t * speed * dir) % 1 + 1) % 1;
+  const step = Math.max(1, Math.floor(1 / DPR));
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(tilt);
+
+  for (let sx = -R; sx <= R; sx += step) {
+    const sinT = sx / R;
+    const theta = Math.asin(Math.max(-1, Math.min(1, sinT)));
+    const cosT = Math.cos(theta);
+
+    /* voorste helft van de wikkel beslaat een halve omtrek */
+    const u = (((theta / Math.PI + 0.5) * 0.5 + scroll) % 1 + 1) % 1;
+    const texX = Math.floor(u * (tex.width - 1));
+
+    /* helix: verticale verschuiving loopt met de hoek mee */
+    const yOff = twist * theta * R;
+
+    const shade = 0.25 + 0.75 * cosT;
+    ctx.globalAlpha = 1;
+    ctx.drawImage(tex, texX, 0, 1, tex.height, sx, -height / 2 + yOff, step + 0.5, height);
+
+    if (shade < 0.995) {
+      ctx.globalAlpha = 1 - shade;
+      ctx.fillStyle = "#02030a";
+      ctx.fillRect(sx, -height / 2 + yOff - 1, step + 0.5, height + 2);
+    }
+
+    /* specular: smalle lichtband net links van het midden */
+    const spec = Math.exp(-((sinT + 0.12) ** 2) / 0.015) * 0.15;
+    if (spec > 0.005) {
+      ctx.globalAlpha = spec;
+      ctx.fillStyle = "#dceaff";
+      ctx.fillRect(sx, -height / 2 + yOff, step + 0.5, height);
+    }
+  }
+
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+/* ---------- scène-opbouw: drie spiralende cilinders ---------- */
+
+let paused = false;
+let zoom = 1;
+let zoomTarget = 1;
+let last = performance.now();
+let t = 0;
+
+stage.addEventListener("click", () => { paused = !paused; });
+window.addEventListener("wheel", (e) => {
+  zoomTarget = Math.max(0.5, Math.min(2.2, zoomTarget * (e.deltaY > 0 ? 0.92 : 1.08)));
+}, { passive: true });
+
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  if (!paused) t += dt;
+  zoom += (zoomTarget - zoom) * 0.08;
+
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  drawBackground(t);
+
+  const base = Math.min(W, H);
+  const breathe = 1 + 0.03 * Math.sin(t * 0.5);
+
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.scale(zoom * breathe, zoom * breathe);
+  ctx.translate(-W / 2, -H / 2);
+
+  const cylinders = [
+    {
+      tex: superBannerB,
+      cx: W / 2 - base * 0.30, cy: H / 2 + base * 0.04,
+      radius: base * 0.13, height: base * 0.72,
+      tilt: -0.16, speed: 0.055, twist: 0.16, dir: 1,
+    },
+    {
+      tex: superBannerA,
+      cx: W / 2, cy: H / 2,
+      radius: base * 0.17, height: base * 0.92,
+      tilt: 0.10, speed: 0.042, twist: -0.20, dir: -1,
+    },
+    {
+      tex: superBannerC,
+      cx: W / 2 + base * 0.30, cy: H / 2 - base * 0.03,
+      radius: base * 0.12, height: base * 0.66,
+      tilt: 0.24, speed: 0.065, twist: 0.24, dir: 1,
+    },
+  ];
+
+  for (const c of cylinders) drawCylinder(c.tex, c, t);
+  ctx.restore();
+
+  /* zachte vignette */
+  ctx.globalAlpha = 1;
+  const vg = ctx.createRadialGradient(W / 2, H / 2, base * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75);
+  vg.addColorStop(0, "rgba(0,0,0,0)");
+  vg.addColorStop(1, "rgba(0,0,8,0.55)");
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, W, H);
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

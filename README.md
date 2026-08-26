@@ -4,6 +4,18 @@ Repo voor het website-clone-programma. Op dit moment bevat de repo de configurat
 om de **Ditto MCP-server** (`https://api.ditto.site/mcp`) te koppelen aan
 MCP-clients zoals Claude Code.
 
+## Cylinder Motion Graphics
+
+[`cylinder-motion/index.html`](cylinder-motion/index.html) is een webversie van
+het After Effects "CC Cylinder"-effect uit
+[deze YouTube Short](https://www.youtube.com/shorts/VLkK6DnxGAU): lange
+banner-strips worden procedureel getekend, verticaal gestapeld tot een
+super-banner, eindeloos gescrold (Motion Tile) en per kolom om draaiende
+3D-cilinders met helix-twist gewikkeld.
+
+Openen: het bestand direct in een browser openen volstaat — geen build,
+dependencies of server nodig. Klikken pauzeert de animatie, scrollen zoomt.
+
 ## Ditto MCP-server
 
 De server is geregistreerd in [`.mcp.json`](.mcp.json) als een remote HTTP
