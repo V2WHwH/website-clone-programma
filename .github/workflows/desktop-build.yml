@@ -37,7 +37,11 @@ jobs:
       - name: Windows release bouwen (installer + portable)
         run: npm run dist
         env:
-          # Geen code-signing certificaat aanwezig: bewust unsigned bouwen.
+          # Code signing activeert automatisch zodra de secrets CSC_LINK
+          # (base64 van het .pfx-certificaat) en CSC_KEY_PASSWORD bestaan;
+          # zonder certificaat bouwt hij unsigned zoals voorheen.
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
 
       - name: Smoke-test op Windows (start, hardwaredetectie, afsluiten)
