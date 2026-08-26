@@ -316,6 +316,18 @@
 
   .divider { height: 1px; background: var(--p-line-soft); margin: 2px -15px; }
 
+  /* Knopkaarten: om en om licht grijs en donker, met de knopkleur als
+     accentrand — zo is direct te zien welk instellingenblok bij welke knop hoort. */
+  #btnList > .card { border-left: 4px solid var(--bcol, var(--p-line)); }
+  #btnList > .card:nth-of-type(odd) {
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent 40%), #39424f;
+    border-color: #4a5462; border-left-color: var(--bcol, #4a5462); }
+  #btnList > .card:nth-of-type(odd) input[type=text],
+  #btnList > .card:nth-of-type(odd) input[type=number],
+  #btnList > .card:nth-of-type(odd) select { background: #232b36; border-color: #4a5462; }
+  #btnList > .card:nth-of-type(even) {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 40%), #10161f; }
+
   .media-item { display: flex; align-items: center; gap: 10px; }
   .media-item video { width: 76px; height: 46px; object-fit: cover; border-radius: 7px; background: #000; flex: none; }
   .media-item .nm { font-size: 13px; overflow-wrap: anywhere; color: var(--p-ink); }
@@ -1515,7 +1527,8 @@ const ENTRANCES = {
   glowMaterialize: () => ({ rest: [{ opacity: 0, filter: 'brightness(2.6) blur(7px)' }, { opacity: 1, filter: 'brightness(1) blur(0px)' }] }),
   lightSweep: () => ({ rest: [{ opacity: 0 }, { opacity: 1 }], after: 'shine' }),
   holoScan: () => ({ rest: [{ opacity: 0, clipPath: 'inset(0 0 100% 0)', filter: 'brightness(1.9)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)', filter: 'brightness(1)' }] }),
-  galaxyTiles: () => ({ special: 'galaxy' }) // afgehandeld in runGalaxyTiles
+  galaxyTiles: () => ({ special: 'galaxy' }),   // afgehandeld in runGalaxyTiles
+  extremeGalaxy: () => ({ special: 'galaxy' })  // idem, met volledige 360°+-flips
 };
 
 // Groepssequenties (spec 161–168): geven per element een volgorde-rang.
@@ -1584,7 +1597,8 @@ function runEntrance(firstId = null) {
   const els = [...document.querySelectorAll('.vbtn')];
   if (!els.length || matchMedia('(prefers-reduced-motion: reduce)').matches) return Promise.resolve();
   const cfg = entranceCfg();
-  if (cfg.effect === 'galaxyTiles') return runGalaxyTiles(els, firstId);
+  if (cfg.effect === 'galaxyTiles') return runGalaxyTiles(els, firstId, false);
+  if (cfg.effect === 'extremeGalaxy') return runGalaxyTiles(els, firstId, true);
   const fx = ENTRANCES[cfg.effect] || ENTRANCES.fade;
   const ranks = (SEQUENCES[cfg.sequence] || SEQUENCES.stagger)(els);
   const anims = [];
@@ -1608,19 +1622,21 @@ function runEntrance(firstId = null) {
 // elk met eigen timing, snelheid en 3D-kanteling (rotateX/Y/Z). De beweging
 // begint los en ruimtelijk en wordt gaandeweg strakker, tot elke tegel exact
 // op zijn positie en uitlijning landt. Totaal ±1,5–2 s, premium easing.
-function runGalaxyTiles(els, firstId = null) {
+function runGalaxyTiles(els, firstId = null, extreme = false) {
   const mul = INTENSITY[config.motion.intensity] || 1;
   const anims = [];
   els.forEach((elB) => {
     const isFirst = firstId && elB.dataset.id === firstId;
-    const dur = Math.min(2000, Math.max(1300, (1520 + Math.random() * 360) * (0.85 + mul * 0.15)));
+    const dur = Math.min(extreme ? 2200 : 2000, Math.max(1300, ((extreme ? 1750 : 1520) + Math.random() * 360) * (0.85 + mul * 0.15)));
     const delay = isFirst ? 0 : Math.random() * 280 + (firstId ? 140 : 0);
     // Startpositie: onder het scherm, licht zijwaarts verspreid.
     const sx = (Math.random() * 2 - 1) * innerWidth * 0.14;
     const sy = innerHeight * 0.72 + Math.random() * innerHeight * 0.3;
-    const rx = (Math.random() * 2 - 1) * 62;
-    const ry = (Math.random() * 2 - 1) * 74;
-    const rz = (Math.random() * 2 - 1) * 26;
+    // Extreme Galaxy: minimaal één volledige rotatie om de eigen as omhoog
+    // (360°–540° voorwaartse flip), plus lichte zijwaartse wiebel.
+    const rx = extreme ? -(360 + Math.random() * 180) : (Math.random() * 2 - 1) * 62;
+    const ry = (Math.random() * 2 - 1) * (extreme ? 32 : 74);
+    const rz = (Math.random() * 2 - 1) * (extreme ? 14 : 26);
     const drift = (Math.random() * 2 - 1) * 34;
 
     const tf = [
@@ -1628,7 +1644,7 @@ function runGalaxyTiles(els, firstId = null) {
         transform: `translate(${sx.toFixed(0)}px, ${sy.toFixed(0)}px) rotateX(${rx.toFixed(0)}deg) rotateY(${ry.toFixed(0)}deg) rotateZ(${rz.toFixed(0)}deg) scale(0.7)`,
         easing: 'cubic-bezier(0.22, 0.55, 0.35, 1)' },
       { offset: 0.58,
-        transform: `translate(${(sx * 0.18 + drift).toFixed(0)}px, ${(-14 - Math.random() * 26).toFixed(0)}px) rotateX(${(rx * 0.22).toFixed(0)}deg) rotateY(${(ry * 0.22).toFixed(0)}deg) rotateZ(${(rz * 0.28).toFixed(0)}deg) scale(1.05)`,
+        transform: `translate(${(sx * 0.18 + drift).toFixed(0)}px, ${(-14 - Math.random() * 26).toFixed(0)}px) rotateX(${(rx * (extreme ? 0.3 : 0.22)).toFixed(0)}deg) rotateY(${(ry * 0.22).toFixed(0)}deg) rotateZ(${(rz * 0.28).toFixed(0)}deg) scale(1.05)`,
         easing: 'cubic-bezier(0.3, 0.6, 0.25, 1)' },
       { offset: 0.84,
         transform: `translate(${((Math.random() * 2 - 1) * 7).toFixed(0)}px, ${(-4 - Math.random() * 6).toFixed(0)}px) rotateX(${(rx * 0.05).toFixed(1)}deg) rotateY(${(ry * 0.05).toFixed(1)}deg) rotateZ(0deg) scale(1.012)`,
@@ -1982,7 +1998,7 @@ function renderBtnList() {
     const imageSel = el('select', { onchange: (e) => { b.imageId = e.target.value || null; save(); renderStage(); } },
       el('option', { value: '' }, '— geen (kader met preview) —'),
       images.map((m) => { const o = el('option', { value: m.id }, m.name); if (m.id === b.imageId) o.selected = true; return o; }));
-    list.append(el('div', { class: 'card' },
+    list.append(el('div', { class: 'card', style: `--bcol:${b.color}` },
       el('div', { class: 'row' },
         el('input', { type: 'text', class: 'grow', value: b.label, placeholder: 'Tekst op de knop',
           oninput: (e) => { b.label = e.target.value; save(); renderStage(); } }),
@@ -2246,7 +2262,8 @@ function renderMotion() {
     slideUp: 'Slide omhoog', slideDown: 'Slide omlaag', slideLeft: 'Slide van rechts', slideRight: 'Slide van links',
     depthIn: 'Depth push-in', depthBack: 'Depth pull-back', scalePop: 'Scale pop',
     maskReveal: 'Mask reveal', glowMaterialize: 'Glow materialize', lightSweep: 'Light sweep', holoScan: 'Holografische scan',
-    galaxyTiles: 'Galaxy Tiles \u2726 (3D, van onderaf)'
+    galaxyTiles: 'Galaxy Tiles \u2726 (3D, van onderaf)',
+    extremeGalaxy: 'Extreme Galaxy \u2726\u2726 (volledige flip omhoog)'
   };
   for (const key of Object.keys(ENTRANCES)) {
     const o = el('option', { value: key }, EFFECT_LABELS[key] || key);
