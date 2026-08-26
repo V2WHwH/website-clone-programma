@@ -63,18 +63,38 @@
   .vbtn .play-ico { margin-right: 0.4em; font-size: 0.85em; }
   .vbtn.shape-circle .play-ico { margin: 0; }
 
-  /* Preview-knoppen: opgedikt kader met bevel — als een echte (foto)lijst */
+  /* Preview-knoppen: instelbaar frame (Video Frame Style) — het kader ligt
+     visueel vóór het videobeeld, met gloss, highlight en diepte-schaduw. */
+  #buttonLayer { position: absolute; inset: 0; perspective: 1400px; }
   .vbtn.has-preview { padding: 0; aspect-ratio: 16 / 9; width: var(--pw, 30vmin); min-width: 0;
-    overflow: hidden; border: 0.45em solid var(--frame, #35d0ba); background-color: #000;
+    overflow: hidden; border: 0; background-color: var(--frame, #35d0ba);
+    border-radius: var(--frad, 0.6em);
     box-shadow:
       0 16px 42px rgba(0,0,0,0.5), 0 0 30px var(--glow, rgba(53,208,186,0.35)),
-      0 0 0 0.14em rgba(0,0,0,0.45),                 /* donkere buitenrand van de lijst */
-      inset 0 0 0 0.1em rgba(255,255,255,0.3),       /* lichte binnenrand (bevel) */
-      inset 0 0.35em 0.9em rgba(0,0,0,0.4); }        /* diepte achter het "glas" */
+      0 0 0 0.12em rgba(0,0,0,0.4),
+      inset 0 1px 0 rgba(255,255,255,var(--fhl, 0.35)); }
+  /* Gloss-laag over het frame */
+  .vbtn.has-preview::before { content: ''; position: absolute; inset: 0; border-radius: inherit;
+    background: linear-gradient(178deg, rgba(255,255,255,var(--fgloss, 0.28)) 0%,
+      rgba(255,255,255,calc(var(--fgloss, 0.28) * 0.25)) 22%, transparent 46%);
+    pointer-events: none; z-index: 3; }
+  /* Videovlak verzonken in het frame */
+  .vbtn.has-preview video.preview, .vbtn.has-preview canvas.preview3d {
+    position: absolute; left: var(--fpad, 0.45em); top: var(--fpad, 0.45em);
+    width: calc(100% - 2 * var(--fpad, 0.45em)); height: calc(100% - 2 * var(--fpad, 0.45em));
+    border-radius: var(--frid, 0.35em); object-fit: cover; }
+  /* Diepte-schaduw tussen frame en videobeeld */
+  .vbtn.has-preview .pv-well { position: absolute; left: var(--fpad, 0.45em); top: var(--fpad, 0.45em);
+    right: var(--fpad, 0.45em); bottom: var(--fpad, 0.45em); border-radius: var(--frid, 0.35em);
+    box-shadow: inset 0 calc(var(--fdepth, 0.5) * 0.5em) calc(var(--fdepth, 0.5) * 1.1em) rgba(0,0,0,calc(var(--fdepth, 0.5) * 0.85)),
+      inset 0 0 0 1px rgba(0,0,0,0.35);
+    pointer-events: none; z-index: 2; }
   .vbtn.has-preview.shape-circle { aspect-ratio: 1; }
   .vbtn.has-preview video.preview { position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover; pointer-events: none; }
-  .vbtn.has-preview .pv-label { position: absolute; left: 0; right: 0; bottom: 0; padding: 0.4em 0.6em 0.35em;
+  .vbtn.has-preview .pv-label { position: absolute; left: var(--fpad, 0.45em); right: var(--fpad, 0.45em);
+    bottom: var(--fpad, 0.45em); padding: 0.4em 0.6em 0.35em; z-index: 2;
+    border-radius: 0 0 var(--frid, 0.35em) var(--frid, 0.35em);
     background: linear-gradient(transparent, rgba(0,0,0,0.78)); font-size: 0.78em; text-align: center; }
   .vbtn.has-preview .pv-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 2.1em; height: 2.1em; border-radius: 50%; background: rgba(0,0,0,0.45);
@@ -465,6 +485,52 @@
         <label class="switch"><input type="checkbox" id="cfgClean"><i></i></label>
       </div>
     </div>
+    <h2>Video Frame Style</h2>
+    <div class="card">
+      <label class="field">Framekleur
+        <select id="fsMode">
+          <option value="button">Knopkleur (per knop instelbaar)</option>
+          <option value="solid">Effen kleur (globaal)</option>
+          <option value="gradient">Kleurverloop (globaal)</option>
+        </select>
+      </label>
+      <div class="row">
+        <label class="field">Kleur 1
+          <input type="color" id="fsColor1" style="width:100%">
+        </label>
+        <label class="field">Kleur 2 (gradient)
+          <input type="color" id="fsColor2" style="width:100%">
+        </label>
+        <label class="field">Richting (&deg;)
+          <input type="number" id="fsAngle" min="0" max="360" step="15">
+        </label>
+      </div>
+      <div class="row">
+        <label class="field">Hoekafronding (0 = vierkant)
+          <input type="range" id="fsRadius" min="0" max="48" step="1">
+        </label>
+        <label class="field">Framedikte
+          <input type="range" id="fsThickness" min="2" max="18" step="1">
+        </label>
+      </div>
+      <div class="row">
+        <label class="field">Diepte (frame vs. videobeeld)
+          <input type="range" id="fsDepth" min="0" max="16" step="1">
+        </label>
+        <label class="field">Gloss (mat &harr; glanzend)
+          <input type="range" id="fsGloss" min="0" max="0.7" step="0.05">
+        </label>
+      </div>
+      <div class="row">
+        <label class="field">Highlight/reflectie
+          <input type="range" id="fsHighlight" min="0" max="0.8" step="0.05">
+        </label>
+        <label class="field">Schaduw tussen frame en beeld
+          <input type="range" id="fsShadow" min="0" max="1" step="0.05">
+        </label>
+      </div>
+      <p class="note">Deze stijl geldt automatisch voor alle videoknoppen in de experience. Per knop kun je op het tabblad Knoppen kiezen om toch de eigen knopkleur te gebruiken.</p>
+    </div>
     <h2>3D-objecten</h2>
     <div class="card">
       <div class="row">
@@ -712,10 +778,13 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 3,
+  version: 4,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
-  motion: { preset: 'corporate', intensity: 'immersive', overrides: {} },
+  motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
+  // Globale Video Frame Style (per knop te overriden met de knopkleur).
+  frameStyle: { mode: 'button', color1: '#1b2a5e', color2: '#7b2ff0', angle: 135,
+    radius: 14, thickness: 9, depth: 8, gloss: 0.3, highlight: 0.35, shadow: 0.55 },
   security: { pinHash: null },
   analytics: { enabled: false },
   title: '',
@@ -741,6 +810,7 @@ function migrateConfig(stored) {
     object3d: { ...d.object3d, ...stored.object3d },
     hand: { ...d.hand, ...stored.hand },
     motion: { ...d.motion, ...stored.motion, overrides: { ...(stored.motion?.overrides || {}) } },
+    frameStyle: { ...d.frameStyle, ...stored.frameStyle },
     security: { ...d.security, ...stored.security },
     analytics: { ...d.analytics, ...stored.analytics } };
   if (!Array.isArray(c.scenes) || !c.scenes.length) {
@@ -751,7 +821,8 @@ function migrateConfig(stored) {
     }];
   }
   if (!c.homeSceneId || !c.scenes.find((sc) => sc.id === c.homeSceneId)) c.homeSceneId = c.scenes[0].id;
-  c.version = 3;
+  if ((stored.version || 0) < 4 && !c.motion.overrides.effect) c.motion.overrides.effect = 'galaxyTiles';
+  c.version = 4;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -1072,6 +1143,24 @@ function destroyObjViewers(previewOnly = false) {
   }
 }
 
+/* ---- Video Frame Style: globale stijl, per knop te overriden ---- */
+function frameFor(b) {
+  const f = config.frameStyle;
+  const useOwn = b.frameOwn === true || f.mode === 'button';
+  const bg = useOwn ? b.color
+    : f.mode === 'solid' ? f.color1
+    : `linear-gradient(${f.angle}deg, ${f.color1}, ${f.color2})`;
+  return {
+    bg,
+    glowColor: useOwn ? b.color : f.color1,
+    radius: (f.radius / 24).toFixed(3),          // 0–48 → 0–2em
+    thickness: (f.thickness / 20).toFixed(3),    // 2–18 → 0.1–0.9em
+    innerRadius: Math.max(0, f.radius / 24 - f.thickness / 40).toFixed(3),
+    depth: (f.depth / 16).toFixed(2),            // 0–16 → 0–1
+    gloss: f.gloss, highlight: f.highlight
+  };
+}
+
 /* ================= Presentatie renderen ================= */
 function renderStage() {
   // Titel + welkomstscherm
@@ -1104,6 +1193,18 @@ function renderStage() {
              `--glow:${b.color}59; --frame:${b.color}; --pw:${(b.size || 8) * 3.2}vmin;` +
              `font-size:${(b.size || 8) * 0.42}vmin; ${preview ? '' : `min-width:${(b.size || 8) * 2.2}vmin;`}`
     });
+    if (preview && media && media.kind !== 'image' && !(b.imageId && mediaCache.get(b.imageId))) {
+      const fr = frameFor(b);
+      btn.style.setProperty('--frad', fr.radius + 'em');
+      btn.style.setProperty('--fpad', fr.thickness + 'em');
+      btn.style.setProperty('--frid', fr.innerRadius + 'em');
+      btn.style.setProperty('--fdepth', fr.depth);
+      btn.style.setProperty('--fgloss', fr.gloss);
+      btn.style.setProperty('--fhl', fr.highlight);
+      btn.style.setProperty('--glow', fr.glowColor + '59');
+      btn.style.setProperty('--frame', fr.glowColor);
+      btn.style.background = fr.bg;
+    }
     const faceImg = (b.imageId && mediaCache.get(b.imageId)) || (media && media.kind === 'image' ? media : null);
     if (preview && faceImg) {
       // PNG-knop: de afbeelding zelf is de knop, contouren blijven behouden.
@@ -1115,7 +1216,7 @@ function renderStage() {
     } else if (preview && media.kind === 'model') {
       // 3D-object: langzaam ronddraaiend voorbeeld in het kader.
       const cv = el('canvas', { class: 'preview3d' });
-      btn.append(cv, el('span', { class: 'pv-badge' }, '3D'),
+      btn.append(cv, el('span', { class: 'pv-well' }), el('span', { class: 'pv-badge' }, '3D'),
         el('span', { class: 'pv-play' }, '▶'),
         el('span', { class: 'pv-label' }, b.label || media.name));
       if (b.shape !== 'circle') btn.style.aspectRatio = '5 / 4';
@@ -1127,7 +1228,7 @@ function renderStage() {
       // zodra die klaar is); de echte video start fullscreen bij aanraking.
       const v = el('video', { class: 'preview', src: media.previewUrl || media.url, muted: '', loop: '', autoplay: '', playsinline: '', preload: 'metadata' });
       v.muted = true; // attribuut alleen is niet genoeg voor autoplay
-      btn.append(v, el('span', { class: 'pv-play' }, '▶'), el('span', { class: 'pv-label' }, b.label || media.name));
+      btn.append(v, el('span', { class: 'pv-well' }), el('span', { class: 'pv-play' }, '▶'), el('span', { class: 'pv-label' }, b.label || media.name));
       if (b.shape !== 'circle') {
         // Knopformaat = renditieformaat: liggend 1280×800, staand 800×1280.
         if (media.aspect) btn.style.aspectRatio = media.aspect;
@@ -1413,7 +1514,8 @@ const ENTRANCES = {
   maskReveal: () => ({ rest: [{ opacity: 0.4, clipPath: 'inset(0 100% 0 0)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)' }] }),
   glowMaterialize: () => ({ rest: [{ opacity: 0, filter: 'brightness(2.6) blur(7px)' }, { opacity: 1, filter: 'brightness(1) blur(0px)' }] }),
   lightSweep: () => ({ rest: [{ opacity: 0 }, { opacity: 1 }], after: 'shine' }),
-  holoScan: () => ({ rest: [{ opacity: 0, clipPath: 'inset(0 0 100% 0)', filter: 'brightness(1.9)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)', filter: 'brightness(1)' }] })
+  holoScan: () => ({ rest: [{ opacity: 0, clipPath: 'inset(0 0 100% 0)', filter: 'brightness(1.9)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)', filter: 'brightness(1)' }] }),
+  galaxyTiles: () => ({ special: 'galaxy' }) // afgehandeld in runGalaxyTiles
 };
 
 // Groepssequenties (spec 161–168): geven per element een volgorde-rang.
@@ -1482,6 +1584,7 @@ function runEntrance(firstId = null) {
   const els = [...document.querySelectorAll('.vbtn')];
   if (!els.length || matchMedia('(prefers-reduced-motion: reduce)').matches) return Promise.resolve();
   const cfg = entranceCfg();
+  if (cfg.effect === 'galaxyTiles') return runGalaxyTiles(els, firstId);
   const fx = ENTRANCES[cfg.effect] || ENTRANCES.fade;
   const ranks = (SEQUENCES[cfg.sequence] || SEQUENCES.stagger)(els);
   const anims = [];
@@ -1497,6 +1600,45 @@ function runEntrance(firstId = null) {
       elB.append(span);
       span.addEventListener('animationend', () => span.remove(), { once: true });
     }, delay + cfg.duration * 0.6);
+  });
+  return Promise.all(anims.map((a) => a.finished.catch(() => {})));
+}
+
+// Galaxy Tiles (spec-uitbreiding): tegels zweven van onder het scherm binnen,
+// elk met eigen timing, snelheid en 3D-kanteling (rotateX/Y/Z). De beweging
+// begint los en ruimtelijk en wordt gaandeweg strakker, tot elke tegel exact
+// op zijn positie en uitlijning landt. Totaal ±1,5–2 s, premium easing.
+function runGalaxyTiles(els, firstId = null) {
+  const mul = INTENSITY[config.motion.intensity] || 1;
+  const anims = [];
+  els.forEach((elB) => {
+    const isFirst = firstId && elB.dataset.id === firstId;
+    const dur = Math.min(2000, Math.max(1300, (1520 + Math.random() * 360) * (0.85 + mul * 0.15)));
+    const delay = isFirst ? 0 : Math.random() * 280 + (firstId ? 140 : 0);
+    // Startpositie: onder het scherm, licht zijwaarts verspreid.
+    const sx = (Math.random() * 2 - 1) * innerWidth * 0.14;
+    const sy = innerHeight * 0.72 + Math.random() * innerHeight * 0.3;
+    const rx = (Math.random() * 2 - 1) * 62;
+    const ry = (Math.random() * 2 - 1) * 74;
+    const rz = (Math.random() * 2 - 1) * 26;
+    const drift = (Math.random() * 2 - 1) * 34;
+
+    const tf = [
+      { offset: 0,
+        transform: `translate(${sx.toFixed(0)}px, ${sy.toFixed(0)}px) rotateX(${rx.toFixed(0)}deg) rotateY(${ry.toFixed(0)}deg) rotateZ(${rz.toFixed(0)}deg) scale(0.7)`,
+        easing: 'cubic-bezier(0.22, 0.55, 0.35, 1)' },
+      { offset: 0.58,
+        transform: `translate(${(sx * 0.18 + drift).toFixed(0)}px, ${(-14 - Math.random() * 26).toFixed(0)}px) rotateX(${(rx * 0.22).toFixed(0)}deg) rotateY(${(ry * 0.22).toFixed(0)}deg) rotateZ(${(rz * 0.28).toFixed(0)}deg) scale(1.05)`,
+        easing: 'cubic-bezier(0.3, 0.6, 0.25, 1)' },
+      { offset: 0.84,
+        transform: `translate(${((Math.random() * 2 - 1) * 7).toFixed(0)}px, ${(-4 - Math.random() * 6).toFixed(0)}px) rotateX(${(rx * 0.05).toFixed(1)}deg) rotateY(${(ry * 0.05).toFixed(1)}deg) rotateZ(0deg) scale(1.012)`,
+        easing: 'cubic-bezier(0.35, 0.8, 0.3, 1)' },
+      { offset: 1, transform: 'translate(0px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1)' }
+    ];
+    const opts = { duration: dur, delay, fill: 'backwards' };
+    anims.push(elB.animate(tf, { ...opts, composite: 'add' }));
+    anims.push(elB.animate(
+      [{ opacity: 0, offset: 0 }, { opacity: 1, offset: 0.22 }, { opacity: 1, offset: 1 }], opts));
   });
   return Promise.all(anims.map((a) => a.finished.catch(() => {})));
 }
@@ -1820,6 +1962,10 @@ function renderBtnList() {
       el('option', { value: 6 }, 'Middel kader'),
       el('option', { value: 10 }, 'Groot kader'));
     driftSel.value = String(b.drift || 0);
+    const frameSel = el('select', { onchange: (e) => { b.frameOwn = e.target.value === 'own'; if (!b.frameOwn) delete b.frameOwn; save(); renderStage(); } },
+      el('option', { value: 'global' }, 'Globale Frame Style'),
+      el('option', { value: 'own' }, 'Eigen knopkleur'));
+    frameSel.value = b.frameOwn ? 'own' : 'global';
     const previewSel = el('select', { onchange: (e) => { b.showPreview = e.target.value === 'yes'; save(); renderStage(); } },
       el('option', { value: 'yes' }, 'Aan — kader met videovoorbeeld'),
       el('option', { value: 'no' }, 'Uit — gewone knop'));
@@ -1886,7 +2032,9 @@ function renderBtnList() {
       el('div', { class: 'row' },
         el('label', { class: 'field' }, 'Videovoorbeeld in de knop', previewSel),
         el('label', { class: 'field' }, 'Eigen PNG als knopvorm', imageSel)),
-      el('label', { class: 'field' }, 'Aandachtseffect (speelt af en toe vanzelf)', fxSel),
+      el('div', { class: 'row' },
+        el('label', { class: 'field' }, 'Aandachtseffect (speelt af en toe vanzelf)', fxSel),
+        el('label', { class: 'field' }, 'Frame', frameSel)),
       swatches
     ));
   });
@@ -1967,6 +2115,17 @@ function renderLook() {
   $('#cfgHideBtns').checked = config.hideButtonsDuringPlay;
   $('#cfgClean').checked = config.cleanMode;
   $('#cfgOrientation').value = config.orientationMode || 'auto';
+  const fs = config.frameStyle;
+  $('#fsMode').value = fs.mode;
+  $('#fsColor1').value = fs.color1;
+  $('#fsColor2').value = fs.color2;
+  $('#fsAngle').value = fs.angle;
+  $('#fsRadius').value = fs.radius;
+  $('#fsThickness').value = fs.thickness;
+  $('#fsDepth').value = fs.depth;
+  $('#fsGloss').value = fs.gloss;
+  $('#fsHighlight').value = fs.highlight;
+  $('#fsShadow').value = fs.shadow;
   $('#cfgSelectFx').value = config.selectFx || 'zoom';
   $('#cfgFxInterval').value = config.fxIntervalSec;
   $('#handEnabled').checked = config.hand.enabled;
@@ -1979,6 +2138,19 @@ function renderLook() {
   $('#o3Light').value = o3.light;
   $('#o3Shine').value = o3.shininess;
   $('#o3Close').value = o3.autoCloseSec;
+}
+
+for (const [id, key, num] of [
+  ['fsMode', 'mode', false], ['fsColor1', 'color1', false], ['fsColor2', 'color2', false],
+  ['fsAngle', 'angle', true], ['fsRadius', 'radius', true], ['fsThickness', 'thickness', true],
+  ['fsDepth', 'depth', true], ['fsGloss', 'gloss', true], ['fsHighlight', 'highlight', true],
+  ['fsShadow', 'shadow', true]
+]) {
+  $('#' + id).addEventListener('input', (e) => {
+    config.frameStyle[key] = num ? Number(e.target.value) : e.target.value;
+    save();
+    renderStage();
+  });
 }
 
 $('#cfgSelectFx').addEventListener('change', (e) => { config.selectFx = e.target.value; save(); });
@@ -2073,7 +2245,8 @@ function renderMotion() {
     fade: 'Soft fade', fadeScale: 'Fade + scale', blurReveal: 'Blur reveal',
     slideUp: 'Slide omhoog', slideDown: 'Slide omlaag', slideLeft: 'Slide van rechts', slideRight: 'Slide van links',
     depthIn: 'Depth push-in', depthBack: 'Depth pull-back', scalePop: 'Scale pop',
-    maskReveal: 'Mask reveal', glowMaterialize: 'Glow materialize', lightSweep: 'Light sweep', holoScan: 'Holografische scan'
+    maskReveal: 'Mask reveal', glowMaterialize: 'Glow materialize', lightSweep: 'Light sweep', holoScan: 'Holografische scan',
+    galaxyTiles: 'Galaxy Tiles \u2726 (3D, van onderaf)'
   };
   for (const key of Object.keys(ENTRANCES)) {
     const o = el('option', { value: key }, EFFECT_LABELS[key] || key);
