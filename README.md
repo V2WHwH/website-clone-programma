@@ -34,10 +34,16 @@ gebaseerd op het "Hyper Typography Spiral Motion"-effect. Kern:
 
 ### Windows-build zelf maken
 
+Twee varianten:
+
 ```bash
 cd holofx
 npm install
-npm run build:win   # → dist/HoloFX-win32-x64/HoloFX.exe
+npm run build:win     # Electron: dist/HoloFX-win32-x64/HoloFX.exe (±270 MB,
+                      # geen extra vereisten op de doelmachine)
+
+./build-lite.sh       # Neutralino "lite": build-lite/holofx/dist/HoloFX-win64/
+                      # (±3 MB; vereist WebView2, standaard in Windows 10/11)
 ```
 
 ## Cylinder Motion Graphics
