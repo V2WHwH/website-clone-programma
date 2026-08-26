@@ -63,9 +63,14 @@
   .vbtn .play-ico { margin-right: 0.4em; font-size: 0.85em; }
   .vbtn.shape-circle .play-ico { margin: 0; }
 
-  /* Preview-knoppen: kader met live videovoorbeeld erin */
+  /* Preview-knoppen: opgedikt kader met bevel — als een echte (foto)lijst */
   .vbtn.has-preview { padding: 0; aspect-ratio: 16 / 9; width: var(--pw, 30vmin); min-width: 0;
-    overflow: hidden; border: 0.22em solid var(--frame, #35d0ba); background-color: #000; }
+    overflow: hidden; border: 0.45em solid var(--frame, #35d0ba); background-color: #000;
+    box-shadow:
+      0 16px 42px rgba(0,0,0,0.5), 0 0 30px var(--glow, rgba(53,208,186,0.35)),
+      0 0 0 0.14em rgba(0,0,0,0.45),                 /* donkere buitenrand van de lijst */
+      inset 0 0 0 0.1em rgba(255,255,255,0.3),       /* lichte binnenrand (bevel) */
+      inset 0 0.35em 0.9em rgba(0,0,0,0.4); }        /* diepte achter het "glas" */
   .vbtn.has-preview.shape-circle { aspect-ratio: 1; }
   .vbtn.has-preview video.preview { position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover; pointer-events: none; }
@@ -152,7 +157,7 @@
     38%, 55% { transform: rotate(-16deg) rotateX(4deg) translate(3%, 9%) scale(0.9); }
   }
   #hand svg { width: 100%; height: auto; display: block;
-    filter: drop-shadow(0 0.9vmin 1.1vmin rgba(0,0,0,0.45)); }
+    filter: drop-shadow(0 0.5vmin 0.8vmin rgba(0,0,0,0.35)); overflow: visible; }
   /* Losse contactschaduw onder de vingertop: hoog = groot en vaag, druk = klein en donker */
   #handShadow { position: absolute; left: 8%; top: -4%; width: 55%; height: 14%;
     border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.5), transparent 70%);
@@ -277,38 +282,41 @@
   <div id="buttonLayer"></div>
   <div id="hand">
     <div id="handInner">
-      <svg viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+      <!-- Uitgesneden contour-hand: transparante binnenkant, gloss op de
+           lijnen, belichting draait mee met de bewegingsrichting (JS stuurt
+           de gloss-gradient en de contourschaduw aan). -->
+      <svg viewBox="0 0 104 130" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#ffe3c4"/>
-            <stop offset="0.55" stop-color="#f4bd90"/>
-            <stop offset="1" stop-color="#d99565"/>
+          <linearGradient id="handStrokeGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffffff"/>
+            <stop offset="0.55" stop-color="#d6fff6"/>
+            <stop offset="1" stop-color="#5ecdb9"/>
           </linearGradient>
-          <linearGradient id="skinDark" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#eeb184"/>
-            <stop offset="1" stop-color="#c47f4f"/>
+          <linearGradient id="handGlossGrad" gradientUnits="userSpaceOnUse" x1="8" y1="8" x2="96" y2="122">
+            <stop offset="0.32" stop-color="#ffffff" stop-opacity="0"/>
+            <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.95"/>
+            <stop offset="0.68" stop-color="#ffffff" stop-opacity="0"/>
           </linearGradient>
-          <radialGradient id="knuckleHi" cx="0.35" cy="0.3" r="0.9">
-            <stop offset="0" stop-color="#fff2e0" stop-opacity="0.9"/>
-            <stop offset="0.6" stop-color="#fff2e0" stop-opacity="0"/>
-          </radialGradient>
+          <filter id="handBlur" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.4"/>
+          </filter>
         </defs>
-        <!-- wijsvinger -->
-        <path d="M40 8 q8 -8 16 0 l1 46 -18 2 z" fill="url(#skin)" stroke="#a86d42" stroke-width="1.6"/>
-        <ellipse cx="48" cy="12" rx="6" ry="4.5" fill="#fff" opacity="0.5"/>
-        <!-- handpalm + gebalde vingers -->
-        <path d="M22 62 q-2 -14 12 -12 l5 4 18 -2 q28 -3 30 16 q2 30 -18 42 q-16 9 -30 2 q-16 -9 -17 -28 z"
-          fill="url(#skin)" stroke="#a86d42" stroke-width="1.8"/>
-        <!-- gebalde vingerknokkels -->
-        <path d="M58 54 q10 -4 14 3 M60 68 q11 -4 16 3 M60 82 q10 -3 15 4" fill="none"
-          stroke="#b97a4d" stroke-width="2.2" stroke-linecap="round"/>
-        <!-- duim -->
-        <path d="M24 66 q-14 6 -8 20 q4 10 16 8 l6 -10 q-10 -2 -14 -18 z" fill="url(#skinDark)"
-          stroke="#a86d42" stroke-width="1.8"/>
-        <!-- dieptehighlight -->
-        <ellipse cx="45" cy="70" rx="22" ry="18" fill="url(#knuckleHi)"/>
-        <!-- manchet -->
-        <path d="M30 108 q22 12 40 -4 l4 16 q-24 14 -48 2 z" fill="#2f7ff0" stroke="#1b4fa0" stroke-width="1.6"/>
+        <!-- contourschaduw (JS verschuift hem tegengesteld aan het licht) -->
+        <g id="handContourShadow" transform="translate(2.5 4)">
+          <path d="M37 62 V17 Q37 8 44.5 8 Q52 8 52 17 V42 Q53.5 38 58.5 38 Q65 38 65 45 V47 Q66.5 43.5 71 43.5 Q78 43.5 78 50 V52 Q79.5 49 83.5 49 Q89 49 89 55 V76 Q89 95 77 103 L75 114 Q58 122 41 114 L39 103 Q27 94 24 80 Q22 68 30.5 66 Q35 65 37 69 Z"
+            fill="none" stroke="rgba(0,0,0,0.55)" stroke-width="7" stroke-linejoin="round" filter="url(#handBlur)"/>
+        </g>
+        <!-- hoofdcontour: bijna transparante binnenkant -->
+        <path d="M37 62 V17 Q37 8 44.5 8 Q52 8 52 17 V42 Q53.5 38 58.5 38 Q65 38 65 45 V47 Q66.5 43.5 71 43.5 Q78 43.5 78 50 V52 Q79.5 49 83.5 49 Q89 49 89 55 V76 Q89 95 77 103 L75 114 Q58 122 41 114 L39 103 Q27 94 24 80 Q22 68 30.5 66 Q35 65 37 69 Z"
+          fill="rgba(190,245,235,0.07)" stroke="url(#handStrokeGrad)" stroke-width="4.2"
+          stroke-linejoin="round" stroke-linecap="round"/>
+        <!-- vouwlijnen van de gebalde vingers -->
+        <path d="M52 42 V58 M65 47 V60 M78 52 V62" fill="none" stroke="url(#handStrokeGrad)"
+          stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+        <!-- gloss over de contour: lichtband draait mee met de beweging -->
+        <path d="M37 62 V17 Q37 8 44.5 8 Q52 8 52 17 V42 Q53.5 38 58.5 38 Q65 38 65 45 V47 Q66.5 43.5 71 43.5 Q78 43.5 78 50 V52 Q79.5 49 83.5 49 Q89 49 89 55 V76 Q89 95 77 103 L75 114 Q58 122 41 114 L39 103 Q27 94 24 80 Q22 68 30.5 66 Q35 65 37 69 Z"
+          fill="none" stroke="url(#handGlossGrad)" stroke-width="1.9"
+          stroke-linejoin="round" stroke-linecap="round"/>
       </svg>
     </div>
     <div id="handShadow"></div>
@@ -1234,9 +1242,28 @@ setInterval(async () => {
   try { await handCycle(); } finally { handBusy = false; }
 }, 800);
 
+let handPos = null;
+
+// Belichting draait mee met de bewegingsrichting: de gloss-band op de
+// contour richt zich naar de vliegrichting en de contourschaduw valt naar
+// de tegenovergestelde kant — dat versterkt het 3D-effect.
+function aimHandLight(dx, dy) {
+  const len = Math.hypot(dx, dy);
+  if (len < 4) return;
+  const deg = Math.atan2(dy, dx) * 180 / Math.PI;
+  document.getElementById('handGlossGrad')?.setAttribute('gradientTransform', `rotate(${deg.toFixed(0)} 52 65)`);
+  const ux = dx / len, uy = dy / len;
+  document.getElementById('handContourShadow')?.setAttribute('transform',
+    `translate(${(-ux * 4).toFixed(1)} ${(3 - uy * 4).toFixed(1)})`);
+}
+
 async function handCycle() {
   const b = config.buttons[handIdx++ % config.buttons.length];
   const s = config.hand.size || 1;
+  const stageRect = document.getElementById('stage').getBoundingClientRect();
+  const tx = stageRect.width * b.x / 100, ty = stageRect.height * b.y / 100;
+  if (handPos) aimHandLight(tx - handPos.x, ty - handPos.y);
+  handPos = { x: tx, y: ty };
   // Vingertop van het handje op het midden van de knop richten.
   handEl.style.left = `calc(${b.x}% - ${3.1 * s}vmin)`;
   handEl.style.top = `calc(${b.y}% - ${0.4 * s}vmin)`;
