@@ -39,6 +39,15 @@
     overflow: hidden; touch-action: none; }
   #idleVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
     transform: translateZ(0); }             /* eigen GPU-layer */
+  #stageLogo { position: absolute; z-index: 12; pointer-events: none;
+    width: var(--logoW, 12vmin); filter: drop-shadow(0 4px 14px rgba(0,0,0,0.5)); }
+  #stageLogo.pos-top-left { left: 3vmin; top: 3vmin; }
+  #stageLogo.pos-top-right { right: 3vmin; top: 3vmin; }
+  #stageLogo.pos-bottom-left { left: 3vmin; bottom: 3vmin; }
+  #stageLogo.pos-bottom-right { right: 3vmin; bottom: 3vmin; }
+  #stageLogo.pos-top-center { left: 50%; top: 3vmin; transform: translateX(-50%); }
+  #stage { --uiFont: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #stage, #stageTitle, .vbtn { font-family: var(--uiFont); }
   #stageTitle { position: absolute; top: 6%; left: 50%; transform: translateX(-50%);
     font-size: clamp(20px, 4.5vmin, 64px); font-weight: 700; letter-spacing: 0.03em;
     text-shadow: 0 2px 18px rgba(0,0,0,0.6); text-align: center; width: 90%; pointer-events: none; }
@@ -47,7 +56,7 @@
      rondom en een losse slagschaduw eronder die met de beweging mee ademt. */
   .vbtn { position: absolute; transform: translate(-50%, -50%) translateZ(0); will-change: transform;
     display: flex; align-items: center; justify-content: center; text-align: center;
-    font-weight: 700; color: #fff; border: 0; user-select: none;
+    font-weight: var(--uiWeight, 700); color: #fff; border: 0; user-select: none;
     background-image: linear-gradient(rgba(255,255,255,0.22), rgba(255,255,255,0) 48%);
     box-shadow: 0 16px 42px rgba(0,0,0,0.5), 0 0 30px var(--glow, rgba(53,208,186,0.35)),
       inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -0.35em 0.6em rgba(0,0,0,0.18);
@@ -60,6 +69,13 @@
   .vbtn.shape-pill { border-radius: 999px; }
   .vbtn.shape-rounded { border-radius: 0.35em; }
   .vbtn.shape-circle { border-radius: 50%; aspect-ratio: 1; padding: 0.4em; }
+  /* Transparante hotspot: onzichtbaar tikvlak (spec 6) */
+  .vbtn.shape-hotspot { background: transparent !important; background-image: none !important;
+    box-shadow: none; color: transparent; border-radius: 0.35em;
+    width: calc(var(--pw, 30vmin) * 0.9); height: calc(var(--pw, 30vmin) * 0.55); }
+  .vbtn.shape-hotspot::after { display: none; }
+  body.editing .vbtn.shape-hotspot { background: rgba(53,208,186,0.12) !important;
+    outline: 2px dashed rgba(53,208,186,0.8); color: var(--text); }
   .vbtn .play-ico { margin-right: 0.4em; font-size: 0.85em; }
   .vbtn.shape-circle .play-ico { margin: 0; }
 
@@ -112,6 +128,10 @@
     background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.35); border-radius: 999px;
     padding: 0.15em 0.7em; letter-spacing: 0.06em; }
   #playCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: none; touch-action: none; }
+  /* Morph-kloon: de gekozen tegel groeit naar fullscreen en wordt het videovlak */
+  .morph-clone { position: fixed; z-index: 60; overflow: hidden; pointer-events: none;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+  .morph-clone video { width: 100%; height: 100%; object-fit: cover; display: block; }
   #playOverlay.mode-3d #playCanvas { display: block; }
   #playOverlay.mode-3d #playVideo { display: none; }
 
@@ -191,6 +211,20 @@
     margin: -1.1em 0 0 -1.1em; border-radius: 50%; border: 3px solid rgba(255,255,255,0.9);
     pointer-events: none; z-index: 4; animation: pressRipple 0.65s ease-out forwards; }
   @keyframes pressRipple { from { transform: scale(0.3); opacity: 0.9; } to { transform: scale(4.5); opacity: 0; } }
+
+  /* Raster en veilige zones (alleen zichtbaar in verplaats-modus) */
+  #gridOverlay { position: absolute; inset: 0; z-index: 8; pointer-events: none; display: none;
+    background-image: linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: var(--gs, 5%) var(--gs, 5%); }
+  body.editing #gridOverlay.on { display: block; }
+  #safeZone { position: absolute; z-index: 9; pointer-events: none; display: none;
+    border: 2px dashed rgba(234,179,8,0.55); border-radius: 10px; }
+  body.editing #safeZone.on { display: block; }
+  #alignGuideV, #alignGuideH { position: absolute; z-index: 10; pointer-events: none; display: none;
+    background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  #alignGuideV { width: 1px; top: 0; bottom: 0; }
+  #alignGuideH { height: 1px; left: 0; right: 0; }
 
   /* Bewegingskader (zichtbaar in verplaats-modus bij "vrij bewegen") */
   .vframe { position: absolute; transform: translate(-50%, -50%); border: 2px dashed rgba(53,208,186,0.55);
@@ -359,11 +393,16 @@
 <div id="stage">
   <video id="idleVideo" class="hidden" autoplay muted loop playsinline></video>
   <div id="stageTitle"></div>
+  <img id="stageLogo" class="hidden" alt="">
   <div id="welcome">
     <div class="big">HereWe<span>Holo</span> Studio</div>
     <p>Open het menu (⚙ linksonder) om video's toe te voegen en je eigen
        holobox-presentatie samen te stellen. Alles wordt automatisch bewaard.</p>
   </div>
+  <div id="gridOverlay"></div>
+  <div id="safeZone"></div>
+  <div id="alignGuideV"></div>
+  <div id="alignGuideH"></div>
   <div id="buttonLayer"></div>
   <div id="hand">
     <div id="handInner">
@@ -457,7 +496,27 @@
       <p class="note">Een knop kan media afspelen &oacute;f naar een andere sc&egrave;ne navigeren (actie per knop hieronder). De homescène is het startpunt.</p>
     </div>
     <button id="addBtn" class="btn primary block">+ Knop toevoegen</button>
-    <p class="note">Verslepen: klik op het slot linksonder in het scherm, sleep de knoppen naar hun plek en klik nogmaals om ze vast te zetten.</p>
+    <div class="card">
+      <div class="row">
+        <button id="undoBtn" class="btn small">&#8630; Ongedaan (Ctrl+Z)</button>
+        <button id="redoBtn" class="btn small">&#8631; Opnieuw (Ctrl+Y)</button>
+      </div>
+      <div class="toggle-row">
+        <div><div class="t-label">Uitlijnen op raster</div>
+          <div class="t-sub">Knoppen klikken vast op het raster tijdens verslepen</div></div>
+        <label class="switch"><input type="checkbox" id="edSnap"><i></i></label>
+      </div>
+      <div class="row">
+        <label class="field">Rastergrootte (%)
+          <input type="number" id="edGrid" min="1" max="25" step="1">
+        </label>
+        <label class="field">Veilige marge (%)
+          <input type="number" id="edSafe" min="0" max="25" step="1">
+        </label>
+      </div>
+      <p class="note">Verslepen: klik op het slot linksonder in het scherm. Raster,
+      hulplijnen en de veilige marge zijn dan zichtbaar.</p>
+    </div>
     <div id="btnList"></div>
   </div>
 
@@ -496,6 +555,58 @@
           <div class="t-sub">Bedieningsknoppen vrijwel onzichtbaar; verschijnen bij aanwijzen</div></div>
         <label class="switch"><input type="checkbox" id="cfgClean"><i></i></label>
       </div>
+    </div>
+    <h2>Huisstijl</h2>
+    <div class="card">
+      <div class="row">
+        <label class="field">Lettertype
+          <select id="thFont">
+            <option value="system">Systeem (neutraal)</option>
+            <option value="humanist">Humanist</option>
+            <option value="grotesk">Grotesk</option>
+            <option value="geometric">Geometrisch</option>
+            <option value="serif">Serif</option>
+            <option value="mono">Mono</option>
+          </select>
+        </label>
+        <label class="field">Tekstgewicht
+          <select id="thWeight">
+            <option value="400">Normaal</option>
+            <option value="600">Halfvet</option>
+            <option value="700">Vet</option>
+            <option value="800">Extra vet</option>
+          </select>
+        </label>
+      </div>
+      <label class="field">Klantlogo (PNG uit de mediabibliotheek)
+        <select id="thLogo"></select>
+      </label>
+      <div class="row">
+        <label class="field">Logogrootte
+          <input type="range" id="thLogoSize" min="5" max="30" step="1">
+        </label>
+        <label class="field">Positie
+          <select id="thLogoPos">
+            <option value="top-left">Linksboven</option>
+            <option value="top-center">Bovenaan gecentreerd</option>
+            <option value="top-right">Rechtsboven</option>
+            <option value="bottom-left">Linksonder</option>
+            <option value="bottom-right">Rechtsonder</option>
+          </select>
+        </label>
+      </div>
+      <div class="divider"></div>
+      <label class="field">Themapreset (past kleuren, frame en motion in één keer aan)
+        <select id="thPreset">
+          <option value="">— kies een preset —</option>
+          <option value="corporate">Corporate blauw</option>
+          <option value="luxury">Luxury zwart/goud</option>
+          <option value="tech">Technology cyaan</option>
+          <option value="retail">Retail warm</option>
+          <option value="healthcare">Healthcare licht</option>
+          <option value="museum">Museum antraciet</option>
+        </select>
+      </label>
     </div>
     <h2>Video Frame Style</h2>
     <div class="card">
@@ -614,6 +725,7 @@
       <label class="field">Selectie-effect
         <select id="cfgSelectFx">
           <option value="preset">Volgens motionpreset</option>
+          <option value="morph">Tegel wordt het videovlak &mdash; naadloos, geen zwart frame</option>
           <option value="zoom">Filmisch zoomen &mdash; gekozen knop komt naar voren, de rest vervaagt</option>
           <option value="aside">Opzij geschoven &mdash; andere knoppen uit beeld getrokken</option>
           <option value="depth">De diepte in &mdash; andere knoppen krimpen naar achteren</option>
@@ -795,6 +907,7 @@ const defaultConfig = () => ({
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
   // Globale Video Frame Style (per knop te overriden met de knopkleur).
+  mediaSettings: {},   // per mediaId: trimStart, trimEnd, volume, fadeSec, loop, holdLastFrame
   frameStyle: { mode: 'button', color1: '#1b2a5e', color2: '#7b2ff0', angle: 135,
     radius: 14, thickness: 9, depth: 8, gloss: 0.3, highlight: 0.35, shadow: 0.55 },
   security: { pinHash: null },
@@ -807,6 +920,8 @@ const defaultConfig = () => ({
   screensaver: { enabled: false, delaySec: 120, mediaIds: [] },
   camera: { enabled: false, dwellSec: 3, sensitivity: 5, deviceId: null },
   object3d: { color: '#8fa3bd', rotSpeed: 0.8, light: 1.0, shininess: 0.35, maxTriangles: 150000, autoCloseSec: 60 },
+  theme: { font: 'system', weight: 700, logoMediaId: null, logoSize: 12, logoPos: 'top-left' },
+  editor: { snap: true, gridPercent: 5, safeZone: 0 },  // raster, snap en veilige marge (%)
   fxIntervalSec: 7,      // hoe vaak een knop gemiddeld een aandachtseffect speelt
   selectFx: 'preset',    // 'preset' volgt de motionpreset | zoom | aside | depth | burst | none
   hand: { enabled: false, size: 1.0, delaySec: 8 }, // demo-handje
@@ -823,6 +938,9 @@ function migrateConfig(stored) {
     hand: { ...d.hand, ...stored.hand },
     motion: { ...d.motion, ...stored.motion, overrides: { ...(stored.motion?.overrides || {}) } },
     frameStyle: { ...d.frameStyle, ...stored.frameStyle },
+    mediaSettings: { ...(stored.mediaSettings || {}) },
+    editor: { ...d.editor, ...stored.editor },
+    theme: { ...d.theme, ...stored.theme },
     security: { ...d.security, ...stored.security },
     analytics: { ...d.analytics, ...stored.analytics } };
   if (!Array.isArray(c.scenes) || !c.scenes.length) {
@@ -1177,6 +1295,28 @@ function frameFor(b) {
 function renderStage() {
   // Titel + welkomstscherm
   $('#stageTitle').textContent = curScene().title || '';
+  // Thema: lettertype, tekstgewicht en klantlogo (spec 63-64, 67).
+  const FONTS = {
+    system: 'system-ui, -apple-system, "Segoe UI", sans-serif',
+    humanist: '"Segoe UI", Corbel, "Trebuchet MS", sans-serif',
+    grotesk: '"Arial Nova", Arial, "Helvetica Neue", sans-serif',
+    geometric: '"Century Gothic", Futura, "Avant Garde", sans-serif',
+    serif: 'Georgia, "Times New Roman", serif',
+    mono: 'Consolas, "Courier New", monospace'
+  };
+  const stage = document.getElementById('stage');
+  stage.style.setProperty('--uiFont', FONTS[config.theme.font] || FONTS.system);
+  stage.style.setProperty('--uiWeight', config.theme.weight || 700);
+  const logo = $('#stageLogo');
+  const lm = mediaCache.get(config.theme.logoMediaId);
+  if (lm && lm.kind === 'image') {
+    logo.src = lm.url;
+    logo.className = 'pos-' + (config.theme.logoPos || 'top-left');
+    logo.style.setProperty('--logoW', (config.theme.logoSize || 12) + 'vmin');
+  } else {
+    logo.className = 'hidden';
+    logo.removeAttribute('src');
+  }
   $('#welcome').classList.toggle('hidden', curButtons().length > 0 || !!curScene().idleMediaId || !!curScene().title);
   document.body.classList.toggle('clean', !!config.cleanMode);
 
@@ -1197,7 +1337,7 @@ function renderStage() {
   layer.innerHTML = '';
   for (const b of curButtons()) {
     const media = mediaCache.get(b.mediaId);
-    const preview = b.showPreview !== false && !!media;
+    const preview = b.showPreview !== false && !!media && b.shape !== 'hotspot';
     const btn = el('button', {
       class: `vbtn shape-${b.shape || 'pill'}` + (preview ? ' has-preview' : ''),
       'data-id': b.id,
@@ -1294,12 +1434,49 @@ function setPreviewsPaused(paused) {
   for (const [key, viewer] of objViewers) if (key !== 'fullscreen') viewer.setPaused(paused);
 }
 
+// Afspeelinstellingen per video (spec 15-19, 23-25).
+const PLAY_DEFAULTS = { trimStart: 0, trimEnd: 0, volume: 0, fadeSec: 0, loop: false, holdLastFrame: false };
+function playSettings(mediaId) {
+  return { ...PLAY_DEFAULTS, ...(config.mediaSettings[mediaId] || {}) };
+}
+
+// Zachte in-/uitfade van het geluid (spec 25).
+let fadeTimer = null;
+function fadeAudio(video, from, to, sec) {
+  clearInterval(fadeTimer);
+  if (sec <= 0) { video.volume = to; return; }
+  const steps = Math.max(1, Math.round(sec * 20));
+  let i = 0;
+  video.volume = from;
+  fadeTimer = setInterval(() => {
+    i++;
+    video.volume = Math.min(1, Math.max(0, from + (to - from) * (i / steps)));
+    if (i >= steps) clearInterval(fadeTimer);
+  }, sec * 1000 / steps);
+}
+
+// Wachtrij voor playlists (spec 19-20): meerdere media achter elkaar.
+let playQueue = [];
+
 function playMedia(mediaId) {
   const m = mediaCache.get(mediaId);
   if (!m) return toast('Deze knop heeft nog geen (gevonden) video — koppel hem in het menu');
   if (m.kind === 'model') return playObject(mediaId);
   if (m.kind === 'image') return; // PNG is de knop zelf; niets om af te spelen
   if (playVideo.src !== m.url) playVideo.src = m.url; // voorgeladen tijdens de overgang
+  const ps = playSettings(mediaId);
+  finishing = false;
+  playVideo.loop = ps.loop;
+  playVideo.muted = ps.volume <= 0;
+  playVideo.volume = ps.volume > 0 ? Math.min(1, ps.volume) : 0;
+  const startAt = () => {
+    if (ps.trimStart > 0 && Math.abs(playVideo.currentTime - ps.trimStart) > 0.15) {
+      try { playVideo.currentTime = ps.trimStart; } catch {}
+    }
+    if (ps.volume > 0 && ps.fadeSec > 0) fadeAudio(playVideo, 0, Math.min(1, ps.volume), ps.fadeSec);
+  };
+  if (playVideo.readyState >= 1) startAt();
+  else playVideo.addEventListener('loadedmetadata', startAt, { once: true });
   AppState.set('CONTENT_PLAYBACK');
   track('playStart', m.name);
   playOverlay.classList.add('show');
@@ -1308,6 +1485,23 @@ function playMedia(mediaId) {
   setPreviewsPaused(true);
   playVideo.play().catch(() => {});
 }
+
+// Eind bereikt volgens trimEnd (spec 23) + uitfaden vlak voor het einde.
+playVideo.addEventListener('timeupdate', () => {
+  if (!playOverlay.classList.contains('show') || !playVideo.src) return;
+  const id = [...mediaCache.values()].find((m) => m.url === playVideo.src)?.id;
+  if (!id) return;
+  const ps = playSettings(id);
+  const end = ps.trimEnd > 0 ? ps.trimEnd : (playVideo.duration || 0);
+  if (!end) return;
+  if (ps.volume > 0 && ps.fadeSec > 0 && end - playVideo.currentTime <= ps.fadeSec && playVideo.volume > 0.02) {
+    fadeAudio(playVideo, playVideo.volume, 0, end - playVideo.currentTime);
+  }
+  if (playVideo.currentTime >= end - 0.05) {
+    if (playVideo.loop) { try { playVideo.currentTime = ps.trimStart || 0; } catch {} }
+    else finishPlayback(ps);
+  }
+});
 
 // Fullscreen 3D-weergave: bezoeker kan draaien (slepen) en zoomen (scrollen).
 let objCloseTimer = null;
@@ -1337,6 +1531,8 @@ function playObject(mediaId) {
 
 function stopPlaying() {
   clearTimeout(objCloseTimer);
+  clearInterval(fadeTimer);
+  playQueue = [];
   objViewers.get('fullscreen')?.destroy();
   objViewers.delete('fullscreen');
   cancelSelectAnims(); // knoppen terug naar hun plek
@@ -1357,7 +1553,29 @@ function stopPlaying() {
   runEntrance(lastChosenId).then(() => AppState.set('IDLE'));
   lastChosenId = null;
 }
-playVideo.addEventListener('ended', () => { track('playComplete'); stopPlaying(); });
+playVideo.addEventListener('ended', () => {
+  const id = [...mediaCache.values()].find((m) => m.url === playVideo.src)?.id;
+  finishPlayback(playSettings(id));
+});
+
+// Afronden: volgende uit de wachtrij, op het laatste frame blijven staan
+// (spec 18) of terug naar het menu.
+let finishing = false;
+function finishPlayback(ps) {
+  if (finishing) return;         // 'ended' en de trim-controle kunnen samenvallen
+  finishing = true;
+  track('playComplete');
+  if (playQueue.length) {
+    const next = playQueue.shift();
+    playVideo.pause();
+    playVideo.removeAttribute('src');
+    playVideo.load();
+    playMedia(next);
+    return;
+  }
+  if (ps && ps.holdLastFrame) { playVideo.pause(); return; }
+  stopPlaying();
+}
 $('#stopPlay').addEventListener('click', stopPlaying);
 
 /* ================= Klik & sleep op knoppen ================= */
@@ -1376,15 +1594,31 @@ $('#buttonLayer').addEventListener('pointermove', (e) => {
   if (!drag) return;
   const r = $('#stage').getBoundingClientRect();
   drag.moved = true;
-  drag.b.x = Math.min(98, Math.max(2, ((e.clientX - r.left) / r.width) * 100));
-  drag.b.y = Math.min(98, Math.max(2, ((e.clientY - r.top) / r.height) * 100));
+  let nx = Math.min(98, Math.max(2, ((e.clientX - r.left) / r.width) * 100));
+  let ny = Math.min(98, Math.max(2, ((e.clientY - r.top) / r.height) * 100));
+  // Snap-to-grid (spec 33) en slimme uitlijning op andere knoppen (spec 34).
+  const gv = $('#alignGuideV'), gh = $('#alignGuideH');
+  gv.style.display = gh.style.display = 'none';
+  if (config.editor.snap) {
+    const g = config.editor.gridPercent || 5;
+    nx = Math.round(nx / g) * g;
+    ny = Math.round(ny / g) * g;
+  }
+  for (const other of curButtons()) {
+    if (other.id === drag.b.id) continue;
+    if (Math.abs(other.x - nx) < 1.6) { nx = other.x; gv.style.left = (r.width * nx / 100) + 'px'; gv.style.display = 'block'; }
+    if (Math.abs(other.y - ny) < 1.6) { ny = other.y; gh.style.top = (r.height * ny / 100) + 'px'; gh.style.display = 'block'; }
+  }
+  drag.b.x = nx;
+  drag.b.y = ny;
   drag.el.style.left = drag.b.x + '%';
   drag.el.style.top = drag.b.y + '%';
   const frame = document.querySelector(`.vframe[data-frame="${drag.b.id}"]`);
   if (frame) { frame.style.left = drag.b.x + '%'; frame.style.top = drag.b.y + '%'; }
 });
 $('#buttonLayer').addEventListener('pointerup', () => {
-  if (drag && drag.moved) save();
+  if (drag && drag.moved) { pushUndo(); save(); }
+  $('#alignGuideV').style.display = $('#alignGuideH').style.display = 'none';
   drag = null;
 });
 // PNG-knoppen: alleen de zichtbare contouren zijn klikbaar (alpha-test).
@@ -1421,6 +1655,57 @@ $('#buttonLayer').addEventListener('click', (e) => {
   runAction(b, btnEl);
 });
 
+/* ================= Undo / redo (spec-editor) ================= */
+const undoStack = [];
+const redoStack = [];
+
+// Roep pushUndo() aan vlak vóór een wijziging: de huidige staat gaat op de
+// stapel, zodat undo exact terugkeert naar het moment vóór die wijziging.
+function pushUndo() {
+  const now = JSON.stringify(config);
+  if (undoStack[undoStack.length - 1] === now) return;
+  undoStack.push(now);
+  if (undoStack.length > 50) undoStack.shift();
+  redoStack.length = 0;
+  updateUndoUI();
+}
+
+function applyHistory(json) {
+  config = migrateConfig(JSON.parse(json));
+  if (!config.scenes.find((sc) => sc.id === currentSceneId)) currentSceneId = config.homeSceneId;
+  save();
+  renderStage();
+  if (panel.classList.contains('open')) refreshPanel();
+  updateUndoUI();
+}
+
+function doUndo() {
+  if (!undoStack.length) return toast('Niets om ongedaan te maken');
+  redoStack.push(JSON.stringify(config));
+  applyHistory(undoStack.pop());
+  toast('Ongedaan gemaakt');
+}
+
+function doRedo() {
+  if (!redoStack.length) return toast('Niets om opnieuw te doen');
+  undoStack.push(JSON.stringify(config));
+  applyHistory(redoStack.pop());
+  toast('Opnieuw uitgevoerd');
+}
+
+function updateUndoUI() {
+  const u = document.getElementById('undoBtn'), r = document.getElementById('redoBtn');
+  if (u) u.disabled = !undoStack.length;
+  if (r) r.disabled = !redoStack.length;
+}
+
+window.addEventListener('keydown', (e) => {
+  if (!(e.ctrlKey || e.metaKey)) return;
+  const k = e.key.toLowerCase();
+  if (k === 'z' && !e.shiftKey) { e.preventDefault(); doUndo(); }
+  else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); doRedo(); }
+});
+
 /* ================= Selectie-effect =================
    De gekozen knop komt naar de kijker toe; de overige knoppen verdwijnen
    volgens het gekozen effect (vervagen, opzij, de diepte in of radiaal).
@@ -1432,6 +1717,7 @@ function runSelectTransition(chosenEl) {
   const mode = activeSelectFx();
   if (mode === 'none' || editing) return Promise.resolve();
   cancelSelectAnims();
+  if (mode === 'morph') return runMorphTransition(chosenEl);
 
   const vw = innerWidth, vh = innerHeight;
   const cR = chosenEl.getBoundingClientRect();
@@ -1494,10 +1780,62 @@ function runSelectTransition(chosenEl) {
   return Promise.all(selectAnims.map((a) => a.finished.catch(() => {})));
 }
 
+// Naadloze thumbnail-naar-videovlak-overgang (spec 212/223): de gekozen
+// tegel groeit door naar fullscreen terwijl zijn eigen preview blijft spelen;
+// op het eindpunt neemt de echte video het over met een korte crossfade,
+// zodat er geen zwart frame of harde cut zichtbaar is.
+function morphTileToVideo(btnEl, media) {
+  const pv = btnEl.querySelector('video.preview');
+  if (!pv) return Promise.resolve(false);
+  const r = btnEl.getBoundingClientRect();
+  const cs = getComputedStyle(btnEl);
+  const clone = el('div', { class: 'morph-clone', style:
+    `left:${r.left}px; top:${r.top}px; width:${r.width}px; height:${r.height}px;` +
+    `border-radius:${cs.borderRadius}; background:${cs.backgroundColor};` });
+  const cv = el('video', { muted: '', playsinline: '', loop: '' });
+  cv.muted = true;
+  cv.src = pv.currentSrc || pv.src;
+  clone.append(cv);
+  document.body.append(clone);
+  try { cv.currentTime = pv.currentTime; } catch {}
+  cv.play().catch(() => {});
+  btnEl.style.visibility = 'hidden';
+
+  const grow = clone.animate([
+    { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, borderRadius: cs.borderRadius },
+    { left: '0px', top: '0px', width: '100vw', height: '100vh', borderRadius: '0px' }
+  ], { duration: 620, easing: EASE.standard, fill: 'forwards' });
+
+  return grow.finished.catch(() => {}).then(() => {
+    // Echte video staat inmiddels te spelen onder de kloon: overvloeien.
+    return clone.animate([{ opacity: 1 }, { opacity: 0 }],
+      { duration: 200, easing: 'linear', fill: 'forwards' }).finished.catch(() => {});
+  }).then(() => {
+    clone.remove();
+    btnEl.style.visibility = '';
+    return true;
+  });
+}
+
 function cancelSelectAnims() {
   for (const a of selectAnims) { try { a.cancel(); } catch {} }
   selectAnims = [];
 }
+
+// Morph-selectie: overige tegels trekken zich terug, de gekozen tegel groeit
+// door tot het videovlak (spec 223 - "content preview expansion").
+function runMorphTransition(chosenEl) {
+  const others = [...document.querySelectorAll('.vbtn')].filter((b) => b !== chosenEl);
+  for (const o of others) {
+    selectAnims.push(o.animate(
+      [{ opacity: 1, transform: 'scale(1)', filter: 'blur(0px)' },
+       { opacity: 0, transform: 'scale(0.78)', filter: 'blur(6px)' }],
+      { duration: 340, easing: EASE.precise, fill: 'forwards', composite: 'add' }));
+  }
+  morphPending = chosenEl;
+  return Promise.all(selectAnims.map((a) => a.finished.catch(() => {})));
+}
+let morphPending = null;
 
 /* ================= Motion Engine (masterspec §10–19) =================
    Eén centrale laag voor entrance-, groeps- en return-choreografie.
@@ -1527,6 +1865,16 @@ const ENTRANCES = {
   glowMaterialize: () => ({ rest: [{ opacity: 0, filter: 'brightness(2.6) blur(7px)' }, { opacity: 1, filter: 'brightness(1) blur(0px)' }] }),
   lightSweep: () => ({ rest: [{ opacity: 0 }, { opacity: 1 }], after: 'shine' }),
   holoScan: () => ({ rest: [{ opacity: 0, clipPath: 'inset(0 0 100% 0)', filter: 'brightness(1.9)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)', filter: 'brightness(1)' }] }),
+  perspective: (d) => ({ tf: [{ transform: `perspective(900px) rotateY(38deg) translateX(${d}px)` }, { transform: 'perspective(900px) rotateY(0deg) translateX(0px)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  flipH: () => ({ tf: [{ transform: 'perspective(900px) rotateY(90deg)' }, { transform: 'perspective(900px) rotateY(0deg)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  flipV: () => ({ tf: [{ transform: 'perspective(900px) rotateX(90deg)' }, { transform: 'perspective(900px) rotateX(0deg)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  elastic: () => ({ tf: [{ transform: 'scale(0.4)' }, { transform: 'scale(1.06)', offset: 0.7 }, { transform: 'scale(1)' }], rest: [{ opacity: 0 }, { opacity: 1 }] }),
+  maskVertical: () => ({ rest: [{ opacity: 0.4, clipPath: 'inset(100% 0 0 0)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)' }] }),
+  centerExpand: () => ({ rest: [{ opacity: 0.5, clipPath: 'inset(50% 50% 50% 50%)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)' }] }),
+  radialMask: () => ({ rest: [{ opacity: 0.5, clipPath: 'circle(0% at 50% 50%)' }, { opacity: 1, clipPath: 'circle(75% at 50% 50%)' }] }),
+  diagonal: () => ({ rest: [{ opacity: 0.4, clipPath: 'polygon(0 0, 0 0, 0 0, 0 0)' }, { opacity: 1, clipPath: 'polygon(0 0, 140% 0, 0 140%, 0 0)' }] }),
+  focusPull: () => ({ tf: [{ transform: 'scale(1.08)' }, { transform: 'scale(1)' }], rest: [{ opacity: 0, filter: 'blur(16px)' }, { opacity: 1, filter: 'blur(0px)' }] }),
+  spotlight: () => ({ rest: [{ opacity: 0, filter: 'brightness(0.2)' }, { opacity: 1, filter: 'brightness(1.5)', offset: 0.6 }, { opacity: 1, filter: 'brightness(1)' }] }),
   galaxyTiles: () => ({ special: 'galaxy' }),   // afgehandeld in runGalaxyTiles
   extremeGalaxy: () => ({ special: 'galaxy' })  // idem, met volledige 360°+-flips
 };
@@ -1680,7 +2028,8 @@ let fxSuppressUntil = 0; // attract-gedrag kort uit na terugkeer (spec 229)
 
 function runAction(b, btnEl) {
   const a = buttonAction(b);
-  track('press', b.label || b.id);
+  const r = btnEl ? btnEl.getBoundingClientRect() : null;
+  track('press', b.label || b.id, r ? { x: b.x, y: b.y } : null);
   AppState.set('USER_INTERACTION');
   switch (a.type) {
     case 'OpenScene': return gotoScene(a.sceneId, { push: true });
@@ -1694,7 +2043,18 @@ function runAction(b, btnEl) {
         else loadObjGeometry(m.id).catch(() => {});
         lastChosenId = b.id;
         AppState.set('CONTENT_TRANSITION');
-        runSelectTransition(btnEl).then(() => playMedia(m.id));
+        // Playlist: meerdere media achter elkaar (spec 19-20).
+        playQueue = (Array.isArray(b.mediaIds) ? b.mediaIds.slice(1) : []).filter((id) => mediaCache.has(id));
+        runSelectTransition(btnEl).then(() => {
+          if (morphPending === btnEl && m.kind === 'video') {
+            const grown = morphTileToVideo(btnEl, m);
+            playMedia(m.id);
+            morphPending = null;
+            return grown;
+          }
+          morphPending = null;
+          playMedia(m.id);
+        });
       } else {
         playMedia(a.mediaId ?? b.mediaId);
       }
@@ -1728,15 +2088,35 @@ let stats = (() => {
   try { return JSON.parse(localStorage.getItem(STATS_KEY)) || {}; } catch { return {}; }
 })();
 if (!stats.since) stats = { since: Date.now(), presses: {}, playStarts: 0, playCompletions: 0, sessions: 0 };
+stats.heatmap = stats.heatmap || [];      // {x, y, label} per aanraking (spec 103)
+stats.byHour = stats.byHour || {};        // interacties per uur van de dag (spec 107)
+stats.activeMs = stats.activeMs || 0;     // totale actieve tijd (spec 106)
+let sessionStart = Date.now();
 stats.sessions = (stats.sessions || 0) + 1;
 
-function track(event, key) {
+function track(event, key, extra) {
   if (!config.analytics.enabled) return;
-  if (event === 'press') stats.presses[key] = (stats.presses[key] || 0) + 1;
+  if (event === 'press') {
+    stats.presses[key] = (stats.presses[key] || 0) + 1;
+    const h = new Date().getHours();
+    stats.byHour[h] = (stats.byHour[h] || 0) + 1;
+    if (extra && typeof extra.x === 'number') {
+      stats.heatmap.push({ x: Math.round(extra.x), y: Math.round(extra.y), label: key });
+      if (stats.heatmap.length > 2000) stats.heatmap.shift();
+    }
+  }
   if (event === 'playStart') stats.playStarts++;
   if (event === 'playComplete') stats.playCompletions++;
   try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch {}
 }
+
+// Actieve sessietijd bijhouden (spec 106): elke minuut wegschrijven.
+setInterval(() => {
+  if (!config.analytics.enabled || document.hidden) return;
+  if (Date.now() - lastInteraction > 5 * 60 * 1000) return;  // niemand actief
+  stats.activeMs += 30000;
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch {}
+}, 30000);
 
 /* ================= Aandachtseffecten =================
    Elke knop speelt af en toe (gemiddeld elke fxIntervalSec, met spreiding)
@@ -1956,7 +2336,44 @@ function mediaSelect(selectedId, onchange) {
   return sel;
 }
 
+// Playlist per knop: extra media die na de hoofdvideo automatisch volgen.
+function playlistEditor(b) {
+  const wrap = el('div', { style: 'display:flex;flex-direction:column;gap:6px' });
+  const ids = Array.isArray(b.mediaIds) ? b.mediaIds : (b.mediaId ? [b.mediaId] : []);
+  const redraw = () => {
+    wrap.innerHTML = '';
+    const list = Array.isArray(b.mediaIds) ? b.mediaIds : [];
+    list.forEach((id, i) => {
+      const m = mediaCache.get(id);
+      wrap.append(el('div', { class: 'row', style: 'gap:6px' },
+        el('span', { class: 'grow', style: 'font-size:12.5px' }, `${i + 1}. ${m ? m.name : '(ontbreekt)'}`),
+        el('button', { class: 'btn small', title: 'Omhoog', onclick: () => {
+          if (i > 0) { [list[i - 1], list[i]] = [list[i], list[i - 1]]; save(); redraw(); } } }, '↑'),
+        el('button', { class: 'btn small danger', onclick: () => {
+          list.splice(i, 1);
+          if (!list.length) delete b.mediaIds; else b.mediaIds = list;
+          save(); redraw(); } }, '✕')));
+    });
+    const add = el('select', { 'data-role': 'playlist-add', onchange: (e) => {
+      if (!e.target.value) return;
+      const cur = Array.isArray(b.mediaIds) ? b.mediaIds : (b.mediaId ? [b.mediaId] : []);
+      b.mediaIds = [...cur, e.target.value];
+      if (!b.mediaId) b.mediaId = b.mediaIds[0];
+      save(); redraw();
+    } }, el('option', { value: '' }, '+ video toevoegen…'),
+       [...mediaCache.values()].filter((m) => m.kind === 'video').map((m) => el('option', { value: m.id }, m.name)));
+    wrap.append(add);
+  };
+  redraw();
+  return wrap;
+}
+
 function renderBtnList() {
+  $('#edSnap').checked = !!config.editor.snap;
+  $('#edGrid').value = config.editor.gridPercent;
+  $('#edSafe').value = config.editor.safeZone;
+  updateUndoUI();
+  applyEditorOverlays();
   const list = $('#btnList');
   list.innerHTML = '';
   if (!curButtons().length) list.append(el('p', { class: 'note' }, 'Nog geen knoppen. Voeg er één toe en koppel een video.'));
@@ -1978,15 +2395,15 @@ function renderBtnList() {
       el('option', { value: 6 }, 'Middel kader'),
       el('option', { value: 10 }, 'Groot kader'));
     driftSel.value = String(b.drift || 0);
-    const frameSel = el('select', { onchange: (e) => { b.frameOwn = e.target.value === 'own'; if (!b.frameOwn) delete b.frameOwn; save(); renderStage(); } },
+    const frameSel = el('select', { 'data-role': 'frame', onchange: (e) => { b.frameOwn = e.target.value === 'own'; if (!b.frameOwn) delete b.frameOwn; save(); renderStage(); } },
       el('option', { value: 'global' }, 'Globale Frame Style'),
       el('option', { value: 'own' }, 'Eigen knopkleur'));
     frameSel.value = b.frameOwn ? 'own' : 'global';
-    const previewSel = el('select', { onchange: (e) => { b.showPreview = e.target.value === 'yes'; save(); renderStage(); } },
+    const previewSel = el('select', { 'data-role': 'preview', onchange: (e) => { b.showPreview = e.target.value === 'yes'; save(); renderStage(); } },
       el('option', { value: 'yes' }, 'Aan — kader met videovoorbeeld'),
       el('option', { value: 'no' }, 'Uit — gewone knop'));
     previewSel.value = b.showPreview === false ? 'no' : 'yes';
-    const fxSel = el('select', { onchange: (e) => { b.fx = e.target.value; save(); } },
+    const fxSel = el('select', { 'data-role': 'fx', onchange: (e) => { b.fx = e.target.value; save(); } },
       el('option', { value: 'random' }, '✨ Willekeurig (afwisselend)'),
       el('option', { value: 'glow' }, 'Gloedpuls'),
       el('option', { value: 'sweep' }, 'Lichtrand rondom'),
@@ -2002,12 +2419,21 @@ function renderBtnList() {
       el('div', { class: 'row' },
         el('input', { type: 'text', class: 'grow', value: b.label, placeholder: 'Tekst op de knop',
           oninput: (e) => { b.label = e.target.value; save(); renderStage(); } }),
+        el('button', { class: 'btn small', title: 'Knop dupliceren',
+          onclick: () => {
+            pushUndo();
+            const copy = { ...structuredClone(b), id: uid(), label: (b.label || 'Knop') + ' kopie',
+              x: Math.min(96, b.x + 4), y: Math.min(96, b.y + 4) };
+            curScene().buttons.push(copy);
+            save(); renderStage(); renderBtnList();
+            toast('Knop gedupliceerd');
+          } }, '⧉'),
         el('button', { class: 'btn small danger', title: 'Knop verwijderen',
-          onclick: () => { if (confirm(`Knop "${b.label}" verwijderen?`)) { curScene().buttons = curScene().buttons.filter((x) => x !== b); save(); renderStage(); renderBtnList(); } } }, '🗑')),
+          onclick: () => { if (confirm(`Knop "${b.label}" verwijderen?`)) { pushUndo(); curScene().buttons = curScene().buttons.filter((x) => x !== b); save(); renderStage(); renderBtnList(); } } }, '🗑')),
       el('div', { class: 'row' },
         el('label', { class: 'field' }, 'Actie', (() => {
           const act = buttonAction(b);
-          const sel = el('select', { onchange: (e) => {
+          const sel = el('select', { 'data-role': 'action', onchange: (e) => {
             const t = e.target.value;
             if (t === 'PlayMedia') delete b.action;
             else if (t === 'OpenScene') b.action = { type: 'OpenScene', sceneId: (config.scenes.find((sc) => sc.id !== currentSceneId) || config.scenes[0]).id };
@@ -2023,7 +2449,7 @@ function renderBtnList() {
         })()),
         buttonAction(b).type === 'OpenScene'
           ? el('label', { class: 'field' }, 'Doel-sc\u00e8ne', (() => {
-              const sel = el('select', { onchange: (e) => { b.action.sceneId = e.target.value; save(); } },
+              const sel = el('select', { 'data-role': 'scene', onchange: (e) => { b.action.sceneId = e.target.value; save(); } },
                 config.scenes.filter((sc) => sc.id !== currentSceneId).map((sc) => {
                   const o = el('option', { value: sc.id }, sc.name);
                   if (b.action.sceneId === sc.id) o.selected = true;
@@ -2034,10 +2460,12 @@ function renderBtnList() {
           : null),
       el('div', { class: 'row' },
         el('label', { class: 'field' }, 'Media die deze knop opent (video of 3D-object)',
-          mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); if (v) ensurePreviewRendition(v); renderStage(); })),
+          (() => { const sel = mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); if (v) ensurePreviewRendition(v); renderStage(); });
+                   sel.dataset.role = 'media'; return sel; })()),
         el('label', { class: 'field', style: 'max-width:110px' }, 'Vorm',
-          (() => { const s = el('select', { onchange: (e) => { b.shape = e.target.value; save(); renderStage(); } },
-              el('option', { value: 'pill' }, 'Ovaal'), el('option', { value: 'rounded' }, 'Rechthoek'), el('option', { value: 'circle' }, 'Rond ▶'));
+          (() => { const s = el('select', { 'data-role': 'shape', onchange: (e) => { b.shape = e.target.value; save(); renderStage(); } },
+              el('option', { value: 'pill' }, 'Ovaal'), el('option', { value: 'rounded' }, 'Rechthoek'),
+              el('option', { value: 'circle' }, 'Rond ▶'), el('option', { value: 'hotspot' }, 'Onzichtbare hotspot'));
             s.value = b.shape || 'pill'; return s; })())),
       el('label', { class: 'field' }, 'Grootte',
         el('input', { type: 'range', min: 4, max: 20, step: 0.5, value: b.size || 8,
@@ -2049,7 +2477,8 @@ function renderBtnList() {
         el('label', { class: 'field' }, 'Videovoorbeeld in de knop', previewSel),
         el('label', { class: 'field' }, 'Eigen PNG als knopvorm', imageSel)),
       el('div', { class: 'row' },
-        el('label', { class: 'field' }, 'Aandachtseffect (speelt af en toe vanzelf)', fxSel),
+        el('div', { class: 'field' }, 'Playlist (speelt na elkaar af)', playlistEditor(b)),
+      el('label', { class: 'field' }, 'Aandachtseffect (speelt af en toe vanzelf)', fxSel),
         el('label', { class: 'field' }, 'Frame', frameSel)),
       swatches
     ));
@@ -2057,6 +2486,7 @@ function renderBtnList() {
 }
 
 $('#addBtn').addEventListener('click', () => {
+  pushUndo();
   const n = curButtons().length;
   curButtons().push({
     id: uid(), label: 'Video ' + (n + 1), mediaId: [...mediaCache.keys()][0] || null,
@@ -2078,9 +2508,16 @@ function renderMediaList() {
       : m.kind === 'image'
         ? el('img', { src: m.url, style: 'width:76px;height:46px;object-fit:contain;border-radius:7px;background:#0a0f16;flex:none' })
         : el('video', { src: m.url, preload: 'metadata', muted: '' });
-    list.append(el('div', { class: 'card media-item' },
+    list.append(el('div', { class: 'card' }, el('div', { class: 'media-item' },
       thumb,
       el('div', { class: 'grow' }, el('div', { class: 'nm' }, m.name), el('div', { class: 'sz' }, (m.kind === 'model' ? '3D-object · ' : '') + fmtSize(m.size))),
+      m.kind === 'video' ? el('button', { class: 'btn small', title: 'Afspeelinstellingen',
+        onclick: (e) => {
+          const card = e.target.closest('.card');
+          const box = card.querySelector('.play-settings');
+          if (box) return box.remove();
+          card.append(playSettingsBox(m));
+        } }, 'Instellingen') : null,
       el('button', { class: 'btn small danger', title: 'Verwijderen', onclick: async () => {
         if (!confirm(`"${m.name}" verwijderen?`)) return;
         await dbDel(m.id); await dbDel('prev_' + m.id);
@@ -2094,8 +2531,36 @@ function renderMediaList() {
           if (b.imageId === m.id) b.imageId = null;
         }
         save(); renderStage(); refreshPanel();
-      } }, '🗑')));
+      } }, '🗑'))));
   }
+}
+
+// Uitklapbare afspeelinstellingen per video (spec 15-19, 23-25).
+function playSettingsBox(m) {
+  const ps = playSettings(m.id);
+  const set = (k, v) => {
+    config.mediaSettings[m.id] = { ...playSettings(m.id), [k]: v };
+    save();
+  };
+  const num = (label, key, step, max, hint) =>
+    el('label', { class: 'field' }, label,
+      el('input', { type: 'number', min: 0, max, step, value: ps[key] || '', placeholder: hint || '0',
+        onchange: (e) => set(key, Number(e.target.value) || 0) }));
+  const toggle = (label, key, sub) =>
+    el('div', { class: 'toggle-row' },
+      el('div', {}, el('div', { class: 't-label' }, label), sub ? el('div', { class: 't-sub' }, sub) : null),
+      el('label', { class: 'switch' },
+        (() => { const i = el('input', { type: 'checkbox', onchange: (e) => set(key, e.target.checked) });
+                 i.checked = !!ps[key]; return i; })(),
+        el('i', {})));
+  return el('div', { class: 'play-settings', style: 'display:flex;flex-direction:column;gap:10px;margin-top:4px' },
+    el('div', { class: 'divider' }),
+    el('div', { class: 'row' }, num('Begin bijsnijden (sec)', 'trimStart', 0.5, 9999),
+                                num('Einde bijsnijden (sec)', 'trimEnd', 0.5, 9999, 'einde')),
+    el('div', { class: 'row' }, num('Volume (0 = gedempt)', 'volume', 0.1, 1),
+                                num('Audio faden (sec)', 'fadeSec', 0.5, 10)),
+    toggle('Herhalen', 'loop', 'Blijft loopen tot de bezoeker sluit'),
+    toggle('Stoppen op laatste frame', 'holdLastFrame', 'Blijft staan in plaats van terug naar het menu'));
 }
 
 $('#addMedia').addEventListener('click', () => $('#mediaInput').click());
@@ -2131,6 +2596,19 @@ function renderLook() {
   $('#cfgHideBtns').checked = config.hideButtonsDuringPlay;
   $('#cfgClean').checked = config.cleanMode;
   $('#cfgOrientation').value = config.orientationMode || 'auto';
+  $('#thFont').value = config.theme.font;
+  $('#thWeight').value = String(config.theme.weight);
+  $('#thLogoSize').value = config.theme.logoSize;
+  $('#thLogoPos').value = config.theme.logoPos;
+  const logoSel = $('#thLogo');
+  logoSel.innerHTML = '';
+  logoSel.append(el('option', { value: '' }, '— geen logo —'));
+  for (const m of mediaCache.values()) {
+    if (m.kind !== 'image') continue;
+    const o = el('option', { value: m.id }, m.name);
+    if (m.id === config.theme.logoMediaId) o.selected = true;
+    logoSel.append(o);
+  }
   const fs = config.frameStyle;
   $('#fsMode').value = fs.mode;
   $('#fsColor1').value = fs.color1;
@@ -2156,6 +2634,34 @@ function renderLook() {
   $('#o3Close').value = o3.autoCloseSec;
 }
 
+// Huisstijl (spec 63-68).
+const THEME_PRESETS = {
+  corporate: { frame: { mode: 'gradient', color1: '#12305e', color2: '#2f7ff0', angle: 135, radius: 12, thickness: 8, depth: 7, gloss: 0.25, highlight: 0.3, shadow: 0.5 }, motion: 'corporate', font: 'humanist', weight: 700 },
+  luxury:    { frame: { mode: 'gradient', color1: '#0d0d0f', color2: '#8a6b2f', angle: 160, radius: 6, thickness: 10, depth: 10, gloss: 0.45, highlight: 0.5, shadow: 0.65 }, motion: 'luxury', font: 'serif', weight: 600 },
+  tech:      { frame: { mode: 'gradient', color1: '#08303a', color2: '#35d0ba', angle: 120, radius: 4, thickness: 7, depth: 6, gloss: 0.35, highlight: 0.45, shadow: 0.55 }, motion: 'technology', font: 'grotesk', weight: 700 },
+  retail:    { frame: { mode: 'gradient', color1: '#7a2233', color2: '#f0762f', angle: 140, radius: 20, thickness: 9, depth: 8, gloss: 0.3, highlight: 0.35, shadow: 0.5 }, motion: 'retail', font: 'geometric', weight: 800 },
+  healthcare:{ frame: { mode: 'gradient', color1: '#123a4a', color2: '#4bb3c9', angle: 150, radius: 16, thickness: 7, depth: 5, gloss: 0.2, highlight: 0.3, shadow: 0.4 }, motion: 'healthcare', font: 'humanist', weight: 600 },
+  museum:    { frame: { mode: 'solid', color1: '#26282c', color2: '#26282c', angle: 135, radius: 2, thickness: 12, depth: 9, gloss: 0.12, highlight: 0.2, shadow: 0.6 }, motion: 'museum', font: 'serif', weight: 600 }
+};
+
+$('#thFont').addEventListener('change', (e) => { config.theme.font = e.target.value; save(); renderStage(); });
+$('#thWeight').addEventListener('change', (e) => { config.theme.weight = Number(e.target.value); save(); renderStage(); });
+$('#thLogo').addEventListener('change', (e) => { config.theme.logoMediaId = e.target.value || null; save(); renderStage(); });
+$('#thLogoSize').addEventListener('input', (e) => { config.theme.logoSize = Number(e.target.value); save(); renderStage(); });
+$('#thLogoPos').addEventListener('change', (e) => { config.theme.logoPos = e.target.value; save(); renderStage(); });
+$('#thPreset').addEventListener('change', (e) => {
+  const preset = THEME_PRESETS[e.target.value];
+  if (!preset) return;
+  pushUndo();
+  Object.assign(config.frameStyle, preset.frame);
+  config.motion.preset = preset.motion;
+  config.theme.font = preset.font;
+  config.theme.weight = preset.weight;
+  save(); renderStage(); refreshPanel();
+  toast('Themapreset toegepast');
+  e.target.value = '';
+});
+
 for (const [id, key, num] of [
   ['fsMode', 'mode', false], ['fsColor1', 'color1', false], ['fsColor2', 'color2', false],
   ['fsAngle', 'angle', true], ['fsRadius', 'radius', true], ['fsThickness', 'thickness', true],
@@ -2167,6 +2673,23 @@ for (const [id, key, num] of [
     save();
     renderStage();
   });
+}
+
+$('#undoBtn').addEventListener('click', doUndo);
+$('#redoBtn').addEventListener('click', doRedo);
+$('#edSnap').addEventListener('change', (e) => { config.editor.snap = e.target.checked; save(); applyEditorOverlays(); });
+$('#edGrid').addEventListener('change', (e) => { config.editor.gridPercent = Math.max(1, Number(e.target.value) || 5); save(); applyEditorOverlays(); });
+$('#edSafe').addEventListener('change', (e) => { config.editor.safeZone = Math.max(0, Number(e.target.value) || 0); save(); applyEditorOverlays(); });
+
+// Raster en veilige zone tekenen volgens de instellingen (spec 33, 44).
+function applyEditorOverlays() {
+  const g = $('#gridOverlay'), sz = $('#safeZone');
+  g.style.setProperty('--gs', (config.editor.gridPercent || 5) + '%');
+  g.classList.toggle('on', !!config.editor.snap);
+  const m = config.editor.safeZone || 0;
+  sz.classList.toggle('on', m > 0);
+  sz.style.left = m + '%'; sz.style.top = m + '%';
+  sz.style.right = m + '%'; sz.style.bottom = m + '%';
 }
 
 $('#cfgSelectFx').addEventListener('change', (e) => { config.selectFx = e.target.value; save(); });
@@ -2262,6 +2785,9 @@ function renderMotion() {
     slideUp: 'Slide omhoog', slideDown: 'Slide omlaag', slideLeft: 'Slide van rechts', slideRight: 'Slide van links',
     depthIn: 'Depth push-in', depthBack: 'Depth pull-back', scalePop: 'Scale pop',
     maskReveal: 'Mask reveal', glowMaterialize: 'Glow materialize', lightSweep: 'Light sweep', holoScan: 'Holografische scan',
+    perspective: 'Perspectief reveal', flipH: 'Horizontale flip', flipV: 'Verticale flip',
+    elastic: 'Elastisch', maskVertical: 'Verticale mask', centerExpand: 'Center expand',
+    radialMask: 'Radiale mask', diagonal: 'Diagonaal', focusPull: 'Focus pull', spotlight: 'Spotlight',
     galaxyTiles: 'Galaxy Tiles \u2726 (3D, van onderaf)',
     extremeGalaxy: 'Extreme Galaxy \u2726\u2726 (volledige flip omhoog)'
   };
@@ -2345,16 +2871,41 @@ $('#pinClear').addEventListener('click', async () => {
 /* ---- Statistieken ---- */
 function renderStats() {
   const top = Object.entries(stats.presses || {}).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  $('#statsView').innerHTML = '';
-  $('#statsView').append(
-    el('div', {}, `Sinds ${new Date(stats.since).toLocaleDateString('nl-NL')} · ${stats.sessions || 1} sessies`),
-    el('div', {}, `Video/3D gestart: ${stats.playStarts || 0} · volledig bekeken: ${stats.playCompletions || 0}`),
-    top.length ? el('div', {}, 'Meest gekozen: ' + top.map(([k, v]) => `${k} (${v}×)`).join(' · ')) : el('div', {}, 'Nog geen knopinteracties geregistreerd.')
+  const view = $('#statsView');
+  view.innerHTML = '';
+  const totalPresses = Object.values(stats.presses || {}).reduce((a, b) => a + b, 0);
+  const mins = Math.round((stats.activeMs || 0) / 60000);
+  const rate = stats.playStarts ? Math.round((stats.playCompletions / stats.playStarts) * 100) : 0;
+  view.append(
+    el('div', {}, `Sinds ${new Date(stats.since).toLocaleDateString('nl-NL')} · ${stats.sessions || 1} sessies · ${mins} min actief`),
+    el('div', {}, `Gestart: ${stats.playStarts || 0} · volledig bekeken: ${stats.playCompletions || 0} (${rate}%)`),
+    top.length ? el('div', {}, 'Meest gekozen: ' + top.map(([k, v]) => `${k} (${v}×)`).join(' · '))
+               : el('div', {}, 'Nog geen knopinteracties geregistreerd.')
   );
+  // Interacties per uur (spec 107) als compacte staafjes.
+  const hours = stats.byHour || {};
+  const maxH = Math.max(1, ...Object.values(hours));
+  if (Object.keys(hours).length) {
+    const bars = el('div', { style: 'display:flex;align-items:flex-end;gap:2px;height:44px;margin-top:8px' });
+    for (let h = 0; h < 24; h++) {
+      const v = hours[h] || 0;
+      bars.append(el('div', { title: `${h}:00 — ${v} interacties`,
+        style: `flex:1;background:${v ? 'var(--accent-dark)' : '#232d3b'};height:${Math.max(3, (v / maxH) * 44)}px;border-radius:2px` }));
+    }
+    view.append(el('div', { style: 'font-size:11.5px;margin-top:10px;color:var(--p-ink-3)' }, 'Interacties per uur (0–23 u)'), bars);
+  }
+  // Heatmap (spec 103): waar op het scherm wordt getikt.
+  if ((stats.heatmap || []).length) {
+    const hm = el('div', { style: 'position:relative;margin-top:12px;width:100%;aspect-ratio:9/16;max-height:220px;background:#0a0f16;border:1px solid var(--p-line);border-radius:8px;overflow:hidden' });
+    for (const pt of stats.heatmap.slice(-400)) {
+      hm.append(el('div', { style: `position:absolute;left:${pt.x}%;top:${pt.y}%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:radial-gradient(circle,rgba(53,208,186,0.55),transparent 70%)` }));
+    }
+    view.append(el('div', { style: 'font-size:11.5px;margin-top:10px;color:var(--p-ink-3)' }, `Heatmap — ${totalPresses} interacties`), hm);
+  }
 }
 $('#statsEnabled').addEventListener('change', (e) => { config.analytics.enabled = e.target.checked; save(); });
 $('#statsReset').addEventListener('click', () => {
-  stats = { since: Date.now(), presses: {}, playStarts: 0, playCompletions: 0, sessions: 1 };
+  stats = { since: Date.now(), presses: {}, playStarts: 0, playCompletions: 0, sessions: 1, heatmap: [], byHour: {}, activeMs: 0 };
   try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch {}
   renderStats();
   toast('Statistieken gewist');
@@ -2806,6 +3357,7 @@ window.addEventListener('resize', applyOrientationMode);
   renderStage();
   applyOrientationMode();
   applyHandSize();
+  applyEditorOverlays();
   AppState.set('IDLE');
   runEntrance();
   if (config.camera.enabled) startCamera();

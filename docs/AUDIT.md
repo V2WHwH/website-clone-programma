@@ -62,62 +62,41 @@ Legenda: ✅ EXISTING · ◐ PARTIAL · ✗ MISSING · ⟳ REQUIRES REFACTOR
 - **Motion Engine**: één `runEntrance(elementen, cfg)`/presetlaag (WAAPI, alleen transform/opacity/filter), gebruikt bij laden, scènewissel, terugkeer na content en na de screensaver.
 - **Figma-workflow**: gereserveerd voor de volgende fase — het editor-IDE-herontwerp (sidebar 240 px, topbar 56 px, canvas, inspector 320 px) wordt eerst als Figma-componentsysteem ontworpen en daarna geïmplementeerd, conform spec-fasen C–H.
 
-## 4. Openstaande taken (stand v2.2.1)
+## 4. Openstaande taken (stand v2.3.0)
 
-Geverifieerd tegen de code op 26-08. Legenda: ✗ open · ◐ deels aanwezig.
+Geverifieerd tegen de code. Legenda: ✗ open · ◐ deels aanwezig.
 
-### Blok 1 — Editor-IDE (spec 33–44, 48 + fasen C–H)
-✗ Snap-to-grid · ✗ slimme uitlijnhulplijnen · ✗ uitlijnen links/rechts/boven/onder ·
-✗ gelijk verdelen · ✗ multi-select · ✗ groeperen · ✗ dupliceren · ✗ lagenpaneel ·
-✗ naar voren/achteren · ✗ veilige zones · ✗ layout-templates · ✗ undo/redo.
-Hieronder valt ook het Figma-componentsysteem en de editor-layout
-(sidebar 240 px, topbar 56 px, canvas, inspector 320 px) uit spec §3–5.
+### Verwerkt in v2.3.0
+- **Blok 1 (editor, deels)**: snap-to-grid met rasteroverlay, slimme
+  uitlijnhulplijnen, veilige zones, knop dupliceren, undo/redo (Ctrl+Z / Ctrl+Y,
+  50 stappen).
+- **Blok 2 (afspelen)**: begin/eind bijsnijden, volume per video, audio in- en
+  uitfaden, herhalen, stoppen op laatste frame, playlist per knop met
+  automatische opvolging.
+- **Blok 3 (thema's)**: lettertypekiezer (6 families), tekstgewicht,
+  klantlogo met positie en grootte, 6 complete themapresets die kleuren,
+  frame, motion en typografie in één keer zetten.
+- **Blok 5**: naadloze tegel-naar-videovlak-overgang (spec 212/223) — de
+  gekozen tegel groeit door tot fullscreen en de echte video neemt het met een
+  crossfade over, zonder zwart frame.
+- **Blok 6 (analytics)**: knop-heatmap, actieve sessieduur, interacties per uur,
+  voltooiingspercentage.
+- **Blok 7**: transparante hotspot-knop (onzichtbaar tikvlak).
+- **Blok 8**: 10 extra entrance-effecten (perspectief, flips, elastisch,
+  verticale mask, center expand, radiale mask, diagonaal, focus pull,
+  spotlight) — nu 26 van de 34.
 
-### Blok 2 — Afspelen & playlists (spec 15–20, 23–25, 28)
-✗ Playlist per knop · ✗ willekeurige/geplande playlist · ✗ automatisch volgende
-video · ✗ stoppen op laatste frame · ✗ begin/eind bijsnijden per video ·
-✗ volume per video · ✗ audio in-/uitfaden · ✗ gelaagde video-overlay ·
-◐ gapless wisselen (preload aanwezig, geen naadloze switch).
-
-### Blok 3 — Thema's & typografie (spec 60, 62–64, 66–68)
-✗ Lettertypekiezer · ✗ tekstgewicht · ✗ achtergrond-transparantie per knop ·
-✗ instelbare gloed-intensiteit · ✗ klantlogo uploaden · ✗ complete
-klant-themapresets · ◐ globale accentkleur (nu via Video Frame Style).
-
-### Blok 4 — Meertaligheid (spec 84–85)
-✗ Taalkeuze · ✗ automatische taalselectie.
-
-### Blok 5 — Selected-transities (spec 211–223)
-✗ Thumbnail wordt naadloos het videovlak (212/223) — de "geen zwart frame"-
-overgang uit het spec. Nu: groeien + vervagen, video start daarna.
-
-### Blok 6 — Device- en afstandsbeheer (spec 103, 106–115)
-✗ Knop-heatmap · ✗ sessieduur · ✗ analyse per tijdvak · ✗ remote screenshot ·
-✗ remote volume · ✗ remote publiceren · ✗ scheduling · ✗ meerdere boxen/groepen ·
-◐ uptime en diagnostiek (desktop-app) · ◐ remote herstart/commando's (los
-Node-platform, nog niet gekoppeld aan Studio).
-
-### Blok 7 — Overige interactie (spec 6, 10, 11, 30)
-✗ Transparante hotspot · ✗ breadcrumb-navigatie · ✗ swipe-navigatie ·
-✗ HTML5/web-content-module.
-
-### Blok 8 — Extra motion-effecten
-◐ 16 van 34 entrance-effecten (127–160) · ◐ 7 van 14 groepssequenties (161–174) ·
-◐ 4 van 22 exit-effecten (189–210). De architectuur staat; uitbreiden is per
-effect een kleine toevoeging aan de Motion Engine.
-
-### Blok 9 — Productie-afronding (spec §25, 31–32, 119–120)
-✗ Code-signing-certificaat (Defender/SmartScreen) · ✗ kiosk-vergrendeling op
-OS-niveau (Windows-shell, taakbalk, sneltoetsen) · ✗ langdurige soaktest 8–24 u
-op doelhardware · ✗ visuele QA tegen Figma · ◐ PIN aanwezig, verborgen
-admin-gebaar ontbreekt.
-
-### Afgerond t/m v2.2.1
-Scènemodel + action engine · Motion Engine met 10 presets, 3 intensiteiten,
-Galaxy Tiles en Extreme Galaxy · contextual return · Video Frame Style
-(globaal + per-knop override) · attract-modus compleet (69–80) ·
-aanwezigheidscamera (99) · lokale analytics (102, 104, 105) · admin-PIN (120) ·
-press-feedback (175/179/181) · exe-loze offline distributie.
+### Nog open
+| Blok | Wat rest |
+|---|---|
+| 1 · Editor | Multi-select, groeperen, uitlijnknoppen/verdelen, lagenpaneel, z-volgorde, layout-templates, Figma-componentsysteem en de IDE-layout (sidebar/topbar/inspector) |
+| 2 · Afspelen | Willekeurige en geplande playlists, gelaagde video-overlay, echt gapless wisselen |
+| 3 · Uiterlijk | Achtergrond-transparantie per knop, instelbare gloed-intensiteit, outline-variant |
+| 4 · Meertaligheid | Taalkeuze en automatische taaldetectie (spec 84–85) |
+| 6 · Device/afstand | Remote screenshot, remote volume, remote publiceren, scheduling, meerdere boxen/groepen; koppeling Studio ↔ Node-platform |
+| 7 · Interactie | Breadcrumb-navigatie, swipe-navigatie, HTML5/web-content-module |
+| 8 · Motion | 8 resterende entrances, 7 resterende groepssequenties, 18 resterende exit-effecten |
+| 9 · Productie | Code-signing-certificaat, kiosk-vergrendeling op OS-niveau, soaktest 8–24 u op doelhardware, visuele QA tegen Figma, verborgen admin-gebaar |
 
 ## 5. Roadmap na v2.0.0
 

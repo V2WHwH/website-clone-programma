@@ -86,20 +86,22 @@ jobs:
           RELEASE_TAG: ${{ inputs.release_version || github.ref_name }}
         run: |
           $notes = @(
-            'AANBEVOLEN DOWNLOAD: HereWeHolo-Studio-Offline-*.zip'
+            'WINDOWS-APPLICATIE (aanbevolen)'
             ''
-            'Bevat geen programmabestanden (.exe), dus geen Windows Defender-meldingen.'
-            'Uitpakken en "Start Holobox.bat" dubbelklikken: start fullscreen in Chrome of'
-            'Edge met GPU-versnelling. Werkt volledig offline, ook vanaf een USB-stick.'
+            'HereWeHolo-Player-Setup-*.exe   installer met snelkoppelingen'
+            'HereWeHolo-Player-*-x64.zip     portable, uitpakken en starten'
             ''
-            'WINDOWS-APPLICATIE (Setup.exe / x64.zip)'
+            'Volwaardige desktop-app: kioskmodus, GPU-versnelling, logging,'
+            'diagnostiek (Ctrl+Shift+D) en crash-herstel.'
             ''
-            'Volwaardige desktop-app met kioskmodus, logging en diagnostiek. Deze build is'
-            'nog niet digitaal ondertekend, waardoor Windows Defender of SmartScreen kan'
-            'waarschuwen voor een onbekende uitgever. De portable x64.zip geeft doorgaans'
-            'minder meldingen dan de installer.'
+            'Windows Defender / SmartScreen kan waarschuwen voor een onbekende'
+            'uitgever zolang er geen code-signing-certificaat is. Kies dan'
+            '"Meer informatie" > "Toch uitvoeren". De build komt rechtstreeks uit'
+            'de broncode in deze repository; controleer desgewenst SHA256SUMS.txt.'
             ''
-            'SHA-256 checksums staan in SHA256SUMS.txt.'
+            'ZONDER INSTALLATIE'
+            ''
+            'HereWeHolo-Studio-Offline-*.zip  geen .exe, start via Chrome/Edge'
           )
           $notes | Set-Content -Path release\RELEASE-NOTES.txt -Encoding utf8
           gh release create $env:RELEASE_TAG `
