@@ -4,6 +4,42 @@ Repo voor het website-clone-programma. Op dit moment bevat de repo de configurat
 om de **Ditto MCP-server** (`https://api.ditto.site/mcp`) te koppelen aan
 MCP-clients zoals Claude Code.
 
+## HoloFX — Hyper Typography Motion (holobox)
+
+[`holofx/`](holofx/) is een zelfstandig programma voor holobox-displays,
+gebaseerd op het "Hyper Typography Spiral Motion"-effect. Kern:
+
+- **7 effecten** via het menu: Cilinder, Spiraal, Blok, Rechthoek, Golf,
+  Tunnel en Lint — allemaal met echt perspectief (diepte-slider) en
+  **geëxtrudeerde, opgedikte randen** (randdikte-slider) in plaats van
+  platte vlakken.
+- **Eigen inhoud**: hoofd- en subtekst plus eigen afbeeldingen die op de
+  geschikte lagen (de lichte media-laag) in de effecten meedraaien.
+- **Aparte sliders voor schaduwdiepte en schaduwhardheid**, plus snelheid,
+  kanteling, twist, schaal, gloed.
+- **Achtergrond**: kleur én dekking instelbaar; standaard wit. Dekking 0 =
+  puur zwart (op een holobox onzichtbaar).
+- **Holobox-modus** (UI verbergt zichzelf, cursor weg) en spiegel-optie
+  voor holo-folies. Instellingen worden onthouden.
+
+### Gebruik
+
+- Browser: open `holofx/app/index.html`.
+- Windows: `HoloFX.exe` uit de aangeleverde `HoloFX-win64.zip` (map
+  uitpakken, exe starten; volledig scherm, `Ctrl+Q` sluit af).
+- Opstart-opties voor autostart op de holobox:
+  `HoloFX.exe --effect=spiraal --holobox --mirror --text="MIJN TEKST"`
+- Sneltoetsen: `1–7` effect, `H` menu, `F`/`F11` volledig scherm,
+  spatie pauze, slepen = draaien, scroll = zoom.
+
+### Windows-build zelf maken
+
+```bash
+cd holofx
+npm install
+npm run build:win   # → dist/HoloFX-win32-x64/HoloFX.exe
+```
+
 ## Cylinder Motion Graphics
 
 [`cylinder-motion/index.html`](cylinder-motion/index.html) is een webversie van

@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HoloFX — Hyper Typography Motion</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color: #dfe6f5;
+  }
+  canvas#stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* ---------- bedieningspaneel ---------- */
+  #panel {
+    position: absolute;
+    top: 0; right: 0;
+    height: 100%;
+    width: 280px;
+    background: rgba(8, 12, 24, 0.92);
+    border-left: 1px solid rgba(120, 160, 255, 0.18);
+    backdrop-filter: blur(6px);
+    padding: 18px 16px 24px;
+    overflow-y: auto;
+    transition: transform 0.35s ease;
+    z-index: 10;
+  }
+  #panel.hidden { transform: translateX(100%); }
+  #panel h1 {
+    font-size: 15px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #9db8ff;
+    margin-bottom: 2px;
+  }
+  #panel .sub {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(200, 215, 255, 0.4);
+    margin-bottom: 14px;
+  }
+  .fx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 16px; }
+  .fx-grid button {
+    padding: 9px 4px;
+    background: rgba(40, 60, 120, 0.25);
+    color: #c8d6ff;
+    border: 1px solid rgba(120, 160, 255, 0.22);
+    border-radius: 6px;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+  }
+  .fx-grid button:hover { background: rgba(70, 100, 190, 0.4); }
+  .fx-grid button.active {
+    background: #2e5bff;
+    border-color: #6f93ff;
+    color: #fff;
+    font-weight: 600;
+  }
+  label.ctl { display: block; margin-bottom: 11px; font-size: 11px; letter-spacing: 0.06em; }
+  label.ctl .row { display: flex; justify-content: space-between; margin-bottom: 3px; color: #aebcdd; }
+  label.ctl .val { color: #8fa9ff; font-variant-numeric: tabular-nums; }
+  input[type="range"] {
+    width: 100%;
+    accent-color: #2e5bff;
+    height: 22px;
+    cursor: pointer;
+  }
+  .sep {
+    border: 0; border-top: 1px solid rgba(120, 160, 255, 0.14);
+    margin: 14px 0;
+  }
+  .sec {
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(160, 185, 255, 0.55); margin-bottom: 8px;
+  }
+  #textInput {
+    width: 100%;
+    padding: 8px 10px;
+    background: rgba(10, 16, 34, 0.9);
+    border: 1px solid rgba(120, 160, 255, 0.25);
+    border-radius: 6px;
+    color: #e8eeff;
+    font-size: 13px;
+    margin-bottom: 12px;
+    outline: none;
+  }
+  .toggles { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+  .toggles label { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #aebcdd; cursor: pointer; }
+  .toggles input { accent-color: #2e5bff; width: 15px; height: 15px; }
+  .keys {
+    margin-top: 14px;
+    font-size: 10px;
+    line-height: 1.7;
+    color: rgba(180, 198, 240, 0.45);
+  }
+  .keys b { color: rgba(200, 215, 255, 0.7); font-weight: 600; }
+
+  #textInput2 { margin-top: -6px; }
+  #textInput, #textInput2 {
+    width: 100%;
+    padding: 8px 10px;
+    background: rgba(10, 16, 34, 0.9);
+    border: 1px solid rgba(120, 160, 255, 0.25);
+    border-radius: 6px;
+    color: #e8eeff;
+    font-size: 13px;
+    margin-bottom: 12px;
+    outline: none;
+  }
+  .media-row { display: flex; gap: 6px; margin-bottom: 6px; }
+  .media-row input[type="file"] { display: none; }
+  .file-btn {
+    flex: 1;
+    padding: 8px 10px;
+    background: rgba(40, 60, 120, 0.25);
+    border: 1px solid rgba(120, 160, 255, 0.22);
+    border-radius: 6px;
+    font-size: 12px;
+    color: #c8d6ff;
+    text-align: center;
+    cursor: pointer;
+  }
+  .file-btn:hover { background: rgba(70, 100, 190, 0.4); }
+  #mediaClear {
+    width: 34px;
+    background: rgba(120, 40, 50, 0.25);
+    border: 1px solid rgba(255, 120, 130, 0.25);
+    border-radius: 6px;
+    color: #ffb0b8;
+    cursor: pointer;
+  }
+  .bg-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .bg-row input[type="color"] {
+    width: 44px; height: 30px;
+    border: 1px solid rgba(120, 160, 255, 0.25);
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px;
+  }
+  .bg-label { font-size: 11px; color: #aebcdd; letter-spacing: 0.06em; }
+  .media-info {
+    font-size: 10px;
+    color: rgba(180, 198, 240, 0.45);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  #handle {
+    position: absolute;
+    top: 16px; right: 16px;
+    z-index: 11;
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    background: rgba(8, 12, 24, 0.75);
+    border: 1px solid rgba(120, 160, 255, 0.25);
+    color: #9db8ff;
+    font-size: 17px;
+    cursor: pointer;
+    transition: opacity 0.4s;
+  }
+  body.ui-idle #handle { opacity: 0; }
+  body.ui-idle { cursor: none; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<button id="handle" title="Menu (H)">☰</button>
+
+<div id="panel">
+  <h1>HoloFX</h1>
+  <div class="sub">Hyper Typography Motion — Holobox</div>
+
+  <div class="sec">Effect</div>
+  <div class="fx-grid" id="fxGrid"></div>
+
+  <div class="sec">Inhoud</div>
+  <input id="textInput" type="text" maxlength="40" placeholder="Hoofdtekst…">
+  <input id="textInput2" type="text" maxlength="40" placeholder="Subtekst…">
+  <div class="media-row">
+    <label class="file-btn" for="mediaInput">＋ Afbeeldingen…</label>
+    <input id="mediaInput" type="file" accept="image/*" multiple>
+    <button id="mediaClear" title="Afbeeldingen wissen">✕</button>
+  </div>
+  <div id="mediaInfo" class="media-info">Geen afbeeldingen — eigen beeld draait mee op de lichte media-laag.</div>
+
+  <div class="sec">Beweging &amp; diepte</div>
+  <label class="ctl"><span class="row"><span>Snelheid</span><span class="val" id="v-speed"></span></span>
+    <input type="range" id="s-speed" min="0" max="200" step="1"></label>
+  <label class="ctl"><span class="row"><span>Diepte (perspectief)</span><span class="val" id="v-depth"></span></span>
+    <input type="range" id="s-depth" min="0" max="100" step="1"></label>
+  <label class="ctl"><span class="row"><span>Kanteling</span><span class="val" id="v-tilt"></span></span>
+    <input type="range" id="s-tilt" min="-45" max="45" step="1"></label>
+  <label class="ctl"><span class="row"><span>Twist</span><span class="val" id="v-twist"></span></span>
+    <input type="range" id="s-twist" min="0" max="100" step="1"></label>
+  <label class="ctl"><span class="row"><span>Schaal</span><span class="val" id="v-scale"></span></span>
+    <input type="range" id="s-scale" min="40" max="180" step="1"></label>
+
+  <div class="sec">Materiaal</div>
+  <label class="ctl"><span class="row"><span>Randdikte</span><span class="val" id="v-thick"></span></span>
+    <input type="range" id="s-thick" min="0" max="100" step="1"></label>
+  <label class="ctl"><span class="row"><span>Gloed</span><span class="val" id="v-glow"></span></span>
+    <input type="range" id="s-glow" min="0" max="100" step="1"></label>
+
+  <div class="sec">Schaduw</div>
+  <label class="ctl"><span class="row"><span>Schaduwdiepte</span><span class="val" id="v-shdepth"></span></span>
+    <input type="range" id="s-shdepth" min="0" max="100" step="1"></label>
+  <label class="ctl"><span class="row"><span>Schaduwhardheid</span><span class="val" id="v-shhard"></span></span>
+    <input type="range" id="s-shhard" min="0" max="100" step="1"></label>
+
+  <div class="sec">Achtergrond</div>
+  <div class="bg-row">
+    <input type="color" id="bgColor" title="Achtergrondkleur">
+    <span class="bg-label">Kleur</span>
+  </div>
+  <label class="ctl"><span class="row"><span>Dekking achtergrond</span><span class="val" id="v-bgopacity"></span></span>
+    <input type="range" id="s-bgopacity" min="0" max="100" step="1"></label>
+
+  <div class="sec">Weergave</div>
+  <div class="toggles">
+    <label><input type="checkbox" id="t-holobox"> Holobox-modus (UI verbergen)</label>
+    <label><input type="checkbox" id="t-mirror"> Spiegelen (voor holo-folie)</label>
+  </div>
+
+  <div class="keys">
+    <b>1–7</b> effect &nbsp; <b>H</b> menu &nbsp; <b>F</b> volledig scherm<br>
+    <b>Spatie</b> pauze &nbsp; <b>slepen</b> draaien &nbsp; <b>scroll</b> zoom<br>
+    <b>Ctrl+Q</b> afsluiten
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+ * HoloFX — Hyper Typography Motion voor holobox-displays.
+ *
+ * Eigen 3D-ribbon engine op canvas 2D:
+ *  - banner-strips met typografie worden procedureel getekend;
+ *  - een generieke "ribbon" (middenpad C(u) + up-vector) wordt
+ *    per segment geprojecteerd met perspectief (diepte-slider);
+ *  - elke ribbon is een dikke plaat: het front krijgt textuur,
+ *    de geëxtrudeerde rand- en kopvlakken worden apart getekend
+ *    en belicht (randdikte-slider);
+ *  - painter's algorithm sorteert alle vlakken op diepte;
+ *  - een aparte schaduwpass tekent het silhouet verschoven en
+ *    geblurd achter de scène (schaduwdiepte + schaduwhardheid).
+ * ============================================================ */
+
+const stage = document.getElementById("stage");
+const ctx = stage.getContext("2d");
+let W = 0, H = 0, DPR = 1, BASE = 0;
+
+const shadowCanvas = document.createElement("canvas");
+const shx = shadowCanvas.getContext("2d");
+const SH_SCALE = 0.5;
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth;
+  H = window.innerHeight;
+  BASE = Math.min(W, H);
+  stage.width = Math.round(W * DPR);
+  stage.height = Math.round(H * DPR);
+  shadowCanvas.width = Math.round(W * SH_SCALE);
+  shadowCanvas.height = Math.round(H * SH_SCALE);
+}
+window.addEventListener("resize", resize);
+resize();
+
+/* ---------------- instellingen ---------------- */
+
+const settings = {
+  effect: "spiraal",
+  text: "",
+  text2: "",
+  speed: 60,
+  depth: 55,
+  tilt: 10,
+  twist: 40,
+  scale: 100,
+  thick: 35,
+  glow: 35,
+  shdepth: 40,
+  shhard: 45,
+  bgColor: "#ffffff",
+  bgOpacity: 100,
+  holobox: false,
+  mirror: false,
+};
+
+try {
+  Object.assign(settings, JSON.parse(localStorage.getItem("holofx") || "{}"));
+} catch (e) { /* verse start */ }
+
+/* URL-parameters voor kiosk/holobox-autostart, bijv.:
+   index.html?effect=spiraal&holobox=1&mirror=1&text=MIJN%20TEKST */
+const urlParams = new URLSearchParams(location.search);
+if (urlParams.get("effect")) settings.effect = urlParams.get("effect");
+if (urlParams.get("holobox") === "1") settings.holobox = true;
+if (urlParams.get("mirror") === "1") settings.mirror = true;
+if (urlParams.get("text") !== null) settings.text = urlParams.get("text");
+if (urlParams.get("bg")) settings.bgColor = "#" + urlParams.get("bg").replace("#", "");
+if (urlParams.get("bgopacity") !== null) settings.bgOpacity = Number(urlParams.get("bgopacity"));
+
+function saveSettings() {
+  try { localStorage.setItem("holofx", JSON.stringify(settings)); } catch (e) {}
+}
+
+/* ---------------- banner-texturen ---------------- */
+
+const BANNER_W = 2048;
+
+function strip(height, draw) {
+  const c = document.createElement("canvas");
+  c.width = BANNER_W;
+  c.height = height;
+  draw(c.getContext("2d"), BANNER_W, height);
+  return c;
+}
+
+function repeatText(g, text, y, size, color, gap, phase) {
+  g.save();
+  g.fillStyle = color;
+  g.font = `900 ${size}px "Arial Black", Arial, sans-serif`;
+  g.textBaseline = "middle";
+  const step = Math.max(60, g.measureText(text).width + gap);
+  for (let x = -step * phase; x < BANNER_W + step; x += step) g.fillText(text, x, y);
+  g.restore();
+}
+
+let textures = {};
+
+/* ---- eigen afbeeldingen: draaien mee op de lichte media-laag ---- */
+let mediaImages = [];
+
+function loadStoredMedia() {
+  let urls = [];
+  try { urls = JSON.parse(localStorage.getItem("holofx-media") || "[]"); } catch (e) {}
+  if (!urls.length) return;
+  let pending = urls.length;
+  const imgs = [];
+  urls.forEach((u, i) => {
+    const im = new Image();
+    im.onload = im.onerror = () => {
+      if (im.width) imgs[i] = im;
+      if (--pending === 0) {
+        mediaImages = imgs.filter(Boolean);
+        buildTextures();
+        updateMediaInfo();
+      }
+    };
+    im.src = u;
+  });
+}
+
+function persistMedia() {
+  try {
+    localStorage.setItem("holofx-media", JSON.stringify(mediaImages.map(im => im.src)));
+  } catch (e) { /* te groot voor opslag: alleen deze sessie */ }
+}
+
+/* is er een media-laag met eigen beeld actief? */
+function mediaTex(fallback) {
+  return mediaImages.length ? "white" : fallback;
+}
+
+function buildTextures() {
+  const t = (settings.text || "").trim();
+  const t2 = (settings.text2 || "").trim();
+  const T1 = t || "HYPER TYPOGRAPHY";
+  const T2 = t2 || t || "SPIRAL MOTION";
+  const T3 = t || "HOLOFX";
+
+  const blue = strip(150, (g, w, h) => {
+    g.fillStyle = "#1746e0"; g.fillRect(0, 0, w, h);
+    const grad = g.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, "rgba(255,255,255,0.15)");
+    grad.addColorStop(0.5, "rgba(255,255,255,0)");
+    grad.addColorStop(1, "rgba(0,0,40,0.28)");
+    g.fillStyle = grad; g.fillRect(0, 0, w, h);
+    repeatText(g, `${T1} ★`, h / 2, 62, "#ffffff", 90, 0);
+    g.fillStyle = "rgba(255,255,255,0.9)";
+    for (let x = 40; x < w; x += 256) {
+      g.beginPath(); g.arc(x, 24, 7, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.arc(x + 128, h - 24, 7, 0, Math.PI * 2); g.fill();
+    }
+  });
+
+  const black = strip(90, (g, w, h) => {
+    g.fillStyle = "#0d0d13"; g.fillRect(0, 0, w, h);
+    g.strokeStyle = "#f2f2f5"; g.lineWidth = 13;
+    for (let x = -h; x < w + h; x += 54) {
+      g.beginPath(); g.moveTo(x, h + 10); g.lineTo(x + h, -10); g.stroke();
+    }
+    g.fillStyle = "#0d0d13"; g.fillRect(0, h / 2 - 22, w, 44);
+    repeatText(g, T2.toUpperCase(), h / 2 + 1, 30, "#ffffff", 70, 0.3);
+  });
+
+  const yellow = strip(120, (g, w, h) => {
+    g.fillStyle = "#ffd200"; g.fillRect(0, 0, w, h);
+    g.fillStyle = "#111111";
+    const s = 22;
+    for (let x = 0; x < w; x += s * 2) {
+      g.fillRect(x, 0, s, s);
+      g.fillRect(x + s, h - s, s, s);
+    }
+    repeatText(g, `${T3.toUpperCase()} ▲▲`, h / 2, 46, "#111111", 80, 0.6);
+  });
+
+  /* lichte media-laag: toont eigen afbeeldingen als die er zijn */
+  const white = strip(mediaImages.length ? 130 : 70, (g, w, h) => {
+    g.fillStyle = "#eef1f7"; g.fillRect(0, 0, w, h);
+    if (mediaImages.length) {
+      const pad = 10, ih = h - pad * 2;
+      let x = 18, i = 0;
+      while (x < w - 4) {
+        const im = mediaImages[i % mediaImages.length];
+        const iw = Math.max(24, im.width / im.height * ih);
+        g.save();
+        g.beginPath();
+        if (g.roundRect) g.roundRect(x, pad, iw, ih, 8); else g.rect(x, pad, iw, ih);
+        g.clip();
+        g.drawImage(im, x, pad, iw, ih);
+        g.restore();
+        g.strokeStyle = "rgba(23,70,224,0.55)";
+        g.lineWidth = 2;
+        g.beginPath();
+        if (g.roundRect) g.roundRect(x + 1, pad + 1, iw - 2, ih - 2, 7); else g.rect(x + 1, pad + 1, iw - 2, ih - 2);
+        g.stroke();
+        x += iw + 26;
+        i++;
+      }
+    } else {
+      g.fillStyle = "#1746e0";
+      for (let x = 12; x < w; x += 150) g.fillRect(x, h / 2 - 13, 92, 26);
+      g.fillStyle = "#ff3d2e";
+      for (let x = 118; x < w; x += 300) {
+        g.beginPath(); g.arc(x, h / 2, 9, 0, Math.PI * 2); g.fill();
+      }
+    }
+  });
+
+  const magenta = strip(110, (g, w, h) => {
+    g.fillStyle = "#e0257c"; g.fillRect(0, 0, w, h);
+    g.fillStyle = "rgba(255,255,255,0.25)";
+    for (let x = 0; x < w; x += 120) g.fillRect(x, 0, 8, h);
+    repeatText(g, `${T1.toUpperCase()} ◆`, h / 2, 44, "#ffffff", 80, 0.15);
+  });
+
+  textures = { blue, black, yellow, white, magenta };
+}
+buildTextures();
+
+/* randkleur per textuur voor de geëxtrudeerde zijkanten */
+const EDGE_COLORS = {
+  blue: [23, 52, 160], black: [26, 26, 34], yellow: [190, 152, 0],
+  white: [188, 195, 210], magenta: [160, 22, 84],
+};
+
+/* ---------------- 3D-hulpjes ---------------- */
+
+/* lichtrichting: van voor-links-boven de scène in (y+ is omlaag op scherm) */
+const LIGHT = normalize([0.35, 0.5, 0.78]);
+
+function normalize(v) {
+  const l = Math.hypot(v[0], v[1], v[2]) || 1;
+  return [v[0] / l, v[1] / l, v[2] / l];
+}
+function cross(a, b) {
+  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+}
+function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+function sub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+function add(a, b) { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
+function mul(a, s) { return [a[0] * s, a[1] * s, a[2] * s]; }
+
+let rotY = 0, rotX = 0, cosY = 1, sinY = 0, cosX = 1, sinX = 0;
+let persp = 1000, camZ = 1400, unit = 100;
+
+function rotate(p) {
+  const x = p[0] * cosY + p[2] * sinY;
+  const z = -p[0] * sinY + p[2] * cosY;
+  const y = p[1] * cosX - z * sinX;
+  const z2 = p[1] * sinX + z * cosX;
+  return [x, y, z2];
+}
+
+let centerX = 0;
+
+function project(p) {
+  const k = persp / (camZ + p[2]);
+  return [centerX + p[0] * k, H / 2 + p[1] * k, p[2], k];
+}
+
+/* ---------------- ribbon-geometrie ----------------
+ * Een ribbon wordt beschreven door fn(u) → { c, up } in
+ * model-eenheden (unit = 1). Segmenten worden opgebouwd tot
+ * vlakken: front (textuur), rug, rand- en kopvlakken.
+ * -------------------------------------------------- */
+
+const faces = [];
+
+function buildRibbon(fn, opts) {
+  const { segs, tex, texRepeat, scroll, closed, flip } = opts;
+  const img = textures[tex];
+  if (!img) return;
+  const edgeRGB = EDGE_COLORS[tex];
+  const thick = (settings.thick / 100) * 0.16 + 0.004; // model-eenheden
+
+  const ring = [];
+  for (let i = 0; i <= segs; i++) {
+    const u = i / segs;
+    const s = fn(closed ? u % 1 : Math.min(u, 1));
+    ring.push({ c: s.c, up: s.up, u });
+  }
+
+  for (let i = 0; i < segs; i++) {
+    const a = ring[i], b = ring[i + 1];
+    const tangent = normalize(sub(b.c, a.c));
+    let n = normalize(cross(tangent, a.up));
+    if (flip) n = mul(n, -1);
+
+    const hA = mul(a.up, 1), hB = mul(b.up, 1);
+    const fTL = add(a.c, hA), fBL = sub(a.c, hA);
+    const fTR = add(b.c, hB), fBR = sub(b.c, hB);
+    const ext = mul(n, -thick);
+    const bTL = add(fTL, ext), bBL = add(fBL, ext);
+    const bTR = add(fTR, ext), bBR = add(fBR, ext);
+
+    const rp = [fTL, fTR, fBR, fBL].map(p => project(rotate(p)));
+    const rb = [bTL, bTR, bBR, bBL].map(p => project(rotate(p)));
+
+    const zAvg = (rp[0][2] + rp[1][2] + rp[2][2] + rp[3][2]) / 4;
+    const winding = (rp[1][0] - rp[0][0]) * (rp[3][1] - rp[0][1]) -
+                    (rp[3][0] - rp[0][0]) * (rp[1][1] - rp[0][1]);
+
+    const nR = rotate(n);
+    const diff = Math.max(0, -dot(normalize(nR), LIGHT));
+
+    const u0 = ((a.u * texRepeat + scroll) % 1 + 1) % 1;
+    let u1 = ((b.u * texRepeat + scroll) % 1 + 1) % 1;
+    if (u1 <= u0) u1 = u0 + (texRepeat / segs);
+    const tx0 = u0 * (img.width - 2);
+    const tx1 = Math.min(img.width, u1 * (img.width - 2));
+
+    if (winding > 0) {
+      faces.push({ kind: "tex", pts: rp, z: zAvg, img, tx0, tx1, diff, back: false });
+    } else {
+      const diffB = Math.max(0, dot(normalize(nR), LIGHT));
+      faces.push({ kind: "tex", pts: [rp[1], rp[0], rp[3], rp[2]], z: zAvg, img,
+                   tx0: tx1, tx1: tx0, diff: diffB * 0.55, back: true });
+    }
+
+    /* geëxtrudeerde randvlakken (boven + onder) */
+    if (thick > 0.006) {
+      const upR = normalize(rotate(a.up));
+      const topQuad = [rp[0], rp[1], rb[1], rb[0]];
+      const botQuad = [rb[3], rb[2], rp[2], rp[3]];
+      const wTop = (topQuad[1][0] - topQuad[0][0]) * (topQuad[3][1] - topQuad[0][1]) -
+                   (topQuad[3][0] - topQuad[0][0]) * (topQuad[1][1] - topQuad[0][1]);
+      const wBot = (botQuad[1][0] - botQuad[0][0]) * (botQuad[3][1] - botQuad[0][1]) -
+                   (botQuad[3][0] - botQuad[0][0]) * (botQuad[1][1] - botQuad[0][1]);
+      const liTop = 0.45 + 0.55 * Math.max(0, -dot(upR, LIGHT));
+      const liBot = 0.2 + 0.5 * Math.max(0, dot(upR, LIGHT));
+      if (wTop > 0) faces.push({ kind: "edge", pts: topQuad, z: zAvg - 0.001, rgb: edgeRGB, li: liTop });
+      if (wBot > 0) faces.push({ kind: "edge", pts: botQuad, z: zAvg - 0.001, rgb: edgeRGB, li: liBot });
+
+      /* kopvlakken bij open uiteinden */
+      if (!closed && (i === 0 || i === segs - 1)) {
+        const capQuad = i === 0
+          ? [rp[0], rb[0], rb[3], rp[3]]
+          : [rp[1], rp[2], rb[2], rb[1]];
+        faces.push({ kind: "edge", pts: capQuad, z: zAvg - 0.002, rgb: edgeRGB, li: 0.5 });
+      }
+    }
+  }
+}
+
+/* ---------------- textuur-triangels ---------------- */
+
+function texTri(img, p0, p1, p2, t0, t1, t2) {
+  const det = (t1[0] - t0[0]) * (t2[1] - t0[1]) - (t2[0] - t0[0]) * (t1[1] - t0[1]);
+  if (Math.abs(det) < 1e-8) return;
+  /* iets vergroten rond zwaartepunt tegen naadjes */
+  const gx = (p0[0] + p1[0] + p2[0]) / 3, gy = (p0[1] + p1[1] + p2[1]) / 3;
+  const e = 1.03;
+  const q0 = [gx + (p0[0] - gx) * e, gy + (p0[1] - gy) * e];
+  const q1 = [gx + (p1[0] - gx) * e, gy + (p1[1] - gy) * e];
+  const q2 = [gx + (p2[0] - gx) * e, gy + (p2[1] - gy) * e];
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(q0[0], q0[1]); ctx.lineTo(q1[0], q1[1]); ctx.lineTo(q2[0], q2[1]);
+  ctx.closePath();
+  ctx.clip();
+  const a = ((p1[0] - p0[0]) * (t2[1] - t0[1]) - (p2[0] - p0[0]) * (t1[1] - t0[1])) / det;
+  const b = ((p2[0] - p0[0]) * (t1[0] - t0[0]) - (p1[0] - p0[0]) * (t2[0] - t0[0])) / det;
+  const c = ((p1[1] - p0[1]) * (t2[1] - t0[1]) - (p2[1] - p0[1]) * (t1[1] - t0[1])) / det;
+  const d = ((p2[1] - p0[1]) * (t1[0] - t0[0]) - (p1[1] - p0[1]) * (t2[0] - t0[0])) / det;
+  const ex = p0[0] - a * t0[0] - b * t0[1];
+  const ey = p0[1] - c * t0[0] - d * t0[1];
+  ctx.transform(a, c, b, d, ex, ey);
+  ctx.drawImage(img, 0, 0);
+  ctx.restore();
+}
+
+function drawFace(f, fogNear, fogFar, fogStrength) {
+  const fog = Math.max(0, Math.min(0.72, (f.z - fogNear) / (fogFar - fogNear) * fogStrength));
+
+  if (f.kind === "edge") {
+    const [r, g, b] = f.rgb;
+    ctx.beginPath();
+    ctx.moveTo(f.pts[0][0], f.pts[0][1]);
+    for (let i = 1; i < 4; i++) ctx.lineTo(f.pts[i][0], f.pts[i][1]);
+    ctx.closePath();
+    ctx.fillStyle = `rgb(${Math.round(r * f.li)},${Math.round(g * f.li)},${Math.round(b * f.li)})`;
+    ctx.fill();
+    if (fog > 0.01) { ctx.fillStyle = `rgba(1,2,8,${fog})`; ctx.fill(); }
+    return;
+  }
+
+  const [pTL, pTR, pBR, pBL] = f.pts;
+  const h = f.img.height;
+  /* v-as gespiegeld: de up-vector wijst op het scherm omlaag */
+  const tTL = [f.tx0, h], tTR = [f.tx1, h], tBR = [f.tx1, 0], tBL = [f.tx0, 0];
+  texTri(f.img, pTL, pTR, pBR, tTL, tTR, tBR);
+  texTri(f.img, pTL, pBR, pBL, tTL, tBR, tBL);
+
+  /* belichting + dieptefog als overlay */
+  const dark = Math.min(0.85, (1 - (0.55 + 0.45 * f.diff)) * 0.8 + fog + (f.back ? 0.25 : 0));
+  if (dark > 0.02) {
+    ctx.beginPath();
+    ctx.moveTo(pTL[0], pTL[1]); ctx.lineTo(pTR[0], pTR[1]);
+    ctx.lineTo(pBR[0], pBR[1]); ctx.lineTo(pBL[0], pBL[1]);
+    ctx.closePath();
+    ctx.fillStyle = `rgba(1,2,10,${dark})`;
+    ctx.fill();
+  }
+  const spec = Math.pow(f.diff, 6) * 0.22;
+  if (!f.back && spec > 0.02) {
+    ctx.beginPath();
+    ctx.moveTo(pTL[0], pTL[1]); ctx.lineTo(pTR[0], pTR[1]);
+    ctx.lineTo(pBR[0], pBR[1]); ctx.lineTo(pBL[0], pBL[1]);
+    ctx.closePath();
+    ctx.fillStyle = `rgba(225,238,255,${spec})`;
+    ctx.fill();
+  }
+}
+
+/* ---------------- effect-definities ---------------- */
+
+const STRIPS = ["black", "blue", "yellow", "black", "white", "magenta"];
+
+function stackRings(pathFn, t, opts) {
+  /* stapelt banner-strips verticaal tot een "super banner" om een pad */
+  const { rings, ringH, gap, segs, closed, twistFactor, altDir } = opts;
+  const totalH = rings * (ringH * 2 + gap) - gap;
+  let y = -totalH / 2 + ringH;
+  for (let i = 0; i < rings; i++) {
+    const tex = STRIPS[i % STRIPS.length];
+    const dir = altDir && i % 2 ? -1 : 1;
+    const phase = t * (settings.speed / 100) * 0.22 * dir +
+                  (settings.twist / 100) * twistFactor * i;
+    const yy = y;
+    /* pad omgekeerd doorlopen zodat tekst aan de voorzijde
+       van links naar rechts leest; flip herstelt de normaal */
+    buildRibbon(u => {
+      const p = pathFn(1 - u, i);
+      return { c: [p[0], yy, p[1]], up: [0, ringH, 0] };
+    }, { segs, tex, texRepeat: opts.texRepeat || 2, scroll: phase, closed, flip: true });
+    y += ringH * 2 + gap;
+  }
+}
+
+/* pad-helpers: geven [x, z] in het horizontale vlak */
+function circlePath(R) {
+  return u => { const a = u * Math.PI * 2; return [Math.sin(a) * R, Math.cos(a) * R]; };
+}
+function roundRectPath(w, d, r) {
+  const straightW = w - 2 * r, straightD = d - 2 * r;
+  const corner = (Math.PI / 2) * r;
+  const per = 2 * straightW + 2 * straightD + 4 * corner;
+  return u => {
+    let s = ((u % 1) + 1) % 1 * per;
+    if (s < straightW) return [-straightW / 2 + s, d / 2];
+    s -= straightW;
+    if (s < corner) { const a = s / r; return [straightW / 2 + Math.sin(a) * r, straightD / 2 + Math.cos(a) * r]; }
+    s -= corner;
+    if (s < straightD) return [w / 2, straightD / 2 - s];
+    s -= straightD;
+    if (s < corner) { const a = s / r; return [straightW / 2 + Math.cos(a) * r, -straightD / 2 - Math.sin(a) * r]; }
+    s -= corner;
+    if (s < straightW) return [straightW / 2 - s, -d / 2];
+    s -= straightW;
+    if (s < corner) { const a = s / r; return [-straightW / 2 - Math.sin(a) * r, -straightD / 2 - Math.cos(a) * r]; }
+    s -= corner;
+    if (s < straightD) return [-w / 2, -straightD / 2 + s];
+    s -= straightD;
+    const a = s / r;
+    return [-straightW / 2 - Math.cos(a) * r, straightD / 2 + Math.sin(a) * r];
+  };
+}
+
+const EFFECTS = {
+  cilinder: {
+    label: "Cilinder",
+    build(t) {
+      stackRings(circlePath(1.05), t, {
+        rings: 5, ringH: 0.30, gap: 0.045, segs: 56, closed: true,
+        twistFactor: 0.55, altDir: true, texRepeat: 2,
+      });
+    },
+  },
+
+  spiraal: {
+    label: "Spiraal",
+    build(t) {
+      const turns = 2.4 + (settings.twist / 100) * 3.6;
+      const Hh = 2.5, R = 0.95;
+      const scroll = t * (settings.speed / 100) * 0.25;
+      for (let k = 0; k < 2; k++) {
+        const tex = k ? mediaTex("yellow") : "blue";
+        const off = k * Math.PI;
+        buildRibbon(u => {
+          const a = -u * Math.PI * 2 * turns + off + t * (settings.speed / 100) * 0.9;
+          return {
+            c: [Math.sin(a) * R, (u - 0.5) * Hh, Math.cos(a) * R],
+            up: [0, 0.17, 0],
+          };
+        }, { segs: Math.round(40 * turns), tex, texRepeat: turns * 1.6, scroll, closed: false, flip: true });
+      }
+    },
+  },
+
+  blok: {
+    label: "Blok",
+    build(t) {
+      stackRings(roundRectPath(1.7, 1.7, 0.16), t, {
+        rings: 5, ringH: 0.30, gap: 0.045, segs: 88, closed: true,
+        twistFactor: 0.5, altDir: true, texRepeat: 2,
+      });
+    },
+  },
+
+  rechthoek: {
+    label: "Rechthoek",
+    build(t) {
+      stackRings(roundRectPath(2.5, 0.7, 0.12), t, {
+        rings: 5, ringH: 0.30, gap: 0.045, segs: 88, closed: true,
+        twistFactor: 0.5, altDir: true, texRepeat: 2,
+      });
+    },
+  },
+
+  golf: {
+    label: "Golf",
+    build(t) {
+      const L = 3.4, A = 0.42;
+      const rows = [
+        { tex: "blue", y: -0.45, h: 0.26, phase: 0 },
+        { tex: mediaTex("yellow"), y: 0.0, h: 0.22, phase: 1.4 },
+        { tex: "black", y: 0.42, h: 0.17, phase: 2.6 },
+      ];
+      const tw = 1.2 + (settings.twist / 100) * 2.2;
+      for (const r of rows) {
+        buildRibbon(u => {
+          const a = u * Math.PI * 2 * tw + r.phase + t * (settings.speed / 100) * 1.4;
+          return {
+            c: [(u - 0.5) * L, r.y + Math.sin(a) * 0.14, Math.sin(a) * A],
+            up: [0, r.h, 0],
+          };
+        }, { segs: 80, tex: r.tex, texRepeat: 2.4,
+             scroll: t * (settings.speed / 100) * 0.3, closed: false });
+      }
+    },
+  },
+
+  tunnel: {
+    label: "Tunnel",
+    build(t) {
+      const count = 9, gap = 0.62, R = 1.05;
+      const fly = (t * (settings.speed / 100) * 0.8) % gap;
+      for (let i = 0; i < count; i++) {
+        const z = i * gap - fly - 0.4;
+        const idx = (((i + Math.floor((t * (settings.speed / 100) * 0.8) / gap)) % STRIPS.length) + STRIPS.length) % STRIPS.length;
+        const tex = STRIPS[idx];
+        const spin = (settings.twist / 100) * (i % 2 ? 1 : -1) * 0.9 +
+                     t * (settings.speed / 100) * 0.18 * (i % 2 ? -1 : 1);
+        buildRibbon(u => {
+          const a = u * Math.PI * 2 + spin;
+          return {
+            c: [Math.sin(a) * R, Math.cos(a) * R, z],
+            up: [0, 0, 0.14],
+          };
+        }, { segs: 48, tex, texRepeat: 2, scroll: 0, closed: true, flip: true });
+      }
+    },
+  },
+
+  lint: {
+    label: "Lint",
+    build(t) {
+      const R = 1.05;
+      const tw = 2 + Math.round((settings.twist / 100) * 3);
+      buildRibbon(u => {
+        const a = -u * Math.PI * 2 + t * (settings.speed / 100) * 0.7;
+        const wob = u * Math.PI * 2 * tw;
+        return {
+          c: [Math.sin(a) * R * (1 + 0.18 * Math.sin(wob)),
+              0.55 * Math.sin(wob + a),
+              Math.cos(a) * R * (1 + 0.18 * Math.cos(wob * 0.7))],
+          up: [0, 0.24, 0],
+        };
+      }, { segs: 140, tex: "blue", texRepeat: 4,
+           scroll: t * (settings.speed / 100) * 0.25, closed: true, flip: true });
+      buildRibbon(u => {
+        const a = -u * Math.PI * 2 + t * (settings.speed / 100) * 0.55;
+        const wob = u * Math.PI * 2 * tw;
+        return {
+          c: [Math.sin(a) * R * 0.75,
+              0.62 * Math.cos(wob * 0.8 + a),
+              Math.cos(a) * R * 0.75],
+          up: [0, 0.15, 0],
+        };
+      }, { segs: 120, tex: mediaTex("yellow"), texRepeat: 3,
+           scroll: -t * (settings.speed / 100) * 0.3, closed: true });
+    },
+  },
+};
+
+/* ---------------- achtergrond & schaduw ---------------- */
+
+function bgLuminance() {
+  const hex = settings.bgColor.replace("#", "");
+  if (hex.length < 6) return 1;
+  const r = parseInt(hex.slice(0, 2), 16) / 255;
+  const g = parseInt(hex.slice(2, 4), 16) / 255;
+  const b = parseInt(hex.slice(4, 6), 16) / 255;
+  return (0.299 * r + 0.587 * g + 0.114 * b) * (settings.bgOpacity / 100);
+}
+
+function drawBackground() {
+  /* basis is zwart (op de holobox = onzichtbaar); daaroverheen de
+     instelbare achtergrondkleur met instelbare dekking */
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, W, H);
+  const alpha = settings.bgOpacity / 100;
+  if (alpha > 0.001) {
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = settings.bgColor;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+  }
+  const glow = settings.glow / 100;
+  if (glow > 0.01) {
+    const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, BASE * 0.62);
+    if (bgLuminance() > 0.45) {
+      /* lichte achtergrond: zachte lichtval rond het object */
+      g.addColorStop(0, `rgba(255, 255, 255, ${0.2 * glow})`);
+      g.addColorStop(0.6, "rgba(255, 255, 255, 0)");
+      g.addColorStop(1, `rgba(20, 30, 70, ${0.12 * glow})`);
+    } else {
+      g.addColorStop(0, `rgba(60, 110, 255, ${0.16 * glow})`);
+      g.addColorStop(0.6, `rgba(40, 70, 200, ${0.07 * glow})`);
+      g.addColorStop(1, "rgba(20, 40, 120, 0)");
+    }
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  }
+}
+
+function drawShadowPass() {
+  const depth = settings.shdepth / 100;
+  if (depth <= 0.001) return;
+  const offX = BASE * 0.055 * depth;
+  const offY = BASE * 0.085 * depth;
+  const blurPx = (1 - settings.shhard / 100) * 26 + 0.5;
+
+  shx.setTransform(SH_SCALE, 0, 0, SH_SCALE, 0, 0);
+  shx.clearRect(0, 0, W, H);
+  shx.fillStyle = "rgba(0, 0, 0, 0.62)";
+  for (const f of faces) {
+    if (f.kind !== "tex") continue;
+    shx.beginPath();
+    shx.moveTo(f.pts[0][0] + offX, f.pts[0][1] + offY);
+    for (let i = 1; i < 4; i++) shx.lineTo(f.pts[i][0] + offX, f.pts[i][1] + offY);
+    shx.closePath();
+    shx.fill();
+  }
+  ctx.save();
+  ctx.filter = `blur(${blurPx}px)`;
+  ctx.globalAlpha = 0.55 + 0.35 * depth;
+  ctx.globalCompositeOperation = "multiply";
+  ctx.drawImage(shadowCanvas, 0, 0, W, H);
+  ctx.restore();
+}
+
+/* ---------------- hoofdlus ---------------- */
+
+let paused = false;
+let zoomTarget = 1, zoom = 1;
+let dragRotY = 0, dragRotX = 0;
+let t = 0, last = performance.now();
+let fpsGuard = 0;
+
+function frame(now) {
+  const dt = Math.max(0, Math.min(0.05, (now - last) / 1000));
+  last = now;
+  if (!paused) t += dt;
+  zoom += (zoomTarget - zoom) * 0.08;
+
+  /* camera-opbouw */
+  const depthN = settings.depth / 100;
+  unit = BASE * 0.24 * (settings.scale / 100) * zoom;
+  persp = BASE * (2.6 - depthN * 2.0);
+  camZ = persp * 1.15;
+
+  /* scène centreren in het zichtbare deel naast het paneel */
+  const panelOpen = !document.getElementById("panel").classList.contains("hidden");
+  const cxTarget = panelOpen ? Math.max(W - 280, W * 0.5) / 2 : W / 2;
+  if (!centerX) centerX = cxTarget;
+  centerX += (cxTarget - centerX) * 0.1;
+
+  rotY = t * (settings.speed / 100) * 0.5 + dragRotY;
+  rotX = (settings.tilt / 180) * Math.PI + dragRotX;
+  cosY = Math.cos(rotY); sinY = Math.sin(rotY);
+  cosX = Math.cos(rotX); sinX = Math.sin(rotX);
+
+  faces.length = 0;
+  EFFECTS[settings.effect].build(t);
+
+  /* modelcoördinaten → schermruimte */
+  for (const f of faces) {
+    f.z *= 1;
+  }
+
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  if (settings.mirror) {
+    ctx.translate(W, 0);
+    ctx.scale(-1, 1);
+  }
+  drawBackground();
+  drawShadowPass();
+
+  faces.sort((a, b) => b.z - a.z);
+  let fogNear = Infinity, fogFar = -Infinity;
+  for (const f of faces) {
+    if (f.z < fogNear) fogNear = f.z;
+    if (f.z > fogFar) fogFar = f.z;
+  }
+  if (fogFar - fogNear < 0.001) fogFar = fogNear + 1;
+  /* fog schaalt mee met hoe diep de scène werkelijk is */
+  const fogStrength = Math.min(0.72, (fogFar - fogNear) / (unit * 3.2) * 0.72);
+  for (const f of faces) drawFace(f, fogNear, fogFar, fogStrength);
+
+  /* vignette voor diepte-focus (niet in holobox-modus: daar moet
+     alles buiten het object puur zwart blijven) */
+  if (!settings.holobox && bgLuminance() < 0.35) {
+    const vg = ctx.createRadialGradient(W / 2, H / 2, BASE * 0.4, W / 2, H / 2, Math.max(W, H) * 0.78);
+    vg.addColorStop(0, "rgba(0,0,0,0)");
+    vg.addColorStop(1, "rgba(0,0,5,0.55)");
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  requestAnimationFrame(frame);
+}
+
+/* De ribbons worden in model-eenheden gebouwd; schaal ze bij het
+ * roteren/projecteren via een wrapper rond rotate(). */
+const rotateRaw = rotate;
+rotate = function (p) {
+  const q = rotateRaw(p);
+  return [q[0] * unit, q[1] * unit, q[2] * unit];
+};
+
+requestAnimationFrame(frame);
+
+/* ---------------- UI ---------------- */
+
+const panel = document.getElementById("panel");
+const handle = document.getElementById("handle");
+const fxGrid = document.getElementById("fxGrid");
+
+const FX_ORDER = ["cilinder", "spiraal", "blok", "rechthoek", "golf", "tunnel", "lint"];
+for (const key of FX_ORDER) {
+  const b = document.createElement("button");
+  b.textContent = EFFECTS[key].label;
+  b.dataset.fx = key;
+  b.addEventListener("click", () => setEffect(key));
+  fxGrid.appendChild(b);
+}
+function setEffect(key) {
+  if (!EFFECTS[key]) return;
+  settings.effect = key;
+  for (const b of fxGrid.children) b.classList.toggle("active", b.dataset.fx === key);
+  saveSettings();
+}
+setEffect(settings.effect in EFFECTS ? settings.effect : "spiraal");
+
+function bindSlider(id, key, fmt) {
+  const s = document.getElementById("s-" + id);
+  const v = document.getElementById("v-" + id);
+  s.value = settings[key];
+  v.textContent = fmt(settings[key]);
+  s.addEventListener("input", () => {
+    settings[key] = Number(s.value);
+    v.textContent = fmt(settings[key]);
+    saveSettings();
+  });
+}
+bindSlider("speed", "speed", x => x + "%");
+bindSlider("depth", "depth", x => x + "%");
+bindSlider("tilt", "tilt", x => x + "°");
+bindSlider("twist", "twist", x => x + "%");
+bindSlider("scale", "scale", x => x + "%");
+bindSlider("thick", "thick", x => x + "%");
+bindSlider("glow", "glow", x => x + "%");
+bindSlider("shdepth", "shdepth", x => x + "%");
+bindSlider("shhard", "shhard", x => x + "%");
+bindSlider("bgopacity", "bgOpacity", x => x + "%");
+
+const bgColorInput = document.getElementById("bgColor");
+bgColorInput.value = /^#[0-9a-fA-F]{6}$/.test(settings.bgColor) ? settings.bgColor : "#ffffff";
+bgColorInput.addEventListener("input", () => {
+  settings.bgColor = bgColorInput.value;
+  saveSettings();
+});
+
+const textInput = document.getElementById("textInput");
+const textInput2 = document.getElementById("textInput2");
+textInput.value = settings.text;
+textInput2.value = settings.text2;
+let textTimer = null;
+function onTextChange() {
+  settings.text = textInput.value;
+  settings.text2 = textInput2.value;
+  clearTimeout(textTimer);
+  textTimer = setTimeout(() => { buildTextures(); saveSettings(); }, 350);
+}
+textInput.addEventListener("input", onTextChange);
+textInput2.addEventListener("input", onTextChange);
+
+/* eigen afbeeldingen inladen: verkleinen en op de media-laag zetten */
+const mediaInput = document.getElementById("mediaInput");
+const mediaClear = document.getElementById("mediaClear");
+const mediaInfo = document.getElementById("mediaInfo");
+const MAX_MEDIA = 8;
+
+function updateMediaInfo() {
+  mediaInfo.textContent = mediaImages.length
+    ? `${mediaImages.length} afbeelding(en) actief op de media-laag.`
+    : "Geen afbeeldingen — eigen beeld draait mee op de lichte media-laag.";
+}
+updateMediaInfo();
+
+function downscale(img) {
+  const h = 260;
+  const w = Math.max(1, Math.round(img.width / img.height * h));
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  c.getContext("2d").drawImage(img, 0, 0, w, h);
+  const out = new Image();
+  out.src = c.toDataURL("image/jpeg", 0.82);
+  return out;
+}
+
+mediaInput.addEventListener("change", () => {
+  const files = Array.from(mediaInput.files || []).slice(0, MAX_MEDIA);
+  if (!files.length) return;
+  let pending = files.length;
+  for (const file of files) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const im = new Image();
+      im.onload = () => {
+        const small = downscale(im);
+        small.onload = () => {
+          if (mediaImages.length < MAX_MEDIA) mediaImages.push(small);
+          if (--pending === 0) {
+            buildTextures();
+            persistMedia();
+            updateMediaInfo();
+          }
+        };
+      };
+      im.onerror = () => { if (--pending === 0) { buildTextures(); updateMediaInfo(); } };
+      im.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  mediaInput.value = "";
+});
+
+mediaClear.addEventListener("click", () => {
+  mediaImages = [];
+  buildTextures();
+  persistMedia();
+  updateMediaInfo();
+});
+
+loadStoredMedia();
+
+const tHolo = document.getElementById("t-holobox");
+const tMirror = document.getElementById("t-mirror");
+tHolo.checked = settings.holobox;
+tMirror.checked = settings.mirror;
+tHolo.addEventListener("change", () => {
+  settings.holobox = tHolo.checked;
+  saveSettings();
+  if (settings.holobox) hideUI();
+});
+tMirror.addEventListener("change", () => { settings.mirror = tMirror.checked; saveSettings(); });
+
+function showUI() { panel.classList.remove("hidden"); }
+function hideUI() { panel.classList.add("hidden"); }
+function toggleUI() { panel.classList.toggle("hidden"); }
+handle.addEventListener("click", toggleUI);
+
+/* UI auto-verbergen bij inactiviteit (belangrijk voor holobox) */
+let idleTimer = null;
+function pokeIdle() {
+  document.body.classList.remove("ui-idle");
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    document.body.classList.add("ui-idle");
+    if (settings.holobox) hideUI();
+  }, 5000);
+}
+["mousemove", "pointerdown", "keydown", "touchstart"].forEach(ev =>
+  window.addEventListener(ev, pokeIdle, { passive: true }));
+pokeIdle();
+if (settings.holobox) hideUI();
+
+/* muis: slepen = draaien, scroll = zoom */
+let dragging = false, lastPX = 0, lastPY = 0;
+stage.addEventListener("pointerdown", e => {
+  dragging = true; lastPX = e.clientX; lastPY = e.clientY;
+});
+window.addEventListener("pointermove", e => {
+  if (!dragging) return;
+  dragRotY += (e.clientX - lastPX) * 0.006 * (settings.mirror ? -1 : 1);
+  dragRotX += (e.clientY - lastPY) * 0.004;
+  dragRotX = Math.max(-1.1, Math.min(1.1, dragRotX));
+  lastPX = e.clientX; lastPY = e.clientY;
+});
+window.addEventListener("pointerup", () => { dragging = false; });
+window.addEventListener("wheel", e => {
+  if (e.target.closest && e.target.closest("#panel")) return;
+  zoomTarget = Math.max(0.45, Math.min(2.4, zoomTarget * (e.deltaY > 0 ? 0.92 : 1.08)));
+}, { passive: true });
+
+window.addEventListener("keydown", e => {
+  if (e.target === textInput) return;
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= FX_ORDER.length) { setEffect(FX_ORDER[n - 1]); return; }
+  switch (e.key.toLowerCase()) {
+    case "h": toggleUI(); break;
+    case " ": paused = !paused; e.preventDefault(); break;
+    case "f":
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+      break;
+    case "q":
+      if (e.ctrlKey) window.close();
+      break;
+  }
+});
+</script>
+</body>
+</html>
