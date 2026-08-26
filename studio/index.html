@@ -296,42 +296,211 @@
   /* ============ MENU-PANEEL — professioneel controlepaneel ============
      Rustige typografie, hairlines, subtiele reliëftextuur (ingebed, offline)
      en echte schakelaars. Eén samenhangend systeem i.p.v. losse formulieren. */
+  /* --- HEM design tokens (Figma: HEM Tokens / Dark) --- */
   :root {
-    --p-bg: #0e1319;
-    --p-card: #151c26;
-    --p-card-2: #10161f;
-    --p-line: #232d3b;
-    --p-line-soft: #1b2431;
-    --p-ink: #e9edf3;
-    --p-ink-2: #a7b2c2;
-    --p-ink-3: #7d8899;
+    --color-bg: #080B10;
+    --color-surface-1: #0D1218;
+    --color-surface-2: #111820;
+    --color-surface-3: #16202A;
+    --color-border: rgba(255,255,255,.08);
+    --color-border-active: rgba(21,242,224,.55);
+    --color-text-primary: #F5F7FA;
+    --color-text-secondary: #AAB4C0;
+    --color-text-muted: #677482;
+    --color-accent-teal: #15F2E0;
+    --color-accent-blue: #29B6F6;
+    --color-accent-purple: #9D4BFF;
+    --color-accent-magenta: #E34EFF;
+    --radius-xs: 4px; --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 18px;
+    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px;
+    --ui-font: 'Inter', 'Manrope', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    /* bestaande componentkleuren volgen de tokens */
+    --p-bg: var(--color-surface-1);
+    --p-card: var(--color-surface-2);
+    --p-card-2: #0B1016;
+    --p-line: rgba(255,255,255,.09);
+    --p-line-soft: rgba(255,255,255,.06);
+    --p-ink: var(--color-text-primary);
+    --p-ink-2: var(--color-text-secondary);
+    --p-ink-3: var(--color-text-muted);
   }
-  #panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(440px, 100%);
-    background:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.025 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E"),
-      linear-gradient(180deg, #121926 0%, var(--p-bg) 34%);
-    border-left: 1px solid var(--p-line); z-index: 50;
-    transform: translateX(102%); transition: transform 0.32s cubic-bezier(0.3, 0.8, 0.3, 1);
-    display: flex; flex-direction: column;
-    box-shadow: -24px 0 60px rgba(0, 0, 0, 0.55); }
-  #panel.open { transform: translateX(0); }
-  #panelHead { display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 20px 12px; border-bottom: 1px solid var(--p-line-soft); }
-  #panelHead h1 { font-size: 16px; font-weight: 650; letter-spacing: 0.01em; color: var(--p-ink); }
-  #panelHead h1 span { color: var(--accent); }
-  #panelHead .sub { font-size: 11.5px; color: var(--p-ink-3); margin-top: 1px; letter-spacing: 0.02em; }
-  #closePanel { background: none; border: 0; color: var(--p-ink-3); font-size: 20px; padding: 6px 8px;
-    border-radius: 8px; }
-  #closePanel:hover { color: var(--p-ink); background: var(--p-card); }
 
-  #tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
-    background: var(--p-line-soft); border-bottom: 1px solid var(--p-line-soft); }
-  #tabs button { background: var(--p-bg); border: 0; color: var(--p-ink-3);
-    padding: 10px 2px 9px; font-size: 12px; font-weight: 550; letter-spacing: 0.01em;
-    border-bottom: 2px solid transparent; }
-  #tabs button:hover { color: var(--p-ink-2); }
-  #tabs button.active { color: var(--accent); border-bottom-color: var(--accent);
-    background: linear-gradient(180deg, rgba(53, 208, 186, 0.05), transparent); }
+  /* ============ EXPERIENCE MANAGER — editor-shell ============
+     Topbar / sidebar / dock / live canvas / inspector / motionpaneel /
+     statusbar in één CSS-grid. Alle chrome gebruikt de HEM-tokens. */
+  #panel { position: fixed; inset: 0; z-index: 50; background: var(--color-bg);
+    font-family: var(--ui-font); font-size: 13px;
+    display: grid; grid-template-rows: 56px 1fr auto 26px; grid-template-columns: minmax(0, 1fr);
+    opacity: 0; pointer-events: none; transform: scale(0.992);
+    transition: opacity .22s ease, transform .25s cubic-bezier(.3,.8,.3,1); }
+  #panel.open { opacity: 1; pointer-events: auto; transform: scale(1); }
+
+  /* -- Topbar -- */
+  #topbar { display: flex; align-items: center; gap: 12px; padding: 0 14px; min-width: 0;
+    overflow: hidden; background: var(--color-surface-1); border-bottom: 1px solid var(--color-border); }
+  #tbProject { width: 150px; }
+  #tbScene { max-width: 150px; }
+  #tbLogo { display: flex; align-items: center; gap: 10px; margin-right: 4px; }
+  #tbLogo .mark { width: 27px; height: 27px; border-radius: 8px; flex: none;
+    background: linear-gradient(135deg, var(--color-accent-teal), var(--color-accent-purple)); }
+  #tbLogo .nm { font-size: 13.5px; font-weight: 650; letter-spacing: .04em; color: var(--color-text-primary); line-height: 1.15; }
+  #tbLogo .sub { font-size: 7.5px; letter-spacing: .22em; color: var(--color-text-muted); font-weight: 600; }
+  .tb-sel { display: flex; flex-direction: column; gap: 2px; }
+  .tb-sel .lbl { font-size: 9px; color: var(--color-text-muted); font-weight: 600; letter-spacing: .04em; }
+  .tb-sel select, .tb-sel input[type=text], .tb-sel .ro { background: var(--color-surface-2);
+    border: 1px solid var(--color-border); border-radius: 8px; color: var(--color-text-primary);
+    font: 500 12px/1.3 var(--ui-font); padding: 5px 9px; min-width: 108px; max-width: 190px; }
+  #tbResolution { min-width: 150px; }
+  @media (max-width: 1360px) { #tbProject { min-width: 90px; } .tb-sel .ro { min-width: 80px; } }
+  .tb-sel .ro { color: var(--color-text-secondary); white-space: nowrap; }
+  #tbSpacer { flex: 1; }
+  .tb-btn { background: var(--color-surface-2); border: 1px solid var(--color-border);
+    border-radius: 9px; color: var(--color-text-primary); font: 500 12.5px var(--ui-font);
+    padding: 8px 14px; display: inline-flex; align-items: center; gap: 7px; }
+  .tb-btn:hover { border-color: rgba(255,255,255,.2); }
+  .tb-btn:disabled { opacity: .38; cursor: default; }
+  .tb-btn.icon { padding: 8px 10px; color: var(--color-text-secondary); }
+  .tb-btn.cta { background: linear-gradient(120deg, var(--color-accent-purple), var(--color-accent-magenta));
+    border: 0; font-weight: 650; box-shadow: 0 4px 18px rgba(157,75,255,.35); }
+  .tb-btn.cta:hover { filter: brightness(1.12); }
+  #tbDevice { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding-right: 2px; }
+  #tbDevice .row1 { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 550;
+    color: var(--color-text-primary); }
+  #tbDevice .sub { font-size: 9px; color: var(--color-text-muted); }
+  .sdot { width: 8px; height: 8px; border-radius: 50%; background: #566274; flex: none; }
+  .sdot.on { background: #22c55e; box-shadow: 0 0 7px rgba(34,197,94,.8); }
+  .sdot.err { background: #e5605e; }
+  #closePanel { background: none; border: 0; color: var(--color-text-muted); font-size: 19px;
+    padding: 6px 9px; border-radius: 8px; }
+  #closePanel:hover { color: var(--color-text-primary); background: var(--color-surface-2); }
+
+  /* -- Body: sidebar | dock | canvas | inspector -- */
+  #editorBody { display: grid; grid-template-columns: 212px 372px 1fr 340px; min-height: 0; }
+  @media (max-width: 1500px) { #editorBody { grid-template-columns: 190px 340px 1fr 316px; } }
+  @media (max-width: 1240px) { #editorBody { grid-template-columns: 58px 330px 1fr 300px; }
+    #tabs button .nav-txt { display: none; } #tabs button { justify-content: center; padding: 11px 0; }
+    #navFoot { display: none !important; } }
+
+  #tabs { display: flex; flex-direction: column; gap: 2px; padding: 10px 8px;
+    background: var(--color-surface-1); border-right: 1px solid var(--color-border);
+    overflow-y: auto; scrollbar-width: thin; }
+  #tabs button { display: flex; align-items: center; gap: 12px; text-align: left;
+    background: none; border: 0; border-radius: 8px; padding: 10px 12px;
+    color: var(--color-text-secondary); font: 500 12.5px var(--ui-font); letter-spacing: .01em; }
+  #tabs button .nav-ic { width: 19px; text-align: center; font-size: 13px; color: var(--color-text-muted); flex: none; }
+  #tabs button:hover { color: var(--color-text-primary); background: rgba(255,255,255,.04); }
+  #tabs button.active { color: var(--color-text-primary); background: rgba(21,242,224,.09);
+    box-shadow: inset 2px 0 0 var(--color-accent-teal), 0 0 14px rgba(21,242,224,.07); }
+  #tabs button.active .nav-ic { color: var(--color-accent-teal); }
+  #navFoot { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 10px 4px;
+    border-top: 1px solid var(--color-border); }
+  #navFoot .av { width: 28px; height: 28px; border-radius: 50%; flex: none;
+    background: linear-gradient(135deg, var(--color-accent-blue), var(--color-accent-purple)); }
+  #navFoot .nm { font-size: 11.5px; font-weight: 550; color: var(--color-text-primary); }
+  #navFoot .rl { font-size: 9.5px; color: var(--color-text-muted); }
+
+  #dock { min-height: 0; display: flex; flex-direction: column; background: var(--color-surface-1);
+    border-right: 1px solid var(--color-border); }
+
+  /* -- Canvas -- */
+  #canvasCell { min-height: 0; min-width: 0; display: flex; flex-direction: column;
+    background: var(--color-bg); padding: 8px 12px 10px; gap: 8px; }
+  #canvasToolbar { display: flex; align-items: center; gap: 9px; }
+  #canvasToolbar .cv-title { display: flex; align-items: center; gap: 8px;
+    font-size: 10px; font-weight: 650; letter-spacing: .08em; color: var(--color-text-primary); }
+  #canvasToolbar .cv-sub { font-size: 10px; color: var(--color-text-muted); font-weight: 500; }
+  #canvasToolbar .sp { flex: 1; }
+  .cv-btn { background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 7px;
+    color: var(--color-text-secondary); font: 500 10.5px var(--ui-font); padding: 5px 9px; }
+  .cv-btn:hover { color: var(--color-text-primary); border-color: rgba(255,255,255,.2); }
+  .cv-btn.sel { color: var(--color-accent-teal); border-color: var(--color-border-active); }
+  #stageHole { flex: 1; min-height: 0; border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border); background: #05080d;
+    box-shadow: inset 0 0 60px rgba(0,0,0,.55); }
+
+  /* Podium + afspeel-lagen boven de shell terwijl de editor open is
+     (fitEditorCanvas schaalt ze exact in het canvasgat). */
+  body.editor-open #stage { z-index: 60; }
+  body.editor-open #saver { z-index: 61; }
+  body.editor-open #playOverlay { z-index: 62; }
+  body.editor-open #webOverlay { z-index: 63; }
+  body.editor-open .fab, body.editor-open #editHint { display: none; }
+
+  /* -- Inspector -- */
+  #inspector { min-height: 0; display: flex; flex-direction: column;
+    background: var(--color-surface-1); border-left: 1px solid var(--color-border); }
+  #inspTabs { display: flex; border-bottom: 1px solid var(--color-border); }
+  #inspTabs button { flex: 1; background: none; border: 0; border-bottom: 2px solid transparent;
+    color: var(--color-text-muted); font: 650 10.5px var(--ui-font); letter-spacing: .09em;
+    padding: 12px 4px 11px; }
+  #inspTabs button.active { color: var(--color-text-primary); border-bottom-color: var(--color-accent-teal); }
+  #inspBody, #layersBody { flex: 1; overflow-y: auto; scrollbar-width: thin;
+    scrollbar-color: var(--p-line) transparent; }
+  #inspBody details { border-bottom: 1px solid var(--color-border); }
+  #inspBody summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    padding: 11px 14px; font-size: 10px; font-weight: 650; letter-spacing: .08em;
+    color: var(--color-text-secondary); user-select: none; }
+  #inspBody summary::before { content: '\25B8'; font-size: 9px; color: var(--color-text-muted); transition: transform .15s; }
+  #inspBody details[open] summary::before { transform: rotate(90deg); }
+  #inspBody .sec { display: flex; flex-direction: column; gap: 9px; padding: 2px 14px 14px; }
+  #inspBody .sec .row { gap: 8px; }
+  #inspBody .note { font-size: 11px; }
+  .insp-empty { padding: 26px 18px; color: var(--color-text-muted); font-size: 12px; line-height: 1.6; }
+  .lay-row { display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    border-bottom: 1px solid var(--color-border); font-size: 12px; color: var(--color-text-secondary); }
+  .lay-row:hover { background: rgba(255,255,255,.03); }
+  .lay-row.sel { background: rgba(21,242,224,.08); color: var(--color-text-primary); }
+  .lay-row .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lay-row .sw { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+  .lay-row button { background: none; border: 0; color: var(--color-text-muted); font-size: 12px; padding: 2px 4px; }
+  .lay-row button:hover { color: var(--color-text-primary); }
+  .lay-row button.act { color: var(--color-accent-teal); }
+
+  /* -- Motion-paneel -- */
+  #motionDock { display: flex; align-items: stretch; gap: 12px; padding: 10px 14px 12px;
+    background: var(--color-surface-1); border-top: 1px solid var(--color-border); }
+  #mpCards { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; }
+  body.editor-open #toast { top: 104px; }
+  #motionDock .md-head { writing-mode: initial; display: flex; flex-direction: column; gap: 4px;
+    justify-content: center; min-width: 86px; }
+  #motionDock .md-title { font-size: 9.5px; font-weight: 650; letter-spacing: .1em; color: var(--color-text-secondary); }
+  .mp-card { flex: none; width: 128px; border-radius: var(--radius-md); overflow: hidden; cursor: pointer;
+    background: var(--color-surface-2); border: 1px solid var(--color-border); padding: 0; text-align: left; }
+  .mp-card:hover { border-color: rgba(255,255,255,.22); }
+  .mp-card.sel { border-color: var(--color-border-active); box-shadow: 0 0 0 1px var(--color-border-active), 0 0 16px rgba(21,242,224,.12); }
+  .mp-card .th { height: 56px; background: var(--mpg, linear-gradient(135deg, #20262e, #3a4654)); }
+  .mp-card .lb { display: flex; align-items: center; gap: 6px; padding: 6px 9px 7px;
+    font: 500 10.5px var(--ui-font); color: var(--color-text-secondary); }
+  .mp-card.sel .lb { color: var(--color-text-primary); }
+  .mp-card .ck { color: var(--color-accent-teal); font-size: 10px; margin-left: auto; }
+  #mpInfo { flex: none; width: 250px; display: flex; flex-direction: column; gap: 4px; padding: 2px 4px 0 8px; }
+  #mpInfo .t { display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 650; color: var(--color-text-primary); }
+  #mpInfo .d { font-size: 10px; line-height: 1.5; color: var(--color-text-secondary); }
+  #mpInfo .lnk { font-size: 10.5px; color: var(--color-accent-teal); background: none; border: 0; padding: 0;
+    text-align: left; font-weight: 550; }
+  #mpInfo .lnk:hover { text-decoration: underline; }
+
+  /* -- Statusbar -- */
+  #statusBar { display: flex; align-items: center; gap: 22px; padding: 0 14px;
+    background: var(--color-surface-1); border-top: 1px solid var(--color-border);
+    font-size: 10px; color: var(--color-text-muted); }
+  #sbSave { display: flex; align-items: center; gap: 6px; color: var(--color-text-secondary); }
+  #sbSave .ok { color: #22c55e; }
+  #statusBar .sp { flex: 1; }
+  #sbDevices { display: flex; align-items: center; gap: 6px; }
+
+  /* -- Publish-modal -- */
+  #publishModal { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center;
+    justify-content: center; background: rgba(3,6,10,.7); backdrop-filter: blur(3px); }
+  #publishModal .pm { width: min(480px, 92vw); background: var(--color-surface-2);
+    border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 22px 24px;
+    display: flex; flex-direction: column; gap: 14px; font-family: var(--ui-font);
+    box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  #publishModal h3 { font-size: 16px; font-weight: 650; color: var(--color-text-primary); }
+  #pmChecks { display: flex; flex-direction: column; gap: 7px; font-size: 12px; color: var(--color-text-secondary); }
+  #pmChecks .chk { display: flex; align-items: center; gap: 9px; }
+  #pmChecks .chk .st { width: 15px; text-align: center; }
+  #pmTargets { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--color-text-primary); }
 
   .tabpage { flex: 1; overflow-y: auto; padding: 16px 18px 30px; display: flex;
     flex-direction: column; gap: 14px; scrollbar-width: thin; scrollbar-color: var(--p-line) transparent; }
@@ -508,23 +677,62 @@
 <div id="editHint" class="hidden">Sleep de knoppen naar hun plek en klik op 🔓 om ze vast te zetten</div>
 
 <aside id="panel">
-  <div id="panelHead">
-    <div>
-      <h1>HereWe<span>Holo</span> Studio</h1>
-      <div class="sub">Beheer van de holobox-presentatie</div>
+  <header id="topbar">
+    <div id="tbLogo">
+      <div class="mark"></div>
+      <div>
+        <div class="nm">HOLOBOX</div>
+        <div class="sub">EXPERIENCE MANAGER</div>
+      </div>
     </div>
-    <button id="closePanel" title="Sluiten">&#10005;</button>
-  </div>
-  <div id="tabs">
-    <button data-tab="buttons" class="active">Knoppen</button>
-    <button data-tab="media">Media</button>
-    <button data-tab="look">Presentatie</button>
-    <button data-tab="fx">Effecten</button>
-    <button data-tab="saver">Screensaver</button>
-    <button data-tab="cam">Camera</button>
-    <button data-tab="share">Opslaan</button>
-    <button data-tab="help">Help</button>
-  </div>
+    <label class="tb-sel"><span class="lbl">Project</span>
+      <input type="text" id="tbProject" placeholder="Naam van dit project">
+    </label>
+    <label class="tb-sel"><span class="lbl">Sc&egrave;ne</span>
+      <select id="tbScene"></select>
+    </label>
+    <div class="tb-sel"><span class="lbl">Device</span>
+      <div class="ro" id="tbDeviceName">Deze computer</div>
+    </div>
+    <div class="tb-sel"><span class="lbl">Resolutie</span>
+      <div class="ro" id="tbResolution">&mdash;</div>
+    </div>
+    <div id="tbSpacer"></div>
+    <button class="tb-btn icon" id="tbUndo" title="Ongedaan maken (Ctrl+Z)">&#8630;</button>
+    <button class="tb-btn icon" id="tbRedo" title="Opnieuw (Ctrl+Y)">&#8631;</button>
+    <button class="tb-btn" id="tbPreview" title="Bekijk de presentatie zoals de bezoeker hem ziet">&#9654;&nbsp;Preview</button>
+    <button class="tb-btn" id="tbSave" title="Nu opslaan">Opslaan</button>
+    <button class="tb-btn cta" id="tbPublish">&#10022;&nbsp;Publiceren</button>
+    <div id="tbDevice">
+      <div class="row1"><span class="sdot" id="tbDevDot"></span><span id="tbDevState">Lokaal</span></div>
+      <div class="sub" id="tbDevSub">niet gekoppeld</div>
+    </div>
+    <button id="closePanel" title="Editor sluiten">&#10005;</button>
+  </header>
+
+  <div id="editorBody">
+  <nav id="tabs">
+    <button data-tab="dashboard"><span class="nav-ic">&#8962;</span><span class="nav-txt">Dashboard</span></button>
+    <button data-tab="buttons" class="active"><span class="nav-ic">&#9678;</span><span class="nav-txt">Knoppen &amp; sc&egrave;nes</span></button>
+    <button data-tab="media"><span class="nav-ic">&#9654;</span><span class="nav-txt">Media</span></button>
+    <button data-tab="look"><span class="nav-ic">&#9671;</span><span class="nav-txt">Experience &amp; thema</span></button>
+    <button data-tab="fx"><span class="nav-ic">&#12316;</span><span class="nav-txt">Motion</span></button>
+    <button data-tab="saver"><span class="nav-ic">&#10033;</span><span class="nav-txt">Attract mode</span></button>
+    <button data-tab="cam"><span class="nav-ic">&#9737;</span><span class="nav-txt">Camera</span></button>
+    <button data-tab="share"><span class="nav-ic">&#8644;</span><span class="nav-txt">Beheer &amp; device</span></button>
+    <button data-tab="help"><span class="nav-ic">?</span><span class="nav-txt">Help</span></button>
+    <div id="navFoot">
+      <div class="av"></div>
+      <div>
+        <div class="nm">Beheerder</div>
+        <div class="rl">Administrator</div>
+      </div>
+    </div>
+  </nav>
+
+  <div id="dock">
+  <!-- ================= DASHBOARD ================= -->
+  <div class="tabpage hidden" id="page-dashboard"></div>
 
   <!-- ================= KNOPPEN ================= -->
   <div class="tabpage" id="page-buttons">
@@ -852,6 +1060,60 @@
       <button id="mpPreview" class="btn block">Voorbeeld afspelen</button>
       <p class="note">De preset bepaalt entrance, timing en het standaard selectie-effect; losse velden overschrijven de preset.</p>
     </div>
+    <h2>Galaxy Tiles &mdash; fijnafstelling</h2>
+    <div class="card">
+      <div class="row">
+        <label class="field">Duur (ms)
+          <input type="number" id="gxDuration" min="900" max="2400" step="50">
+        </label>
+        <label class="field">Stagger (ms)
+          <input type="number" id="gxStagger" min="0" max="400" step="10">
+        </label>
+        <label class="field">Seed
+          <input type="number" id="gxSeed" min="1" max="9999" step="1" title="Zelfde seed = exact dezelfde choreografie">
+        </label>
+      </div>
+      <label class="field">Chaos (0 = strak, 100 = wild; enterprise-default 25)
+        <input type="range" id="gxChaos" min="0" max="100" step="5">
+      </label>
+      <div class="row">
+        <label class="field">Rotatie (&deg;)
+          <input type="number" id="gxRotation" min="0" max="45" step="1">
+        </label>
+        <label class="field">Verticale offset (px)
+          <input type="number" id="gxVert" min="120" max="420" step="10">
+        </label>
+        <label class="field">Diepte (px)
+          <input type="number" id="gxDepth" min="0" max="80" step="5">
+        </label>
+      </div>
+      <div class="row">
+        <label class="field">Overshoot (%)
+          <input type="number" id="gxOvershoot" min="0" max="8" step="0.5">
+        </label>
+        <label class="field">Easing
+          <select id="gxEasing">
+            <option value="outExpo">Out Expo (aanbevolen)</option>
+            <option value="outCubic">Out Cubic</option>
+            <option value="outQuint">Out Quint</option>
+            <option value="standard">Standaard</option>
+          </select>
+        </label>
+      </div>
+      <label class="field">Interactie tijdens de entrance
+        <select id="gxInteraction">
+          <option value="after50">Na 50% &mdash; aanbevolen</option>
+          <option value="disabled">Pas na afloop</option>
+          <option value="immediate">Direct</option>
+        </select>
+      </label>
+      <div class="toggle-row">
+        <div><div class="t-label">Reduced motion</div>
+          <div class="t-sub">Galaxy wordt een rustige fade + subtiele scale (toegankelijkheid)</div></div>
+        <label class="switch"><input type="checkbox" id="gxReduced"><i></i></label>
+      </div>
+      <button id="gxPreview" class="btn block">Galaxy-voorbeeld afspelen</button>
+    </div>
     <h2>Bij het kiezen van een knop</h2>
     <div class="card">
       <label class="field">Selectie-effect
@@ -1034,14 +1296,68 @@
       <p class="note">Controleer via <code>chrome://gpu</code> of "Video Decode: Hardware accelerated" groen is.</p>
     </div>
   </div>
+  </div><!-- /dock -->
+
+  <div id="canvasCell">
+    <div id="canvasToolbar">
+      <div class="cv-title"><span class="sdot on"></span> CANVAS</div>
+      <div class="cv-sub" id="cvSub">&middot; Live preview</div>
+      <div class="sp"></div>
+      <button class="cv-btn sel" id="cvFit" title="Passend in het venster">&#9713; Fit</button>
+      <button class="cv-btn" id="cvZoomOut" title="Uitzoomen">&minus;</button>
+      <span class="cv-btn" id="cvZoomPct" style="cursor:default">&mdash;</span>
+      <button class="cv-btn" id="cvZoomIn" title="Inzoomen">+</button>
+      <button class="cv-btn" id="cv100" title="Werkelijke grootte">100%</button>
+      <button class="cv-btn" id="cvEdit" title="Verplaats-modus aan/uit">&#128275; Bewerken</button>
+      <button class="cv-btn" id="cvFull" title="Volledig scherm (preview)">&#10530;</button>
+    </div>
+    <div id="stageHole"></div>
+  </div>
+
+  <aside id="inspector">
+    <div id="inspTabs">
+      <button id="inspTabInspector" class="active">INSPECTOR</button>
+      <button id="inspTabLayers">LAYERS</button>
+    </div>
+    <div id="inspBody"></div>
+    <div id="layersBody" class="hidden"></div>
+  </aside>
+  </div><!-- /editorBody -->
+
+  <div id="motionDock">
+    <div class="md-head">
+      <div class="md-title">&#9671; MOTION<br>PRESETS</div>
+    </div>
+    <div id="mpCards" style="display:flex;gap:12px"></div>
+    <div id="mpInfo"></div>
+  </div>
+
+  <footer id="statusBar">
+    <div id="sbSave"><span class="ok">&#10003;</span><span id="sbSaveTxt">Alle wijzigingen opgeslagen</span></div>
+    <div id="sbPublished">Nog niet gepubliceerd</div>
+    <div class="sp"></div>
+    <div id="sbDevices"><span id="sbDevTxt">Lokaal apparaat</span><span class="sdot" id="sbDevDot"></span></div>
+  </footer>
 </aside>
+
+<div id="publishModal" class="hidden">
+  <div class="pm">
+    <h3>Experience publiceren</h3>
+    <div id="pmTargets"></div>
+    <div id="pmChecks"></div>
+    <div class="row" style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" id="pmCancel">Annuleren</button>
+      <button class="tb-btn cta" id="pmGo">&#10022;&nbsp;Publiceren</button>
+    </div>
+  </div>
+</div>
 
 <div id="toast" class="hidden"></div>
 
 <script>
 'use strict';
 
-const APP_VERSION = '2.5.0';
+const APP_VERSION = '2.6.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -1087,6 +1403,12 @@ const defaultConfig = () => ({
   nav: { breadcrumb: false, swipeBack: false },
   exitFx: 'blurOut',   // exit-choreografie bij scenewissel (spec 189-210)
   masterVolume: 100,   // hoofdvolume in %, ook op afstand instelbaar
+  projectName: '',
+  publishedAt: null,
+  reducedMotion: false, // toegankelijkheid: Galaxy wordt fade + subtiele scale
+  // Galaxy Tiles-parameters (spec 15-22, 30, 52-55, 61)
+  galaxy: { durationMs: 1750, staggerMs: 110, chaos: 25, rotation: 12, vertOffset: 220,
+    depth: 30, overshoot: 2.5, easing: 'outExpo', seed: 7, interaction: 'after50' },
   // Beheer op afstand (spec 108-115): koppeling met het HereWeHolo-platform.
   remote: { enabled: false, url: '', key: '', intervalSec: 10, allowConfig: true },
   security: { pinHash: null },
@@ -1124,6 +1446,7 @@ function migrateConfig(stored) {
     lang: { ...d.lang, ...stored.lang, available: (stored.lang?.available || d.lang.available).slice() },
     nav: { ...d.nav, ...stored.nav },
     remote: { ...d.remote, ...stored.remote },
+    galaxy: { ...d.galaxy, ...stored.galaxy },
     analytics: { ...d.analytics, ...stored.analytics } };
   if (!Array.isArray(c.scenes) || !c.scenes.length) {
     c.scenes = [{
@@ -1160,7 +1483,16 @@ let currentSceneId = config.homeSceneId;
 let sceneStack = [];
 const curScene = () => config.scenes.find((sc) => sc.id === currentSceneId) || config.scenes[0];
 const curButtons = () => curScene().buttons;
-function save() { localStorage.setItem(LS_KEY, JSON.stringify(config)); }
+let saveFlashTimer = null;
+function save() {
+  localStorage.setItem(LS_KEY, JSON.stringify(config));
+  const t = document.getElementById('sbSaveTxt');
+  if (t) {
+    t.textContent = 'Opslaan…';
+    clearTimeout(saveFlashTimer);
+    saveFlashTimer = setTimeout(() => { t.textContent = 'Alle wijzigingen opgeslagen'; }, 500);
+  }
+}
 
 // IndexedDB voor videobestanden (blobs) — blijft offline beschikbaar.
 let idb;
@@ -1610,7 +1942,7 @@ function renderStage() {
   // Planning (spec 21): knoppen buiten hun tijdvenster niet tonen —
   // in verplaats-modus blijft alles zichtbaar zodat je kunt blijven bewerken.
   const ordered = [...curButtons()]
-    .filter((b) => editing || scheduleActive(b))
+    .filter((b) => !b.hidden && (editing || scheduleActive(b)))
     .sort((a, b) => (a.z || 0) - (b.z || 0));
   for (const b of ordered) {
     const media = mediaCache.get(b.mediaId);
@@ -1967,9 +2299,14 @@ function markSelection() {
   if (info) info.textContent = selectedIds.size
     ? `${selectedIds.size} knop${selectedIds.size === 1 ? '' : 'pen'} geselecteerd`
     : 'Geen selectie — klik in verplaats-modus op knoppen (shift = meerdere)';
+  if (panel.classList.contains('open') && typeof renderInspector === 'function') {
+    renderInspector();
+    renderLayers();
+  }
 }
 
 function clearSelection() { selectedIds.clear(); markSelection(); }
+
 const selectedButtons = () => curButtons().filter((b) => selectedIds.has(b.id));
 
 // Positie in het podium in procenten.
@@ -1985,6 +2322,12 @@ $('#buttonLayer').addEventListener('pointerdown', (e) => {
   if (e.shiftKey || e.ctrlKey || e.metaKey) {
     if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
     markSelection();
+    e.preventDefault();
+    return;
+  }
+  const meBtn = curButtons().find((x) => x.id === id);
+  if (meBtn && meBtn.locked) { // vergrendelde laag: wel selecteren, niet slepen
+    selectedIds.clear(); selectedIds.add(id); markSelection();
     e.preventDefault();
     return;
   }
@@ -2184,6 +2527,23 @@ function pngAlphaAt(img, clientX, clientY) {
   return data[(Math.floor(y * 127) * 128 + Math.floor(x * 127)) * 4 + 3];
 }
 
+// Directe druk-feedback (spec 31): micro-press + ripple exact op het raakpunt,
+// binnen één frame na pointerdown.
+$('#buttonLayer').addEventListener('pointerdown', (e) => {
+  if (editing) return;
+  const btnEl = e.target.closest('.vbtn');
+  if (!btnEl) return;
+  btnEl.animate([
+    { transform: 'scale(1)' }, { transform: 'scale(0.97)', offset: 0.35 }, { transform: 'scale(1)' }
+  ], { duration: 230, easing: 'ease-out', composite: 'add' });
+  const r = btnEl.getBoundingClientRect();
+  const rip = el('span', { class: 'press-ripple',
+    style: `left:${((e.clientX - r.left) / r.width * 100).toFixed(1)}%; top:${((e.clientY - r.top) / r.height * 100).toFixed(1)}%;` });
+  btnEl.append(rip);
+  rip.addEventListener('animationend', () => rip.remove(), { once: true });
+  setTimeout(() => rip.remove(), 1200);
+}, true);
+
 $('#buttonLayer').addEventListener('click', (e) => {
   const btnEl = e.target.closest('.vbtn');
   if (!btnEl || editing) return;
@@ -2252,9 +2612,10 @@ function doRedo() {
 }
 
 function updateUndoUI() {
-  const u = document.getElementById('undoBtn'), r = document.getElementById('redoBtn');
-  if (u) u.disabled = !undoStack.length;
-  if (r) r.disabled = !redoStack.length;
+  for (const [id, stack] of [['undoBtn', undoStack], ['redoBtn', redoStack], ['tbUndo', undoStack], ['tbRedo', redoStack]]) {
+    const n = document.getElementById(id);
+    if (n) n.disabled = !stack.length;
+  }
 }
 
 window.addEventListener('keydown', (e) => {
@@ -2519,10 +2880,12 @@ function activeSelectFx() {
 // binnenkomt (contextual return, spec 229).
 function runEntrance(firstId = null) {
   const els = [...document.querySelectorAll('.vbtn')];
-  if (!els.length || matchMedia('(prefers-reduced-motion: reduce)').matches) return Promise.resolve();
+  if (!els.length) return Promise.resolve();
   const cfg = entranceCfg();
   if (cfg.effect === 'galaxyTiles') return runGalaxyTiles(els, firstId, false);
   if (cfg.effect === 'extremeGalaxy') return runGalaxyTiles(els, firstId, true);
+  if (reducedMotionActive()) return runGalaxyTiles(els, firstId, false); // valt terug op fade+scale
+  gateInteraction(cfg.duration + els.length * cfg.stagger);
   const fx = ENTRANCES[cfg.effect] || ENTRANCES.fade;
   const ranks = (SEQUENCES[cfg.sequence] || SEQUENCES.stagger)(els);
   const anims = [];
@@ -2542,44 +2905,96 @@ function runEntrance(firstId = null) {
   return Promise.all(anims.map((a) => a.finished.catch(() => {})));
 }
 
-// Galaxy Tiles (spec-uitbreiding): tegels zweven van onder het scherm binnen,
-// elk met eigen timing, snelheid en 3D-kanteling (rotateX/Y/Z). De beweging
-// begint los en ruimtelijk en wordt gaandeweg strakker, tot elke tegel exact
-// op zijn positie en uitlijning landt. Totaal ±1,5–2 s, premium easing.
-function runGalaxyTiles(els, firstId = null, extreme = false) {
-  const mul = INTENSITY[config.motion.intensity] || 1;
-  const anims = [];
-  els.forEach((elB) => {
-    const isFirst = firstId && elB.dataset.id === firstId;
-    const dur = Math.min(extreme ? 2200 : 2000, Math.max(1300, ((extreme ? 1750 : 1520) + Math.random() * 360) * (0.85 + mul * 0.15)));
-    const delay = isFirst ? 0 : Math.random() * 280 + (firstId ? 140 : 0);
-    // Startpositie: onder het scherm, licht zijwaarts verspreid.
-    const sx = (Math.random() * 2 - 1) * innerWidth * 0.14;
-    const sy = innerHeight * 0.72 + Math.random() * innerHeight * 0.3;
-    // Extreme Galaxy: minimaal één volledige rotatie om de eigen as omhoog
-    // (360°–540° voorwaartse flip), plus lichte zijwaartse wiebel.
-    const rx = extreme ? -(360 + Math.random() * 180) : (Math.random() * 2 - 1) * 62;
-    const ry = (Math.random() * 2 - 1) * (extreme ? 32 : 74);
-    const rz = (Math.random() * 2 - 1) * (extreme ? 14 : 26);
-    const drift = (Math.random() * 2 - 1) * 34;
+// Deterministische seeded randomness (spec 16/52): dezelfde seed geeft elke
+// keer exact dezelfde choreografie, zodat de experience consistent blijft.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
 
+const GALAXY_EASINGS = {
+  outExpo: 'cubic-bezier(0.16, 1, 0.3, 1)',
+  outCubic: 'cubic-bezier(0.33, 1, 0.68, 1)',
+  outQuint: 'cubic-bezier(0.22, 1, 0.36, 1)',
+  standard: 'cubic-bezier(0.33, 0.9, 0.25, 1)'
+};
+
+// Interactie tijdens de entrance (spec 61): Disabled / After 50% / Immediate.
+let gateTimer = null;
+function gateInteraction(totalMs) {
+  const layer = document.getElementById('buttonLayer');
+  const mode = config.galaxy.interaction || 'after50';
+  clearTimeout(gateTimer);
+  if (mode === 'immediate') { layer.style.pointerEvents = ''; return; }
+  layer.style.pointerEvents = 'none';
+  const wait = mode === 'disabled' ? totalMs : totalMs * 0.5;
+  gateTimer = setTimeout(() => { layer.style.pointerEvents = ''; }, wait);
+}
+
+// Reduced Motion (spec 54): expliciete instelling of systeemvoorkeur.
+const reducedMotionActive = () =>
+  config.reducedMotion || matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Galaxy Tiles (spec 15-22, 52-53): tegels komen van onder het scherm binnen,
+// elk met een eigen (deterministische) timing-offset, 3D-kanteling en diepte.
+// De beweging wordt gaandeweg strakker en landt met een subtiele overshoot.
+function runGalaxyTiles(els, firstId = null, extreme = false) {
+  const g = config.galaxy;
+  const mul = INTENSITY[config.motion.intensity] || 1;      // Subtle/Immersive/Showcase (spec 55)
+  const chaos = Math.max(0, Math.min(100, g.chaos ?? 25)) / 100;
+  const easing = GALAXY_EASINGS[g.easing] || GALAXY_EASINGS.outExpo;
+  const overshoot = 1 + (g.overshoot ?? 2.5) / 100;
+  const anims = [];
+  if (reducedMotionActive()) {
+    // Toegankelijk alternatief: fade + subtiele scale.
+    els.forEach((elB, i) => {
+      const opts = { duration: 420, delay: i * 60, easing: GALAXY_EASINGS.outCubic, fill: 'backwards' };
+      anims.push(elB.animate([{ transform: 'scale(0.97)' }, { transform: 'scale(1)' }], { ...opts, composite: 'add' }));
+      anims.push(elB.animate([{ opacity: 0 }, { opacity: 1 }], opts));
+    });
+    gateInteraction(420 + els.length * 60);
+    return Promise.all(anims.map((a) => a.finished.catch(() => {})));
+  }
+  let totalMs = 0;
+  els.forEach((elB, i) => {
+    const rnd = mulberry32((g.seed ?? 7) * 7919 + i * 104729);
+    const R = (min, max) => min + rnd() * (max - min);
+    const isFirst = firstId && elB.dataset.id === firstId;
+    const dur = Math.min(2400, Math.max(900, (g.durationMs ?? 1750) * (0.92 + mul * 0.08) + R(-1, 1) * 220 * chaos));
+    const delay = isFirst ? 0 : i * (g.staggerMs ?? 110) + R(-35, 45) * (0.4 + chaos) + (firstId ? 140 : 0);
+    // Starttransform (spec 17): van onderen, licht ongecontroleerd zwevend.
+    const sy = (g.vertOffset ?? 220) * mul * R(0.82, 1.36);
+    const sx = R(-1, 1) * innerWidth * 0.1 * (0.5 + chaos);
+    const rot = (g.rotation ?? 12) * mul;
+    const rx = extreme ? -(360 + R(0, 180)) : R(-0.66, 0.66) * rot;
+    const ry = R(-1.16, 1.16) * rot * (extreme ? 0.4 : 1);
+    const rz = R(-0.83, 0.83) * rot * (extreme ? 0.5 : 1);
+    const tz = -(g.depth ?? 30) * mul;
+    const startScale = R(0.88, 0.96);
+    // Settle-timeline (spec 53): 0% → 55% overshoot → 78% terugvering → 100%.
     const tf = [
       { offset: 0,
-        transform: `translate(${sx.toFixed(0)}px, ${sy.toFixed(0)}px) rotateX(${rx.toFixed(0)}deg) rotateY(${ry.toFixed(0)}deg) rotateZ(${rz.toFixed(0)}deg) scale(0.7)`,
-        easing: 'cubic-bezier(0.22, 0.55, 0.35, 1)' },
-      { offset: 0.58,
-        transform: `translate(${(sx * 0.18 + drift).toFixed(0)}px, ${(-14 - Math.random() * 26).toFixed(0)}px) rotateX(${(rx * (extreme ? 0.3 : 0.22)).toFixed(0)}deg) rotateY(${(ry * 0.22).toFixed(0)}deg) rotateZ(${(rz * 0.28).toFixed(0)}deg) scale(1.05)`,
-        easing: 'cubic-bezier(0.3, 0.6, 0.25, 1)' },
-      { offset: 0.84,
-        transform: `translate(${((Math.random() * 2 - 1) * 7).toFixed(0)}px, ${(-4 - Math.random() * 6).toFixed(0)}px) rotateX(${(rx * 0.05).toFixed(1)}deg) rotateY(${(ry * 0.05).toFixed(1)}deg) rotateZ(0deg) scale(1.012)`,
-        easing: 'cubic-bezier(0.35, 0.8, 0.3, 1)' },
-      { offset: 1, transform: 'translate(0px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1)' }
+        transform: `translate3d(${sx.toFixed(0)}px, ${sy.toFixed(0)}px, ${tz.toFixed(0)}px) rotateX(${rx.toFixed(0)}deg) rotateY(${ry.toFixed(0)}deg) rotateZ(${rz.toFixed(0)}deg) scale(${startScale.toFixed(2)})`,
+        easing },
+      { offset: 0.55,
+        transform: `translate3d(${(sx * 0.12).toFixed(0)}px, ${(-10 - R(0, 18)).toFixed(0)}px, 0px) rotateX(${(rx * (extreme ? 0.25 : 0.18)).toFixed(0)}deg) rotateY(${(ry * 0.18).toFixed(0)}deg) rotateZ(${(rz * -0.16).toFixed(1)}deg) scale(${overshoot.toFixed(3)})`,
+        easing: GALAXY_EASINGS.outCubic },
+      { offset: 0.78,
+        transform: `translate3d(${R(-4, 4).toFixed(0)}px, ${R(2, 6).toFixed(0)}px, 0px) rotateX(${(rx * 0.04).toFixed(1)}deg) rotateY(${(ry * 0.04).toFixed(1)}deg) rotateZ(${(rz * 0.05).toFixed(1)}deg) scale(0.995)`,
+        easing: GALAXY_EASINGS.outCubic },
+      { offset: 1, transform: 'translate3d(0px, 0px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1)' }
     ];
     const opts = { duration: dur, delay, fill: 'backwards' };
     anims.push(elB.animate(tf, { ...opts, composite: 'add' }));
     anims.push(elB.animate(
       [{ opacity: 0, offset: 0 }, { opacity: 1, offset: 0.22 }, { opacity: 1, offset: 1 }], opts));
+    totalMs = Math.max(totalMs, delay + dur);
   });
+  gateInteraction(totalMs);
   return Promise.all(anims.map((a) => a.finished.catch(() => {})));
 }
 
@@ -2872,17 +3287,21 @@ async function handCycle() {
 
 /* Verplaats-modus: 🔒 ⇄ 🔓 */
 const lockFab = $('#lockFab');
-lockFab.addEventListener('click', async () => {
+async function toggleEditing() {
   if (!editing && !(await requireAdmin())) return;
   editing = !editing;
   document.body.classList.toggle('editing', editing);
   lockFab.textContent = editing ? '🔓' : '🔒';
+  const ce = document.getElementById('cvEdit');
+  if (ce) ce.classList.toggle('sel', editing);
   $('#editHint').classList.toggle('hidden', !editing);
   applyOrientationMode(); // tijdens verplaatsen niet roteren, daarna weer wel
   syncFrames();
   if (!editing) { clearSelection(); save(); toast('Knoppen vastgezet'); }
   else { markSelection(); toast('Shift-klik selecteert meerdere knoppen tegelijk'); }
-});
+}
+lockFab.addEventListener('click', toggleEditing);
+$('#cvEdit').addEventListener('click', toggleEditing);
 
 /* ================= Zweef-animaties =================
    - "Diepte": knop schaalt langzaam groter/kleiner (komt naar voren en gaat
@@ -2941,8 +3360,23 @@ window.addEventListener('resize', syncFrames);
 
 /* ================= Menu ================= */
 const panel = $('#panel');
-$('#menuFab').addEventListener('click', async () => { if (!(await requireAdmin())) return; panel.classList.add('open'); refreshPanel(); });
-$('#closePanel').addEventListener('click', () => panel.classList.remove('open'));
+function openEditor() {
+  panel.classList.add('open');
+  document.body.classList.add('editor-open');
+  refreshPanel();
+  applyOrientationMode(); // editor toont het podium ongedraaid in het canvas
+  requestAnimationFrame(fitEditorCanvas);
+}
+
+function closeEditor() {
+  panel.classList.remove('open');
+  document.body.classList.remove('editor-open');
+  clearEditorCanvas();
+  applyOrientationMode();
+}
+
+$('#menuFab').addEventListener('click', async () => { if (!(await requireAdmin())) return; openEditor(); });
+$('#closePanel').addEventListener('click', closeEditor);
 $('#fsFab').addEventListener('click', () => {
   if (document.fullscreenElement) document.exitFullscreen();
   else document.documentElement.requestFullscreen().catch(() => toast('Volledig scherm niet toegestaan'));
@@ -2950,9 +3384,463 @@ $('#fsFab').addEventListener('click', () => {
 document.querySelectorAll('#tabs button').forEach((t) => t.addEventListener('click', () => {
   document.querySelectorAll('#tabs button').forEach((x) => x.classList.toggle('active', x === t));
   document.querySelectorAll('.tabpage').forEach((p) => p.classList.toggle('hidden', p.id !== 'page-' + t.dataset.tab));
+  if (t.dataset.tab === 'dashboard') renderDashboard();
 }));
 
-function refreshPanel() { refreshSceneUI(); renderBtnList(); renderMediaList(); renderLook(); renderSaver(); renderMotion(); renderShare(); }
+/* ================= Editor-canvas: podium in het canvasgat =================
+   Het podium (en de afspeel-lagen) blijven viewport-groot, maar worden met
+   één GPU-transform exact in #stageHole geschaald. Alle bestaande interactie
+   (slepen, hittests) rekent via getBoundingClientRect en blijft dus kloppen. */
+let editorZoom = 'fit'; // 'fit' | schaalfactor t.o.v. werkelijke pixels
+
+function editorCanvasTargets() {
+  return ['stage', 'saver', 'playOverlay', 'webOverlay'].map((id) => document.getElementById(id));
+}
+
+function fitEditorCanvas() {
+  if (!panel.classList.contains('open')) return;
+  const hole = document.getElementById('stageHole').getBoundingClientRect();
+  if (!hole.width || !hole.height) return;
+  const fitK = Math.min(hole.width / innerWidth, hole.height / innerHeight);
+  const k = editorZoom === 'fit' ? fitK : editorZoom;
+  const ox = hole.left + (hole.width - innerWidth * k) / 2;
+  const oy = hole.top + (hole.height - innerHeight * k) / 2;
+  // Buiten het canvasgat clippen, anders ligt het (ingezoomde) podium over
+  // de editor-chrome heen en vangt het daar de klikken af.
+  const insL = Math.max(0, (hole.left - ox) / k);
+  const insT = Math.max(0, (hole.top - oy) / k);
+  const insR = Math.max(0, innerWidth - (hole.right - ox) / k);
+  const insB = Math.max(0, innerHeight - (hole.bottom - oy) / k);
+  for (const t of editorCanvasTargets()) {
+    t.style.transformOrigin = '0 0';
+    t.style.transform = `translate(${ox.toFixed(1)}px, ${oy.toFixed(1)}px) scale(${k.toFixed(4)})`;
+    t.style.clipPath = `inset(${insT.toFixed(1)}px ${insR.toFixed(1)}px ${insB.toFixed(1)}px ${insL.toFixed(1)}px)`;
+  }
+  const pct = document.getElementById('cvZoomPct');
+  if (pct) pct.textContent = Math.round(k * 100) + '%';
+  document.getElementById('cvFit').classList.toggle('sel', editorZoom === 'fit');
+  document.getElementById('cv100').classList.toggle('sel', editorZoom === 1);
+  const res = document.getElementById('tbResolution');
+  if (res) res.textContent = `${innerWidth} × ${innerHeight} · ${innerWidth >= innerHeight ? 'landscape' : 'portrait'}`;
+  const sub = document.getElementById('cvSub');
+  if (sub) sub.textContent = `· Live preview · ${innerWidth} × ${innerHeight}`;
+}
+
+function clearEditorCanvas() {
+  for (const t of editorCanvasTargets()) {
+    t.style.transform = '';
+    t.style.transformOrigin = '';
+    t.style.clipPath = '';
+  }
+}
+
+function stepZoom(dir) {
+  const hole = document.getElementById('stageHole').getBoundingClientRect();
+  const fitK = Math.min(hole.width / innerWidth, hole.height / innerHeight);
+  const cur = editorZoom === 'fit' ? fitK : editorZoom;
+  editorZoom = Math.min(2, Math.max(0.08, cur * (dir > 0 ? 1.2 : 1 / 1.2)));
+  fitEditorCanvas();
+}
+$('#cvFit').addEventListener('click', () => { editorZoom = 'fit'; fitEditorCanvas(); });
+$('#cv100').addEventListener('click', () => { editorZoom = 1; fitEditorCanvas(); });
+$('#cvZoomIn').addEventListener('click', () => stepZoom(1));
+$('#cvZoomOut').addEventListener('click', () => stepZoom(-1));
+$('#cvFull').addEventListener('click', () => { closeEditor(); });
+window.addEventListener('resize', () => { if (panel.classList.contains('open')) fitEditorCanvas(); });
+
+/* ================= Topbar ================= */
+function updateTopbar() {
+  $('#tbProject').value = config.projectName || '';
+  const dn = $('#tbDeviceName');
+  const dot = $('#tbDevDot'), st = $('#tbDevState'), sub = $('#tbDevSub');
+  if (config.remote.enabled && config.remote.key) {
+    dn.textContent = 'Gekoppelde holobox';
+    sub.textContent = config.remote.key.slice(0, 14);
+  } else {
+    dn.textContent = 'Deze computer';
+    sub.textContent = 'niet gekoppeld';
+  }
+  updateTopbarDevice(lastRemoteOk);
+  $('#sbPublished').textContent = config.publishedAt
+    ? 'Laatst gepubliceerd: ' + new Date(config.publishedAt).toLocaleString('nl-NL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : 'Nog niet gepubliceerd';
+  fitEditorCanvas();
+}
+
+let lastRemoteOk = null; // null = lokaal, true/false = koppelingsstatus
+function updateTopbarDevice(ok) {
+  lastRemoteOk = ok;
+  const dot = $('#tbDevDot'), st = $('#tbDevState');
+  const sd = $('#sbDevDot'), sdt = $('#sbDevTxt');
+  const remote = config.remote.enabled && config.remote.key;
+  dot.className = 'sdot' + (remote ? (ok ? ' on' : ok === false ? ' err' : '') : ' on');
+  st.textContent = remote ? (ok ? 'Device online' : ok === false ? 'Geen verbinding' : 'Verbinden…') : 'Lokaal';
+  if (sd) sd.className = dot.className;
+  if (sdt) sdt.textContent = remote ? (ok ? 'Gekoppeld met het platform' : 'Platform niet bereikbaar') : 'Lokaal apparaat';
+}
+
+$('#tbProject').addEventListener('input', (e) => { config.projectName = e.target.value; save(); });
+$('#tbUndo').addEventListener('click', doUndo);
+$('#tbRedo').addEventListener('click', doRedo);
+$('#tbPreview').addEventListener('click', closeEditor);
+$('#tbSave').addEventListener('click', () => { save(); toast('Opgeslagen'); });
+
+/* ================= Dashboard ================= */
+function renderDashboard() {
+  const page = document.getElementById('page-dashboard');
+  if (!page) return;
+  page.innerHTML = '';
+  const mediaBytes = [...mediaCache.values()].reduce((a, m) => a + (m.size || 0), 0);
+  const allButtons = config.scenes.reduce((a, sc) => a + sc.buttons.length, 0);
+  const stat = (label, value, sub) => el('div', { class: 'card', style: 'gap:2px' },
+    el('div', { style: 'font-size:11px;color:var(--color-text-muted);font-weight:600;letter-spacing:.05em' }, label),
+    el('div', { style: 'font-size:21px;font-weight:650;color:var(--color-text-primary)' }, value),
+    sub ? el('div', { class: 'note' }, sub) : null);
+  page.append(
+    el('h2', {}, 'Overzicht'),
+    el('div', { class: 'row', style: 'display:grid;grid-template-columns:1fr 1fr;gap:10px' },
+      stat('SCÈNES', String(config.scenes.length), curScene().name + ' actief'),
+      stat('KNOPPEN', String(allButtons), curButtons().length + ' in deze scène'),
+      stat('MEDIA', String(mediaCache.size), fmtSize(mediaBytes)),
+      stat('MOTION', (MOTION_PRESETS[config.motion.preset] || {}).label || config.motion.preset,
+        config.motion.overrides.effect === 'galaxyTiles' ? 'Galaxy Tiles ✦' :
+        config.motion.overrides.effect === 'extremeGalaxy' ? 'Extreme Galaxy ✦✦' : 'preset-entrance')),
+    el('h2', {}, 'Status'),
+    el('div', { class: 'card' },
+      el('div', { class: 'toggle-row' },
+        el('div', {}, el('div', { class: 't-label' }, 'Publicatie'),
+          el('div', { class: 't-sub' }, config.publishedAt ? 'Laatst: ' + new Date(config.publishedAt).toLocaleString() : 'Nog niet gepubliceerd')),
+        el('button', { class: 'btn small', onclick: () => openPublishModal() }, 'Publiceren')),
+      el('div', { class: 'toggle-row' },
+        el('div', {}, el('div', { class: 't-label' }, 'Beheer op afstand'),
+          el('div', { class: 't-sub' }, config.remote.enabled ? 'Gekoppeld aan ' + (config.remote.url || '—') : 'Niet gekoppeld — zie Beheer & device')),
+        el('span', { class: 'sdot' + (config.remote.enabled ? (lastRemoteOk ? ' on' : ' err') : '') })),
+      el('div', { class: 'toggle-row' },
+        el('div', {}, el('div', { class: 't-label' }, 'Beveiliging'),
+          el('div', { class: 't-sub' }, config.security.pinHash ? 'PIN actief' : 'Geen PIN ingesteld')),
+        null)),
+    el('h2', {}, 'Snel aan de slag'),
+    el('div', { class: 'card' },
+      el('button', { class: 'btn block', onclick: () => { document.querySelector('#tabs button[data-tab=buttons]').click(); } }, '+ Knop of scène toevoegen'),
+      el('button', { class: 'btn block', onclick: () => { document.querySelector('#tabs button[data-tab=media]').click(); } }, 'Media beheren'),
+      el('button', { class: 'btn block', onclick: closeEditor }, 'Preview op volledig scherm')));
+}
+
+/* ================= Inspector (contextgevoelig) ================= */
+let inspTab = 'inspector';
+$('#inspTabInspector').addEventListener('click', () => { inspTab = 'inspector'; syncInspTabs(); });
+$('#inspTabLayers').addEventListener('click', () => { inspTab = 'layers'; syncInspTabs(); });
+function syncInspTabs() {
+  $('#inspTabInspector').classList.toggle('active', inspTab === 'inspector');
+  $('#inspTabLayers').classList.toggle('active', inspTab === 'layers');
+  $('#inspBody').classList.toggle('hidden', inspTab !== 'inspector');
+  $('#layersBody').classList.toggle('hidden', inspTab !== 'layers');
+}
+
+const inspOpenState = { CONTENT: true, POSITIE: true, UITERLIJK: true, INTERACTIE: false, ATTENTIE: false, MOTION: false, GEAVANCEERD: false };
+
+function inspSection(title, ...kids) {
+  const d = el('details', {});
+  if (inspOpenState[title]) d.setAttribute('open', '');
+  d.addEventListener('toggle', () => { inspOpenState[title] = d.open; });
+  d.append(el('summary', {}, title), el('div', { class: 'sec' }, ...kids));
+  return d;
+}
+
+function primarySelected() {
+  const id = [...selectedIds][0];
+  return curButtons().find((b) => b.id === id) || null;
+}
+
+function renderInspector() {
+  const body = document.getElementById('inspBody');
+  if (!body) return;
+  body.innerHTML = '';
+  const b = primarySelected();
+  if (!b) {
+    body.append(el('div', { class: 'insp-empty' },
+      'Selecteer een knop om zijn eigenschappen te bewerken.', el('br'), el('br'),
+      'Klik op een laag in het tabblad LAYERS, of zet de canvas op ',
+      el('b', {}, 'Bewerken'), ' en klik een knop aan (shift = meerdere).'));
+    return;
+  }
+  const media = mediaCache.get(b.mediaId);
+  const num = (val, min, max, step, oninput, w = '76px') =>
+    el('input', { type: 'number', value: val, min, max, step, style: 'max-width:' + w, oninput });
+  const commit = (fn) => (e) => { fn(e); save(); renderStage(); };
+
+  // CONTENT
+  const act = buttonAction(b);
+  body.append(inspSection('CONTENT',
+    el('label', { class: 'field' }, 'Tekst op de knop',
+      el('input', { type: 'text', value: b.label || '', oninput: commit((e) => { b.label = e.target.value; }) })),
+    el('label', { class: 'field' }, 'Actie', (() => {
+      const sel = el('select', { onchange: (e) => {
+        const t = e.target.value;
+        if (t === 'PlayMedia') delete b.action;
+        else if (t === 'OpenScene') b.action = { type: 'OpenScene', sceneId: (config.scenes.find((sc) => sc.id !== currentSceneId) || config.scenes[0]).id };
+        else if (t === 'OpenURL') b.action = { type: 'OpenURL', url: '' };
+        else if (t === 'SetLanguage') b.action = { type: 'SetLanguage', langCode: (config.lang.available || ['nl'])[0] };
+        else b.action = { type: t };
+        save(); renderStage(); renderInspector();
+      } },
+        el('option', { value: 'PlayMedia' }, 'Media afspelen'),
+        el('option', { value: 'OpenScene' }, 'Ga naar scène'),
+        el('option', { value: 'Back' }, 'Terug'), el('option', { value: 'Home' }, 'Home'),
+        el('option', { value: 'OpenURL' }, 'Webpagina tonen'),
+        el('option', { value: 'SetLanguage' }, 'Taal omschakelen'));
+      sel.value = act.type;
+      return sel;
+    })()),
+    act.type === 'OpenURL' ? el('label', { class: 'field' }, 'Adres',
+      el('input', { type: 'text', value: b.action.url || '', oninput: (e) => { b.action.url = e.target.value.trim(); save(); } })) : null,
+    el('label', { class: 'field' }, 'Media',
+      (() => { const sel = mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); if (v) ensurePreviewRendition(v); renderStage(); });
+               return sel; })()),
+    media ? el('div', { class: 'note' }, media.name + ' · ' + fmtSize(media.size)) : null,
+    el('div', { class: 'field' }, 'Playlist', playlistEditor(b))));
+
+  // POSITIE
+  body.append(inspSection('POSITIE',
+    el('div', { class: 'row', style: 'display:flex' },
+      el('label', { class: 'field' }, 'X (%)', num((b.x || 0).toFixed(1), 0, 100, 0.5, commit((e) => { b.x = Math.min(98, Math.max(2, Number(e.target.value))); }))),
+      el('label', { class: 'field' }, 'Y (%)', num((b.y || 0).toFixed(1), 0, 100, 0.5, commit((e) => { b.y = Math.min(98, Math.max(2, Number(e.target.value))); }))),
+      el('label', { class: 'field' }, 'Laag', num((b.z || 0) + 1, 1, curButtons().length, 1, (e) => {
+        const want = Math.max(1, Math.min(curButtons().length, Number(e.target.value) || 1)) - 1;
+        const list = [...curButtons()].sort((x, y) => (x.z || 0) - (y.z || 0));
+        const i = list.indexOf(b);
+        if (i === want) return;
+        list.splice(i, 1); list.splice(want, 0, b);
+        list.forEach((x, k) => { x.z = k; });
+        save(); renderStage(); renderLayers();
+      }))),
+    el('label', { class: 'field' }, 'Grootte',
+      el('input', { type: 'range', min: 4, max: 20, step: 0.5, value: b.size || 8,
+        oninput: commit((e) => { b.size = Number(e.target.value); }) }))));
+
+  // UITERLIJK
+  body.append(inspSection('UITERLIJK',
+    el('label', { class: 'field' }, 'Vorm', (() => {
+      const sel = el('select', { onchange: commit((e) => { b.shape = e.target.value; }) },
+        el('option', { value: 'pill' }, 'Ovaal'), el('option', { value: 'rounded' }, 'Rechthoek'),
+        el('option', { value: 'circle' }, 'Rond ▶'), el('option', { value: 'hotspot' }, 'Onzichtbare hotspot'));
+      sel.value = b.shape || 'pill'; return sel;
+    })()),
+    el('div', { class: 'field' }, 'Kleur', el('div', { class: 'swatches' },
+      PALETTE.map((c) => el('button', { class: 'swatch' + (b.color === c ? ' sel' : ''), style: `background:${c}`,
+        onclick: () => { b.color = c; save(); renderStage(); renderInspector(); } })),
+      el('input', { type: 'color', value: b.color || '#35d0ba', oninput: commit((e) => { b.color = e.target.value; }) }))),
+    el('label', { class: 'field' }, `Dekking (${b.alpha ?? 100}%)`,
+      el('input', { type: 'range', min: 10, max: 100, step: 5, value: b.alpha ?? 100,
+        oninput: commit((e) => { b.alpha = Number(e.target.value); }) })),
+    el('label', { class: 'field' }, `Gloed (${(b.glow ?? 1).toFixed(1)}×)`,
+      el('input', { type: 'range', min: 0, max: 2.5, step: 0.1, value: b.glow ?? 1,
+        oninput: commit((e) => { b.glow = Number(e.target.value); }) })),
+    el('label', { class: 'field' }, 'Frame', (() => {
+      const sel = el('select', { onchange: commit((e) => { b.frameOwn = e.target.value === 'own'; if (!b.frameOwn) delete b.frameOwn; }) },
+        el('option', { value: 'global' }, 'Globale Frame Style'), el('option', { value: 'own' }, 'Eigen knopkleur'));
+      sel.value = b.frameOwn ? 'own' : 'global'; return sel;
+    })()),
+    el('div', { class: 'note' }, 'De globale Video Frame Style stel je in bij Experience & thema.')));
+
+  // INTERACTIE
+  body.append(inspSection('INTERACTIE',
+    el('label', { class: 'field' }, 'Videovoorbeeld in de knop', (() => {
+      const sel = el('select', { onchange: commit((e) => { b.showPreview = e.target.value === 'yes'; }) },
+        el('option', { value: 'yes' }, 'Aan'), el('option', { value: 'no' }, 'Uit'));
+      sel.value = b.showPreview === false ? 'no' : 'yes'; return sel;
+    })()),
+    el('div', { class: 'row', style: 'display:flex' },
+      el('label', { class: 'field' }, 'Zweven', (() => {
+        const d = el('select', { onchange: (e) => { b.depth = e.target.value; save(); } },
+          el('option', { value: 'off' }, 'Uit'), el('option', { value: 'subtle' }, 'Subtiel'), el('option', { value: 'strong' }, 'Duidelijk'));
+        d.value = b.depth || 'subtle'; return d;
+      })()),
+      el('label', { class: 'field' }, 'Vrij bewegen', (() => {
+        const d = el('select', { onchange: commit((e) => { b.drift = Number(e.target.value); }) },
+          el('option', { value: 0 }, 'Uit'), el('option', { value: 3 }, 'Klein'), el('option', { value: 6 }, 'Middel'), el('option', { value: 10 }, 'Groot'));
+        d.value = String(b.drift || 0); return d;
+      })())),
+    el('div', { class: 'note' }, b.schedule && b.schedule.enabled
+      ? (scheduleActive(b) ? 'Planning actief — nu zichtbaar' : 'Planning actief — nu buiten het tijdvenster')
+      : 'Geen planning — knop is altijd zichtbaar. Tijdvensters stel je in op het tabblad Knoppen & scènes.')));
+
+  // ATTENTIE
+  body.append(inspSection('ATTENTIE',
+    el('label', { class: 'field' }, 'Aandachtseffect', (() => {
+      const sel = el('select', { onchange: (e) => { b.fx = e.target.value; save(); } },
+        el('option', { value: 'random' }, '✨ Willekeurig'), el('option', { value: 'glow' }, 'Gloedpuls'),
+        el('option', { value: 'sweep' }, 'Lichtrand'), el('option', { value: 'flash' }, 'Flits'),
+        el('option', { value: 'shine' }, 'Glans-veeg'), el('option', { value: 'none' }, 'Uit'));
+      sel.value = b.fx || 'random'; return sel;
+    })())));
+
+  // MOTION
+  body.append(inspSection('MOTION',
+    el('div', { class: 'note' },
+      'Entrance: ' + ((MOTION_PRESETS[config.motion.preset] || {}).label || config.motion.preset) +
+      (config.motion.overrides.effect ? ' · ' + config.motion.overrides.effect : '')),
+    el('button', { class: 'btn small', onclick: () => document.querySelector('#tabs button[data-tab=fx]').click() }, 'Motion-instellingen openen')));
+
+  // GEAVANCEERD
+  body.append(inspSection('GEAVANCEERD',
+    el('div', { class: 'toggle-row' },
+      el('div', {}, el('div', { class: 't-label' }, 'Verbergen'),
+        el('div', { class: 't-sub' }, 'Laag blijft bewaard maar wordt niet getoond')),
+      (() => { const sw = el('label', { class: 'switch' });
+        const c = el('input', { type: 'checkbox', onchange: commit((e) => { b.hidden = e.target.checked; if (!b.hidden) delete b.hidden; renderLayers(); }) });
+        c.checked = !!b.hidden; sw.append(c, el('i')); return sw; })()),
+    el('div', { class: 'toggle-row' },
+      el('div', {}, el('div', { class: 't-label' }, 'Vergrendelen'),
+        el('div', { class: 't-sub' }, 'Niet meer per ongeluk te verslepen')),
+      (() => { const sw = el('label', { class: 'switch' });
+        const c = el('input', { type: 'checkbox', onchange: (e) => { b.locked = e.target.checked; if (!b.locked) delete b.locked; save(); renderLayers(); } });
+        c.checked = !!b.locked; sw.append(c, el('i')); return sw; })()),
+    el('div', { class: 'row', style: 'display:flex;gap:8px' },
+      el('button', { class: 'btn small', onclick: () => {
+        pushUndo();
+        const copy = { ...structuredClone(b), id: uid(), label: (b.label || 'Knop') + ' kopie',
+          x: Math.min(96, b.x + 4), y: Math.min(96, b.y + 4), z: curButtons().length };
+        curScene().buttons.push(copy);
+        save(); renderStage(); renderBtnList(); renderLayers();
+      } }, '⧉ Dupliceren'),
+      el('button', { class: 'btn small danger', onclick: () => {
+        if (!confirm(`Knop "${b.label}" verwijderen?`)) return;
+        pushUndo();
+        curScene().buttons = curScene().buttons.filter((x) => x !== b);
+        selectedIds.delete(b.id);
+        save(); renderStage(); renderBtnList(); markSelection();
+      } }, '🗑 Verwijderen')),
+    el('div', { class: 'note' }, 'ID: ' + b.id)));
+}
+
+/* ================= Lagenpaneel ================= */
+function renderLayers() {
+  const body = document.getElementById('layersBody');
+  if (!body) return;
+  body.innerHTML = '';
+  const list = [...curButtons()].sort((a, b) => (b.z || 0) - (a.z || 0)); // bovenste laag eerst
+  body.append(el('div', { class: 'lay-row', style: 'font-size:10px;font-weight:650;letter-spacing:.07em;color:var(--color-text-muted)' },
+    el('span', { class: 'nm' }, curScene().name.toUpperCase() + ' — ' + list.length + ' LAGEN')));
+  if (!list.length) body.append(el('div', { class: 'insp-empty' }, 'Nog geen knoppen in deze scène.'));
+  for (const b of list) {
+    const row = el('div', { class: 'lay-row' + (selectedIds.has(b.id) ? ' sel' : ''),
+      onclick: (e) => {
+        if (e.target.closest('button')) return;
+        if (e.shiftKey || e.ctrlKey) { if (selectedIds.has(b.id)) selectedIds.delete(b.id); else selectedIds.add(b.id); }
+        else { selectedIds.clear(); selectedIds.add(b.id); }
+        markSelection();
+      } },
+      el('span', { class: 'sw', style: 'background:' + (b.color || '#35d0ba') }),
+      el('span', { class: 'nm' }, (btnLabel(b) || 'Knop') + (groupNameOf(b) ? ' · ⧉' + groupNameOf(b) : '')),
+      el('button', { title: 'Omhoog', onclick: () => { reorderButton(b, 'up'); renderLayers(); } }, '↑'),
+      el('button', { title: 'Omlaag', onclick: () => { reorderButton(b, 'down'); renderLayers(); } }, '↓'),
+      el('button', { class: b.hidden ? '' : 'act', title: b.hidden ? 'Tonen' : 'Verbergen',
+        onclick: () => { b.hidden = !b.hidden; if (!b.hidden) delete b.hidden; save(); renderStage(); renderLayers(); renderInspector(); } }, b.hidden ? '◌' : '👁'),
+      el('button', { class: b.locked ? 'act' : '', title: b.locked ? 'Ontgrendelen' : 'Vergrendelen',
+        onclick: () => { b.locked = !b.locked; if (!b.locked) delete b.locked; save(); renderLayers(); renderInspector(); } }, b.locked ? '🔒' : '🔓'));
+    body.append(row);
+  }
+}
+
+/* ================= Motion-presetpaneel ================= */
+const MP_GRADIENTS = {
+  corporate: ['#20262e', '#3a4654'], luxury: ['#241d12', '#7a5c26'], technology: ['#0d2c34', '#155c66'],
+  cyber: ['#301040', '#8a2be2'], minimal: ['#181c22', '#262c34'], dynamic: ['#3a1230', '#c02a68'],
+  museum: ['#1e1c18', '#4a443a'], automotive: ['#101a26', '#2a4a70'], healthcare: ['#10262c', '#2a7a8a'],
+  retail: ['#301418', '#a04a2a'], galaxyTiles: ['#141c3a', '#5b3fa0'], extremeGalaxy: ['#1a1030', '#8a3fc0']
+};
+const MP_DESCRIPTIONS = {
+  galaxyTiles: 'Tegels komen van onderaf terug met eigen timing en lichte rotatie, en landen gecontroleerd met een subtiele overshoot.',
+  extremeGalaxy: 'Als Galaxy Tiles, maar elke tegel maakt minimaal één volledige flip om zijn as omhoog.',
+  preset: 'De preset bepaalt entrance, timing, volgorde en het selectie-effect — in één keer consistent.'
+};
+
+function renderMotionDock() {
+  const cards = document.getElementById('mpCards');
+  const info = document.getElementById('mpInfo');
+  if (!cards) return;
+  cards.innerHTML = '';
+  const effOverride = config.motion.overrides.effect;
+  const entries = [...Object.entries(MOTION_PRESETS).map(([k, v]) => ({ key: k, label: v.label, galaxy: false })),
+    { key: 'galaxyTiles', label: 'Galaxy Tiles ✦', galaxy: true },
+    { key: 'extremeGalaxy', label: 'Extreme Galaxy ✦✦', galaxy: true }];
+  let selEntry = null;
+  for (const ent of entries) {
+    const sel = ent.galaxy ? effOverride === ent.key : (config.motion.preset === ent.key && !effOverride);
+    if (sel) selEntry = ent;
+    const [c1, c2] = MP_GRADIENTS[ent.key] || MP_GRADIENTS.corporate;
+    const card = el('button', { class: 'mp-card' + (sel ? ' sel' : ''), onclick: () => {
+      if (ent.galaxy) { config.motion.overrides.effect = ent.key; }
+      else { config.motion.preset = ent.key; delete config.motion.overrides.effect; }
+      save(); renderMotionDock(); renderMotion();
+      runEntrance();
+    } });
+    card.append(el('div', { class: 'th', style: `--mpg:linear-gradient(135deg, ${c1}, ${c2})` }),
+      el('div', { class: 'lb' }, ent.label, sel ? el('span', { class: 'ck' }, '✓') : null));
+    cards.append(card);
+  }
+  info.innerHTML = '';
+  const selLabel = selEntry ? selEntry.label : ((MOTION_PRESETS[config.motion.preset] || {}).label || '') + ' + ' + effOverride;
+  info.append(
+    el('div', { class: 't' }, selLabel,
+      el('button', { class: 'cv-btn', onclick: () => runEntrance() }, 'PREVIEW')),
+    el('div', { class: 'd' }, selEntry && selEntry.galaxy ? MP_DESCRIPTIONS[selEntry.key] : MP_DESCRIPTIONS.preset),
+    el('button', { class: 'lnk', onclick: () => document.querySelector('#tabs button[data-tab=fx]').click() }, 'Customize Motion →'));
+}
+
+/* ================= Publish-flow ================= */
+async function openPublishModal() {
+  const modal = document.getElementById('publishModal');
+  const targets = document.getElementById('pmTargets');
+  const checks = document.getElementById('pmChecks');
+  targets.innerHTML = '';
+  const remote = config.remote.enabled && config.remote.key;
+  targets.append(
+    el('div', { style: 'font-size:10px;font-weight:650;letter-spacing:.07em;color:var(--color-text-muted)' }, 'DOEL'),
+    el('label', { style: 'display:flex;align-items:center;gap:9px' },
+      (() => { const c = el('input', { type: 'checkbox' }); c.checked = true; c.disabled = true; return c; })(),
+      remote ? 'Deze holobox + platformkoppeling' : 'Deze holobox (lokaal)'));
+  checks.innerHTML = '';
+  const addCheck = (ok, txt) => checks.append(el('div', { class: 'chk' },
+    el('span', { class: 'st', style: 'color:' + (ok ? '#22c55e' : '#e5a44e') }, ok ? '✓' : '!'), txt));
+  // Validaties (spec 48)
+  const missing = [];
+  for (const sc of config.scenes) for (const b of sc.buttons) {
+    const a = buttonAction(b);
+    if ((a.type === 'PlayMedia' || !b.action) && b.mediaId && !mediaCache.has(b.mediaId)) missing.push(btnLabel(b) || b.id);
+  }
+  addCheck(missing.length === 0, missing.length ? `Media ontbreekt bij: ${missing.slice(0, 3).join(', ')}` : 'Alle gekoppelde media aanwezig');
+  const emptyScenes = config.scenes.filter((sc) => !sc.buttons.length && !sc.idleMediaId);
+  addCheck(emptyScenes.length === 0, emptyScenes.length ? `Lege scènes: ${emptyScenes.map((x) => x.name).join(', ')}` : `Project geldig — ${config.scenes.length} scène(s)`);
+  addCheck(true, 'Motion: ' + ((MOTION_PRESETS[config.motion.preset] || {}).label || config.motion.preset) +
+    (config.motion.overrides.effect ? ' + ' + config.motion.overrides.effect : ''));
+  try {
+    const est = await navigator.storage.estimate();
+    const pct = est.quota ? Math.round((est.usage / est.quota) * 100) : 0;
+    addCheck(pct < 80, `Opslag: ${fmtSize(est.usage || 0)} gebruikt (${pct}% van de ruimte)`);
+  } catch { addCheck(true, 'Opslag: onbekend'); }
+  modal.classList.remove('hidden');
+}
+
+$('#tbPublish').addEventListener('click', openPublishModal);
+$('#pmCancel').addEventListener('click', () => document.getElementById('publishModal').classList.add('hidden'));
+$('#pmGo').addEventListener('click', async () => {
+  config.publishedAt = Date.now();
+  save();
+  // Last Known Good vastleggen (crash-herstelpunt, spec 41/58)
+  try { localStorage.setItem('hwh_lkg', JSON.stringify(config)); } catch {}
+  document.getElementById('publishModal').classList.add('hidden');
+  updateTopbar();
+  if (config.remote.enabled && config.remote.key) { remoteTick(); }
+  toast('Experience gepubliceerd — dit is nu de actieve versie');
+});
+
+function refreshPanel() {
+  refreshSceneUI(); renderBtnList(); renderMediaList(); renderLook(); renderSaver(); renderMotion(); renderShare();
+  renderDashboard(); renderInspector(); renderLayers(); renderMotionDock(); updateTopbar();
+  requestAnimationFrame(fitEditorCanvas);
+}
 
 /* ---- Tab: knoppen ---- */
 function mediaSelect(selectedId, onchange) {
@@ -3563,16 +4451,18 @@ $('#cfgOrientation').addEventListener('change', (e) => { setOrientationMode(e.ta
 
 /* ---- Scènebeheer ---- */
 function refreshSceneUI() {
-  const sel = $('#sceneSelect');
-  sel.innerHTML = '';
-  for (const sc of config.scenes) {
-    const o = el('option', { value: sc.id }, sc.name + (sc.id === config.homeSceneId ? ' (home)' : ''));
-    if (sc.id === currentSceneId) o.selected = true;
-    sel.append(o);
+  for (const selId of ['sceneSelect', 'tbScene']) {
+    const sel = $('#' + selId);
+    sel.innerHTML = '';
+    for (const sc of config.scenes) {
+      const o = el('option', { value: sc.id }, sc.name + (sc.id === config.homeSceneId ? ' (home)' : ''));
+      if (sc.id === currentSceneId) o.selected = true;
+      sel.append(o);
+    }
   }
 }
 
-$('#sceneSelect').addEventListener('change', (e) => {
+for (const selId of ['#sceneSelect', '#tbScene']) $(selId).addEventListener('change', (e) => {
   currentSceneId = e.target.value;
   sceneStack = [];
   renderStage();
@@ -3673,6 +4563,12 @@ function renderMotion() {
   }
   $('#mpDuration').value = config.motion.overrides.duration || '';
   $('#mpStagger').value = config.motion.overrides.stagger || '';
+  const g = config.galaxy;
+  $('#gxDuration').value = g.durationMs; $('#gxStagger').value = g.staggerMs; $('#gxSeed').value = g.seed;
+  $('#gxChaos').value = g.chaos; $('#gxRotation').value = g.rotation; $('#gxVert').value = g.vertOffset;
+  $('#gxDepth').value = g.depth; $('#gxOvershoot').value = g.overshoot; $('#gxEasing').value = g.easing;
+  $('#gxInteraction').value = g.interaction;
+  $('#gxReduced').checked = !!config.reducedMotion;
 }
 
 function setMotionOverride(key, value) {
@@ -3687,7 +4583,25 @@ $('#mpSequence').addEventListener('change', (e) => { setMotionOverride('sequence
 $('#mpDuration').addEventListener('change', (e) => { setMotionOverride('duration', Number(e.target.value) || null); });
 $('#mpStagger').addEventListener('change', (e) => { setMotionOverride('stagger', Number(e.target.value) || null); });
 $('#mpExit').addEventListener('change', (e) => { config.exitFx = e.target.value; save(); });
-$('#mpPreview').addEventListener('click', () => { panel.classList.remove('open'); setTimeout(() => runEntrance(), 250); });
+for (const [id, key, lo, hi] of [
+  ['gxDuration', 'durationMs', 900, 2400], ['gxStagger', 'staggerMs', 0, 400], ['gxSeed', 'seed', 1, 9999],
+  ['gxChaos', 'chaos', 0, 100], ['gxRotation', 'rotation', 0, 45], ['gxVert', 'vertOffset', 120, 420],
+  ['gxDepth', 'depth', 0, 80], ['gxOvershoot', 'overshoot', 0, 8]
+]) {
+  $('#' + id).addEventListener('change', (e) => {
+    config.galaxy[key] = Math.max(lo, Math.min(hi, Number(e.target.value) || lo));
+    save();
+  });
+}
+$('#gxEasing').addEventListener('change', (e) => { config.galaxy.easing = e.target.value; save(); });
+$('#gxInteraction').addEventListener('change', (e) => { config.galaxy.interaction = e.target.value; save(); });
+$('#gxReduced').addEventListener('change', (e) => { config.reducedMotion = e.target.checked; save(); });
+$('#gxPreview').addEventListener('click', () => {
+  const prev = config.motion.overrides.effect;
+  config.motion.overrides.effect = 'galaxyTiles';
+  runEntrance().then(() => { config.motion.overrides.effect = prev; });
+});
+$('#mpPreview').addEventListener('click', () => { closeEditor(); setTimeout(() => runEntrance(), 250); });
 
 /* ---- PIN-beveiliging (spec 120) ---- */
 async function sha256(text) {
@@ -3909,6 +4823,7 @@ function remoteBase() {
 function setRemoteStatus(txt, ok) {
   const n = document.getElementById('remoteStatus');
   if (n) { n.textContent = txt; n.style.color = ok == null ? '' : ok ? '#4ade80' : '#e5605e'; }
+  if (typeof updateTopbarDevice === 'function') updateTopbarDevice(ok ?? null);
 }
 
 // Schermafdruk-benadering: achtergrondvideo + overlay + knoppen op canvas.
@@ -4074,9 +4989,8 @@ document.getElementById('stage').addEventListener('pointerdown', (e) => {
     cornerTaps = [];
     (async () => {
       if (!(await requireAdmin())) return;
-      panel.classList.add('open');
-      refreshPanel();
-      toast('Menu geopend via het verborgen gebaar');
+      openEditor();
+      toast('Editor geopend via het verborgen gebaar');
     })();
   }
 }, true);
@@ -4373,7 +5287,8 @@ function applyOrientationMode() {
   orFab.textContent = OR_LABELS[config.orientationMode || 'auto'];
   const mode = config.orientationMode || 'auto';
   const landscapeScreen = window.innerWidth >= window.innerHeight;
-  const rotate = !editing && ((mode === 'portrait' && landscapeScreen) || (mode === 'landscape' && !landscapeScreen));
+  const rotate = !editing && !panel.classList.contains('open') &&
+    ((mode === 'portrait' && landscapeScreen) || (mode === 'landscape' && !landscapeScreen));
   for (const target of [document.getElementById('stage'), playOverlay, saverEl]) {
     if (rotate) {
       target.style.width = window.innerHeight + 'px';
@@ -4391,6 +5306,7 @@ function applyOrientationMode() {
     }
   }
   syncFrames();
+  fitEditorCanvas();
 }
 
 window.addEventListener('resize', applyOrientationMode);

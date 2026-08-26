@@ -62,7 +62,7 @@ Legenda: ✅ EXISTING · ◐ PARTIAL · ✗ MISSING · ⟳ REQUIRES REFACTOR
 - **Motion Engine**: één `runEntrance(elementen, cfg)`/presetlaag (WAAPI, alleen transform/opacity/filter), gebruikt bij laden, scènewissel, terugkeer na content en na de screensaver.
 - **Figma-workflow**: gereserveerd voor de volgende fase — het editor-IDE-herontwerp (sidebar 240 px, topbar 56 px, canvas, inspector 320 px) wordt eerst als Figma-componentsysteem ontworpen en daarna geïmplementeerd, conform spec-fasen C–H.
 
-## 4. Openstaande taken (stand v2.5.0)
+## 4. Openstaande taken (stand v2.6.0)
 
 Geverifieerd tegen de code én tegen de testsuites (14 suites, allemaal groen).
 
@@ -94,6 +94,31 @@ kruimelpad, veegnavigatie, webcontent-module, motion-catalogus
   exportbestanden niet meer sinds het scènemodel (validatie keek naar het oude
   vlakke veld); een verouderde CSS-regel bedekte het Video Frame Style-kader
   volledig met het videobeeld (framedikte werkte alleen als schaduw).
+
+### Verwerkt in v2.6.0 — Holobox Experience Manager (editor-IDE)
+- **Enterprise editor-shell** conform het Figma-ontwerp (bestand
+  "Holobox Experience Manager — Design System", tokens + hoofdframe):
+  topbar (project/scène/device/resolutie, undo/redo, Preview, Opslaan,
+  Publiceren-CTA, devicestatus), sidebar-navigatie met 9 secties,
+  dock met de instellingenpanelen, **live canvas** (het echte podium,
+  geschaald en geclipt in het canvasgat — Fit/zoom/100%/fullscreen,
+  bewerken-schakelaar), **contextuele inspector** met accordion-secties
+  (Content/Positie/Uiterlijk/Interactie/Attentie/Motion/Geavanceerd) en
+  numerieke positievelden, **lagenpaneel** (selecteren, tonen/verbergen,
+  vergrendelen, volgorde), **motion-presetpaneel** met 12 kaarten +
+  Galaxy-informatie, statusbar met autosave-indicator en publicatiestatus.
+- **Design tokens** (HEM-palet) als CSS-variabelen; Inter-typografie.
+- **Publish-flow**: modal met validaties (media, scènes, motion, opslag),
+  publicatietimestamp en Last-Known-Good-snapshot.
+- **Galaxy Tiles v2** (spec 15–22, 30, 52–55, 61): deterministische seeded
+  randomness, instelbare duur/stagger/chaos/rotatie/verticale offset/diepte/
+  overshoot/easing/seed, settle-timeline 0→55→78→100%, interactie tijdens de
+  entrance (Uit / Na 50% / Direct), Reduced Motion-schakelaar.
+- **Druk-feedback** (spec 31): micro-press + ripple exact op het raakpunt.
+- Fix uit de visuele QA: bij 100%-zoom bleef het podium buiten het canvasgat
+  klikbaar; het wordt nu op het gat geclipt.
+- Tests: nieuwe v26-suite (22 controles) + alle 13 bestaande suites groen;
+  soaktest opnieuw stabiel.
 
 ### Nog open (vergt zaken buiten de software)
 | Punt | Waarom open |
