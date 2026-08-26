@@ -49,10 +49,12 @@
         }
       ],
       "artifactName": "HereWeHolo-Player-${version}-${arch}.${ext}",
-      "publisherName": "HereWeHolo",
       "legalTrademarks": "HereWeHolo",
       "requestedExecutionLevel": "asInvoker",
-      "signAndEditExecutable": true
+      "signAndEditExecutable": true,
+      "signtoolOptions": {
+        "publisherName": "HereWeHolo"
+      }
     },
     "nsis": {
       "oneClick": false,
