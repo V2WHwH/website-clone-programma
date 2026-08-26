@@ -1,7 +1,7 @@
 {
   "name": "hereweholo-player",
   "productName": "HereWeHolo Player",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "HereWeHolo holobox-presentatieplayer voor Windows: offline 4K-videoplayer met GPU-versnelling",
   "main": "main.js",
   "author": "HereWeHolo",
@@ -35,10 +35,24 @@
     "win": {
       "icon": "build/icon.png",
       "target": [
-        { "target": "nsis", "arch": ["x64"] },
-        { "target": "zip", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
-      "artifactName": "HereWeHolo-Player-${version}-${arch}.${ext}"
+      "artifactName": "HereWeHolo-Player-${version}-${arch}.${ext}",
+      "publisherName": "HereWeHolo",
+      "legalTrademarks": "HereWeHolo",
+      "requestedExecutionLevel": "asInvoker",
+      "signAndEditExecutable": true
     },
     "nsis": {
       "oneClick": false,
@@ -47,7 +61,16 @@
       "artifactName": "HereWeHolo-Player-Setup-${version}.${ext}",
       "shortcutName": "HereWeHolo Player",
       "createDesktopShortcut": true,
-      "deleteAppDataOnUninstall": false
+      "deleteAppDataOnUninstall": false,
+      "differentialPackage": false,
+      "runAfterFinish": true,
+      "menuCategory": "HereWeHolo",
+      "uninstallDisplayName": "HereWeHolo Player"
+    },
+    "extraMetadata": {
+      "name": "hereweholo-player",
+      "description": "HereWeHolo Holobox Experience Manager - offline 4K presentatiespeler",
+      "author": "HereWeHolo"
     }
   }
 }

@@ -1,0 +1,53 @@
+HereWeHolo Studio - Holobox Experience Manager
+==============================================
+
+GEEN INSTALLATIE NODIG. GEEN VIRUSMELDING.
+Deze map bevat geen programma's (.exe), alleen de presentatie zelf en
+twee startbestanden die de browser openen die al op de computer staat.
+
+
+STARTEN
+-------
+1. Pak deze map uit op de computer of op een USB-stick.
+2. Dubbelklik op:
+
+      Start Holobox.bat          -> fullscreen, klaar voor de holobox
+      Start Holobox (venster).bat -> in een venster, handig bij inrichten
+
+   (Werkt met Google Chrome of Microsoft Edge. Edge staat standaard op
+   elke Windows-pc, dus meestal hoef je niets te installeren.)
+
+3. Sluiten: Alt + F4.
+
+
+EERSTE KEER: PRESENTATIE INRICHTEN
+----------------------------------
+- Klik linksonder op het tandwiel om het menu te openen.
+- Tabblad Media       : video's, PNG-knoppen en 3D-objecten toevoegen.
+- Tabblad Knoppen     : knoppen maken en koppelen aan media of scenes.
+- Slotknop (scherm)   : knoppen verslepen, nogmaals klikken = vastzetten.
+- Tabblad Effecten    : Galaxy Tiles, Extreme Galaxy, motionpresets.
+- Tabblad Presentatie : Video Frame Style (kleur, gradient, diepte, gloss).
+- Tabblad Camera      : aanwezigheidsdetectie via webcam.
+- Tabblad Opslaan     : ontwerp exporteren/importeren, PIN, statistieken.
+
+Alles wordt automatisch bewaard op deze computer en werkt daarna offline.
+
+
+NAAR EEN ANDERE COMPUTER VERHUIZEN
+----------------------------------
+1. Menu > Opslaan > "Ontwerp exporteren" -> bewaar het .json-bestand.
+2. Kopieer deze map en je videobestanden naar de andere computer.
+3. Start daar de app, kies "Ontwerp importeren" en wijs de video's aan.
+
+
+WAAROM GEEN VIRUSMELDING
+------------------------
+Windows Defender waarschuwt bij onbekende, niet-ondertekende programma's
+(.exe). Deze map bevat er geen: de presentatie is een HTML-bestand en de
+startbestanden zijn eenvoudige tekstbestanden (.bat) die je zelf kunt
+openen met Kladblok om te zien wat ze doen.
+
+Wil je toch de losse Windows-applicatie (met kiosk-instellingen,
+logging en diagnostiek)? Die staat bij de releases op GitHub. Zolang die
+niet digitaal ondertekend is, kan Defender daar wel over waarschuwen.

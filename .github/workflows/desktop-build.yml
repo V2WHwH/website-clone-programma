@@ -53,6 +53,13 @@ jobs:
           if (-not (Test-Path smoke-result.json)) { throw 'smoke-result.json ontbreekt' }
           Get-Content smoke-result.json
 
+      - name: Exe-loze Studio-versie bundelen (geen virusmeldingen)
+        shell: pwsh
+        run: |
+          $out = "release\HereWeHolo-Studio-Offline-$((Get-Content package.json | ConvertFrom-Json).version).zip"
+          Compress-Archive -Path ..\studio\index.html, "..\studio\Start Holobox.bat", "..\studio\Start Holobox (venster).bat", "..\studio\LEES MIJ.txt" -DestinationPath $out -Force
+          Write-Host "Gebundeld: $out"
+
       - name: Checksums genereren
         shell: pwsh
         run: |
@@ -78,10 +85,27 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_version || github.ref_name }}
         run: |
+          $notes = @(
+            'AANBEVOLEN DOWNLOAD: HereWeHolo-Studio-Offline-*.zip'
+            ''
+            'Bevat geen programmabestanden (.exe), dus geen Windows Defender-meldingen.'
+            'Uitpakken en "Start Holobox.bat" dubbelklikken: start fullscreen in Chrome of'
+            'Edge met GPU-versnelling. Werkt volledig offline, ook vanaf een USB-stick.'
+            ''
+            'WINDOWS-APPLICATIE (Setup.exe / x64.zip)'
+            ''
+            'Volwaardige desktop-app met kioskmodus, logging en diagnostiek. Deze build is'
+            'nog niet digitaal ondertekend, waardoor Windows Defender of SmartScreen kan'
+            'waarschuwen voor een onbekende uitgever. De portable x64.zip geeft doorgaans'
+            'minder meldingen dan de installer.'
+            ''
+            'SHA-256 checksums staan in SHA256SUMS.txt.'
+          )
+          $notes | Set-Content -Path release\RELEASE-NOTES.txt -Encoding utf8
           gh release create $env:RELEASE_TAG `
             --target $env:GITHUB_SHA `
             (Get-ChildItem release\*.exe).FullName `
             (Get-ChildItem release\*.zip).FullName `
             release\SHA256SUMS.txt `
             --title "HereWeHolo Player $env:RELEASE_TAG" `
-            --notes "Windows release: installer, portable build en SHA-256 checksums."
+            --notes-file release\RELEASE-NOTES.txt
