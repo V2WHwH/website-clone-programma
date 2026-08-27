@@ -99,7 +99,7 @@ Deze repo bevat ook de kickoff van het HEREweHOLO telepresence-platform:
 
 - [`design/`](design/) — UI/UX/VFX-plan, design tokens en de design boards (HoloMe · HoloSee · Cloud)
 - [`docs/`](docs/) — M0-documenten: ARCHITECTURE, STREAMING, SECURITY, DATA-MODEL
-- [`docs/adr/`](docs/adr/) — vijf ADR-voorstellen (SFU, receiver-runtime, encoders, signaling, hosting) — wachten op goedkeuring (M0-gate)
+- [`docs/adr/`](docs/adr/) — vijf ADRs (SFU, receiver-runtime, encoders, signaling, hosting) — **goedgekeurd 2026-08-27, M0-gate gepasseerd**
 - [`docs/features/`](docs/features/) — fase 2+-featurevoorstellen: F1 Studio Matte, F2 Voice Bridge, F3 Walk-up
 - [`m1/`](m1/) — M1 vertical slice "camera to glass": signaling, sender, fullscreen-receiver, diagnostische resolutieketen + e2e-test
 - [`beam-kickoff/`](beam-kickoff/) — projectgrondwet, milestones en acceptance-scenario
