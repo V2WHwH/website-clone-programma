@@ -115,9 +115,10 @@ device-detail, diagnostic view (resolutieketen — M6), installer/update-flow (M
 ## 6. Figma-plan
 
 **Bestand:** [*HoloMe & HoloSee — HEREweHOLO Design*](https://www.figma.com/design/FR6BHXM6Xii5m5nGWRnD3e)
-(team "Desmond Frencken's team", **Pro**), gegenereerd via de Figma MCP. Alle 14 schermen staan erin,
-verdeeld over 6 pagina's (Cover · Foundations · HoloMe · Guest · HoloSee · Cloud), met de
-variable-collectie `color` in twee modes (Dark/Light). Actuele inhoud en resterende stappen:
+(team "Desmond Frencken's team", **Pro**), gegenereerd via de Figma MCP. Alle schermen staan erin,
+verdeeld over 7 pagina's (Cover · Foundations · Components · HoloMe · Guest · HoloSee · Cloud), met de
+variable-collectie `color` in twee modes (Dark/Light), een componentenbibliotheek met status-varianten
+en twee klikbare prototype-flows (presenter en gast). Actuele inhoud en resterende handmatige stappen:
 `design/README.md`.
 
 **Paginastructuur**

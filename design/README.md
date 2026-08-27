@@ -21,10 +21,16 @@ rendert altijd donker (hologram-optiek).
 | 👤 03 Guest flow | S9 Invite · G1 Landing · G2 Permission |
 | 🖥 04 HoloSee — Receiver | R1 Idle · R2 Pairing, op ware resolutie 1080 × 1920 |
 | ☁️ 05 Cloud | C1 Fleet-dashboard (1440) |
+| 🧩 06 Components | StatusPill (4 varianten) · DeviceCard (4) · ToolButton (3) · StatusStrip (2) · LiveBadge · PillButton (2) · KpiTile — met beschrijvingen |
 
-> Nog handmatig: de *bestandsnaam* toont nog "HoloCast — HEREweHOLO Design" — de Figma-API staat
-> hernoemen niet toe; één klik op de titel in Figma lost dit op. Volgende Figma-iteratie: componenten
-> publiceren (StatusStrip, DeviceCard, LiveBadge, …) en het klikbare acceptance-prototype (§6 van het plan).
+**Klikbaar prototype** (presentatie-modus in Figma):
+- flow **"HoloMe — presenter flow"**: S1 → S2 → (netwerkcheck S3) → S4 live ⇄ S5 return feed ⇄ S8 effects,
+  settings S6 → S7, STOP → terug naar preview;
+- flow **"Guest — invite & join"**: S9 → G1 → G2 → G3 (preview als gast).
+
+> Nog handmatig: (1) de *bestandsnaam* toont nog "HoloCast — HEREweHOLO Design" — de Figma-API staat
+> hernoemen niet toe; één klik op de titel in Figma lost dit op. (2) De componentenbibliotheek
+> *publiceren* naar het team (Assets → Publish library) is ook een handmatige klik.
 
 Context: [`../beam-kickoff/`](../beam-kickoff/) bevat de projectgrondwet (CLAUDE.md), milestones,
 acceptance-scenario en de analyse van het referentiemateriaal.
