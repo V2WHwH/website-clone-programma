@@ -21,10 +21,19 @@
 
   <div class="pip"><video id="return" autoplay playsinline></video><span class="tag" id="pipTag">return feed</span></div>
 
+  <!-- M6: network pre-flight — an honest, measured verdict before GO LIVE -->
+  <div class="glass" id="preflight" style="display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:96px;z-index:8;padding:12px 18px;border-radius:12px;font:12px/1.7 'IBM Plex Mono',monospace;white-space:pre;color:var(--tx-2,#9fb2c5);">
+    <div id="pfLines">pre-flight…</div>
+  </div>
+
+  <!-- M6: diagnostic view — the full resolution chain, measured stage by stage -->
+  <div id="diag" style="display:none;position:fixed;left:16px;top:72px;z-index:9;padding:14px 16px;border-radius:10px;background:rgba(6,10,15,.88);border:1px solid rgba(53,224,255,.25);color:#9fb2c5;font:12px/1.7 'IBM Plex Mono',monospace;white-space:pre;"></div>
+
   <div class="hud-bottom">
     <button class="ghost small" id="exit">Exit</button>
     <button class="golive" id="golive" disabled>GO LIVE</button>
     <button class="ghost small" id="pip">Return feed</button>
+    <button class="ghost small" id="diagBtn">Diagnostics</button>
   </div>
   <script type="module" src="/js/session.js"></script>
 </body>

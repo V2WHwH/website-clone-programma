@@ -2,6 +2,7 @@
 // single-use or reusable, optionally password-protected (SECURITY.md §6). Sessions mint
 // room-scoped LiveKit tokens; the control plane is the only minter.
 import { Router } from 'express';
+import crypto from 'node:crypto';
 import { one, q } from './db.js';
 import { env } from './env.js';
 import {
@@ -17,7 +18,7 @@ import {
   type GuestClaims,
 } from './auth.js';
 import { mintRoomToken, roomForSession } from './livekit.js';
-import { isOnline, pushToDevice } from './presence.js';
+import { getDeviceStats, isOnline, pushToDevice } from './presence.js';
 
 export const sessionsRouter = Router();
 
@@ -170,8 +171,8 @@ sessionsRouter.post('/sessions', requireUserOrGuest('presenter'), async (req: Au
     res.status(403).json({ error: 'device not covered by this invite' });
     return;
   }
-  const owned = await q<{ id: string; name: string }>(
-    'SELECT id, name FROM devices WHERE org_id = $1 AND id = ANY($2::uuid[])',
+  const owned = await q<{ id: string; name: string; caps: unknown }>(
+    'SELECT id, name, caps FROM devices WHERE org_id = $1 AND id = ANY($2::uuid[])',
     [orgId, deviceIds],
   );
   if (owned.rowCount !== deviceIds.length) {
@@ -212,7 +213,16 @@ sessionsRouter.post('/sessions', requireUserOrGuest('presenter'), async (req: Au
     deviceIds,
     devicesNotified,
   });
-  res.status(201).json({ sessionId: s!.id, room, livekitUrl: env.livekit.url, token: publisherToken, devicesNotified });
+  res.status(201).json({
+    sessionId: s!.id,
+    room,
+    livekitUrl: env.livekit.url,
+    token: publisherToken,
+    devicesNotified,
+    // M6 capability negotiation: the sender caps its ladder at what every destination
+    // reports it can actually decode. Absent caps = not yet measured, sender stays honest.
+    devices: owned.rows.map((r) => ({ id: r.id, name: r.name, caps: r.caps ?? null })),
+  });
 });
 
 async function ownsSession(req: AuthedRequest, sessionId: string) {
@@ -251,6 +261,81 @@ sessionsRouter.post('/sessions/:id/stop', requireUserOrGuest('presenter'), async
   for (const d of dest.rows) pushToDevice(d.device_id, { t: 'session-stop', sessionId: s.id });
   await audit(s.org_id, req.user ? `user:${req.user.sub}` : `guest:${req.guest!.name}`, 'session.stopped', s.id, stats);
   res.json({ ok: true });
+});
+
+// M6: the receiver half of the resolution chain for the presenter's diagnostic view —
+// decode/render stats reported by each destination in its heartbeats, freshest wins.
+sessionsRouter.get('/sessions/:id/receiver-stats', requireUserOrGuest('presenter'), async (req: AuthedRequest, res) => {
+  const s = await ownsSession(req, req.params.id ?? '');
+  if (!s) {
+    res.status(404).json({ error: 'not found' });
+    return;
+  }
+  const dest = await q<{ device_id: string; name: string }>(
+    `SELECT sd.device_id, d.name FROM session_destinations sd JOIN devices d ON d.id = sd.device_id
+     WHERE sd.session_id = $1`,
+    [s.id],
+  );
+  res.json({
+    receivers: dest.rows.map((d) => ({
+      deviceId: d.device_id,
+      name: d.name,
+      online: isOnline(d.device_id),
+      ...(getDeviceStats(d.device_id) ?? { ageMs: null, stats: null }),
+    })),
+  });
+});
+
+// M6: sender-side quality decisions (ladder steps, preflight verdicts) land in the audit
+// trail so a session's quality history is reconstructable end to end.
+sessionsRouter.post('/sessions/:id/log', requireUserOrGuest('presenter'), async (req: AuthedRequest, res) => {
+  const s = await ownsSession(req, req.params.id ?? '');
+  if (!s) {
+    res.status(404).json({ error: 'not found' });
+    return;
+  }
+  const kind = typeof req.body?.kind === 'string' ? req.body.kind : '';
+  if (!['ladder_step', 'preflight'].includes(kind)) {
+    res.status(400).json({ error: 'kind must be ladder_step or preflight' });
+    return;
+  }
+  const meta = typeof req.body?.meta === 'object' && req.body.meta ? req.body.meta : {};
+  const actor = req.user ? `user:${req.user.sub}` : `guest:${req.guest!.name}`;
+  await audit(s.org_id, actor, `session.${kind}`, s.id, meta);
+  res.json({ ok: true });
+});
+
+// ——— M6 network pre-flight: measured throughput to THIS platform, nothing invented ———
+const PROBE_CHUNK = crypto.randomBytes(262144); // incompressible, so proxies can't flatter the number
+
+sessionsRouter.get('/netprobe/download', requireUserOrGuest('presenter'), (req, res) => {
+  const bytes = Math.min(Math.max(Number(req.query.bytes ?? 4_194_304), 65536), 16_777_216);
+  res.setHeader('content-type', 'application/octet-stream');
+  res.setHeader('cache-control', 'no-store');
+  res.setHeader('content-length', String(bytes));
+  let sent = 0;
+  const push = (): void => {
+    while (sent < bytes) {
+      const n = Math.min(PROBE_CHUNK.length, bytes - sent);
+      sent += n;
+      if (!res.write(PROBE_CHUNK.subarray(0, n))) {
+        res.once('drain', push);
+        return;
+      }
+    }
+    res.end();
+  };
+  push();
+});
+
+sessionsRouter.post('/netprobe/upload', requireUserOrGuest('presenter'), (req, res) => {
+  let received = 0;
+  req.on('data', (c: Buffer) => {
+    received += c.length;
+    if (received > 33_554_432) req.destroy(); // hard cap
+  });
+  req.on('end', () => res.json({ bytes: received }));
+  req.on('error', () => res.status(400).end());
 });
 
 sessionsRouter.get('/sessions', requireUser('viewer'), async (req: AuthedRequest, res) => {

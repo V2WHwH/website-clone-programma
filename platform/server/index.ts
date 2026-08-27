@@ -10,7 +10,7 @@ import { authRouter } from './api-auth.js';
 import { devicesRouter } from './api-devices.js';
 import { sessionsRouter } from './api-sessions.js';
 import { verifyToken, type DeviceClaims } from './auth.js';
-import { deviceConnected, deviceDisconnected, deviceHeartbeat, startPresenceSweep } from './presence.js';
+import { deviceConnected, deviceDisconnected, deviceHeartbeat, setDeviceStats, startPresenceSweep } from './presence.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 
@@ -44,7 +44,11 @@ server.on('upgrade', async (req, socket, head) => {
     ws.on('message', (data) => {
       try {
         const msg = JSON.parse(String(data));
-        if (msg.t === 'hb') void deviceHeartbeat(claims.device, msg.agentVersion);
+        if (msg.t === 'hb') {
+          void deviceHeartbeat(claims.device, msg.agentVersion);
+          if (msg.stats && typeof msg.stats === 'object') setDeviceStats(claims.device, msg.stats);
+        }
+        if (msg.t === 'stats' && msg.stats && typeof msg.stats === 'object') setDeviceStats(claims.device, msg.stats);
       } catch {
         /* ignore malformed frames */
       }

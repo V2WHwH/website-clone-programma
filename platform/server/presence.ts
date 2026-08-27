@@ -50,6 +50,19 @@ export async function deviceDisconnected(deviceId: string, ws: WebSocket): Promi
   await logDeviceEvent(deviceId, e.orgId, 'offline');
 }
 
+// M6: last live playback stats per device, reported in heartbeats while playing.
+// In-memory only — this is telemetry for the diagnostic view, not a record.
+const liveStats = new Map<string, { at: number; stats: Record<string, unknown> }>();
+
+export function setDeviceStats(deviceId: string, stats: Record<string, unknown>): void {
+  liveStats.set(deviceId, { at: Date.now(), stats });
+}
+
+export function getDeviceStats(deviceId: string): { ageMs: number; stats: Record<string, unknown> } | undefined {
+  const e = liveStats.get(deviceId);
+  return e ? { ageMs: Date.now() - e.at, stats: e.stats } : undefined;
+}
+
 export function pushToDevice(deviceId: string, msg: unknown): boolean {
   const e = online.get(deviceId);
   if (!e || e.ws.readyState !== e.ws.OPEN) return false;

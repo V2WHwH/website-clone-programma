@@ -4,6 +4,7 @@
 // control plane as a structured device event, traceable by session id.
 import { Room, RoomEvent, Track, type RemoteTrack, type RemoteParticipant } from 'livekit-client';
 import { $, api } from './client.js';
+import { probeDecode } from './caps.js';
 
 const title = $('rcvTitle');
 const codeEl = $('rcvCode');
@@ -125,8 +126,17 @@ let sawFrameThisSession = false;
 let fallbackSince = 0;
 let rejoinTimer: ReturnType<typeof setTimeout> | undefined;
 
+// M6: measured render rate — presented frames counted at the compositor, not assumed.
+let framesThisSecond = 0;
+let measuredFps = 0;
+setInterval(() => {
+  measuredFps = framesThisSecond;
+  framesThisSecond = 0;
+}, 1000);
+
 video.requestVideoFrameCallback?.(function onFrame() {
   lastFrameTs = Date.now();
+  framesThisSecond += 1;
   if (current && !sawFrameThisSession) {
     sawFrameThisSession = true;
     document.body.classList.add('playing');
@@ -171,6 +181,7 @@ async function joinRoom(isRejoin: boolean): Promise<void> {
       if (!participant.identity.startsWith('presenter-')) return;
       if (track.kind === Track.Kind.Video) {
         track.attach(video);
+        liveVideoTrack = track;
       } else if (track.kind === Track.Kind.Audio) {
         track.attach();
       }
@@ -209,9 +220,87 @@ function onSessionStart(msg: { sessionId: string; room: string; token: string; u
   void joinRoom(false);
 }
 
+// ——— M6: the receiver half of the resolution chain, measured, never assumed ———
+let liveVideoTrack: RemoteTrack | undefined;
+let decoderImpl = '';
+let decoderHw: boolean | undefined;
+
+// inbound-rtp carries the browser's own decoder identity + hardware signal.
+setInterval(() => {
+  const rtpReceiver = (liveVideoTrack as unknown as { receiver?: RTCRtpReceiver } | undefined)?.receiver;
+  if (!rtpReceiver || state !== 'live') return;
+  void rtpReceiver
+    .getStats()
+    .then((report) => {
+      report.forEach((r) => {
+        const rr = r as { type: string; decoderImplementation?: string; powerEfficientDecoder?: boolean };
+        if (rr.type === 'inbound-rtp' && rr.decoderImplementation) {
+          decoderImpl = rr.decoderImplementation;
+          decoderHw = rr.powerEfficientDecoder;
+        }
+      });
+    })
+    .catch(() => undefined);
+}, 5000);
+
+function renderStats(): Record<string, unknown> {
+  const vq = video.getVideoPlaybackQuality?.();
+  return {
+    sessionId: current?.sessionId,
+    state,
+    w: video.videoWidth,
+    h: video.videoHeight,
+    fps: measuredFps,
+    dropped: vq?.droppedVideoFrames ?? null,
+    decoder: decoderImpl || null,
+    decoderHw: decoderHw ?? null,
+    screen: { w: screen.width, h: screen.height, dpr: devicePixelRatio },
+  };
+}
+
+async function postCaps(): Promise<void> {
+  try {
+    const decode = await probeDecode();
+    await api('/devices/caps', {
+      body: { caps: { decode, screen: { w: screen.width, h: screen.height, dpr: devicePixelRatio } } },
+      token: restToken,
+    });
+  } catch {
+    /* capability report is best-effort; absence is an honest "not measured" */
+  }
+}
+
+// Operator diagnostics (press D, or ?diag=1) — the audience never sees this by default.
+const diagEl = document.createElement('div');
+diagEl.style.cssText =
+  'position:fixed;left:16px;bottom:52px;z-index:50;display:none;padding:14px 16px;border-radius:10px;' +
+  'background:rgba(6,10,15,.88);border:1px solid rgba(53,224,255,.25);color:#9fb2c5;' +
+  'font:12px/1.7 "IBM Plex Mono",monospace;white-space:pre;';
+document.body.appendChild(diagEl);
+let diagOn = new URLSearchParams(location.search).get('diag') === '1';
+window.addEventListener('keydown', (e) => {
+  if (e.key.toLowerCase() === 'd') diagOn = !diagOn;
+});
+setInterval(() => {
+  diagEl.style.display = diagOn ? '' : 'none';
+  if (!diagOn) return;
+  const s = renderStats();
+  const sc = s.screen as { w: number; h: number; dpr: number };
+  diagEl.textContent =
+    `HOLOSEE DIAGNOSTICS            measured values only\n` +
+    `STATE     ${state}${current ? ` · session ${current.sessionId.slice(0, 8)}` : ''}\n` +
+    `DECODE    ${s.decoder ?? '—'}${s.decoderHw === true ? ' · hardware' : s.decoderHw === false ? ' · software' : ''}\n` +
+    `RENDER    ${s.w} × ${s.h} @ ${s.fps} fps · dropped ${s.dropped ?? '—'}\n` +
+    `PHYSICAL  ${sc.w} × ${sc.h} @ ${sc.dpr}x\n` +
+    `AGENT     ${AGENT_VERSION} · device ${keys?.deviceId?.slice(0, 8) ?? '—'}`;
+}, 1000);
+
 function onSessionStop(): void {
   current = undefined;
   state = 'idle';
+  liveVideoTrack = undefined;
+  decoderImpl = '';
+  decoderHw = undefined;
   if (rejoinTimer) clearTimeout(rejoinTimer);
   rejoinTimer = undefined;
   room?.disconnect();
@@ -238,9 +327,22 @@ async function connectPresence(): Promise<void> {
     ws.onopen = () => {
       if (state === 'idle') showIdle();
       const hb = setInterval(() => {
-        if (ws.readyState === ws.OPEN) ws.send(JSON.stringify({ t: 'hb', agentVersion: AGENT_VERSION }));
+        if (ws.readyState === ws.OPEN)
+          ws.send(
+            JSON.stringify({
+              t: 'hb',
+              agentVersion: AGENT_VERSION,
+              // M6: while playing, the heartbeat carries the measured decode/render chain
+              ...(current ? { stats: renderStats() } : {}),
+            }),
+          );
         else clearInterval(hb);
       }, 10_000);
+      // Faster stats channel while playing (in-memory on the server, no DB writes).
+      const st = setInterval(() => {
+        if (ws.readyState !== ws.OPEN) clearInterval(st);
+        else if (current) ws.send(JSON.stringify({ t: 'stats', stats: renderStats() }));
+      }, 2000);
     };
     ws.onmessage = (e) => {
       const msg = JSON.parse(e.data as string);
@@ -269,6 +371,7 @@ async function main(): Promise<void> {
   if (!keys.deviceId) await pair();
   await connectPresence();
   postEvent('boot', undefined, { agentVersion: AGENT_VERSION });
+  void postCaps();
   (window as unknown as { __holosee: unknown }).__holosee = { deviceId: keys.deviceId };
 }
 

@@ -1,4 +1,4 @@
-# platform/ — HoloMe & HoloSee (M2 + M3 + M4)
+# platform/ — HoloMe & HoloSee (M2 – M6)
 
 The product platform on the accepted ADRs: PostgreSQL control plane, LiveKit SFU media plane,
 device pairing with signed keypairs, invite links, and the presenter/guest session flow with an
@@ -67,6 +67,37 @@ invites) · `/receiver.html` (HoloSee — open on the display machine) · `/join
   session plays with the receiver untouched → kiosk browser killed → watchdog restarts it →
   same device ONLINE again → full event trail asserted.
 
+**M6 — quality that is real**
+- **Measured capability, not claims:** both sides probe the MediaCapabilities API across the
+  whole ladder (4K60 → 720p30, H.264/VP9/AV1). `powerEfficient` is the browser's own
+  hardware-acceleration signal and is reported as such — "hardware: no — software" is a valid,
+  honest verdict. The receiver posts its decode caps + physical screen to the platform
+  (`devices.caps`); session starts return them to the sender (negotiation).
+- **Network pre-flight before GO LIVE** (`/netprobe/*`): measured uplink/downlink (random,
+  incompressible bytes) and RTT against the platform itself, then an honest verdict: the
+  starting rung is the highest one that the encoder reports smooth AND the uplink carries with
+  ×1.4 headroom AND every destination can decode. `?pin=1080p30` is an operator override — it
+  changes what we *attempt*, never what the strip *claims*.
+- **Adaptive ladder, down fast / up slow:** two measured distress signals — the browser's own
+  `qualityLimitationReason` (any simulcast layer) and achieved encoder fps < 60 % of the rung
+  target (some builds starve without attributing). 3 bad seconds → step down; a stable window
+  (30 s, doubling after a failed recovery) → one step up, never above the negotiated ceiling.
+  Every step lands in the audit trail and in the session record (`stats.ladder`).
+- **Diagnostic view in the running product:** presenter "Diagnostics" button and receiver
+  overlay (press D or `?diag=1`) show the full chain — CAPTURE → ENCODE (implementation +
+  limitation) → TRANSPORT (measured Mbps, RTT) → DECODE → RENDER (device-reported fps,
+  drops) → PHYSICAL (actual screen) — measured values only, `—` where a value is not exposed.
+- **Benchmark harness** (`npm run bench:encode`): WebCodecs encode matrix (H.264/VP9/AV1 ×
+  4K60/4K30/1080p60) reporting hardware vs software, achieved fps, mean/p95 encode latency and
+  produced bitrate — per machine, run it on the deployment hardware. In this sandbox it honestly
+  reports: no H.264 encoder in this browser build, 4K software VP9 at ~15 fps (below target),
+  1080p60 fine. CPU/GPU/VRAM need OS-level telemetry on the target (listed, not invented).
+- **The quality e2e** (`npm run test:e2e:m6`): caps on record → measured pre-flight verdict →
+  live at a pinned rung (glass confirms 1080 lines) → sender CPU genuinely throttled 20× →
+  ladder steps down, session never drops, no fallback on the glass → throttle released →
+  recovery up after the stable window → diagnostic chain asserted → ladder history in the
+  session record.
+
 ## Tests (the test → fix → test loop)
 
 ```bash
@@ -82,5 +113,8 @@ because the sandbox cannot resolve `.local`; real deployments use STUN and are u
 ## Still outside this sandbox (deploy-time gates)
 
 M2 gate: three real network types + forced TURN relay for 10 minutes · M4 gate: the full
-`ACCEPTANCE.md` scenario with a real guest and a real Holobox · M5+ (kiosk hardening, real 4K
-verification, fleet ops, installer) are the next slices.
+`ACCEPTANCE.md` scenario with a real guest and a real Holobox · M5 gate: kiosk hardening on
+real Windows hardware (`agent/windows/install.ps1`) · M6 gate: a genuine 4K session verified
+stage by stage in the diagnostic view on hardware with a hardware encoder (this sandbox
+measures software-only, ~15 fps at 4K — the UI therefore never claims 4K here), plus the
+bandwidth-throttle ladder test on a real network · M7+ (fleet ops, installer) are next.

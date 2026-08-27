@@ -118,7 +118,7 @@ devicesRouter.post('/pairing/poll', async (req, res) => {
 
 devicesRouter.get('/devices', requireUser('viewer'), async (req: AuthedRequest, res) => {
   const r = await q<{ id: string; name: string; kind: string; state: string; last_seen_at: string | null }>(
-    `SELECT d.id, d.name, d.kind, d.state, d.last_seen_at, l.name AS location
+    `SELECT d.id, d.name, d.kind, d.state, d.last_seen_at, d.caps, l.name AS location
      FROM devices d LEFT JOIN locations l ON l.id = d.location_id
      WHERE d.org_id = $1 ORDER BY d.created_at`,
     [req.user!.org],
@@ -187,6 +187,18 @@ devicesRouter.post('/devices/events', requireDevice(), async (req: DeviceRequest
   const meta = typeof req.body?.meta === 'object' && req.body.meta ? req.body.meta : {};
   await logDeviceEvent(req.deviceClaims!.device, req.deviceClaims!.org, type, sessionId, meta);
   res.status(201).json({ ok: true });
+});
+
+// M6: the receiver reports what it can actually decode (MediaCapabilities) + its screen.
+// Session starts use this to cap the sender's ladder — capability negotiation, not assumption.
+devicesRouter.post('/devices/caps', requireDevice(), async (req: DeviceRequest, res) => {
+  const caps = typeof req.body?.caps === 'object' && req.body.caps ? req.body.caps : undefined;
+  if (!caps) {
+    res.status(400).json({ error: 'caps object required' });
+    return;
+  }
+  await q('UPDATE devices SET caps = $2 WHERE id = $1', [req.deviceClaims!.device, JSON.stringify(caps)]);
+  res.json({ ok: true });
 });
 
 devicesRouter.get('/devices/:id/events', requireUser('operator'), async (req: AuthedRequest, res) => {

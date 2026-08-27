@@ -12,7 +12,9 @@
     "test": "npm run build && node --test test/",
     "test:api": "node --test test/api.test.mjs",
     "test:e2e": "npm run build && node test/e2e-media.mjs",
-    "test:e2e:m5": "npm run build && node test/e2e-m5.mjs"
+    "test:e2e:m5": "npm run build && node test/e2e-m5.mjs",
+    "test:e2e:m6": "npm run build && node test/e2e-m6.mjs",
+    "bench:encode": "node test/bench-encode.mjs"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.0.2",
