@@ -99,8 +99,11 @@ permissions → preview), sessie-detail + analytics, remote-actions op device-de
 
 ## 6. Figma-plan
 
-**Bestand:** *HoloCast — HEREweHOLO Design* (team "Desmond Frencken's team"), gegenereerd via de Figma MCP
-— link in `design/README.md` zodra aangemaakt.
+**Bestand:** [*HoloCast — HEREweHOLO Design*](https://www.figma.com/design/FR6BHXM6Xii5m5nGWRnD3e)
+(team "Desmond Frencken's team"), gegenereerd via de Figma MCP. Status en resterende stappen: zie
+`design/README.md`. Let op: het Starter-plan beperkt Figma tot 3 pagina's per bestand en 20 MCP-calls
+per maand — de paginastructuur hieronder is daarom samengevoegd tot 3 pagina's; het ideaalbeeld blijft
+gedocumenteerd voor een eventueel Pro-plan.
 
 **Paginastructuur**
 
