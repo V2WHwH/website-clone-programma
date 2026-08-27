@@ -1,4 +1,6 @@
-# platform/ — HoloMe & HoloSee (M2 – M7)
+# platform/ — HoloMe & HoloSee (M2 – M8)
+
+**Manuals:** [`docs/manual/`](../docs/manual/README.md) — quick start + full manual, EN/NL.
 
 The product platform on the accepted ADRs: PostgreSQL control plane, LiveKit SFU media plane,
 device pairing with signed keypairs, invite links, and the presenter/guest session flow with an
@@ -124,6 +126,22 @@ invites) · `/receiver.html` (HoloSee — open on the display machine) · `/join
   auto-resolves ("playback recovered"), device untouched → net test / logs / browser restart
   via the watchdog (same identity) → dashboard renders KPIs, health, alerts, measured egress,
   audit → total device death → `offline` alert.
+
+**M8 — shipping (the sandbox slice)**
+- **Signed automatic updates** (`agent/updater.mjs`): STABLE/BETA/INTERNAL channels; a
+  manifest carries the version, the bundle sha256 and an Ed25519 signature over both —
+  nothing installs unless BOTH verify against the pinned public key. Atomic pointer flip,
+  previous version kept on disk, `rollback()` restores it after a failed health check.
+  8 unit tests cover tampered bundles, wrong-key signatures, channel lies and rollback.
+  The watchdog checks its channel periodically (env `UPDATE_URL`/`UPDATE_PUBKEY`/…).
+- **Installer** (`agent/windows/installer.iss`, Inno Setup): install/repair/update/
+  uninstall, Scheduled Task + power + firewall via `install.ps1`. Building, signing and
+  validating the .exe happens on real Windows — the M8 gate; this repo never claims it ran.
+- **Soak harness** (`npm run soak`, `SOAK_MINUTES=1440` for the 24 h gate): continuous
+  playback, repeated sessions and disconnect cycles, sampling the RSS of every process
+  tree (app, SFU, receiver browser, sender browser); fails on >25% median growth. The
+  4-minute smoke run here: 12 cycles, 4 cable cuts, 0 failures, growth +1%…+13% — ok.
+  GPU/VRAM/thermals need vendor tooling on the target and are reported as not-measurable.
 
 ## Tests (the test → fix → test loop)
 

@@ -141,6 +141,33 @@ function runHostAction(action, actionId) {
   }
 }
 
+// ——— M8: signed automatic updates (STABLE/BETA/INTERNAL) ———
+// The check stages a verified bundle and flips the version pointer; applying it is a
+// restart, which the service manager (Scheduled Task / systemd) owns. A version that
+// fails its health check after restart is rolled back by the service wrapper via
+// updater.rollback(). Both the sha256 and the Ed25519 signature must verify — see
+// agent/updater.mjs and its tests.
+if (process.env.UPDATE_URL && process.env.UPDATE_PUBKEY) {
+  const { checkAndApply } = await import('./updater.mjs');
+  const updDir = process.env.UPDATE_DIR ?? path.join(profile, '..', 'holosee-agent');
+  const check = async () => {
+    try {
+      const r = await checkAndApply({
+        baseUrl: process.env.UPDATE_URL,
+        channel: process.env.UPDATE_CHANNEL ?? 'stable',
+        appDir: updDir,
+        publicKeyPem: process.env.UPDATE_PUBKEY,
+        currentVersion: process.env.AGENT_VERSION ?? '0.0.0',
+      });
+      if (r.updated) log('update staged — next agent restart applies it', { version: r.version, previous: r.previous });
+    } catch (e) {
+      log('update check refused/failed', { error: String(e).slice(0, 160) });
+    }
+  };
+  setInterval(() => void check(), Number(process.env.UPDATE_EVERY_MS ?? 6 * 3_600_000));
+  void check();
+}
+
 // ——— the kiosk browser itself ———
 const launchUrl = `${url}${url.includes('?') ? '&' : '?'}wd=${helperPort}&wds=${secret}`;
 const baseFlags = [

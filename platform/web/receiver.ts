@@ -244,26 +244,35 @@ function scheduleRejoin(): void {
 
 async function joinRoom(isRejoin: boolean): Promise<void> {
   if (!current) return;
+  const sess = current.sessionId;
   try {
+    // A discarded room (previous session or failed attempt) must never touch the glass
+    // again — same instance-guard discipline as the sender page.
+    room?.removeAllListeners();
     room?.disconnect();
-    room = new Room({ adaptiveStream: true });
-    room.on(RoomEvent.TrackSubscribed, (track: RemoteTrack, _p, participant: RemoteParticipant) => {
-      if (!participant.identity.startsWith('presenter-')) return;
+    const thisRoom = new Room({ adaptiveStream: true });
+    room = thisRoom;
+    thisRoom.on(RoomEvent.TrackSubscribed, (track: RemoteTrack, _p, participant: RemoteParticipant) => {
+      if (room !== thisRoom || !participant.identity.startsWith('presenter-')) return;
       if (track.kind === Track.Kind.Video) {
         track.attach(video);
         liveVideoTrack = track;
+        postEvent('log', sess, { msg: 'video subscribed', muted: track.isMuted });
       } else if (track.kind === Track.Kind.Audio) {
         track.attach();
       }
     });
-    room.on(RoomEvent.Disconnected, () => {
+    thisRoom.on(RoomEvent.Disconnected, () => {
+      if (room !== thisRoom) return;
       if (current) {
         enterFallback('sfu_disconnected');
       } else {
         showIdle();
       }
     });
-    await room.connect(current.url, current.token);
+    await thisRoom.connect(current.url, current.token);
+    if (room !== thisRoom || current?.sessionId !== sess) return; // superseded while connecting
+    postEvent('log', sess, { msg: isRejoin ? 'rejoined room' : 'joined room' });
     lastFrameTs = Date.now(); // grace period until first frame
     // Return feed: publish this side's camera/mic when the hardware has them.
     if (!isRejoin) {
@@ -272,7 +281,10 @@ async function joinRoom(isRejoin: boolean): Promise<void> {
           video: { width: { ideal: 1280 } },
           audio: { echoCancellation: true },
         });
-        for (const t of rf.getTracks()) await room.localParticipant.publishTrack(t, { name: `return-${t.kind}` });
+        for (const t of rf.getTracks()) {
+          if (room !== thisRoom) return;
+          await thisRoom.localParticipant.publishTrack(t, { name: `return-${t.kind}` });
+        }
       } catch {
         foot.textContent = 'HOLOSEE · LIVE · RETURN FEED UNAVAILABLE (NO CAMERA ON THIS DEVICE)';
       }
@@ -315,7 +327,9 @@ setInterval(() => {
 
 function renderStats(): Record<string, unknown> {
   const vq = video.getVideoPlaybackQuality?.();
+  const heap = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory;
   return {
+    heapMB: heap ? Math.round(heap.usedJSHeapSize / 1e5) / 10 : null, // Chrome-only; null elsewhere
     sessionId: current?.sessionId,
     state,
     w: video.videoWidth,
