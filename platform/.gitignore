@@ -3,3 +3,6 @@ public/js/
 .env
 *.log
 .livekit/
+android/.cache/
+android/build/
+android/res/mipmap-*/

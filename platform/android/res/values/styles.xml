@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Design tokens (design/tokens.json): gunmetal ground, HoloMe is a dark product. -->
+  <color name="hw_bg">#FF0A0E13</color>
+  <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
+    <item name="android:windowBackground">@color/hw_bg</item>
+    <item name="android:colorPrimary">@color/hw_bg</item>
+    <item name="android:statusBarColor">@color/hw_bg</item>
+    <item name="android:navigationBarColor">@color/hw_bg</item>
+  </style>
+</resources>
