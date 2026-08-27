@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HoloMe — Sign in</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap" />
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <div class="wrap" style="max-width: 420px; padding-top: 8vh;">
+    <div class="wm" style="text-align:center"><b>HOLO</b>ME</div>
+    <div class="card">
+      <h1 id="title">Sign in</h1>
+      <div class="field" id="f-org" style="display:none"><label>Organisation name</label><input id="orgName" autocomplete="organization" /></div>
+      <div class="field" id="f-name" style="display:none"><label>Your name</label><input id="displayName" autocomplete="name" /></div>
+      <div class="field"><label>Email</label><input id="email" type="email" autocomplete="email" /></div>
+      <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password" /></div>
+      <div class="msg" id="msg"></div>
+      <button id="go">Sign in →</button>
+      <a id="toggle" style="font-size:13px; text-align:center">New organisation? Create one</a>
+    </div>
+    <div class="sub" style="text-align:center">MFA (TOTP) ready — SECURITY.md §2</div>
+  </div>
+  <script type="module" src="/js/login.js"></script>
+</body>
+</html>

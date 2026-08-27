@@ -1,0 +1,17 @@
+# LiveKit SFU (ADR-001) — production config for the single EU region (ADR-005).
+port: 7880
+bind_addresses:
+  - 0.0.0.0
+rtc:
+  port_range_start: 50000
+  port_range_end: 60000
+  tcp_port: 7881
+  use_external_ip: true # advertise the server's public IP in ICE candidates
+keys:
+  # Replace with the values in .env; never commit real keys.
+  ${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}
+turn:
+  enabled: false # coturn runs alongside (docker-compose); flip on to use LiveKit's embedded TURN instead
+logging:
+  json: true
+  level: info

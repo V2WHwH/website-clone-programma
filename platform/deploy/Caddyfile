@@ -1,0 +1,9 @@
+# TLS termination for the app and the LiveKit signal/websocket endpoint.
+# DNS: app.example.com and lk.example.com -> this server. Caddy fetches certificates automatically.
+{$APP_DOMAIN} {
+	reverse_proxy localhost:8800
+}
+
+{$LIVEKIT_DOMAIN} {
+	reverse_proxy localhost:7880
+}

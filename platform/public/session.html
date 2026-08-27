@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HoloMe — Session</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap" />
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body class="session">
+  <div class="stage"><video id="self" class="self" autoplay muted playsinline></video></div>
+
+  <div class="hud-top">
+    <span class="live-badge glass"><i></i>LIVE</span>
+    <span class="dest-chip glass" id="dest">→ …</span>
+    <span class="pill glass" id="conn">preparing…</span>
+    <span class="frozen-note glass" style="border-radius:999px;padding:6px 12px;">settings locked while live</span>
+  </div>
+
+  <div class="strip glass" id="strip">00:00:00 · STANDBY · 0 × 0 · 0.0 fps · 0.0 Mbps</div>
+
+  <div class="pip"><video id="return" autoplay playsinline></video><span class="tag" id="pipTag">return feed</span></div>
+
+  <div class="hud-bottom">
+    <button class="ghost small" id="exit">Exit</button>
+    <button class="golive" id="golive" disabled>GO LIVE</button>
+    <button class="ghost small" id="pip">Return feed</button>
+  </div>
+  <script type="module" src="/js/session.js"></script>
+</body>
+</html>

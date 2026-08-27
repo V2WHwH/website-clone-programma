@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HoloMe — You're invited</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap" />
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <div class="wrap" style="max-width: 460px; padding-top: 7vh; text-align: center;">
+    <div class="wm"><b>HOLO</b>ME</div>
+    <div class="card" style="text-align: left;">
+      <h1 id="title">You're invited to present</h1>
+      <div class="sub" id="orgLine">…</div>
+      <div id="dests"></div>
+      <div class="sub mono" id="expiry"></div>
+      <div class="field"><label>Your name</label><input id="name" autocomplete="name" /></div>
+      <div class="field" id="f-pw" style="display:none"><label>Link password</label><input id="pw" type="password" /></div>
+      <div class="msg" id="msg"></div>
+      <button id="joinBtn">Join &amp; set up camera →</button>
+      <div class="sub">Nothing to install — runs in your browser. Camera permission is asked on the next step.</div>
+    </div>
+    <div class="sub mono" style="letter-spacing:.1em">SECURED BY HEREWEHOLO CLOUD</div>
+  </div>
+  <script type="module" src="/js/join.js"></script>
+</body>
+</html>

@@ -102,4 +102,5 @@ Deze repo bevat ook de kickoff van het HEREweHOLO telepresence-platform:
 - [`docs/adr/`](docs/adr/) — vijf ADRs (SFU, receiver-runtime, encoders, signaling, hosting) — **goedgekeurd 2026-08-27, M0-gate gepasseerd**
 - [`docs/features/`](docs/features/) — fase 2+-featurevoorstellen: F1 Studio Matte, F2 Voice Bridge, F3 Walk-up
 - [`m1/`](m1/) — M1 vertical slice "camera to glass": signaling, sender, fullscreen-receiver, diagnostische resolutieketen + e2e-test
+- [`platform/`](platform/) — M2+M3+M4: LiveKit-SFU-mediapad, Postgres control plane (auth, pairing, multi-tenancy), sessie-flow met invites en gasten — 10 integratietests + volledige e2e groen
 - [`beam-kickoff/`](beam-kickoff/) — projectgrondwet, milestones en acceptance-scenario

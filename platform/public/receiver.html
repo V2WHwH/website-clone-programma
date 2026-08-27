@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HoloSee</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap" />
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body class="holosee">
+  <div class="rcv-stage">
+    <svg class="mark" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#35E0FF"/><stop offset="0.45" stop-color="#2DD4BF"/><stop offset="1" stop-color="#8F7BFF"/></linearGradient></defs><rect x="11" y="11" width="42" height="42" rx="12" fill="url(#b)" transform="rotate(45 32 32)"/></svg>
+    <h2 id="rcvTitle">Starting…</h2>
+    <div class="code" id="rcvCode" style="display:none"></div>
+    <div class="line" id="rcvLine"></div>
+  </div>
+  <video id="rcvVideo" class="rcv-video" autoplay playsinline></video>
+  <div class="rcv-foot" id="rcvFoot">HOLOSEE</div>
+  <script type="module" src="/js/receiver.js"></script>
+</body>
+</html>
