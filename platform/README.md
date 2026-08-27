@@ -48,6 +48,25 @@ invites) · `/receiver.html` (HoloSee — open on the display machine) · `/join
 - Echo cancellation is requested explicitly; a missing microphone is reported, never faked.
 - Settings lock while live (UI state); receiver returns to brand idle on stop — never an error.
 
+**M5 — unattended operation**
+- **Fallback, never an error:** the receiver is a state machine idle → live ⇄ fallback. A media
+  stall (> 4 s without a decoded frame) or SFU loss switches the glass to the brand screen and
+  starts a silent rejoin loop; recovery is logged with the outage duration. Page errors are
+  captured and logged — nothing ever renders as an error on the glass.
+- **Watchdog** (`agent/watchdog.mjs`): keeps the kiosk browser alive with exponential backoff
+  (reset after a healthy minute). The browser profile is persistent, so the device identity
+  survives crashes and reboots → autostart + auto-connect without human action.
+  `agent/windows/install.ps1` registers it as a Scheduled Task, disables sleep and toasts
+  (untested here — validate on real hardware per the M5 gate).
+- **Structured events** (`device_events`): boot, online/offline (incl. heartbeat-timeout zombies
+  swept server-side), session_playing, fallback_shown, recovered — every row carries the session
+  id, so a session is reconstructable end to end.
+- **The cable-pull e2e** (`npm run test:e2e:m5`): pair once → close → watchdog boots the receiver
+  from the profile (same identity, no re-pair) → presenter live (proven by the `session_playing`
+  event) → **SFU killed mid-stream** → `fallback_shown` within the window → SFU returns → a new
+  session plays with the receiver untouched → kiosk browser killed → watchdog restarts it →
+  same device ONLINE again → full event trail asserted.
+
 ## Tests (the test → fix → test loop)
 
 ```bash

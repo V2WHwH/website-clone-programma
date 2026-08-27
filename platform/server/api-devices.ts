@@ -4,8 +4,17 @@
 import { Router } from 'express';
 import crypto from 'node:crypto';
 import { one, q } from './db.js';
-import { audit, requireUser, signClaims, type AuthedRequest, type DeviceClaims, sha256 } from './auth.js';
-import { isOnline } from './presence.js';
+import {
+  audit,
+  requireDevice,
+  requireUser,
+  signClaims,
+  type AuthedRequest,
+  type DeviceClaims,
+  type DeviceRequest,
+  sha256,
+} from './auth.js';
+import { isOnline, logDeviceEvent } from './presence.js';
 
 export const devicesRouter = Router();
 
@@ -163,4 +172,28 @@ devicesRouter.post('/devices/:id/auth', async (req, res) => {
   }
   const token = await signClaims({ device: device.id, org: device.org_id, kind: 'device' } satisfies DeviceClaims, '15m');
   res.json({ token, expiresInSeconds: 900 });
+});
+
+// ——— M5: structured device events (fallback shown, recovered, playing, boot, log) ———
+const EVENT_TYPES = new Set(['boot', 'session_playing', 'fallback_shown', 'recovered', 'log']);
+
+devicesRouter.post('/devices/events', requireDevice(), async (req: DeviceRequest, res) => {
+  const type = typeof req.body?.type === 'string' ? req.body.type : '';
+  if (!EVENT_TYPES.has(type)) {
+    res.status(400).json({ error: `type must be one of ${[...EVENT_TYPES].join(', ')}` });
+    return;
+  }
+  const sessionId = typeof req.body?.sessionId === 'string' ? req.body.sessionId : null;
+  const meta = typeof req.body?.meta === 'object' && req.body.meta ? req.body.meta : {};
+  await logDeviceEvent(req.deviceClaims!.device, req.deviceClaims!.org, type, sessionId, meta);
+  res.status(201).json({ ok: true });
+});
+
+devicesRouter.get('/devices/:id/events', requireUser('operator'), async (req: AuthedRequest, res) => {
+  const r = await q(
+    `SELECT type, session_id, at, meta FROM device_events
+     WHERE device_id = $1 AND org_id = $2 ORDER BY at DESC LIMIT 200`,
+    [req.params.id, req.user!.org],
+  );
+  res.json({ events: r.rows });
 });

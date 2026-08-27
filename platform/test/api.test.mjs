@@ -151,6 +151,21 @@ test('presence: device WS makes the device ONLINE, close makes it OFFLINE', asyn
   assert.equal(list.data.devices[0].state, 'offline');
 });
 
+test('M5: stale-heartbeat sweep forces a half-open device OFFLINE', async () => {
+  const ws = new WebSocket(`ws://localhost:${PORT}/ws/device?token=${orgs.a.deviceToken}`);
+  await new Promise((res, rej) => {
+    ws.onopen = res;
+    ws.onerror = rej;
+  });
+  await sleep(300);
+  assert.equal((await api('/devices', { token: orgs.a.token })).data.devices[0].state, 'online');
+  // simulate a zombie: socket stays open but heartbeats stop long ago
+  execSync(`psql "${DB}" -q -c "UPDATE devices SET last_seen_at = now() - interval '60 seconds'"`);
+  await sleep(7000); // sweep runs every 5 s
+  assert.equal((await api('/devices', { token: orgs.a.token })).data.devices[0].state, 'offline');
+  ws.close();
+});
+
 test('invites: create, preview, join (password + single use), revoke', async () => {
   const inv = await api('/invites', {
     token: orgs.a.token,

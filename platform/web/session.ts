@@ -90,18 +90,33 @@ async function goLive(): Promise<void> {
   conn.textContent = 'connecting…';
   conn.className = 'pill glass warn';
   try {
+    // A dead track (unplugged camera, or stopped by an earlier room) publishes nothing —
+    // the receiver would sit on a black frame. Re-acquire before going live.
+    if (!stream || stream.getVideoTracks()[0]?.readyState === 'ended') {
+      await initMedia();
+      goliveBtn.disabled = true;
+      conn.textContent = 'connecting…';
+      conn.className = 'pill glass warn';
+    }
     const r = await api<{ sessionId: string; room: string; livekitUrl: string; token: string }>('/sessions', {
       body: { deviceIds },
       token,
     });
     sessionId = r.sessionId;
-    room = new Room({ adaptiveStream: true, dynacast: true });
-    room.on(RoomEvent.TrackSubscribed, onTrack);
-    room.on(RoomEvent.Disconnected, () => {
+    // A discarded room (previous session or failed attempt) must never touch the UI again.
+    room?.removeAllListeners();
+    room?.disconnect();
+    // stopLocalTrackOnUnpublish defaults to true and would kill the self-preview (and any
+    // later session) on disconnect — this page owns the capture lifecycle, not the room.
+    const thisRoom = new Room({ adaptiveStream: true, dynacast: true, stopLocalTrackOnUnpublish: false });
+    room = thisRoom;
+    thisRoom.on(RoomEvent.TrackSubscribed, onTrack);
+    thisRoom.on(RoomEvent.Disconnected, () => {
+      if (room !== thisRoom) return;
       conn.textContent = 'disconnected';
       conn.className = 'pill glass err';
     });
-    await room.connect(r.livekitUrl, r.token);
+    await thisRoom.connect(r.livekitUrl, r.token);
     const vTrack = stream!.getVideoTracks()[0]!;
     await room.localParticipant.publishTrack(vTrack, { name: 'camera', simulcast: true });
     const aTrack = stream!.getAudioTracks()[0];
@@ -114,8 +129,18 @@ async function goLive(): Promise<void> {
     goliveBtn.disabled = false;
     await api(`/sessions/${sessionId}/state`, { body: { state: 'live' }, token });
   } catch (e) {
+    console.error('goLive failed:', e);
+    // A failed attempt must leave the page in the "not live" state, or the GO LIVE
+    // button would dispatch to stop() on the next click instead of retrying.
+    const failedId = sessionId;
+    sessionId = undefined;
+    room?.removeAllListeners();
+    room?.disconnect();
+    room = undefined;
+    if (failedId) await api(`/sessions/${failedId}/stop`, { body: { stats: {} }, token }).catch(() => undefined);
     conn.textContent = (e as Error).message;
     conn.className = 'pill glass err';
+    goliveBtn.textContent = 'GO LIVE';
     goliveBtn.disabled = false;
   }
 }
@@ -140,6 +165,7 @@ async function stop(): Promise<void> {
     audio: audioOk,
   };
   await api(`/sessions/${sessionId}/stop`, { body: { stats }, token }).catch(() => undefined);
+  room?.removeAllListeners();
   room?.disconnect();
   room = undefined;
   sessionId = undefined;

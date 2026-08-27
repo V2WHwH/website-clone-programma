@@ -140,6 +140,24 @@ export function requireUserOrGuest(minRole: keyof typeof ROLE_RANK) {
   };
 }
 
+export interface DeviceRequest extends Request {
+  deviceClaims?: DeviceClaims;
+}
+
+/** Device-token auth for receiver REST calls (event logging). */
+export function requireDevice() {
+  return async (req: DeviceRequest, res: Response, next: NextFunction): Promise<void> => {
+    const t = bearer(req);
+    const claims = t ? await verifyToken<DeviceClaims>(t, 'device') : undefined;
+    if (!claims) {
+      res.status(401).json({ error: 'unauthenticated' });
+      return;
+    }
+    req.deviceClaims = claims;
+    next();
+  };
+}
+
 export async function audit(
   orgId: string | null,
   actor: string,

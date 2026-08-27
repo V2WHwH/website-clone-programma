@@ -10,7 +10,7 @@ import { authRouter } from './api-auth.js';
 import { devicesRouter } from './api-devices.js';
 import { sessionsRouter } from './api-sessions.js';
 import { verifyToken, type DeviceClaims } from './auth.js';
-import { deviceConnected, deviceDisconnected, deviceHeartbeat } from './presence.js';
+import { deviceConnected, deviceDisconnected, deviceHeartbeat, startPresenceSweep } from './presence.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 
@@ -56,6 +56,7 @@ server.on('upgrade', async (req, socket, head) => {
 async function main(): Promise<void> {
   const applied = await migrate();
   if (applied.length) console.log(`migrations applied: ${applied.join(', ')}`);
+  startPresenceSweep();
   server.listen(env.port, () => {
     console.log(`HoloMe/HoloSee platform on :${env.port}`);
     console.log(`  app      : http://localhost:${env.port}/login.html`);
