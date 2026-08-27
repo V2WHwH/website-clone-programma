@@ -1,18 +1,51 @@
-<title>HoloCast Design Boards</title>
+<title>HoloMe &amp; HoloSee Design Boards</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  /* ————— HoloCast design boards — deliberately single-theme: dark AV/broadcast ————— */
+  /* ————— HoloMe & HoloSee design boards — dual theme: dark default, light as full mode ————— */
+  /* Light — HoloMe daylight */
   :root {
+    --ink-0:#F2F4F7; --ink-1:#FFFFFF; --ink-2:#E9EDF2; --ink-3:#DCE3EB;
+    --line:#E2E8EF; --line-strong:#C9D3DE;
+    --text-hi:#101820; --text-mid:#4A5866; --text-low:#8A97A6;
+    --cyan:#0797C2; --teal:#0D9488; --violet:#6D28D9;
+    --ok:#0B915F; --warn:#B45309; --err:#D6246E;
+    --cyc:#E8E6E1; --cyc-edge:#C9C5BD;
+    --beam:linear-gradient(135deg,#35E0FF 0%,#2DD4BF 45%,#8F7BFF 100%);
+    --shadow:0 24px 60px -30px rgba(28,46,66,.35);
+    --disp:"Archivo",system-ui,sans-serif;
+    --ui:"IBM Plex Sans",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  /* Dark — default via system, tenzij expliciet licht gekozen */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink-0:#0A0E13; --ink-1:#10161E; --ink-2:#18202B; --ink-3:#212B38;
+      --line:#1E2836; --line-strong:#2C3949;
+      --text-hi:#EAF0F6; --text-mid:#9AA8B8; --text-low:#5C6B7C;
+      --cyan:#35E0FF; --teal:#2DD4BF; --violet:#8F7BFF;
+      --ok:#3EE58F; --warn:#FFB454; --err:#FF4D8D;
+      --shadow:0 24px 60px -30px rgba(0,0,0,.8);
+    }
+  }
+  :root[data-theme="dark"] {
     --ink-0:#0A0E13; --ink-1:#10161E; --ink-2:#18202B; --ink-3:#212B38;
     --line:#1E2836; --line-strong:#2C3949;
     --text-hi:#EAF0F6; --text-mid:#9AA8B8; --text-low:#5C6B7C;
     --cyan:#35E0FF; --teal:#2DD4BF; --violet:#8F7BFF;
     --ok:#3EE58F; --warn:#FFB454; --err:#FF4D8D;
-    --cyc:#E8E6E1; --cyc-edge:#C9C5BD;
-    --beam:linear-gradient(135deg,#35E0FF 0%,#2DD4BF 45%,#8F7BFF 100%);
-    --disp:"Archivo",system-ui,sans-serif;
-    --ui:"IBM Plex Sans",system-ui,sans-serif;
-    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --shadow:0 24px 60px -30px rgba(0,0,0,.8);
+  }
+  /* HoloSee (receiver) is altijd donker — hologram-optiek vraagt een zwarte achtergrond */
+  .display {
+    --ink-0:#0A0E13; --ink-1:#10161E; --ink-2:#18202B; --ink-3:#212B38;
+    --line:#1E2836; --line-strong:#2C3949;
+    --text-hi:#EAF0F6; --text-mid:#9AA8B8; --text-low:#5C6B7C;
+    --cyan:#35E0FF; --teal:#2DD4BF; --violet:#8F7BFF;
+    --ok:#3EE58F; --warn:#FFB454; --err:#FF4D8D;
+  }
+  /* Donkere glass-overlays op de camera behouden altijd de vivid accenten */
+  .glass, .strip, .live-badge, .pip, .devviz {
+    --cyan:#35E0FF; --teal:#2DD4BF; --ok:#3EE58F; --warn:#FFB454; --err:#FF4D8D;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -63,10 +96,10 @@
   .rings i:nth-child(3) { animation-delay:.8s; border-color:var(--violet); }
   .rings b { position:absolute; inset:22px; border-radius:50%; background:var(--beam); }
   @keyframes ring { 0% { transform:scale(.35); opacity:.9; } 100% { transform:scale(1.15); opacity:0; } }
-  .pulse-badge { display:inline-flex; align-items:center; gap:7px; background:rgba(10,14,19,.85); border:1px solid var(--line-strong); border-radius:999px; padding:6px 14px; font-family:var(--disp); font-weight:700; font-size:12px; letter-spacing:.14em; }
+  .pulse-badge { display:inline-flex; align-items:center; gap:7px; color:#fff; background:rgba(10,14,19,.85); border:1px solid #2C3949; border-radius:999px; padding:6px 14px; font-family:var(--disp); font-weight:700; font-size:12px; letter-spacing:.14em; --err:#FF4D8D; }
   .pulse-badge i { width:8px; height:8px; border-radius:50%; background:var(--err); animation:pulse 2s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { box-shadow:0 0 0 0 rgba(255,77,141,.55); } 50% { box-shadow:0 0 0 7px rgba(255,77,141,0); } }
-  .shimmer { width:100%; height:100%; background:radial-gradient(120% 90% at 30% 110%, rgba(53,224,255,.22), transparent 55%), radial-gradient(120% 90% at 75% -10%, rgba(143,123,255,.20), transparent 55%), var(--ink-0); animation:drift 6s ease-in-out infinite alternate; }
+  .shimmer { width:100%; height:100%; background:radial-gradient(120% 90% at 30% 110%, rgba(53,224,255,.22), transparent 55%), radial-gradient(120% 90% at 75% -10%, rgba(143,123,255,.20), transparent 55%), #0A0E13; animation:drift 6s ease-in-out infinite alternate; }
   @keyframes drift { from { background-position:0 0,0 0; } to { background-position:-30px 12px,26px -10px; } }
   @media (prefers-reduced-motion:reduce) { .rings i, .pulse-badge i, .shimmer { animation:none; } .rings i { transform:scale(.8); opacity:.35; } }
 
@@ -87,11 +120,11 @@
   .board .note li { margin-top:3px; }
 
   /* device shells */
-  .phone { width:320px; height:693px; background:var(--ink-0); border:1px solid var(--line-strong); border-radius:30px; padding:8px; box-shadow:0 24px 60px -30px rgba(0,0,0,.8); }
+  .phone { width:320px; height:693px; background:var(--ink-0); border:1px solid var(--line-strong); border-radius:30px; padding:8px; box-shadow:var(--shadow); }
   .screen { width:100%; height:100%; border-radius:22px; overflow:hidden; background:var(--ink-0); display:flex; flex-direction:column; position:relative; }
-  .display { width:320px; height:568px; background:#05070A; border:1px solid var(--line-strong); border-radius:14px; padding:10px; box-shadow:0 24px 60px -30px rgba(0,0,0,.8); }
+  .display { width:320px; height:568px; background:#05070A; border:1px solid var(--line-strong); border-radius:14px; padding:10px; box-shadow:var(--shadow); }
   .display .screen { border-radius:6px; }
-  .desktop { width:960px; max-width:100%; height:600px; background:var(--ink-0); border:1px solid var(--line-strong); border-radius:14px; overflow:hidden; box-shadow:0 24px 60px -30px rgba(0,0,0,.8); display:flex; }
+  .desktop { width:960px; max-width:100%; height:600px; background:var(--ink-0); border:1px solid var(--line-strong); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); display:flex; }
 
   /* ————— in-app primitives ————— */
   .appbar { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 14px 10px; }
@@ -145,7 +178,7 @@
   .netcard span { font-family:var(--mono); font-size:10px; color:rgba(255,255,255,.65); }
   .netcard .more { margin-left:auto; font-size:11px; color:var(--cyan); }
 
-  .strip { position:absolute; left:10px; right:10px; bottom:10px; z-index:2; border-radius:8px; padding:6px 8px; font-family:var(--mono); font-size:8.8px; letter-spacing:0; color:rgba(255,255,255,.85); display:flex; align-items:center; gap:4px; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; }
+  .strip { position:absolute; left:8px; right:8px; bottom:10px; z-index:2; border-radius:8px; padding:6px 7px; font-family:var(--mono); font-size:8.4px; letter-spacing:0; color:rgba(255,255,255,.85); display:flex; align-items:center; gap:4px; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; }
   .strip .s-ok { color:var(--ok); } .strip .s-off { color:var(--err); } .strip .s-sb { color:var(--warn); }
   .strip i { font-style:normal; color:rgba(255,255,255,.3); }
 
@@ -195,7 +228,7 @@
   .radio-row.sel .rd { border-color:var(--cyan); }
   .radio-row.sel .rd::after { content:""; position:absolute; inset:3px; border-radius:50%; background:var(--cyan); }
   .radio-row h6 { font-size:13px; font-weight:600; display:flex; gap:8px; align-items:center; }
-  .radio-row h6 .rec { font-family:var(--mono); font-size:8.5px; letter-spacing:.1em; color:#06131A; background:var(--teal); border-radius:5px; padding:2px 5px; }
+  .radio-row h6 .rec { font-family:var(--mono); font-size:8.5px; letter-spacing:.1em; color:var(--ink-1); background:var(--teal); border-radius:5px; padding:2px 5px; }
   .radio-row p { font-size:11px; color:var(--text-mid); margin-top:3px; }
   .radio-row code { font-family:var(--mono); font-size:10px; color:var(--text-low); display:block; margin-top:5px; }
 
@@ -208,7 +241,7 @@
   .lens.l1 { background:radial-gradient(circle at 32% 30%, #FFD9A1, #C2255C); }
   .lens.l2 { background:radial-gradient(circle at 32% 30%, #A5F3FC, #0E7490); }
   .lens.l3 { background:radial-gradient(circle at 32% 30%, #DDD6FE, #6D28D9); }
-  .fx-chip { position:absolute; left:50%; transform:translateX(-50%); bottom:112px; border-radius:999px; padding:5px 11px; font-size:10.5px; color:#fff; z-index:3; }
+  .fx-chip { position:absolute; left:50%; transform:translateX(-50%); bottom:150px; border-radius:999px; padding:5px 12px; font-size:10px; color:#fff; z-index:3; white-space:nowrap; }
 
   /* modal */
   .modal { position:absolute; inset:0; z-index:5; display:flex; align-items:flex-end; background:rgba(5,8,12,.55); }
@@ -284,39 +317,65 @@
   .alert code { font-family:var(--mono); font-size:9px; color:var(--text-low); display:block; }
 
   footer { margin-top:72px; padding-top:20px; border-top:1px solid var(--line); font-size:12.5px; color:var(--text-low); display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+
+  /* theme-aware icon strokes & sparkline */
+  .icon-btn svg *, .tool .tico svg * { stroke:var(--text-mid); }
+  .icon-btn.glass svg * { stroke:#EAF0F6; }
+  .tool.on .tico svg * { stroke:var(--cyan); }
+  .devcard .check svg * { stroke:var(--ink-1); }
+  .spark .ln { stroke:var(--cyan); }
+  .spark .dot-end { fill:var(--cyan); }
+
+  /* theme toggle */
+  .theme-toggle { font-family:var(--mono); font-size:11px; color:var(--text-mid); background:var(--ink-1); border:1px solid var(--line-strong); border-radius:999px; padding:6px 14px; cursor:pointer; align-self:flex-end; }
+  .theme-toggle:hover { color:var(--text-hi); border-color:var(--cyan); }
+  .theme-toggle:focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
+
+  /* effects: segmented control + voice chips */
+  .seg { position:absolute; left:50%; transform:translateX(-50%); bottom:106px; display:flex; gap:4px; border-radius:999px; padding:4px; z-index:3; }
+  .seg-it { font-family:var(--mono); font-size:9px; letter-spacing:.12em; color:rgba(255,255,255,.7); padding:4px 12px; border-radius:999px; }
+  .seg-it.on { background:rgba(53,224,255,.28); color:#fff; }
+  .vlens { width:46px; height:46px; border-radius:50%; border:1.6px solid rgba(255,255,255,.35); background:rgba(10,14,19,.45); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:8px; letter-spacing:.06em; color:#fff; }
+  .vlens.sel { border-color:#35E0FF; box-shadow:0 0 0 2px rgba(53,224,255,.45); transform:scale(1.1); }
 </style>
 
 <div class="wrap">
   <header class="masthead">
     <div>
-      <div class="wordmark"><span class="holo">HOLO</span>CAST</div>
+      <div class="wordmark"><span class="holo">HOLO</span>ME&nbsp;&nbsp;·&nbsp;&nbsp;<span class="holo">HOLO</span>SEE</div>
       <h1>Design boards — telepresence voor de Holobox</h1>
-      <p>UI/UX/VFX-layout voor het HEREweHOLO streamingplatform: sender-app, receiver en cloud-dashboard.
+      <p>UI/UX/VFX-layout voor het HEREweHOLO streamingplatform: <b>HoloMe</b> (sender-app),
+         <b>HoloSee</b> (receiver op de Holobox) en het cloud-dashboard.
          Eigen ontwerp op de flow van het referentiemateriaal — geen enkel merkelement overgenomen.</p>
     </div>
     <div class="meta">
       <span><b>HEREweHOLO B.V.</b> · Den Haag</span>
-      <span>versie <b>0.1</b> · 2026-08-27</span>
-      <span>naam <b>HoloCast</b> = werktitel</span>
+      <span>versie <b>0.2</b> · 2026-08-27</span>
+      <span><b>HoloMe</b> = zender · <b>HoloSee</b> = ontvanger</span>
+      <button class="theme-toggle" id="themeBtn" type="button">◐ thema: auto</button>
     </div>
   </header>
 
   <!-- ————————————————— DESIGN LANGUAGE ————————————————— -->
   <section class="section">
     <div class="kicker">01 · Design language</div>
-    <h2>Kalm, donker, eerlijk</h2>
-    <p class="lede">Volwassen AV/broadcast-software: gunmetal-donker, één gereserveerd beam-gradient voor de primaire actie,
-       monospace voor alles wat gemeten is. Geen decoratieve animatie — beweging verklaart uitsluitend een statuswissel.</p>
+    <h2>Kalm en eerlijk — in donker én licht</h2>
+    <p class="lede">Volwassen AV/broadcast-software met één gereserveerd beam-gradient voor de primaire actie en
+       monospace voor alles wat gemeten is. Donker is de default; licht is een volwaardige modus voor HoloMe en
+       het cloud-dashboard (wissel rechtsboven). <b>HoloSee blijft altijd donker</b> — het hologram vraagt een
+       zwarte achtergrond. Geen decoratieve animatie — beweging verklaart uitsluitend een statuswissel.</p>
     <div class="dl-grid">
       <div class="panel">
-        <h3>Kleur</h3>
+        <h3>Kleur — twee thema's, één taal</h3>
         <div class="swatches">
-          <div class="sw" style="background:#0A0E13"><b>Ink 0</b><span>#0A0E13</span></div>
-          <div class="sw" style="background:#18202B"><b>Ink 2</b><span>#18202B</span></div>
-          <div class="sw" style="background:#35E0FF;color:#06131A"><b>Cyan</b><span>#35E0FF</span></div>
-          <div class="sw" style="background:#2DD4BF;color:#06131A"><b>Teal</b><span>#2DD4BF</span></div>
-          <div class="sw" style="background:#8F7BFF;color:#06131A"><b>Violet</b><span>#8F7BFF</span></div>
-          <div class="sw" style="background:linear-gradient(135deg,#35E0FF,#2DD4BF,#8F7BFF);color:#06131A"><b>Beam</b><span>alleen primaire actie</span></div>
+          <div class="sw" style="background:#0A0E13;color:#EAF0F6"><b>Ink 0 · donker</b><span>#0A0E13</span></div>
+          <div class="sw" style="background:#18202B;color:#EAF0F6"><b>Ink 2 · donker</b><span>#18202B</span></div>
+          <div class="sw" style="background:#F2F4F7;color:#101820;border-color:#C9D3DE"><b>Paper 0 · licht</b><span>#F2F4F7</span></div>
+          <div class="sw" style="background:#FFFFFF;color:#101820;border-color:#C9D3DE"><b>Paper 1 · licht</b><span>#FFFFFF</span></div>
+          <div class="sw" style="background:#35E0FF;color:#06131A"><b>Cyan</b><span>#35E0FF / licht #0797C2</span></div>
+          <div class="sw" style="background:#2DD4BF;color:#06131A"><b>Teal</b><span>#2DD4BF / licht #0D9488</span></div>
+          <div class="sw" style="background:#8F7BFF;color:#06131A"><b>Violet</b><span>#8F7BFF / licht #6D28D9</span></div>
+          <div class="sw" style="background:linear-gradient(135deg,#35E0FF,#2DD4BF,#8F7BFF);color:#06131A"><b>Beam</b><span>identiek in beide thema's</span></div>
         </div>
       </div>
       <div class="panel type-sample">
@@ -331,7 +390,7 @@
         <div class="status-row"><i class="dot" style="background:#3EE58F"></i> Online / connected / geverifieerd <code>#3EE58F</code></div>
         <div class="status-row"><i class="dot" style="background:#FFB454"></i> Degraded / stepping down <code>#FFB454</code></div>
         <div class="status-row"><i class="dot" style="background:#FF4D8D"></i> Offline / error / stop <code>#FF4D8D</code></div>
-        <div class="status-row" style="border-top:1px solid var(--line); color:var(--text-low); font-size:12px;">Status krijgt altijd óók een tekstlabel — nooit kleur alleen.</div>
+        <div class="status-row" style="border-top:1px solid var(--line); color:var(--text-low); font-size:12px;">Status krijgt altijd óók een tekstlabel — nooit kleur alleen. In het lichte thema verdiepen de statuskleuren voor contrast (#0B915F · #B45309 · #D6246E).</div>
       </div>
     </div>
     <div class="dl-grid">
@@ -371,7 +430,7 @@
 
   <!-- ————————————————— SENDER ————————————————— -->
   <section class="section">
-    <div class="kicker">03 · Sender — mobiel &amp; browser</div>
+    <div class="kicker">03 · HoloMe — sender, mobiel &amp; browser</div>
     <h2>De presentator-flow</h2>
     <p class="lede">Portrait-first. De presentator staat vóór de telefoon; elk bedienelement is op armlengte-afstand leesbaar.
        Scroll horizontaal door de acht schermen.</p>
@@ -383,7 +442,7 @@
         <div class="phone"><div class="screen">
           <div class="appbar">
             <span class="icon-btn"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg></span>
-            <span class="wm"><span class="holo">HOLO</span>CAST</span>
+            <span class="wm"><span class="holo">HOLO</span>ME</span>
             <span class="pill">+ Pair device</span>
           </div>
           <div class="sc-title">
@@ -575,9 +634,9 @@
             </div>
             <div class="group-label">Quality</div>
             <div class="rowgroup">
-              <div class="row">Beam quality <span class="val">Auto · up to 4K30 <span class="chev">›</span></span></div>
+              <div class="row">Stream quality <span class="val">Auto · up to 4K30 <span class="chev">›</span></span></div>
             </div>
-            <p class="foot-note">Destination and quality lock while live. Stop the beam to change them.</p>
+            <p class="foot-note">Destination and quality lock while live. Stop the session to change them.</p>
           </div>
         </div></div>
         <div class="note"><b><em>S6</em>Session-instellingen</b>
@@ -632,12 +691,16 @@
               <span class="icon-btn glass"><svg viewBox="0 0 16 16"><path d="M12.5 6.5a5 5 0 0 0 -9 -1.5M3.5 9.5a5 5 0 0 0 9 1.5"/><path d="M13 2v3h-3M3 14v-3h3"/></svg></span>
             </div>
             <div class="figure" style="margin-bottom:120px"><svg viewBox="0 0 100 260"><circle class="body" cx="50" cy="24" r="14"/><path class="body" d="M50 41c-11 0-18 6-20 15l-6 33c-1 5 6 8 8 3l7-27 1 30-7 82c-1 7 9 8 10 1l7-58 7 58c1 7 11 6 10-1l-7-82 1-30 7 27c2 5 9 2 8-3l-6-33c-2-9-9-15-20-15z"/></svg></div>
-            <span class="fx-chip glass">Effects render in the outgoing beam</span>
+            <span class="fx-chip glass">Face &amp; voice effects render in the outgoing stream</span>
+            <div class="seg glass">
+              <span class="seg-it">FACE</span><span class="seg-it on">VOICE</span>
+            </div>
             <div class="lens-rail">
-              <span class="lens none sel"><svg viewBox="0 0 16 16"><path d="M3 13 13 3"/></svg></span>
-              <span class="lens l1"></span>
-              <span class="lens l2"></span>
-              <span class="lens l3"></span>
+              <span class="lens none"><svg viewBox="0 0 16 16"><path d="M3 13 13 3"/></svg></span>
+              <span class="vlens">DEEP</span>
+              <span class="vlens sel">ROBOT</span>
+              <span class="vlens">HIGH</span>
+              <span class="vlens">ANON</span>
             </div>
             <div class="strip glass">00:16:33 <i>·</i> <span class="s-ok">CONNECTED</span> <i>·</i> 2160 × 3840 <i>·</i> 30 fps <i>·</i> 17.2 Mbps</div>
           </div>
@@ -648,11 +711,12 @@
             <span class="tool"><span class="tico"><svg viewBox="0 0 16 16"><rect x="2.5" y="4" width="11" height="8" rx="1.5"/><path d="M5.5 12v1.5h5V12"/></svg></span>Return feed</span>
           </div>
         </div></div>
-        <div class="note"><b><em>S8</em>Effects — AR-lenzen</b>
+        <div class="note"><b><em>S8</em>Effects — AR-lenzen + voice changer</b>
           <ul>
-            <li>Carrousel van ronde lenzen; lege cirkel = geen effect (default)</li>
-            <li>Chip maakt expliciet: het effect gaat mee in de uitgaande stream</li>
-            <li>Snap Camera Kit-integratie — fase 2, niet MVP</li>
+            <li>Segmented control: FACE (AR-lenzen, Snap Camera Kit) en VOICE (stem-effecten)</li>
+            <li>Voice-presets als chips: Deep · Robot · High · Anon; lege cirkel = geen effect</li>
+            <li>Chip maakt expliciet: face én voice gaan mee in de uitgaande stream — Amsterdam hoort het effect, niet de rauwe stem</li>
+            <li>Beide fase 2, niet MVP; voice is een bewuste eigen toevoeging</li>
           </ul>
         </div>
       </div>
@@ -662,10 +726,11 @@
 
   <!-- ————————————————— RECEIVER ————————————————— -->
   <section class="section">
-    <div class="kicker">04 · Receiver — de Holobox zelf</div>
+    <div class="kicker">04 · HoloSee — receiver op de Holobox</div>
     <h2>Nooit een foutmelding, nooit Windows</h2>
-    <p class="lede">De box toont precies drie dingen: een live stream, merk-idle-content, of een koppelscherm bij eerste
-       installatie. Elke andere toestand is een bug.</p>
+    <p class="lede">HoloSee toont precies drie dingen: een live stream, merk-idle-content, of een koppelscherm bij eerste
+       installatie. Elke andere toestand is een bug. Altijd donker — het hologram vraagt een zwarte achtergrond,
+       dus HoloSee heeft bewust géén licht thema.</p>
     <div class="shelf">
 
       <!-- R1 IDLE -->
@@ -676,7 +741,7 @@
             <div class="rcv-mark"></div>
             <h4>Ready when you are</h4>
             <p>HOLOBOX · AMSTERDAM HQ</p>
-            <div class="rcv-foot">ONLINE · PAIRED TO HEREWEHOLO CLOUD</div>
+            <div class="rcv-foot">HOLOSEE · ONLINE · PAIRED TO HEREWEHOLO CLOUD</div>
           </div>
         </div></div>
         <div class="note"><b><em>R1</em>Idle / fallback</b>
@@ -707,7 +772,7 @@
             </svg></div>
             <div class="paircode">H7·K4·M2</div>
             <ol class="pair-steps">
-              <li><b>Open HoloCast Cloud</b> as an admin</li>
+              <li><b>Open HEREweHOLO Cloud</b> as an admin</li>
               <li><b>Scan the code</b> or type it in</li>
               <li><b>Name the device</b> — done</li>
             </ol>
@@ -736,7 +801,7 @@
       <div class="board wide">
         <div class="desktop">
           <div class="side">
-            <div class="wm"><span class="holo">HOLO</span>CAST <span style="color:var(--text-low)">CLOUD</span></div>
+            <div class="wm"><span class="holo">HEREWE</span>HOLO <span style="color:var(--text-low)">CLOUD</span></div>
             <div class="nav-it on">Fleet</div>
             <div class="nav-it">Sessions</div>
             <div class="nav-it">Content</div>
@@ -778,11 +843,11 @@
                     <div class="who"><span class="avatar"></span><span><b>Sarah Lin → Amsterdam HQ</b><span>guest link · New York · 00:14:02</span></span></div>
                     <div class="tele">2160 × 3840 · 30 fps · 17.8 Mbps<br>RTT 96 ms · loss 0.1 % · AMS-1 edge</div>
                     <div class="spark"><svg viewBox="0 0 200 44" preserveAspectRatio="none">
-                      <polyline points="0,26 20,24 40,25 60,20 80,22 100,16 120,18 140,12 160,15 180,10 200,12"
+                      <polyline class="ln" points="0,26 20,24 40,25 60,20 80,22 100,16 120,18 140,12 160,15 180,10 200,12"
                         fill="none" stroke="#35E0FF" stroke-width="1.6"/>
                       <polyline points="0,26 20,24 40,25 60,20 80,22 100,16 120,18 140,12 160,15 180,10 200,12 200,44 0,44"
                         fill="rgba(53,224,255,.09)" stroke="none"/>
-                      <circle cx="200" cy="12" r="2.4" fill="#35E0FF"/>
+                      <circle class="dot-end" cx="200" cy="12" r="2.4" fill="#35E0FF"/>
                     </svg></div>
                   </div>
                 </div>
@@ -809,7 +874,35 @@
   </section>
 
   <footer>
-    <span>HoloCast design boards · HEREweHOLO B.V. · werktitel, naamkeuze open</span>
+    <span>HoloMe &amp; HoloSee design boards · HEREweHOLO B.V.</span>
     <span>Bron: design/tokens.json · plan: design/UI-UX-PLAN.md</span>
   </footer>
 </div>
+<script>
+(function(){
+  var root = document.documentElement;
+  var btn = document.getElementById('themeBtn');
+  var saved = null;
+  try { saved = localStorage.getItem('hw-theme'); } catch (e) {}
+  if (saved === 'light' || saved === 'dark') { root.setAttribute('data-theme', saved); }
+  function effective(){
+    var t = root.getAttribute('data-theme');
+    if (t) return t;
+    try { return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; } catch (e) { return 'light'; }
+  }
+  function label(){
+    if (!btn) return;
+    var t = root.getAttribute('data-theme');
+    btn.textContent = t ? (t === 'dark' ? '◐ thema: donker' : '◐ thema: licht') : '◐ thema: auto';
+  }
+  if (btn) {
+    btn.addEventListener('click', function(){
+      var next = effective() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('hw-theme', next); } catch (e) {}
+      label();
+    });
+    label();
+  }
+})();
+</script>

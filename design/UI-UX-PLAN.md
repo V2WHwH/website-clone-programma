@@ -1,7 +1,9 @@
-# UI/UX/VFX-plan — HEREweHOLO telepresence-platform
+# UI/UX/VFX-plan — HoloMe & HoloSee (HEREweHOLO)
 
-> **Werktitel:** HoloCast (naamkeuze open — "Beam" is de naam van het referentieproduct en dus een merkrisico).
-> **Status:** v0.1 · 2026-08-27 · concept ter goedkeuring door Desmond.
+> **Naamgeving (besloten door Desmond, 2026-08-27):** **HoloMe** = de zendende kant (sender-app),
+> **HoloSee** = de ontvangende kant (receiver op de Holobox). Het cloudplatform heet werktitel
+> **HEREweHOLO Cloud**. "Beam"/"HoloCast" vervallen.
+> **Status:** v0.2 · 2026-08-27 · naamgeving, dual theme en voice-effects verwerkt.
 > **Bronnen:** `beam-kickoff/` (CLAUDE.md, MILESTONES.md, ACCEPTANCE.md, docs/00-REFERENCE.md) en de
 > Proto Beam-referentievideo (1:41, frame-voor-frame geanalyseerd).
 > **Visueel:** `design/mockups/index.html` (11 uitgewerkte schermen) · `design/tokens.json` (design tokens).
@@ -12,11 +14,11 @@
 
 Drie productoppervlakken, één ontwerptaal:
 
-| Oppervlak | Vorm | Kern |
-|---|---|---|
-| **Sender** | Browser (MVP), later native mobiel | Presentator gaat in vier taps live in een Holobox |
-| **Receiver** | Windows-kiosk op de Holobox-PC | Toont stream, merk-idle of pairing — nooit iets anders |
-| **Cloud** | Next.js webplatform | Fleet, sessies, gebruikers, analytics voor operators |
+| Oppervlak | Naam | Vorm | Kern |
+|---|---|---|---|
+| **Sender** | **HoloMe** | Browser (MVP), later native mobiel | Presentator gaat in vier taps live in een Holobox |
+| **Receiver** | **HoloSee** | Windows-kiosk op de Holobox-PC | Toont stream, merk-idle of pairing — nooit iets anders |
+| **Cloud** | HEREweHOLO Cloud *(werknaam)* | Next.js webplatform | Fleet, sessies, gebruikers, analytics voor operators |
 
 De referentievideo dekt alleen de sender-happy-flow. Auth, pairing, netwerkcheck, adaptieve kwaliteit,
 framing-assistent, dashboard en receiver-UX hebben **geen referentie** en zijn hieronder volledig zelf
@@ -47,8 +49,13 @@ De zeven principes die we uit de referentie overnemen (functioneel, niet visueel
 
 Vastgelegd als tokens in `design/tokens.json` (bron voor Figma-variables én Tailwind-config).
 
-- **Basis:** gunmetal-donker — `#0A0E13` grond, `#10161E` surface, `#18202B` elevated. Bewust single-theme
-  (donker): dit is AV-software voor gebruik in gedimde ruimtes en op kiosk-schermen.
+- **Twee thema's, één taal (besloten):** **donker** is de default (`#0A0E13` grond, `#10161E` surface,
+  `#18202B` elevated — AV-software in gedimde ruimtes), **licht** is een volwaardige modus voor HoloMe en
+  Cloud (`#F2F4F7` grond, `#FFFFFF` surface, `#E9EDF2` elevated). Accent- en statuskleuren verdiepen in het
+  lichte thema voor contrast (cyan `#0797C2`, ok `#0B915F`, warn `#B45309`, error `#D6246E`); het
+  beam-gradient en de donkere glass-overlays op de camera zijn thema-onafhankelijk.
+  **HoloSee heeft bewust géén licht thema** — het hologram vraagt een zwarte achtergrond, dus de receiver
+  rendert altijd donker. Thema-wissel is instant, zonder crossfade (geen decoratieve animatie).
 - **Accenten:** cyan `#35E0FF` · teal `#2DD4BF` · violet `#8F7BFF`. Het **beam-gradient**
   (cyan→teal→violet, 135°) is gereserveerd voor de primaire actie (GO LIVE, Continue) en merkmomenten.
 - **Status:** groen `#3EE58F` = online/verified · amber `#FFB454` = degraded/stepping down ·
@@ -79,16 +86,20 @@ functioneel merkgevoel, geen spektakel:
 
 ## 5. Schermen (uitgewerkt in `design/mockups/index.html`)
 
-**Sender** — S1 Select destination (multi-select devicegrid, status per device incl. nieuw "IN SESSION",
+**HoloMe (sender)** — S1 Select destination (multi-select devicegrid, status per device incl. nieuw "IN SESSION",
 pair-actie) · S2 Preview & pre-flight (framing-assistent met één concrete instructie, netwerkverdict-kaart,
 eerlijke nul-strip) · S3 Network check (vier gemeten waarden + verdict in klare taal) · S4 Live (groene
 strip, bevroren settings, STOP) · S5 Return feed (dockbare PiP met audio-indicator) · S6 Session-settings
 (destination, edge-route, media, verplichte echo-cancellation) · S7 Quality (Auto aanbevolen naast
-Full HD/4K met consequenties en honesty-voetnoot) · S8 Effects (AR-lenscarrousel, "renders in the outgoing
-beam").
+Full HD/4K met consequenties en honesty-voetnoot) · S8 Effects — segmented control **FACE** (AR-lenzen,
+Snap Camera Kit) en **VOICE** (voice changer met presets None · Deep · Robot · High · Anon; besloten eigen
+toevoeging). Face- én voice-effecten renderen in de uitgaande stream: de ontvangende kant hoort het effect,
+nooit de rauwe stem. Het voice-effect zit in het audiopad vóór encode, ná echo-cancellation; beide
+effecttypes zijn fase 2, geen MVP.
 
-**Receiver** — R1 Idle/fallback ("Ready when you are" + ambient gloed; identiek bij verbindingsverlies) ·
-R2 Pairing (QR + leesbare code, drie stappen, verloopteller, device-ID).
+**HoloSee (receiver)** — R1 Idle/fallback ("Ready when you are" + ambient gloed; identiek bij
+verbindingsverlies) · R2 Pairing (QR + leesbare code, drie stappen, verloopteller, device-ID).
+Altijd donker thema.
 
 **Cloud** — C1 Fleet-dashboard (KPI-rij vóór detail, statuspills, live-sessie met echte telemetrie en
 bitrate-sparkline, alerts met auto-ticket).
@@ -99,7 +110,8 @@ permissions → preview), sessie-detail + analytics, remote-actions op device-de
 
 ## 6. Figma-plan
 
-**Bestand:** [*HoloCast — HEREweHOLO Design*](https://www.figma.com/design/FR6BHXM6Xii5m5nGWRnD3e)
+**Bestand:** [*HoloMe & HoloSee — HEREweHOLO Design*](https://www.figma.com/design/FR6BHXM6Xii5m5nGWRnD3e)
+*(draagt in Figma nog de oude werktitel "HoloCast"; hernoemen bij de eerstvolgende sessie)*
 (team "Desmond Frencken's team"), gegenereerd via de Figma MCP. Status en resterende stappen: zie
 `design/README.md`. Let op: het Starter-plan beperkt Figma tot 3 pagina's per bestand en 20 MCP-calls
 per maand — de paginastructuur hieronder is daarom samengevoegd tot 3 pagina's; het ideaalbeeld blijft
@@ -121,7 +133,9 @@ gedocumenteerd voor een eventueel Pro-plan.
 **Werkwijze**
 
 1. **Tokens eerst.** `tokens.json` → Figma variables (collecties: `color`, `space`, `radius`, `type`).
-   Elke component bindt aan variables, nooit aan losse hexwaarden.
+   Elke component bindt aan variables, nooit aan losse hexwaarden. Kleur-variables krijgen twee modes
+   (dark/light); het Starter-plan staat maar één mode per collectie toe, dus tot een Pro-upgrade worden
+   het twee collecties (`color-dark`, `color-light`).
 2. **Componenten met status-varianten.** Elke component die status toont krijgt varianten
    `online / degraded / offline / live` — één bron voor kleur+vorm+label.
 3. **Schermen uit componenten.** Frames gebruiken uitsluitend instances; afwijkingen gaan terug de
@@ -135,8 +149,9 @@ gedocumenteerd voor een eventueel Pro-plan.
 
 ## 7. Toegankelijkheid
 
-- Contrast: alle tekst op donkere vlakken ≥ 4.5:1 (cyan op `#0A0E13` = ~10:1; `text-low` alleen voor
-  niet-essentiële metadata).
+- Contrast: alle tekst ≥ 4.5:1 in beide thema's — donker: cyan `#35E0FF` op `#0A0E13` ≈ 10:1; licht: de
+  verdiepte accenten (`#0797C2`, `#0B915F`, …) zijn juist hiervoor gekozen. `text-low` alleen voor
+  niet-essentiële metadata.
 - Status nooit alleen kleur: altijd vorm (stip/pill) + label (ONLINE/OFFLINE/…).
 - Tapdoelen ≥ 44 px op de sender; GO LIVE/STOP zijn de grootste doelen op het scherm.
 - Focus zichtbaar (cyan ring) voor de browser-sender; volledige toetsenbordbediening in Cloud.
@@ -156,8 +171,12 @@ gedocumenteerd voor een eventueel Pro-plan.
 | M7 | C1 dashboard volledig: health, alerts, remote actions, analytics |
 | M8 | Installer/updater-UI |
 
-**Openstaande beslissingen voor Desmond:** (1) productnaam — HoloCast als werktitel, alternatieven:
-HoloLink, HoloPresence, HoloLive; (2) "Voice Changer" uit de referentie: de video labelt de
-effecten-carrousel als *Voice Changer* terwijl er visueel AR-lenzen te zien zijn — voorstel: één
-"Effects"-concept (AR-lenzen, fase 2) en stem-effecten expliciet schrappen of als bewuste eigen toevoeging
-plannen; (3) single-theme donker bevestigen (geen light mode voor sender/receiver; Cloud eventueel later).
+**Besloten (Desmond, 2026-08-27):**
+1. **Naamgeving:** HoloMe (zender) · HoloSee (ontvanger).
+2. **Thema's:** donker én licht, beide volwaardig — behalve HoloSee, die altijd donker rendert
+   (hologram-optiek).
+3. **Voice changer:** toegevoegd als volwaardig onderdeel van Effects (naast AR-lenzen), als bewuste
+   eigen toevoeging — de referentievideo labelt zijn carrousel "Voice Changer" maar toont visueel
+   AR-lenzen; wij bieden beide, elk expliciet.
+
+**Nog open:** definitieve naam van het cloudplatform (nu werknaam "HEREweHOLO Cloud").

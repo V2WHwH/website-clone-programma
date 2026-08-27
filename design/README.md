@@ -1,6 +1,8 @@
-# design/ — HoloCast UI/UX/VFX
+# design/ — HoloMe & HoloSee UI/UX/VFX
 
-Ontwerpdeliverables voor het HEREweHOLO telepresence-platform (werktitel **HoloCast**).
+Ontwerpdeliverables voor het HEREweHOLO telepresence-platform: **HoloMe** (zender) en **HoloSee**
+(ontvanger), plus het cloud-dashboard (werknaam HEREweHOLO Cloud). Donker én licht thema; HoloSee
+rendert altijd donker (hologram-optiek).
 
 | Bestand | Wat |
 |---|---|
@@ -8,7 +10,9 @@ Ontwerpdeliverables voor het HEREweHOLO telepresence-platform (werktitel **HoloC
 | [`tokens.json`](tokens.json) | Design tokens — single source of truth voor Figma variables én Tailwind |
 | [`mockups/index.html`](mockups/index.html) | 11 uitgewerkte schermen (sender S1–S8, receiver R1–R2, cloud C1) — open lokaal in een browser |
 
-**Figma:** [HoloCast — HEREweHOLO Design](https://www.figma.com/design/FR6BHXM6Xii5m5nGWRnD3e)
+**Figma:** [HoloMe & HoloSee — HEREweHOLO Design](https://www.figma.com/design/FR6BHXM6Xii5m5nGWRnD3e)
+*(het bestand draagt in Figma nog de oude werktitel "HoloCast" — hernoemen bij de eerstvolgende
+Figma-sessie, samen met de wordmarks in S1/S2)*
 (team *Desmond Frencken's team*). Bevat nu: 🎨 Foundations (palet, typeramp, status + 16 paint styles),
 📱 Sender met **S1 Select destination** en **S2 Preview & pre-flight**.
 
