@@ -240,6 +240,211 @@ export const ARTIKELEN: Artikel[] = [
     ],
     verwantProduct: ["interactieve-vloer", "hologram-projectie", "virtual-host"],
   },
+  {
+    slug: "hologram-ventilator-of-holobox",
+    titel: "Hologramventilator of holobox: wat is het verschil? | Vision2Watch",
+    kop: "Hologramventilator of holobox: wat kies je wanneer?",
+    description:
+      "Een 3D-hologramventilator laat een beeld vrij in de lucht zweven; een holobox toont een levensgroot hologram in een kant-en-klaar display. Zo kiest u de juiste vorm.",
+    gepubliceerd: "2026-08-27",
+    gewijzigd: "2026-08-27",
+    antwoord:
+      "Een hologramventilator (ook wel holografische molen of hologram fan) is een compact apparaat met snel ronddraaiende LED-bladen dat een beeld vrij in de lucht laat zweven — ideaal voor een etalage, balie of beursstand. Een holobox is een kant-en-klaar holografisch display met behuizing waarin personen en producten levensgroot en levensecht verschijnen. Kort gezegd: de ventilator is de blikvanger voor een zwevend logo of product, de holobox het podium voor een presentator of levensgrote presentatie.",
+    secties: [
+      {
+        kop: "Hoe werkt een hologramventilator?",
+        alineas: [
+          "Een hologramventilator bestaat uit één of meer bladen met LED's die zo snel ronddraaien dat het oog de bladen niet meer ziet, alleen het beeld dat ze in de lucht 'tekenen'. Het resultaat is een 2D- of 3D-animatie die zonder scherm in de ruimte lijkt te hangen. Bij Vision2Watch heet dit product de holografische molen; krachtige LED's houden het beeld ook bij daglicht scherp, bijvoorbeeld in een etalage.",
+          "Meerdere molens zijn synchroon te koppelen tot een holomuur: één groot zwevend beeld, opgebouwd uit gekoppelde molens met minimaal zichtbare kaders. Daarmee groeit de ventilator van baliedisplay naar volwaardige wandvullende projectie.",
+        ],
+      },
+      {
+        kop: "Hoe werkt een holobox?",
+        alineas: [
+          "Een holobox is een plug-and-play display met behuizing waarin een persoon of product levensecht lijkt te zweven — op ware grootte. Neerzetten, aansluiten en de presentatie draait, desgewenst 24 uur per dag. De holobox komt van HEREweHOLO, het zusterbedrijf van Vision2Watch dat volledig in holografische oplossingen is gespecialiseerd; de compacte HEREweHOLO mini doet hetzelfde op balie- en etalageformaat.",
+        ],
+      },
+      {
+        kop: "Wanneer kies je wat?",
+        alineas: [
+          "Kies de hologramventilator als het beeld zelf de blikvanger is: een zwevend product, logo of animatie, op een plek waar elke vierkante meter telt. Kies de holobox als er een persoon of levensgroot product moet presenteren: een virtuele host, een productlancering of een verkoper die er altijd staat.",
+          "Beide zijn te koop en te huur, inclusief content uit onze eigen studio. Twijfelt u? Beschrijf de locatie en het doel in een aanvraag, dan adviseren wij welke vorm het meeste oplevert — soms is de combinatie het sterkst: de ventilator trekt passanten, de holobox maakt het verhaal af.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        vraag: "Is een hologramventilator hetzelfde als een holografische molen?",
+        antwoord:
+          "Ja. Hologramventilator, hologram fan, 3D-hologramventilator en holografische molen zijn namen voor hetzelfde apparaat: ronddraaiende LED-bladen die een zwevend beeld vormen.",
+      },
+      {
+        vraag: "Welke van de twee is beter zichtbaar bij daglicht?",
+        antwoord:
+          "Beide zijn op daglicht berekend: de molen door krachtige LED's, de holobox door zijn afgeschermde behuizing. In een zonovergoten etalage bekijken we tijdens de intake welke opstelling het scherpste beeld geeft.",
+      },
+      {
+        vraag: "Kan ik mijn eigen product als zwevend hologram laten tonen?",
+        antwoord:
+          "Ja. Onze studio maakt een 3D-animatie van uw product of logo, afgestemd op het gekozen apparaat en uw campagne.",
+      },
+    ],
+    verwantProduct: ["holografische-molen", "hereweholo", "hereweholo-mini"],
+  },
+  {
+    slug: "wat-kost-een-interactieve-vloer",
+    titel: "Wat kost een interactieve vloer? | Vision2Watch",
+    kop: "Wat kost een interactieve vloer?",
+    description:
+      "De prijs van een interactieve vloer hangt af van vast of mobiel gebruik, het projectievlak, de content en koop of huur. Dit bepaalt de prijs — en zo vraagt u hem scherp op.",
+    gepubliceerd: "2026-08-27",
+    gewijzigd: "2026-08-27",
+    antwoord:
+      "Er bestaat geen vaste prijs voor een interactieve vloer: de kosten hangen af van vier factoren — vaste installatie of mobiel systeem, de grootte van het projectievlak, de content (standaardspellen of maatwerk in uw huisstijl) en of u koopt of huurt. Vision2Watch levert beide en maakt op basis van locatie en doel een offerte op maat via de prijslijst-aanvraag.",
+    secties: [
+      {
+        kop: "De vier prijsbepalende factoren",
+        alineas: [
+          "Vast of mobiel: een permanente installatie vraagt montage van projector en camera op locatie, netjes weggewerkt; een mobiel iFloor-systeem staat in korte tijd en verhuist mee van event naar event. Formaat: een groter projectievlak vraagt meer projectievermogen of meerdere projectoren. Content: standaardspellen zijn direct inzetbaar, maatwerk in huisstijl — van subtiele merkaccenten tot een compleet eigen spel — wordt door onze eigen studio gebouwd. Koop of huur: bij aankoop zet u het systeem daarna onbeperkt opnieuw in met telkens andere content; bij huur betaalt u per inzet.",
+        ],
+      },
+      {
+        kop: "Kopen of huren: hoe reken je dat door?",
+        alineas: [
+          "De vuistregel is gebruiksfrequentie. Staat de vloer één beurs per jaar? Dan is huren logisch. Wordt hij een vast onderdeel van uw showroom, school of museum, of gaat hij meerdere keren per jaar mee naar events, dan verdient koop zich terug: de content is per campagne te wisselen zonder nieuwe hardware. Vision2Watch levert bij koop desgewenst een servicecontract tot en met een volledige SLA.",
+        ],
+      },
+      {
+        kop: "Zo krijgt u een scherpe offerte",
+        alineas: [
+          "Hoe concreter de aanvraag, hoe scherper het voorstel. Vermeld: de locatie (binnen/buiten, lichtinval, plafondhoogte), het gewenste vloeroppervlak, de duur (eenmalig event of permanent), en of er maatwerkcontent nodig is. Met die vier gegevens kan ons team direct een passende opstelling en prijs voorstellen.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        vraag: "Waarom staan er geen prijzen op de site?",
+        antwoord:
+          "Omdat geen twee opstellingen gelijk zijn: formaat, locatie, content en koop of huur maken het verschil. Een prijsopgave op maat is binnen één aanvraag geregeld via de prijslijst-pagina.",
+      },
+      {
+        vraag: "Is huren voor één dag mogelijk?",
+        antwoord:
+          "Ja, de interactieve vloer is per event te huren. Het mobiele iFloor-systeem staat snel, ook bij beperkte ruimte en hoogte.",
+      },
+      {
+        vraag: "Zit content bij de prijs inbegrepen?",
+        antwoord:
+          "Er is altijd content bij de levering; de vraag is hoeveel maatwerk u wilt. Van standaardspellen tot een volledig eigen spel in huisstijl: dat bepaalt mede de prijs en bespreken we in de intake.",
+      },
+    ],
+    verwantProduct: ["interactieve-vloer", "interactieve-muur"],
+  },
+  {
+    slug: "beweegvloer-voor-school-en-kinderopvang",
+    titel: "Beweegvloer voor school en kinderopvang | Vision2Watch",
+    kop: "Een beweegvloer voor school of kinderopvang: waar let je op?",
+    description:
+      "Een beweegvloer brengt bewegend leren in de klas: een interactieve vloerprojectie waar kinderen samen op spelen en leren. Dit is waar scholen op moeten letten.",
+    gepubliceerd: "2026-08-27",
+    gewijzigd: "2026-08-27",
+    antwoord:
+      "Een beweegvloer is een interactieve vloerprojectie waarop kinderen spelend leren: een projector werpt spellen en lesvormen op de vloer, sensoren registreren elke beweging en de projectie reageert direct. Voor scholen en kinderopvang telt vooral dat de vloer veilig is (geen losse onderdelen), dat meerdere kinderen tegelijk kunnen spelen en dat de content aansluit op de les — bij Vision2Watch wordt die content op maat gemaakt, tot en met het eigen schoollogo.",
+    secties: [
+      {
+        kop: "Wat is bewegend leren?",
+        alineas: [
+          "Bewegend leren combineert leerstof met fysieke beweging: rekenen door naar het goede antwoord te springen, samenwerken in een spel dat op de vloer wordt geprojecteerd. Een beweegvloer maakt dat mogelijk zonder losse materialen: de vloer zelf wordt het speelveld en de inhoud wisselt per les of thema.",
+        ],
+      },
+      {
+        kop: "Zo werkt de techniek",
+        alineas: [
+          "Een projector aan het plafond werpt het speelveld op de vloer; infraroodcamera's registreren beweging en de software vertaalt elke stap of sprong direct naar een reactie in het beeld. De gevoeligheid is instelbaar op het licht in de ruimte, dus de vloer werkt in een aula net zo goed als in een verduisterd speellokaal. Er liggen geen kabels of onderdelen op de vloer: kinderen spelen op de gewone vloer, van onderbouw tot bovenbouw.",
+        ],
+      },
+      {
+        kop: "Van aula tot gymzaal",
+        alineas: [
+          "De vloer projecteert overal: als blikvanger in de aula, als beweegvloer in de gymzaal of als speelplek in de onderbouw. Op het Pierson College in Den Bosch leren leerlingen werken met de nieuwste technologie op een vloer die interactie en creativiteit stimuleert — met content in de eigen schoolstijl.",
+        ],
+      },
+      {
+        kop: "Kopen of huren voor een school?",
+        alineas: [
+          "Beide kan. Voor vast gebruik is koop met een servicecontract gebruikelijk; voor een themaweek, open dag of schoolfeest is huren per periode mogelijk. Bij aankoop wisselt de school de content zelf per seizoen of project, zonder nieuwe hardware.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        vraag: "Is een beweegvloer hetzelfde als een interactieve vloer?",
+        antwoord:
+          "Ja. Beweegvloer is de term die in onderwijs en kinderopvang gebruikelijk is; technisch is het dezelfde interactieve vloerprojectie, met content die op leren en bewegen is gericht.",
+      },
+      {
+        vraag: "Is de vloer veilig voor jonge kinderen?",
+        antwoord:
+          "Ja. De projectie komt van boven en er liggen geen losse onderdelen of kabels op de vloer; kinderen spelen er veilig samen op.",
+      },
+      {
+        vraag: "Kan de content aansluiten op ons lesprogramma?",
+        antwoord:
+          "Ja. Logo, kleuren en eigen spelvormen zijn volledig aanpasbaar aan de school en het lesprogramma; onze studio bouwt de content op maat.",
+      },
+    ],
+    verwantProduct: ["interactieve-vloer", "interactieve-muur", "sketchwall"],
+  },
+  {
+    slug: "wat-is-projection-mapping",
+    titel: "Wat is projection mapping (videomapping)? | Vision2Watch",
+    kop: "Wat is projection mapping en wat bepaalt de kosten?",
+    description:
+      "Projection mapping (videomapping) projecteert 3D-animaties exact op de vorm van een gebouw of object. Hoe de techniek werkt en wat een productie bepaalt.",
+    gepubliceerd: "2026-08-27",
+    gewijzigd: "2026-08-27",
+    antwoord:
+      "Projection mapping — ook videomapping of 3D-mapping genoemd — is het projecteren van animaties die exact zijn afgestemd op de vorm van een gebouw of object. Ramen, pilaren en lijsten worden onderdeel van de animatie, waardoor de gevel zelf lijkt te bewegen. De kosten hangen vooral af van de grootte van het object, de lengte en complexiteit van de animatie en het benodigde projectievermogen.",
+    secties: [
+      {
+        kop: "Hoe werkt het?",
+        alineas: [
+          "Eerst wordt het object exact ingemeten of gemodelleerd, zodat de animatie de architectuur volgt: elke raamlijst en pilaar krijgt zijn plek in het ontwerp. Vervolgens maken animatoren de content op dat model. Op locatie wordt de projectie met krachtige projectoren precies op het object uitgelijnd ('gemapt'), zodat beeld en gebouw samenvallen en er geen doek of scherm te zien is.",
+          "Een voorbeeld uit onze eigen praktijk: bij Dierenpark Amersfoort loopt het winterpubliek door een kasteelpoort waarop een leeuw over het metselwerk beweegt. De projectie volgt de vorm van het gebouw — het lijkt of de steen zelf leeft.",
+        ],
+      },
+      {
+        kop: "Projection mapping, videomapping, gebouwprojectie: is dat hetzelfde?",
+        alineas: [
+          "Ja. Projection mapping, videomapping, 3D-mapping en gebouwprojectie zijn verschillende namen voor dezelfde techniek. 'Gebouwprojectie' benadrukt de meest voorkomende toepassing, maar mapping werkt ook op auto's, producten, decors en interieurs.",
+        ],
+      },
+      {
+        kop: "Wat bepaalt de kosten?",
+        alineas: [
+          "Drie factoren wegen het zwaarst: het formaat van het object (bepalend voor het aantal projectoren en het benodigde vermogen), de animatie (lengte, complexiteit en of er maatwerk-3D-modellering nodig is) en de duur van de inzet (één avond of een hele festivalperiode, inclusief op- en afbouw). Omdat elke gevel anders is, werkt Vision2Watch met een offerte op maat: beschrijf het object, de aanleiding en de gewenste periode, dan volgt een concreet voorstel.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        vraag: "Kan projection mapping ook binnen?",
+        antwoord:
+          "Ja. Dezelfde techniek werkt op interieurs, decors, producten en zelfs eettafels; buiten is een donkere omgeving nodig, binnen volstaat gedimd licht.",
+      },
+      {
+        vraag: "Werkt gebouwprojectie ook bij slecht weer?",
+        antwoord:
+          "Projectoren staan weerbestendig opgesteld of overdekt; bij het locatiebezoek bepalen we de opstelling die bij het seizoen en de locatie past.",
+      },
+      {
+        vraag: "Hoe lang duurt de productie van een mapping?",
+        antwoord:
+          "Dat hangt af van de complexiteit van de animatie en het object. Neem contact op met de gewenste datum; wij plannen ontwerp, productie en opbouw ernaartoe.",
+      },
+    ],
+    verwantProduct: ["gebouw-projectie", "logo-animatie", "panoramische-projectie"],
+  },
 ];
 
 export const vindArtikel = (slug: string) => ARTIKELEN.find((a) => a.slug === slug);

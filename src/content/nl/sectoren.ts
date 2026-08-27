@@ -210,6 +210,11 @@ export const SECTOREN: Sector[] = [
         antwoord:
           "Beide kan. Voor vast gebruik is koop met een servicecontract gebruikelijk; voor een themaweek of open dag is huren per periode mogelijk.",
       },
+      {
+        vraag: "Is de beweegvloer ook geschikt voor kinderopvang of BSO?",
+        antwoord:
+          "Ja. De vloer reageert op elke beweging, kent geen losse onderdelen en de content is per leeftijdsgroep aan te passen, van rustige ontdekspellen tot actieve beweegspellen.",
+      },
     ],
   },
   {

@@ -14,7 +14,7 @@ export const PRODUCTEN: Product[] = [
     description:
       "Een vloerprojectie die reageert op elke stap: rimpelend water, spellen of uw huisstijl. Te koop en te huur, met eigen iFloor-software. Bekijk de mogelijkheden.",
     intro:
-      "De interactieve vloer projecteert beelden die direct reageren op de bewegingen van voorbijgangers: rimpelend water onder de voeten, een logo dat meespeelt met elke stap of een compleet voetbalspel. Infraroodcamera's registreren beweging en onze eigen iFloor-software zet die om in vloeiende visuele effecten.",
+      "De interactieve vloer — ook bekend als interactieve vloerprojectie, speelvloer of beweegvloer — projecteert beelden die direct reageren op de bewegingen van voorbijgangers: rimpelend water onder de voeten, een logo dat meespeelt met elke stap of een compleet voetbalspel. Infraroodcamera's registreren beweging en onze eigen iFloor-software zet die om in vloeiende visuele effecten.",
     waarom:
       "Op een beurs of in een publieke ruimte heeft u enkele seconden om aandacht te vangen. Een vloer die reageert op wie eroverheen loopt, stopt bezoekers letterlijk in hun loop en maakt van passanten deelnemers. Daarmee wordt de vloer een podium voor uw boodschap in plaats van dode ruimte.",
     beeld: { src: "/media/euroveiling-bloemenvloer.webp", alt: "Interactieve bloemenvloer van Vision2Watch op het jubileum van Euroveiling" },
@@ -73,6 +73,16 @@ export const PRODUCTEN: Product[] = [
         vraag: "Is de interactieve vloer te huren voor één beurs of event?",
         antwoord:
           "Ja, de vloer is zowel te huur als te koop. Voor eenmalige events is er het mobiele iFloor-systeem dat snel staat; bij aankoop zet u het systeem onbeperkt opnieuw in.",
+      },
+      {
+        vraag: "Wat kost een interactieve vloer?",
+        antwoord:
+          "Dat hangt af van vast of mobiel gebruik, het formaat van het projectievlak, de content en koop of huur. In de kennisbank leggen we de prijsopbouw uit; via de prijslijst vraagt u een offerte op maat aan.",
+      },
+      {
+        vraag: "Is dit ook een beweegvloer voor school of kinderopvang?",
+        antwoord:
+          "Ja. Beweegvloer is de onderwijsterm voor dezelfde techniek: kinderen leren en spelen met content die op de les aansluit, tot en met het eigen schoollogo. Zie de toepassing onderwijs voor voorbeelden.",
       },
     ],
     projecten: ["werken-bij-defensie", "euroveiling", "ouwehands-dierenpark", "alpro-interactieve-vloer", "rtl", "pierson-college"],
@@ -341,6 +351,11 @@ export const PRODUCTEN: Product[] = [
         antwoord:
           "Graag zelfs. In onze showroom staat een holografisch scherm van 9 meter breed. Maak een afspraak en ervaar het effect in het echt.",
       },
+      {
+        vraag: "Wat kost een hologram voor een event of beurs?",
+        antwoord:
+          "De prijs hangt af van het formaat (van productdisplay tot podiumbreed), de content en of u koopt of huurt. Beschrijf uw event en locatie in een aanvraag via de prijslijst, dan volgt een voorstel op maat.",
+      },
     ],
     projecten: ["escher-museum"],
     verwant: ["hereweholo", "holografische-molen", "virtual-host"],
@@ -349,11 +364,11 @@ export const PRODUCTEN: Product[] = [
     slug: "holografische-molen",
     naam: "Holografische molen",
     categorie: "holografie",
-    titel: "Holografische molen: 3D-beelden in de lucht | Vision2Watch",
+    titel: "Holografische molen (3D-hologramventilator) | Vision2Watch",
     description:
-      "LED-molens die haarscherpe 3D-beelden in de ruimte laten zweven, zelfs bij daglicht. Koppelbaar tot een holomuur. Te koop en te huur.",
+      "3D-hologramventilators die haarscherpe beelden in de ruimte laten zweven, zelfs bij daglicht. Koppelbaar tot een holomuur. Te koop en te huur.",
     intro:
-      "De holografische molen projecteert haarscherpe 2D- en 3D-beelden die letterlijk in de lucht lijken te hangen, zonder scherm. Dankzij krachtige LED-technologie blijven de beelden helder zichtbaar, zelfs bij daglicht.",
+      "De holografische molen — ook bekend als 3D-hologramventilator of hologram fan — projecteert haarscherpe 2D- en 3D-beelden die letterlijk in de lucht lijken te hangen, zonder scherm. Dankzij krachtige LED-technologie blijven de beelden helder zichtbaar, zelfs bij daglicht.",
     waarom:
       "Op plekken waar elke vierkante meter telt, zoals een etalage, beurs of winkelvloer, zet een zwevend beeld uw product of logo in de ruimte zonder iets te bouwen. Meerdere molens gekoppeld vormen een holomuur voor grote projecties met maximale impact.",
     beeld: { src: "/media/holografische-molen-schoen.webp", alt: "Holografische molen projecteert een zwevende sportschoen" },
@@ -386,6 +401,16 @@ export const PRODUCTEN: Product[] = [
         vraag: "Kan mijn eigen product als hologram getoond worden?",
         antwoord:
           "Ja. Onze studio maakt een 3D-animatie van uw product of logo, precies afgestemd op de molen en uw campagne.",
+      },
+      {
+        vraag: "Is een holografische molen hetzelfde als een 3D-hologramventilator?",
+        antwoord:
+          "Ja. Holografische molen, hologramventilator en hologram fan zijn namen voor hetzelfde apparaat: snel ronddraaiende LED-bladen die een zwevend beeld in de lucht vormen.",
+      },
+      {
+        vraag: "Wat kost een hologramventilator?",
+        antwoord:
+          "Dat hangt af van het formaat, het aantal gekoppelde molens (tot een holomuur), de content en of u koopt of huurt. Vraag via de prijslijst een offerte op maat aan; noem daarbij de locatie en het doel.",
       },
     ],
     galerij: [
@@ -571,7 +596,7 @@ export const PRODUCTEN: Product[] = [
     slug: "touchscreens",
     naam: "Touchscreens",
     categorie: "schermen-en-displays",
-    titel: "Touchscreens en touchtafels | Vision2Watch",
+    titel: "Touchscreens, touchtafels en informatiezuilen | Vision2Watch",
     description:
       "Multi-touch schermen, tafels en zuilen in alle formaten, geleverd als totaaloplossing met content en installatie. Voor showrooms, beurzen en publieksruimtes.",
     intro:
@@ -611,6 +636,11 @@ export const PRODUCTEN: Product[] = [
         vraag: "Zijn touchscreens ook te huren?",
         antwoord:
           "Touchscreens leveren we primair als koopoplossing. Voor eenmalige events adviseren we per situatie de best passende opstelling; neem daarvoor contact op.",
+      },
+      {
+        vraag: "Wat is een informatiezuil?",
+        antwoord:
+          "Een staand touchscreen in een zuilbehuizing waarop bezoekers zelf informatie opzoeken, bijvoorbeeld in een ontvangstruimte, showroom of op een beurs. Wij leveren de zuil compleet met computer, montage en interactieve content in uw huisstijl.",
       },
     ],
     projecten: ["starline"],
@@ -662,6 +692,11 @@ export const PRODUCTEN: Product[] = [
         vraag: "Is dit ook interessant voor leegstaande panden?",
         antwoord:
           "Ja. Een interactieve of digitale etalage geeft een leeg pand uitstraling en maakt de ruit verhuurbaar als communicatie- of advertentievlak.",
+      },
+      {
+        vraag: "Wat is het verschil met een digitale etalage of etalagescherm?",
+        antwoord:
+          "Een digitale etalage of etalagescherm toont bewegend beeld achter het glas; de interactieve etalage gaat een stap verder en maakt de ruit zelf bedienbaar via touch foil. Beide varianten leveren wij compleet met weergave, content en installatie.",
       },
     ],
     projecten: ["outlet-store-roermond"],
@@ -770,6 +805,11 @@ export const PRODUCTEN: Product[] = [
         antwoord:
           "Ja. De signage-software stuurt schermen centraal aan, van één gevel tot meerdere locaties, met planning per dagdeel of campagne.",
       },
+      {
+        vraag: "Is een videowall te koop of te huren?",
+        antwoord:
+          "LED-displays en videowalls leveren we als koopoplossing, inclusief montage, contentaansturing en serviceafspraken tot en met een SLA. Voor tijdelijke inzet op een event adviseren we per situatie de best passende oplossing; neem daarvoor contact op.",
+      },
     ],
     projecten: ["starline"],
     verwant: ["transparant-scherm", "interactieve-etalage", "mixed-reality"],
@@ -830,7 +870,7 @@ export const PRODUCTEN: Product[] = [
     description:
       "3D-animaties exact gemapt op de architectuur van een gevel: ramen die openbreken, muren die bewegen. Voor events, festivals en publiekstrekkers.",
     intro:
-      "Gebouwprojectie (projection mapping) projecteert 3D-animaties op de buitenkant van een gebouw, exact afgestemd op de architectuur. Ramen, pilaren en lijsten worden onderdeel van de animatie, waardoor het gebouw zelf lijkt te bewegen.",
+      "Gebouwprojectie — ook bekend als projection mapping, videomapping of 3D-mapping — projecteert 3D-animaties op de buitenkant van een gebouw, exact afgestemd op de architectuur. Ramen, pilaren en lijsten worden onderdeel van de animatie, waardoor het gebouw zelf lijkt te bewegen.",
     waarom:
       "Geen billboard haalt het bij een gevel die tot leven komt. Voor festivals, openingen en publieksevents is gebouwprojectie de manier om een locatie zelf tot attractie te maken, zichtbaar van straat tot skyline.",
     beeld: { src: "/media/gebouwprojectie-festival.webp", alt: "Grootschalige gebouwprojectie bij avond" },
@@ -875,6 +915,16 @@ export const PRODUCTEN: Product[] = [
         antwoord:
           "Ja. Dezelfde mappingtechniek werkt op binnenwanden en objecten, zoals we bij DierenPark Amersfoort een compleet dierenverblijf tot leven brachten.",
       },
+      {
+        vraag: "Is projection mapping hetzelfde als videomapping?",
+        antwoord:
+          "Ja. Projection mapping, videomapping, 3D-mapping en gebouwprojectie zijn namen voor dezelfde techniek: animaties die exact op de vorm van een gebouw of object worden geprojecteerd.",
+      },
+      {
+        vraag: "Wat bepaalt de kosten van projection mapping?",
+        antwoord:
+          "Vooral het formaat van de gevel (aantal projectoren en vermogen), de lengte en complexiteit van de animatie en de duur van de inzet. Elke productie is maatwerk; in de intake vertalen we uw locatie en wens naar een concreet voorstel.",
+      },
     ],
     projecten: ["dierenpark-amersfoort"],
     verwant: ["panoramische-projectie", "logo-animatie", "interactieve-muur"],
@@ -883,11 +933,11 @@ export const PRODUCTEN: Product[] = [
     slug: "panoramische-projectie",
     naam: "Panoramische projectie",
     categorie: "projectie-en-mapping",
-    titel: "Panoramische en 360°-projectie | Vision2Watch",
+    titel: "Panoramische en 360°-projectie: immersive room | Vision2Watch",
     description:
-      "Meeslepende projectie op 2, 3 of alle wanden tegelijk: van museumzaal tot dome-tent. Hardware, software en content als totaaloplossing.",
+      "Meeslepende projectie op 2, 3 of alle wanden tegelijk: van museumzaal tot immersive room en dome-tent. Hardware, software en content als totaaloplossing.",
     intro:
-      "Panoramische projectie omringt toeschouwers met beeld: van projectie over twee of drie wanden tot volledige 360-gradenervaringen en dome-tenten waarvan de hele binnenkant beeldvlak wordt. Meerdere projectoren worden met warping- en edge-blendingsoftware samengesmeed tot één naadloos panorama.",
+      "Panoramische projectie omringt toeschouwers met beeld: van projectie over twee of drie wanden tot volledige 360-gradenervaringen en dome-tenten waarvan de hele binnenkant beeldvlak wordt. Zo'n ruimte wordt ook wel een immersive room of immersive experience genoemd. Meerdere projectoren worden met warping- en edge-blendingsoftware samengesmeed tot één naadloos panorama.",
     waarom:
       "Wie volledig door beeld wordt omringd, kan er niet omheen kijken: dat maakt panoramische projectie het sterkste middel voor verhalen die indruk moeten maken, in een museumzaal, op een beurs of in een experience center.",
     beeld: { src: "/media/panorama-kikkerzaal.webp", alt: "Panoramische projectiezaal met natuurbeelden op meerdere wanden" },
@@ -930,6 +980,11 @@ export const PRODUCTEN: Product[] = [
         vraag: "Wie maakt de content?",
         antwoord:
           "Onze eigen studio produceert of bewerkt de panoramische content en kalibreert die op de opstelling, zodat het beeld over alle wanden naadloos klopt.",
+      },
+      {
+        vraag: "Wat is een immersive room?",
+        antwoord:
+          "Een ruimte waarin wanden (en soms vloer of plafond) volledig beeldvlak zijn, zodat bezoekers middenin het verhaal staan. Precies wat panoramische en 360°-projectie doet: wij leveren de complete immersive room, van hardware tot content.",
       },
     ],
     projecten: ["escher-museum", "coffeeshop-marbella"],

@@ -41,6 +41,17 @@ scherm, LED-displays, augmented reality op grote schermen.
 Projectie en mapping: gebouwprojectie, panoramische en 360-gradenprojectie,
 logo-animatie.
 
+## Synoniemen (zo zoeken klanten)
+
+- Interactieve vloer = interactieve vloerprojectie, speelvloer, beweegvloer
+  (onderwijs/kinderopvang, "bewegend leren")
+- Holografische molen = 3D-hologramventilator, hologramventilator, hologram fan
+- Gebouwprojectie = projection mapping, videomapping, 3D-mapping
+- Panoramische/360°-projectie = immersive room, immersive experience
+- Touchscreen-zuil = informatiezuil, infozuil; interactieve tafel = touchtafel
+- Interactieve etalage = digitale etalage, etalagescherm (met touch foil)
+- LED-display = videowall, LED-scherm
+
 ## Feiten
 
 - Prijzen: op aanvraag via https://www.vision2watch.nl/prijslijst (koop en huur)
