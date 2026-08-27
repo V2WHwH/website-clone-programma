@@ -1,0 +1,45 @@
+/* M1 — deliberately minimal; the HoloMe design language lands in M4. Dark, functional, honest. */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0e13;
+  color: #eaf0f6;
+  font-family: system-ui, sans-serif;
+  min-height: 100vh;
+}
+.wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px; display: flex; flex-direction: column; gap: 16px; }
+h1 { font-size: 20px; }
+h1 small { color: #5c6b7c; font-weight: 400; font-size: 13px; margin-left: 8px; }
+a { color: #35e0ff; }
+video.preview { width: 100%; max-height: 60vh; background: #05070a; border-radius: 12px; border: 1px solid #2c3949; }
+button {
+  font-size: 15px; font-weight: 600; padding: 12px 22px; border-radius: 999px; border: 0; cursor: pointer;
+  background: linear-gradient(135deg, #35e0ff, #2dd4bf, #8f7bff); color: #06131a; align-self: flex-start;
+}
+button:disabled { opacity: 0.4; cursor: default; }
+.pill { font-family: ui-monospace, monospace; font-size: 12.5px; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid #2c3949; align-self: flex-start; }
+.pill.ok { color: #3ee58f; border-color: #3ee58f; }
+.pill.bad { color: #ff4d8d; border-color: #ff4d8d; }
+.pill.wait { color: #ffb454; border-color: #ffb454; }
+
+/* diagnostic chain — the M1 deliverable */
+.diag { font-family: ui-monospace, monospace; font-size: 12px; background: rgba(6, 17, 24, 0.92);
+  border: 1px solid #2c3949; border-radius: 10px; padding: 10px 12px; }
+.diag table { border-collapse: collapse; width: 100%; }
+.diag td { padding: 3px 10px 3px 0; vertical-align: top; color: #9aa8b8; }
+.diag td:first-child { color: #eaf0f6; white-space: nowrap; }
+.diag td:nth-child(2) { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.diag .verdict { margin-top: 8px; letter-spacing: 0.04em; }
+.diag .verdict.ok { color: #3ee58f; }
+.diag .verdict.bad { color: #ff4d8d; }
+
+/* receiver: fullscreen glass, nothing else */
+body.glass { background: #000; overflow: hidden; cursor: none; }
+body.glass video { position: fixed; inset: 0; width: 100vw; height: 100vh; object-fit: contain; background: #000; }
+body.glass .diag { position: fixed; left: 12px; bottom: 12px; max-width: min(640px, 90vw); cursor: default; }
+body.glass .hint { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #5c6b7c; font-family: ui-monospace, monospace; font-size: 14px; letter-spacing: 0.08em; }
+
+/* latency clock */
+body.clock { display: flex; align-items: center; justify-content: center; height: 100vh; background: #000; }
+body.clock .t { font-family: ui-monospace, monospace; font-size: 11vw; color: #fff; font-variant-numeric: tabular-nums; }

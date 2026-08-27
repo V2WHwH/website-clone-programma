@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ms clock — glass-to-glass measurement</title>
+  <link rel="stylesheet" href="/m1.css" />
+</head>
+<body class="clock">
+  <div class="t" id="t">00:00.000</div>
+  <script>
+    const el = document.getElementById('t');
+    const tick = () => {
+      const d = new Date();
+      el.textContent =
+        String(d.getMinutes()).padStart(2, '0') + ':' +
+        String(d.getSeconds()).padStart(2, '0') + '.' +
+        String(d.getMilliseconds()).padStart(3, '0');
+      requestAnimationFrame(tick);
+    };
+    tick();
+  </script>
+</body>
+</html>

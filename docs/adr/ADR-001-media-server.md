@@ -1,6 +1,6 @@
 # ADR-001 — Media server / SFU: LiveKit (self-hosted)
 
-**Status:** Proposed (awaiting Desmond) · **Date:** 2026-08-27 · **Informs:** `STREAMING.md`, `ARCHITECTURE.md`
+**Status:** Accepted (Desmond, 2026-08-27) · **Proposed:** 2026-08-27 · **Informs:** `STREAMING.md`, `ARCHITECTURE.md`
 
 ## Context
 

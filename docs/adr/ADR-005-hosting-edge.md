@@ -1,6 +1,6 @@
 # ADR-005 — Hosting & edge topology: one EU region first, expand on measurements
 
-**Status:** Proposed (awaiting Desmond) · **Date:** 2026-08-27 · **Informs:** `ARCHITECTURE.md` §5, M2, M7
+**Status:** Accepted (Desmond, 2026-08-27) · **Proposed:** 2026-08-27 · **Informs:** `ARCHITECTURE.md` §5, M2, M7
 
 ## Context
 

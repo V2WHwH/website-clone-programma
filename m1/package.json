@@ -1,0 +1,26 @@
+{
+  "name": "@hereweholo/m1-camera-to-glass",
+  "version": "0.1.0",
+  "private": true,
+  "description": "M1 vertical slice: browser camera -> minimal signaling -> fullscreen receiver on the same LAN, with a diagnostic printout of the full resolution chain.",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild web/sender.ts web/receiver.ts --bundle --format=esm --outdir=public/js --sourcemap",
+    "typecheck": "tsc --noEmit",
+    "start": "npm run build && tsx server/index.ts",
+    "test:e2e": "npm run build && node test/e2e.mjs"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.5.0",
+    "@types/ws": "^8.5.12",
+    "esbuild": "^0.23.1",
+    "playwright-core": "^1.46.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4"
+  }
+}

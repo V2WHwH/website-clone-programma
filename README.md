@@ -101,4 +101,5 @@ Deze repo bevat ook de kickoff van het HEREweHOLO telepresence-platform:
 - [`docs/`](docs/) — M0-documenten: ARCHITECTURE, STREAMING, SECURITY, DATA-MODEL
 - [`docs/adr/`](docs/adr/) — vijf ADR-voorstellen (SFU, receiver-runtime, encoders, signaling, hosting) — wachten op goedkeuring (M0-gate)
 - [`docs/features/`](docs/features/) — fase 2+-featurevoorstellen: F1 Studio Matte, F2 Voice Bridge, F3 Walk-up
+- [`m1/`](m1/) — M1 vertical slice "camera to glass": signaling, sender, fullscreen-receiver, diagnostische resolutieketen + e2e-test
 - [`beam-kickoff/`](beam-kickoff/) — projectgrondwet, milestones en acceptance-scenario

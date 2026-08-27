@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>M1 sender — camera to glass</title>
+  <link rel="stylesheet" href="/m1.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>M1 sender <small>camera → glass · room "m1" (hardcoded, M1 only)</small></h1>
+    <video id="preview" class="preview" autoplay muted playsinline></video>
+    <span id="status" class="pill wait">requesting camera…</span>
+    <button id="connect" disabled>Connect</button>
+    <div id="diag" class="diag">waiting for media…</div>
+  </div>
+  <script type="module" src="/js/sender.js"></script>
+</body>
+</html>

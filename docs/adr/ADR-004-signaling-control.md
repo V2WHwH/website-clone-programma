@@ -1,6 +1,6 @@
 # ADR-004 — Signaling & device control: LiveKit signaling for media, REST + WebSocket control plane
 
-**Status:** Proposed (awaiting Desmond) · **Date:** 2026-08-27 · **Informs:** `ARCHITECTURE.md` §2–3, `SECURITY.md` §4
+**Status:** Accepted (Desmond, 2026-08-27) · **Proposed:** 2026-08-27 · **Informs:** `ARCHITECTURE.md` §2–3, `SECURITY.md` §4
 
 ## Context
 

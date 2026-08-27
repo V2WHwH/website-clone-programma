@@ -1,6 +1,6 @@
 # ADR-002 — HoloSee receiver runtime: Chromium shell now, native gate at M6
 
-**Status:** Proposed (awaiting Desmond) · **Date:** 2026-08-27 · **Informs:** `ARCHITECTURE.md` §2, M5/M6/M8
+**Status:** Accepted (Desmond, 2026-08-27) · **Proposed:** 2026-08-27 · **Informs:** `ARCHITECTURE.md` §2, M5/M6/M8
 
 ## Context
 

@@ -1,6 +1,6 @@
 # ADR-003 — Encoder abstraction: browser-managed for MVP, GStreamer server-side when needed
 
-**Status:** Proposed (awaiting Desmond) · **Date:** 2026-08-27 · **Informs:** `STREAMING.md` §3, M6
+**Status:** Accepted (Desmond, 2026-08-27) · **Proposed:** 2026-08-27 · **Informs:** `STREAMING.md` §3, M6
 
 ## Context
 
