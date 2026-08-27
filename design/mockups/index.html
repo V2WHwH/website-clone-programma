@@ -344,6 +344,30 @@
   .steps-line { font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; color:var(--text-low); }
   .steps-line b { color:var(--cyan); font-weight:500; }
 
+  /* iteratie 2: auth, device-detail, sessie-detail */
+  .field { display:flex; flex-direction:column; gap:5px; }
+  .field label { font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-low); }
+  .field .fbox { background:var(--ink-1); border:1px solid var(--line-strong); border-radius:10px; padding:11px 12px; font-size:13px; color:var(--text-hi); display:flex; align-items:center; gap:8px; }
+  .field .fbox.focus { border-color:var(--cyan); box-shadow:0 0 0 1px var(--cyan); }
+  .crumb { font-size:12.5px; color:var(--text-low); }
+  .crumb b { color:var(--text-hi); font-weight:600; }
+  .actrow { display:flex; flex-wrap:wrap; gap:8px; }
+  .act { font-size:11.5px; font-weight:600; color:var(--text-mid); border:1px solid var(--line-strong); background:var(--ink-2); border-radius:999px; padding:7px 13px; }
+  .act.warn { color:var(--warn); border-color:rgba(255,180,84,.5); }
+  .healthrow { display:flex; gap:10px; }
+  .hcell { flex:1; background:var(--ink-1); border:1px solid var(--line); border-radius:10px; padding:9px 11px; }
+  .hcell code { font-family:var(--mono); font-size:8.5px; letter-spacing:.1em; color:var(--text-low); display:block; }
+  .hcell b { font-family:var(--mono); font-size:13px; font-weight:500; color:var(--text-hi); }
+  .hbar { height:4px; border-radius:2px; background:var(--ink-3); margin-top:6px; overflow:hidden; }
+  .hbar i { display:block; height:100%; border-radius:2px; background:var(--cyan); }
+  .hbar i.w { background:var(--warn); }
+  .evlog { font-size:11.5px; }
+  .ev { display:flex; gap:10px; padding:7px 14px; border-top:1px solid var(--line); align-items:baseline; }
+  .ev:first-child { border-top:0; }
+  .ev code { font-family:var(--mono); font-size:9.5px; color:var(--text-low); flex:none; width:86px; }
+  .chain td:first-child { color:var(--text-mid); }
+  .chain .okv { color:var(--ok); font-family:var(--mono); font-size:10.5px; }
+
   /* effects: segmented control + voice chips */
   .seg { position:absolute; left:50%; transform:translateX(-50%); bottom:106px; display:flex; gap:4px; border-radius:999px; padding:4px; z-index:3; }
   .seg-it { font-family:var(--mono); font-size:9px; letter-spacing:.12em; color:rgba(255,255,255,.7); padding:4px 12px; border-radius:999px; }
@@ -446,9 +470,37 @@
     <div class="kicker">03 · HoloMe — sender, mobiel &amp; browser</div>
     <h2>De presentator-flow</h2>
     <p class="lede">Portrait-first. De presentator staat vóór de telefoon; elk bedienelement is op armlengte-afstand leesbaar.
-       Scroll horizontaal door de acht schermen.</p>
+       Scroll horizontaal door de negen schermen.</p>
 
     <div class="shelf">
+
+      <!-- S0 SIGN IN -->
+      <div class="board">
+        <div class="phone"><div class="screen">
+          <div class="guest-center" style="gap:13px; justify-content:flex-start; padding-top:48px;">
+            <div class="mark-sm"></div>
+            <div style="font-family:var(--disp); font-weight:800; font-size:13px; letter-spacing:.2em;"><span class="holo" style="background:var(--beam);-webkit-background-clip:text;background-clip:text;color:transparent;">HOLO</span>ME</div>
+            <h4 style="font-family:var(--disp);font-weight:700;font-size:20px;">Sign in</h4>
+            <div class="field" style="width:100%"><label>Email</label><div class="fbox">d.frencken@hereweholo.com</div></div>
+            <div class="field" style="width:100%"><label>Password</label><div class="fbox focus">••••••••••<span style="margin-left:auto;font-size:11px;color:var(--text-low)">Show</span></div></div>
+            <span class="pill brand" style="width:100%;justify-content:center;padding:13px;">Sign in →</span>
+            <span style="font-size:11.5px;color:var(--cyan)">Forgot password?</span>
+            <div class="group-label" style="align-self:flex-start;margin:6px 2px 0;">Organisation</div>
+            <div class="rowgroup" style="width:100%">
+              <div class="row">HEREweHOLO Demo B.V. <span class="val mono" style="color:var(--teal)">✓</span></div>
+              <div class="row" style="color:var(--text-mid)">Expo Partners GmbH <span class="val"><span class="chev">›</span></span></div>
+            </div>
+          </div>
+          <div style="text-align:center;padding:0 0 16px;font-family:var(--mono);font-size:9px;color:var(--text-low);letter-spacing:.08em;">MFA · TOTP READY — SECURITY.MD §2</div>
+        </div></div>
+        <div class="note"><b><em>S0</em>Sign in &amp; organisatie</b>
+          <ul>
+            <li>Argon2id, MFA-ready (TOTP) — conform SECURITY.md §2</li>
+            <li>Organisatiekeuze alleen zichtbaar voor multi-org-gebruikers</li>
+            <li>Gasten zien dit scherm nooit — die komen via de invite-link</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- S1 SELECT DESTINATION -->
       <div class="board">
@@ -985,6 +1037,150 @@
             <li>Samenvatting (KPI-rij) vóór detail; status altijd kleur + vorm + label</li>
             <li>Live-sessie met echte telemetrie en bitrate-sparkline</li>
             <li>Alerts koppelen aan remote acties: restart, logs, netwerktest (M7)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- C2 DEVICE DETAIL -->
+      <div class="board wide">
+        <div class="desktop">
+          <div class="side">
+            <div class="wm"><span class="holo">HEREWE</span>HOLO <span style="color:var(--text-low)">CLOUD</span></div>
+            <div class="nav-it on">Fleet</div>
+            <div class="nav-it">Sessions</div>
+            <div class="nav-it">Content</div>
+            <div class="nav-it">Analytics</div>
+            <div class="nav-it">Alerts <span class="nb">2</span></div>
+            <div class="nav-it" style="margin-top:auto">Settings</div>
+          </div>
+          <div class="main">
+            <div class="topbar"><span class="crumb">Fleet / <b>Amsterdam HQ</b></span>
+              <span class="search" style="margin-left:auto">Search devices, sessions…</span><span class="avatar"></span></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:18px 18px 0;">
+              <h3 style="font-family:var(--disp);font-weight:700;font-size:20px;">Amsterdam HQ</h3>
+              <span class="spill live">● LIVE</span>
+              <span style="font-family:var(--mono);font-size:10.5px;color:var(--text-low)">Holobox · reception · HWB-2041 · v2.4.1 · uptime 41 d</span>
+            </div>
+            <div class="actrow" style="padding:12px 18px 0;">
+              <span class="act">↻ Restart receiver</span><span class="act">⇩ Download logs</span>
+              <span class="act">◉ Network test</span><span class="act">✕ Clear cache</span>
+              <span class="act warn">⏻ Reboot PC</span>
+            </div>
+            <div class="healthrow" style="padding:14px 18px 0;">
+              <div class="hcell"><code>CPU</code><b>34 %</b><div class="hbar"><i style="width:34%"></i></div></div>
+              <div class="hcell"><code>GPU</code><b>62 %</b><div class="hbar"><i style="width:62%"></i></div></div>
+              <div class="hcell"><code>RAM</code><b>41 %</b><div class="hbar"><i style="width:41%"></i></div></div>
+              <div class="hcell"><code>VRAM</code><b>38 %</b><div class="hbar"><i style="width:38%"></i></div></div>
+              <div class="hcell"><code>TEMP</code><b>62 °C</b><div class="hbar"><i style="width:56%"></i></div></div>
+              <div class="hcell"><code>DISK</code><b>71 %</b><div class="hbar"><i class="w" style="width:71%"></i></div></div>
+            </div>
+            <div class="dash-body" style="padding-top:14px;">
+              <div class="tablecard">
+                <h3>Health · afgelopen 24 h</h3>
+                <div class="spark" style="margin:0 14px 14px;"><svg viewBox="0 0 200 44" preserveAspectRatio="none">
+                  <polyline class="ln" points="0,20 20,22 40,18 60,21 80,19 100,24 120,20 140,22 160,18 180,21 200,19" fill="none" stroke="#35E0FF" stroke-width="1.6"/>
+                  <circle class="dot-end" cx="200" cy="19" r="2.4" fill="#35E0FF"/>
+                </svg></div>
+                <h3 style="padding-top:0">Event log</h3>
+                <div class="evlog">
+                  <div class="ev"><code>14:02:11</code><span>Session #a3f2 started — Sarah Lin (guest link)</span></div>
+                  <div class="ev"><code>09:41:03</code><span>Update 2.4.1 installed · STABLE channel · rollback armed</span></div>
+                  <div class="ev"><code>07:15:48</code><span style="color:var(--text-mid)">Fallback content shown 14 s — network blip, silent reconnect</span></div>
+                  <div class="ev"><code>07:15:34</code><span style="color:var(--text-mid)">Connection lost — watchdog engaged</span></div>
+                  <div class="ev"><code>—41 d</code><span>Paired by d.frencken · audit #1180</span></div>
+                </div>
+              </div>
+              <div class="rightcol">
+                <div class="livecard">
+                  <h3>Live now</h3>
+                  <div class="live-sess">
+                    <div class="who"><span class="avatar"></span><span><b>Sarah Lin → dit device</b><span>guest link · New York · 00:14:02</span></span></div>
+                    <div class="tele">2160 × 3840 · 30 fps · 17.8 Mbps<br>RTT 96 ms · loss 0.1 % · AMS-1 edge</div>
+                  </div>
+                </div>
+                <div class="livecard">
+                  <h3>Fallback content</h3>
+                  <div class="live-sess"><div class="tele">brand-loop-2026.mp4 · 42 s<br>toont bij verbindingsverlies — nooit een fout</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="note"><b><em>C2</em>Device-detail — remote acties</b>
+          <ul>
+            <li>Operator herstelt op afstand zonder het device aan te raken (M7-gate)</li>
+            <li>Elk commando is een audit-regel vóór het wordt verstuurd (ADR-004)</li>
+            <li>Event log toont fallback-momenten eerlijk, incl. duur</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- C3 SESSION DETAIL -->
+      <div class="board wide">
+        <div class="desktop">
+          <div class="side">
+            <div class="wm"><span class="holo">HEREWE</span>HOLO <span style="color:var(--text-low)">CLOUD</span></div>
+            <div class="nav-it">Fleet</div>
+            <div class="nav-it on">Sessions</div>
+            <div class="nav-it">Content</div>
+            <div class="nav-it">Analytics</div>
+            <div class="nav-it">Alerts <span class="nb">2</span></div>
+            <div class="nav-it" style="margin-top:auto">Settings</div>
+          </div>
+          <div class="main">
+            <div class="topbar"><span class="crumb">Sessions / <b>#a3f2-9c41</b></span>
+              <span class="search" style="margin-left:auto">Search devices, sessions…</span><span class="avatar"></span></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:18px 18px 0;">
+              <h3 style="font-family:var(--disp);font-weight:700;font-size:20px;">Sarah Lin → Amsterdam HQ</h3>
+              <span class="spill ok">● ENDED</span>
+              <span style="font-family:var(--mono);font-size:10.5px;color:var(--text-low)">guest link · 00:41:12 · 2026-08-27 14:02 CEST</span>
+            </div>
+            <div class="kpis" style="padding-top:14px;">
+              <div class="kpi"><code>Avg bitrate</code><b style="font-size:17px">16.8 <i>Mbps</i></b></div>
+              <div class="kpi"><code>Avg latency</code><b style="font-size:17px">187 <i>ms</i></b></div>
+              <div class="kpi"><code>Packet loss</code><b style="font-size:17px">0.4 <i>%</i></b></div>
+              <div class="kpi"><code>Dropped</code><b style="font-size:17px">12 <i>frames</i></b></div>
+              <div class="kpi"><code>Reconnects</code><b style="font-size:17px" >1</b></div>
+            </div>
+            <div class="dash-body" style="padding-top:14px;">
+              <div class="tablecard">
+                <h3>Resolution chain — honesty check</h3>
+                <div style="overflow-x:auto">
+                <table class="chain">
+                  <tr><th>Stage</th><th>Measured</th><th>Verdict</th></tr>
+                  <tr><td>Capture</td><td class="mono">2160 × 3840 @ 30</td><td class="okv">✓</td></tr>
+                  <tr><td>Encoder input</td><td class="mono">2160 × 3840 @ 30</td><td class="okv">✓</td></tr>
+                  <tr><td>Encoded output</td><td class="mono">2160 × 3840 @ 30 · VP9</td><td class="okv">✓</td></tr>
+                  <tr><td>Transport</td><td class="mono">2160 × 3840 @ 30 · 17.8 Mbps</td><td class="okv">✓</td></tr>
+                  <tr><td>Decode</td><td class="mono">2160 × 3840 @ 30 · hw</td><td class="okv">✓</td></tr>
+                  <tr><td>Render</td><td class="mono">2160 × 3840 @ 30</td><td class="okv">✓</td></tr>
+                  <tr><td>Physical output</td><td class="mono">2160 × 3840 @ 60 Hz panel</td><td class="okv">✓</td></tr>
+                </table>
+                </div>
+                <div style="padding:10px 14px 14px;font-size:11.5px;color:var(--ok);font-family:var(--mono);">ALL 7 STAGES AGREE — "4K" CLAIM VALID FOR THIS SESSION</div>
+              </div>
+              <div class="rightcol">
+                <div class="livecard">
+                  <h3>Bitrate · session</h3>
+                  <div class="spark" style="margin:0 14px 14px;"><svg viewBox="0 0 200 44" preserveAspectRatio="none">
+                    <polyline class="ln" points="0,14 30,12 60,15 84,13 96,30 120,28 132,14 160,12 180,15 200,13" fill="none" stroke="#35E0FF" stroke-width="1.6"/>
+                    <circle cx="90" cy="30" r="2.4" fill="#FFB454"/>
+                  </svg></div>
+                  <div class="live-sess" style="padding-top:0"><div class="tele">14:23 step-down naar 1080 × 1920 60 (28 s)<br>gecontroleerd hersteld — geen sessieverlies</div></div>
+                </div>
+                <div class="livecard">
+                  <h3>Trace</h3>
+                  <div class="live-sess"><div class="tele">session id a3f2-9c41<br>volledig reconstrueerbaar uit logs<br>edge AMS-1 · relay: none</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="note"><b><em>C3</em>Sessie-detail — de eerlijkheids-check</b>
+          <ul>
+            <li>Zeven ketenstappen, elk gemeten; de 4K-claim geldt alleen als álle stappen het bevestigen (ACCEPTANCE.md)</li>
+            <li>Step-down zichtbaar als amber marker met duur en herstel — niets weggemoffeld</li>
+            <li>Session-ID traceert end-to-end door de logs (M6-diagnostiek, hier als rapport)</li>
           </ul>
         </div>
       </div>

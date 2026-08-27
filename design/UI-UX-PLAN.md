@@ -102,6 +102,12 @@ wachtwoord, kopieerbare link, intrekbaar).
 expliciet, geen installatie) · G2 Camera/mic-toestemming (één keer, met context en stepper; daarna de
 normale preview-flow van S2).
 
+**Iteratie 2** — S0 Sign in & organisatiekeuze (Argon2id, MFA-ready; org-keuze alleen voor
+multi-org-gebruikers) · C2 Device-detail (remote acties: restart/logs/netwerktest/cache/reboot — elk
+commando eerst een audit-regel; health-tegels, event log met eerlijke fallback-momenten) ·
+C3 Sessie-detail (aggregaten + **resolutieketen-tabel**: zeven gemeten ketenstappen, de 4K-claim geldt
+alleen als álle stappen het bevestigen; step-downs zichtbaar als amber marker met duur en herstel).
+
 **HoloSee (receiver)** — R1 Idle/fallback ("Ready when you are" + ambient gloed; identiek bij
 verbindingsverlies) · R2 Pairing (QR + leesbare code, drie stappen, verloopteller, device-ID).
 Altijd donker thema.
@@ -109,8 +115,9 @@ Altijd donker thema.
 **Cloud** — C1 Fleet-dashboard (KPI-rij vóór detail, statuspills, live-sessie met echte telemetrie en
 bitrate-sparkline, alerts met auto-ticket).
 
-Nog te ontwerpen in een volgende iteratie: auth/org-switch, sessie-detail + analytics, remote-actions op
-device-detail, diagnostic view (resolutieketen — M6), installer/update-flow (M8).
+Nog te ontwerpen in een volgende iteratie: analytics-overzicht (trends, kosten per sessie — M7),
+in-product diagnostic view op de sender (live resolutieketen — M6; het rapport-equivalent staat in C3),
+installer/update-flow (M8).
 
 ## 6. Figma-plan
 
