@@ -115,6 +115,14 @@ Altijd donker thema.
 **Cloud** — C1 Fleet-dashboard (KPI-rij vóór detail, statuspills, live-sessie met echte telemetrie en
 bitrate-sparkline, alerts met auto-ticket).
 
+**Fase 2+-features (§07 van de boards, specs in [`docs/features/`](../docs/features/))** —
+F1 *Studio Matte* (AI background removal: clean cut over puur zwart, sender-side; matting-kwaliteitschip;
+eerlijke ladder-cap) · F2 *Voice Bridge* (live vertaling: subtitles ~1 s of vertaalde stem ~2 s, vertraging
+altijd zichtbaar; zelfde audio-insteekpunt als de voice changer) · F3 *Walk-up* (presence-detectie lokaal op
+HoloSee, roster + escalatie in Cloud, privacy-contract aan beide kanten in beeld). Complexe opties dragen
+een **info-stip (ⓘ)** met één korte, scherpe uitleg — patroon ook toegepast op Auto-kwaliteit, edge-route en
+echo cancellation; als `InfoDot`-component in Figma.
+
 Nog te ontwerpen in een volgende iteratie: analytics-overzicht (trends, kosten per sessie — M7),
 in-product diagnostic view op de sender (live resolutieketen — M6; het rapport-equivalent staat in C3),
 installer/update-flow (M8).

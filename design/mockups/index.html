@@ -368,9 +368,27 @@
   .chain td:first-child { color:var(--text-mid); }
   .chain .okv { color:var(--ok); font-family:var(--mono); font-size:10.5px; }
 
+  /* info dot — korte scherpe uitleg bij complexe opties */
+  .inf { position:relative; display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; border:1.2px solid currentColor; font-family:var(--mono); font-size:8.5px; font-style:normal; font-weight:500; opacity:.65; cursor:help; flex:none; vertical-align:middle; }
+  .inf:hover, .inf:focus-visible { opacity:1; color:var(--cyan); }
+  .inf::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); width:185px; background:rgba(6,17,24,.96); color:#EAF0F6; border:1px solid #2C3949; border-radius:9px; padding:8px 10px; font-family:var(--ui); font-size:10px; font-weight:400; line-height:1.5; letter-spacing:0; text-transform:none; text-align:left; opacity:0; pointer-events:none; transition:opacity .15s; z-index:20; }
+  .inf:hover::after, .inf:focus-visible::after { opacity:1; }
+  .inf.right::after { left:auto; right:-8px; transform:none; }
+  @media (prefers-reduced-motion:reduce) { .inf::after { transition:none; } }
+
+  /* fase 2+ feature boards */
+  .cam.holo { background:radial-gradient(120% 100% at 50% 30%, #10161E 40%, #05070A 100%); }
+  .cam.holo .figure .body { fill:#E4E7EB; }
+  .cam.holo .figure svg { filter:drop-shadow(0 0 16px rgba(53,224,255,.30)); }
+  .caption-box { position:absolute; left:22px; right:22px; bottom:52px; background:rgba(6,17,24,.82); border:1px solid rgba(255,255,255,.14); border-radius:12px; padding:9px 13px; z-index:3; text-align:center; }
+  .caption-box .src { font-size:9px; color:rgba(255,255,255,.5); font-family:var(--mono); }
+  .caption-box .dst { font-size:13px; color:#fff; font-weight:600; margin-top:3px; }
+  .fnum { font-family:var(--mono); font-size:10px; letter-spacing:.1em; color:#06131A; background:var(--beam); border-radius:6px; padding:2px 7px; font-weight:500; }
+  .feat-spec { font-family:var(--mono); font-size:10.5px; color:var(--text-low); margin-top:10px; }
+
   /* effects: segmented control + voice chips */
   .seg { position:absolute; left:50%; transform:translateX(-50%); bottom:106px; display:flex; gap:4px; border-radius:999px; padding:4px; z-index:3; }
-  .seg-it { font-family:var(--mono); font-size:9px; letter-spacing:.12em; color:rgba(255,255,255,.7); padding:4px 12px; border-radius:999px; }
+  .seg-it { font-family:var(--mono); font-size:9px; letter-spacing:.12em; color:rgba(255,255,255,.7); padding:4px 12px; border-radius:999px; white-space:nowrap; }
   .seg-it.on { background:rgba(53,224,255,.28); color:#fff; }
   .vlens { width:46px; height:46px; border-radius:50%; border:1.6px solid rgba(255,255,255,.35); background:rgba(10,14,19,.45); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:8px; letter-spacing:.06em; color:#fff; }
   .vlens.sel { border-color:#35E0FF; box-shadow:0 0 0 2px rgba(53,224,255,.45); transform:scale(1.1); }
@@ -689,13 +707,13 @@
             </div>
             <div class="group-label">Route</div>
             <div class="rowgroup">
-              <div class="row">Edge region <span class="val">AMS-1 · auto <span class="chev">›</span></span></div>
+              <div class="row">Edge region <span class="inf right" tabindex="0" data-tip="Media takes the shortest path: the edge region closest to sender and Holobox. Auto follows measured latency — the route is always shown, never hidden.">i</span><span class="val">AMS-1 · auto <span class="chev">›</span></span></div>
             </div>
             <div class="group-label">Media</div>
             <div class="rowgroup">
               <div class="row">Camera <span class="val">Back camera <span class="chev">›</span></span></div>
               <div class="row">Microphone <span class="val">Phone mic <span class="chev">›</span></span></div>
-              <div class="row">Echo cancellation <span class="val"><span class="lock-tag">ALWAYS ON</span></span></div>
+              <div class="row">Echo cancellation <span class="inf right" tabindex="0" data-tip="Removes the return audio from your microphone, so the people at the Holobox never hear themselves. Required for two-way audio — that is why it cannot be switched off.">i</span><span class="val"><span class="lock-tag">ALWAYS ON</span></span></div>
             </div>
             <div class="group-label">Quality</div>
             <div class="rowgroup">
@@ -723,7 +741,7 @@
           </div>
           <div style="padding:10px 14px; display:flex; flex-direction:column; gap:10px;">
             <div class="radio-row sel"><span class="rd"></span>
-              <span><h6>Auto <span class="rec">RECOMMENDED</span></h6>
+              <span><h6>Auto <span class="rec">RECOMMENDED</span> <span class="inf" tabindex="0" data-tip="Measures your connection before and during the session, picks the highest verified tier and steps down before frames drop. Recovers slowly to avoid flapping.">i</span></h6>
               <p>Starts at the highest verified tier and steps down before frames drop. Recovers upward, controlled.</p>
               <code>720p → 1080 × 1920 60 → 2160 × 3840 30</code></span></div>
             <div class="radio-row"><span class="rd"></span>
@@ -1184,6 +1202,160 @@
           </ul>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ————————————————— FASE 2+ FEATURES ————————————————— -->
+  <section class="section">
+    <div class="kicker">07 · Fase 2+ — de meerwaarde-features</div>
+    <h2>Drie features die het product veranderen</h2>
+    <p class="lede">Nu ontworpen zodat de architectuur erop voorsorteert; gebouwd ná het M8-acceptance-scenario
+       (discipline uit MILESTONES.md). Complexe opties dragen een info-stip <span class="inf" tabindex="0" style="opacity:1"
+       data-tip="Zo werkt het: hover of focus op een ⓘ geeft één korte, scherpe uitleg. Nooit meer dan drie zinnen.">i</span>
+       met één korte, scherpe uitleg — dat patroon geldt vanaf nu ook voor bestaande opties (Auto-kwaliteit,
+       edge-route, echo cancellation).</p>
+    <div class="dl-grid">
+      <div class="panel">
+        <h3><span class="fnum">F1</span> &nbsp;Studio Matte</h3>
+        <p class="vfx-note">AI background removal op de sender. De referentie had een fysieke witte studio nodig —
+          wij maken van elke kamer een studio. Cutout over puur zwart is precies wat de Holobox-optiek wil.</p>
+        <p class="feat-spec">spec: docs/features/F1 · WebGPU-segmentatie · effect reist mee in de stream</p>
+      </div>
+      <div class="panel">
+        <h3><span class="fnum">F2</span> &nbsp;Voice Bridge</h3>
+        <p class="vfx-note">Live vertaling: presenteer in het Engels, Amsterdam hoort Nederlands — of leest
+          ondertitels. Gebruikt exact het audio-insteekpunt dat de voice changer al heeft (ná AEC, vóór encode).</p>
+        <p class="feat-spec">spec: docs/features/F2 · subtitles ~1 s · voice ~2 s vertraging, eerlijk getoond</p>
+      </div>
+      <div class="panel">
+        <h3><span class="fnum">F3</span> &nbsp;Walk-up</h3>
+        <p class="vfx-note">De Holobox detecteert een bezoeker en belt een beschikbare collega. Van passief scherm
+          naar tweeweg-conciërge — detectie draait lokaal op het device, privacy by design.</p>
+        <p class="feat-spec">spec: docs/features/F3 · roster + routing in Cloud · sessie zelf blijft standaard</p>
+      </div>
+    </div>
+
+    <div class="shelf">
+
+      <!-- F1 STUDIO MATTE -->
+      <div class="board">
+        <div class="phone"><div class="screen">
+          <div class="cam holo">
+            <div class="top">
+              <span class="live-badge glass"><i></i>LIVE</span>
+              <span class="icon-btn glass"><svg viewBox="0 0 16 16"><path d="M12.5 6.5a5 5 0 0 0 -9 -1.5M3.5 9.5a5 5 0 0 0 9 1.5"/><path d="M13 2v3h-3M3 14v-3h3"/></svg></span>
+            </div>
+            <div class="figure" style="margin-bottom:150px"><svg viewBox="0 0 100 260"><circle class="body" cx="50" cy="24" r="14"/><path class="body" d="M50 41c-11 0-18 6-20 15l-6 33c-1 5 6 8 8 3l7-27 1 30-7 82c-1 7 9 8 10 1l7-58 7 58c1 7 11 6 10-1l-7-82 1-30 7 27c2 5 9 2 8-3l-6-33c-2-9-9-15-20-15z"/></svg></div>
+            <span class="fx-chip glass" style="bottom:148px">Matting: good · even lighting ✓</span>
+            <div class="seg glass" style="bottom:104px">
+              <span class="seg-it">REAL</span><span class="seg-it on">CLEAN CUT</span><span class="seg-it">STUDIO</span>
+              <span class="inf right" tabindex="0" style="color:#fff; align-self:center; margin:0 4px;"
+                data-tip="Clean cut removes your background. The Holobox shows you against pure black — exactly what a hologram needs. Works best with even light on your face and body.">i</span>
+            </div>
+            <div class="strip glass">00:07:21 <i>·</i> <span class="s-ok">CONNECTED</span> <i>·</i> 1080 × 1920 <i>·</i> 60 fps <i>·</i> 6.2 Mbps</div>
+          </div>
+          <div class="toolbar">
+            <span class="tool on" style="color:var(--cyan)"><span class="tico" style="border-color:var(--cyan)"><svg viewBox="0 0 16 16" style="stroke:var(--cyan)"><path d="M8 1.5 9.6 6l4.4 .3-3.4 2.8 1.2 4.4L8 11l-3.8 2.5 1.2-4.4L2 6.3 6.4 6z"/></svg></span>Effects</span>
+            <span class="golive"><span class="big stop">STOP</span></span>
+            <span class="tool locked"><span class="tico"><svg viewBox="0 0 16 16"><rect x="4" y="7" width="8" height="6" rx="1.5"/><path d="M5.5 7V5.5a2.5 2.5 0 0 1 5 0V7"/></svg></span>Session</span>
+            <span class="tool"><span class="tico"><svg viewBox="0 0 16 16"><rect x="2.5" y="4" width="11" height="8" rx="1.5"/><path d="M5.5 12v1.5h5V12"/></svg></span>Return feed</span>
+          </div>
+        </div></div>
+        <div class="note"><b><em>F1</em>Studio Matte — clean cut actief</b>
+          <ul>
+            <li>Subject over puur zwart, sender-side gecomposit — geen alpha nodig over WebRTC</li>
+            <li>Matting-kwaliteitschip geeft eerlijke feedback (belichting) i.p.v. stille mislukking</li>
+            <li>Strip toont 1080 × 1920 @ 60: matting kost GPU, de ladder capt eerlijk — regel 2 geldt ook hier</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- F2 VOICE BRIDGE -->
+      <div class="board">
+        <div class="phone"><div class="screen">
+          <div class="cam">
+            <div class="top">
+              <span class="live-badge glass"><i></i>LIVE</span>
+              <span class="dest-chip glass" style="color:#7BF0DC; border-color:rgba(45,212,191,.45)">EN → NL · translated voice · +1.8 s</span>
+            </div>
+            <div class="figure" style="margin-bottom:168px"><svg viewBox="0 0 100 260"><circle class="body" cx="50" cy="24" r="14"/><path class="body" d="M50 41c-11 0-18 6-20 15l-6 33c-1 5 6 8 8 3l7-27 1 30-7 82c-1 7 9 8 10 1l7-58 7 58c1 7 11 6 10-1l-7-82 1-30 7 27c2 5 9 2 8-3l-6-33c-2-9-9-15-20-15z"/></svg></div>
+            <div class="caption-box">
+              <div class="src">"Welcome — let me walk you through the new collection."</div>
+              <div class="dst">"Welkom — ik neem u mee door de nieuwe collectie."</div>
+            </div>
+            <div class="seg glass" style="bottom:134px">
+              <span class="seg-it">OFF</span>
+              <span class="seg-it">SUBTITLES</span>
+              <span class="inf right" tabindex="0" style="color:#fff; align-self:center; margin:0 2px;"
+                data-tip="Live captions on the Holobox in the destination's language. Fast (~1 s); your own voice stays untouched.">i</span>
+              <span class="seg-it on">VOICE</span>
+              <span class="inf right" tabindex="0" style="color:#fff; align-self:center; margin:0 4px 0 2px;"
+                data-tip="Amsterdam hears a translated voice instead of yours. Adds ~2 s delay — great for presentations, less for quick conversation.">i</span>
+            </div>
+            <div class="strip glass">00:11:05 <i>·</i> <span class="s-ok">CONNECTED</span> <i>·</i> 2160 × 3840 <i>·</i> 30 fps <i>·</i> 17.4 Mbps</div>
+          </div>
+          <div class="toolbar">
+            <span class="tool"><span class="tico"><svg viewBox="0 0 16 16"><path d="M8 1.5 9.6 6l4.4 .3-3.4 2.8 1.2 4.4L8 11l-3.8 2.5 1.2-4.4L2 6.3 6.4 6z"/></svg></span>Effects</span>
+            <span class="golive"><span class="big stop">STOP</span></span>
+            <span class="tool locked"><span class="tico"><svg viewBox="0 0 16 16"><rect x="4" y="7" width="8" height="6" rx="1.5"/><path d="M5.5 7V5.5a2.5 2.5 0 0 1 5 0V7"/></svg></span>Session</span>
+            <span class="tool"><span class="tico"><svg viewBox="0 0 16 16"><rect x="2.5" y="4" width="11" height="8" rx="1.5"/><path d="M5.5 12v1.5h5V12"/></svg></span>Return feed</span>
+          </div>
+        </div></div>
+        <div class="note"><b><em>F2</em>Voice Bridge — vertaalde stem</b>
+          <ul>
+            <li>Sender ziet wat de ontvanger hoort/leest: caption-spiegel + taalpaar-chip</li>
+            <li>Toegevoegde vertraging (+1.8 s) eerlijk in beeld — geen verborgen lag</li>
+            <li>Subtitles-modus is de snelle, eigen-stem-variant; keuze per sessie</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- F3a WALK-UP · HOLOSEE -->
+      <div class="board" style="width:320px">
+        <div class="display"><div class="screen">
+          <div class="rcv-idle">
+            <div class="amb shimmer"></div>
+            <div class="rings" style="margin-bottom:6px"><i></i><i></i><i></i><b></b></div>
+            <h4 style="font-size:19px">Good afternoon</h4>
+            <p style="letter-spacing:.02em; font-family:var(--ui); font-size:12px; text-transform:none;">One moment — we're connecting you<br>with a colleague.</p>
+            <p style="margin-top:6px">SARAH IS JOINING · 00:04</p>
+            <div class="rcv-foot">PRESENCE DETECTION RUNS ON THIS DEVICE · NO VIDEO LEAVES IT UNTIL A COLLEAGUE ACCEPTS</div>
+          </div>
+        </div></div>
+        <div class="note"><b><em>F3a</em>Walk-up — de bezoekerskant</b>
+          <ul>
+            <li>Vierde receiver-state; nog steeds nooit een fout of stilte</li>
+            <li>Niemand beschikbaar → vriendelijk alternatief (QR: bericht/afspraak), terug naar idle</li>
+            <li>Privacy-regel permanent klein in beeld — detectie is lokaal</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- F3b WALK-UP · HOLOME INCOMING -->
+      <div class="board">
+        <div class="phone"><div class="screen">
+          <div class="guest-center" style="gap:12px">
+            <div style="font-family:var(--mono); font-size:10px; letter-spacing:.14em; color:var(--text-low)">WALK-UP · AMSTERDAM HQ · RECEPTION</div>
+            <div class="mark-sm"></div>
+            <h4 style="font-family:var(--disp);font-weight:700;font-size:21px;">Visitor at the Holobox</h4>
+            <div style="font-family:var(--mono); font-size:12px; color:var(--warn)">waiting 12 s</div>
+            <p style="font-size:11.5px; color:var(--text-mid); display:flex; align-items:center; gap:6px; justify-content:center;">No camera image until you accept
+              <span class="inf" tabindex="0" data-tip="You see no camera image until you accept, and the visitor sees nothing until your stream starts. Declining passes the call to the next person on duty.">i</span></p>
+            <span class="pill brand" style="width:100%;justify-content:center;padding:13px;">Accept &amp; preview →</span>
+            <span class="pill" style="width:100%;justify-content:center;padding:11px;">Decline</span>
+            <div style="font-family:var(--mono); font-size:9.5px; color:var(--text-low); display:flex; align-items:center; gap:6px;">ON DUTY UNTIL 17:00 · 2 COLLEAGUES AVAILABLE
+              <span class="inf" tabindex="0" data-tip="No answer within 15 seconds? The call escalates to the next colleague on the duty roster. Rosters are set per location in Cloud.">i</span></div>
+          </div>
+        </div></div>
+        <div class="note"><b><em>F3b</em>Walk-up — de collega-kant</b>
+          <ul>
+            <li>Accept opent direct de normale preview-flow, bestemming al gekozen</li>
+            <li>Escalatie naar volgende collega bij geen antwoord (roster in Cloud, M7)</li>
+            <li>Privacy-contract scherp bij de knop — geen beeld vóór accept, beide kanten</li>
+          </ul>
+        </div>
+      </div>
+
     </div>
   </section>
 
