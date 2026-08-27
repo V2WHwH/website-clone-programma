@@ -1,0 +1,815 @@
+<title>HoloCast Design Boards</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* ————— HoloCast design boards — deliberately single-theme: dark AV/broadcast ————— */
+  :root {
+    --ink-0:#0A0E13; --ink-1:#10161E; --ink-2:#18202B; --ink-3:#212B38;
+    --line:#1E2836; --line-strong:#2C3949;
+    --text-hi:#EAF0F6; --text-mid:#9AA8B8; --text-low:#5C6B7C;
+    --cyan:#35E0FF; --teal:#2DD4BF; --violet:#8F7BFF;
+    --ok:#3EE58F; --warn:#FFB454; --err:#FF4D8D;
+    --cyc:#E8E6E1; --cyc-edge:#C9C5BD;
+    --beam:linear-gradient(135deg,#35E0FF 0%,#2DD4BF 45%,#8F7BFF 100%);
+    --disp:"Archivo",system-ui,sans-serif;
+    --ui:"IBM Plex Sans",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:var(--ink-0); color:var(--text-hi);
+    font-family:var(--ui); font-size:15px; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a { color:var(--cyan); }
+
+  /* ————— page chrome ————— */
+  .wrap { max-width:1240px; margin:0 auto; padding:56px 32px 96px; }
+  .masthead { display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:24px; padding-bottom:28px; border-bottom:1px solid var(--line); }
+  .wordmark { font-family:var(--disp); font-weight:800; font-size:15px; letter-spacing:.22em; text-transform:uppercase; }
+  .wordmark .holo { background:var(--beam); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .masthead h1 { font-family:var(--disp); font-weight:700; font-size:clamp(30px,4.5vw,46px); line-height:1.08; letter-spacing:-.01em; text-wrap:balance; margin-top:14px; }
+  .masthead p { max-width:56ch; color:var(--text-mid); margin-top:12px; }
+  .meta { display:flex; flex-direction:column; gap:6px; font-family:var(--mono); font-size:12px; color:var(--text-low); text-align:right; }
+  .meta b { color:var(--text-mid); font-weight:500; }
+
+  .section { margin-top:64px; }
+  .kicker { font-family:var(--mono); font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--cyan); }
+  .section > h2 { font-family:var(--disp); font-weight:700; font-size:26px; margin-top:8px; letter-spacing:-.01em; }
+  .section > .lede { color:var(--text-mid); max-width:64ch; margin-top:8px; }
+
+  /* ————— design language ————— */
+  .dl-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin-top:24px; }
+  .panel { background:var(--ink-1); border:1px solid var(--line); border-radius:16px; padding:20px; }
+  .panel h3 { font-family:var(--disp); font-weight:600; font-size:14px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-mid); margin-bottom:14px; }
+  .swatches { display:flex; flex-wrap:wrap; gap:8px; }
+  .sw { flex:1 1 40%; border-radius:10px; padding:10px 12px; border:1px solid var(--line-strong); min-height:58px; display:flex; flex-direction:column; justify-content:flex-end; }
+  .sw span { font-family:var(--mono); font-size:11px; opacity:.85; }
+  .sw b { font-size:12px; font-weight:600; }
+  .type-sample .t-disp { font-family:var(--disp); font-weight:800; font-size:26px; letter-spacing:.01em; }
+  .type-sample .t-ui { font-size:14px; color:var(--text-mid); margin-top:8px; }
+  .type-sample .t-mono { font-family:var(--mono); font-size:12px; color:var(--cyan); margin-top:10px; font-variant-numeric:tabular-nums; }
+  .status-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); font-size:13px; }
+  .status-row:last-child { border-bottom:0; }
+  .dot { width:9px; height:9px; border-radius:50%; flex:none; }
+  .status-row code { font-family:var(--mono); font-size:11px; color:var(--text-low); margin-left:auto; }
+
+  /* VFX demo tiles */
+  .vfx-demo { display:flex; align-items:center; justify-content:center; height:96px; background:var(--ink-0); border:1px solid var(--line); border-radius:12px; margin-bottom:12px; position:relative; overflow:hidden; }
+  .vfx-note { font-size:12.5px; color:var(--text-mid); }
+  .vfx-note code { font-family:var(--mono); font-size:11px; color:var(--text-low); }
+  .rings { position:relative; width:56px; height:56px; }
+  .rings i { position:absolute; inset:0; border:1.5px solid var(--cyan); border-radius:50%; opacity:0; animation:ring 1.2s cubic-bezier(.2,0,0,1) infinite; }
+  .rings i:nth-child(2) { animation-delay:.4s; border-color:var(--teal); }
+  .rings i:nth-child(3) { animation-delay:.8s; border-color:var(--violet); }
+  .rings b { position:absolute; inset:22px; border-radius:50%; background:var(--beam); }
+  @keyframes ring { 0% { transform:scale(.35); opacity:.9; } 100% { transform:scale(1.15); opacity:0; } }
+  .pulse-badge { display:inline-flex; align-items:center; gap:7px; background:rgba(10,14,19,.85); border:1px solid var(--line-strong); border-radius:999px; padding:6px 14px; font-family:var(--disp); font-weight:700; font-size:12px; letter-spacing:.14em; }
+  .pulse-badge i { width:8px; height:8px; border-radius:50%; background:var(--err); animation:pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { box-shadow:0 0 0 0 rgba(255,77,141,.55); } 50% { box-shadow:0 0 0 7px rgba(255,77,141,0); } }
+  .shimmer { width:100%; height:100%; background:radial-gradient(120% 90% at 30% 110%, rgba(53,224,255,.22), transparent 55%), radial-gradient(120% 90% at 75% -10%, rgba(143,123,255,.20), transparent 55%), var(--ink-0); animation:drift 6s ease-in-out infinite alternate; }
+  @keyframes drift { from { background-position:0 0,0 0; } to { background-position:-30px 12px,26px -10px; } }
+  @media (prefers-reduced-motion:reduce) { .rings i, .pulse-badge i, .shimmer { animation:none; } .rings i { transform:scale(.8); opacity:.35; } }
+
+  /* ————— flow strip ————— */
+  .flow { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:24px; font-family:var(--mono); font-size:12px; }
+  .flow .st { background:var(--ink-1); border:1px solid var(--line-strong); border-radius:999px; padding:7px 14px; color:var(--text-hi); letter-spacing:.06em; }
+  .flow .st.hot { border-color:transparent; background:var(--beam); color:#06131A; font-weight:500; }
+  .flow .ar { color:var(--text-low); }
+
+  /* ————— artboard shelves ————— */
+  .shelf { display:flex; gap:28px; overflow-x:auto; padding:28px 4px 12px; scroll-snap-type:x proximity; }
+  .board { flex:none; scroll-snap-align:start; width:320px; }
+  .board.wide { width:960px; max-width:100%; }
+  .board .note { margin-top:14px; padding:0 4px; }
+  .board .note b { font-family:var(--disp); font-weight:600; font-size:13.5px; letter-spacing:.02em; display:block; }
+  .board .note b em { font-style:normal; color:var(--text-low); font-family:var(--mono); font-size:11px; margin-right:8px; }
+  .board .note ul { margin:8px 0 0 16px; color:var(--text-mid); font-size:12.5px; }
+  .board .note li { margin-top:3px; }
+
+  /* device shells */
+  .phone { width:320px; height:693px; background:var(--ink-0); border:1px solid var(--line-strong); border-radius:30px; padding:8px; box-shadow:0 24px 60px -30px rgba(0,0,0,.8); }
+  .screen { width:100%; height:100%; border-radius:22px; overflow:hidden; background:var(--ink-0); display:flex; flex-direction:column; position:relative; }
+  .display { width:320px; height:568px; background:#05070A; border:1px solid var(--line-strong); border-radius:14px; padding:10px; box-shadow:0 24px 60px -30px rgba(0,0,0,.8); }
+  .display .screen { border-radius:6px; }
+  .desktop { width:960px; max-width:100%; height:600px; background:var(--ink-0); border:1px solid var(--line-strong); border-radius:14px; overflow:hidden; box-shadow:0 24px 60px -30px rgba(0,0,0,.8); display:flex; }
+
+  /* ————— in-app primitives ————— */
+  .appbar { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 14px 10px; }
+  .appbar .wm { font-family:var(--disp); font-weight:800; font-size:11px; letter-spacing:.2em; }
+  .appbar .wm .holo { background:var(--beam); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .icon-btn { width:30px; height:30px; border-radius:50%; border:1px solid var(--line-strong); background:var(--ink-2); display:inline-flex; align-items:center; justify-content:center; flex:none; }
+  .icon-btn svg { width:14px; height:14px; stroke:var(--text-mid); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .pill { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:6px 12px; font-size:11.5px; font-weight:600; border:1px solid var(--line-strong); background:var(--ink-2); color:var(--text-hi); }
+  .pill.brand { background:var(--beam); border-color:transparent; color:#06131A; }
+
+  .sc-title { padding:6px 14px 0; }
+  .sc-title h4 { font-family:var(--disp); font-weight:700; font-size:19px; letter-spacing:-.01em; }
+  .sc-title p { font-size:12px; color:var(--text-mid); margin-top:3px; }
+
+  /* device cards */
+  .devgrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:14px; }
+  .devcard { position:relative; background:var(--ink-1); border:1px solid var(--line-strong); border-radius:14px; padding:10px; }
+  .devcard.sel { border-color:var(--teal); box-shadow:0 0 0 1px var(--teal); }
+  .devcard.off { opacity:.45; }
+  .devcard .check { position:absolute; top:8px; left:8px; width:16px; height:16px; border-radius:5px; border:1.4px solid var(--line-strong); background:var(--ink-2); display:flex; align-items:center; justify-content:center; }
+  .devcard.sel .check { background:var(--teal); border-color:var(--teal); }
+  .devcard .check svg { width:9px; height:9px; stroke:#06131A; stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .devviz { height:92px; border-radius:9px; background:linear-gradient(180deg,#141B24,#0C1117); display:flex; align-items:center; justify-content:center; position:relative; margin-bottom:8px; }
+  .devviz .box { width:34px; height:62px; border-radius:5px; border:1.4px solid var(--line-strong); background:linear-gradient(160deg,rgba(53,224,255,.16),rgba(143,123,255,.14)); }
+  .devviz .box.wall { width:66px; height:40px; }
+  .devviz .box.mini { width:26px; height:44px; }
+  .devviz .st { position:absolute; top:7px; right:7px; width:8px; height:8px; border-radius:50%; }
+  .devcard h5 { font-size:12.5px; font-weight:600; }
+  .devcard p { font-family:var(--mono); font-size:10px; color:var(--text-low); margin-top:2px; }
+  .devcard .slabel { font-family:var(--mono); font-size:9px; letter-spacing:.08em; margin-top:5px; display:inline-block; }
+
+  .bottombar { margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px 16px; border-top:1px solid var(--line); background:var(--ink-1); }
+  .bottombar .count { font-size:12px; color:var(--text-mid); }
+  .bottombar .count b { color:var(--text-hi); }
+
+  /* camera preview */
+  .cam { flex:1; position:relative; background:radial-gradient(120% 100% at 50% 30%, var(--cyc) 55%, var(--cyc-edge) 100%); overflow:hidden; display:flex; align-items:flex-end; justify-content:center; }
+  .cam.dim::after { content:""; position:absolute; inset:0; background:rgba(5,8,12,.62); }
+  .figure { width:104px; margin-bottom:6px; }
+  .figure svg { display:block; width:100%; }
+  .figure .body { fill:#20242B; }
+  .cam .top { position:absolute; top:10px; left:10px; right:10px; display:flex; justify-content:space-between; align-items:flex-start; z-index:2; }
+  .glass { background:rgba(10,14,19,.55); backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,.14); }
+  .dest-chip { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:5px 11px; font-family:var(--mono); font-size:10px; color:#fff; letter-spacing:.04em; }
+  .frame-hint { position:absolute; left:50%; transform:translateX(-50%); bottom:118px; display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:5px 11px; font-size:11px; color:#FFD9A1; border-color:rgba(255,180,84,.5); z-index:2; }
+  .frame-guide { position:absolute; left:50%; transform:translateX(-50%); bottom:4px; width:150px; height:78%; border:1.4px dashed rgba(255,180,84,.75); border-radius:10px; z-index:1; }
+  .netcard { position:absolute; left:10px; right:10px; bottom:46px; border-radius:12px; padding:9px 12px; display:flex; align-items:center; gap:9px; z-index:2; color:#fff; }
+  .netcard .ic { width:22px; height:22px; border-radius:50%; background:rgba(62,229,143,.18); border:1px solid rgba(62,229,143,.6); display:flex; align-items:center; justify-content:center; flex:none; }
+  .netcard .ic svg { width:11px; height:11px; stroke:var(--ok); stroke-width:2.4; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .netcard b { font-size:12px; font-weight:600; display:block; }
+  .netcard span { font-family:var(--mono); font-size:10px; color:rgba(255,255,255,.65); }
+  .netcard .more { margin-left:auto; font-size:11px; color:var(--cyan); }
+
+  .strip { position:absolute; left:10px; right:10px; bottom:10px; z-index:2; border-radius:8px; padding:6px 8px; font-family:var(--mono); font-size:8.8px; letter-spacing:0; color:rgba(255,255,255,.85); display:flex; align-items:center; gap:4px; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; }
+  .strip .s-ok { color:var(--ok); } .strip .s-off { color:var(--err); } .strip .s-sb { color:var(--warn); }
+  .strip i { font-style:normal; color:rgba(255,255,255,.3); }
+
+  .live-badge { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:5px 12px; font-family:var(--disp); font-weight:800; font-size:10.5px; letter-spacing:.16em; color:#fff; }
+  .live-badge i { width:7px; height:7px; border-radius:50%; background:var(--err); animation:pulse 2s ease-in-out infinite; }
+
+  .toolbar { display:flex; align-items:center; justify-content:space-around; gap:6px; padding:10px 12px 16px; background:var(--ink-1); border-top:1px solid var(--line); }
+  .tool { display:flex; flex-direction:column; align-items:center; gap:5px; font-size:9.5px; color:var(--text-mid); min-width:52px; }
+  .tool .tico { width:36px; height:36px; border-radius:50%; border:1px solid var(--line-strong); background:var(--ink-2); display:flex; align-items:center; justify-content:center; }
+  .tool .tico svg { width:15px; height:15px; stroke:var(--text-mid); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .tool.locked { opacity:.4; }
+  .golive { display:flex; flex-direction:column; align-items:center; gap:5px; font-size:9.5px; color:var(--text-hi); }
+  .golive .big { width:64px; height:64px; border-radius:50%; background:var(--beam); display:flex; align-items:center; justify-content:center; font-family:var(--disp); font-weight:800; font-size:10.5px; letter-spacing:.06em; color:#06131A; text-align:center; line-height:1.15; box-shadow:0 0 24px rgba(53,224,255,.35); }
+  .golive .big.stop { background:linear-gradient(135deg,#FF4D8D,#C2255C); color:#fff; box-shadow:0 0 24px rgba(255,77,141,.35); }
+
+  /* PiP return feed */
+  .pip { position:absolute; left:10px; right:10px; bottom:46px; height:172px; border-radius:12px; overflow:hidden; border:1px solid var(--line-strong); background:linear-gradient(180deg,#151B23,#0B0F14); z-index:3; box-shadow:0 14px 34px rgba(0,0,0,.5); }
+  .pip .fig2 { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:120px; opacity:.9; }
+  .pip .fig2 .body { fill:#39404B; }
+  .pip .pip-top { position:absolute; top:6px; left:8px; right:6px; display:flex; align-items:center; justify-content:space-between; z-index:2; }
+  .pip .tag { font-family:var(--mono); font-size:9px; color:rgba(255,255,255,.75); background:rgba(10,14,19,.6); border-radius:6px; padding:3px 7px; }
+  .pip .aud { position:absolute; bottom:8px; right:8px; display:flex; align-items:flex-end; gap:2px; height:14px; }
+  .pip .aud i { width:3px; background:var(--teal); border-radius:2px; height:40%; }
+  .pip .aud i:nth-child(2){height:90%;} .pip .aud i:nth-child(3){height:60%;}
+
+  /* sheets & lists */
+  .sheet { margin-top:auto; background:var(--ink-2); border-top-left-radius:18px; border-top-right-radius:18px; border-top:1px solid var(--line-strong); padding:16px 14px 20px; position:relative; z-index:4; }
+  .sheet-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .sheet-head h4 { font-family:var(--disp); font-weight:700; font-size:16px; }
+  .group-label { font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-low); margin:14px 2px 6px; }
+  .row { display:flex; align-items:center; gap:10px; background:var(--ink-1); border:1px solid var(--line); padding:10px 12px; font-size:12.5px; }
+  .row:first-of-type { border-radius:10px 10px 0 0; }
+  .rowgroup .row { border-radius:0; border-top-width:0; }
+  .rowgroup .row:first-child { border-radius:10px 10px 0 0; border-top-width:1px; }
+  .rowgroup .row:last-child { border-radius:0 0 10px 10px; }
+  .rowgroup .row:only-child { border-radius:10px; }
+  .row .val { margin-left:auto; color:var(--text-mid); font-size:12px; display:inline-flex; align-items:center; gap:6px; }
+  .row .val.mono { font-family:var(--mono); font-size:10.5px; }
+  .row .chev { color:var(--text-low); }
+  .lock-tag { font-family:var(--mono); font-size:8.5px; letter-spacing:.1em; color:var(--warn); border:1px solid rgba(255,180,84,.45); border-radius:5px; padding:2px 5px; }
+  .foot-note { font-size:10.5px; color:var(--text-low); margin-top:12px; line-height:1.5; }
+
+  /* radio list (quality) */
+  .radio-row { display:flex; gap:10px; background:var(--ink-1); border:1px solid var(--line); padding:12px; align-items:flex-start; }
+  .radio-row .rd { width:16px; height:16px; border-radius:50%; border:1.6px solid var(--line-strong); flex:none; margin-top:2px; position:relative; }
+  .radio-row.sel { border-color:var(--cyan); box-shadow:0 0 0 1px var(--cyan); position:relative; z-index:1; }
+  .radio-row.sel .rd { border-color:var(--cyan); }
+  .radio-row.sel .rd::after { content:""; position:absolute; inset:3px; border-radius:50%; background:var(--cyan); }
+  .radio-row h6 { font-size:13px; font-weight:600; display:flex; gap:8px; align-items:center; }
+  .radio-row h6 .rec { font-family:var(--mono); font-size:8.5px; letter-spacing:.1em; color:#06131A; background:var(--teal); border-radius:5px; padding:2px 5px; }
+  .radio-row p { font-size:11px; color:var(--text-mid); margin-top:3px; }
+  .radio-row code { font-family:var(--mono); font-size:10px; color:var(--text-low); display:block; margin-top:5px; }
+
+  /* effects carousel */
+  .lens-rail { position:absolute; left:0; right:0; bottom:46px; display:flex; gap:12px; justify-content:center; align-items:center; z-index:3; padding:10px 0; }
+  .lens { width:44px; height:44px; border-radius:50%; border:1.6px solid rgba(255,255,255,.35); background:rgba(10,14,19,.35); }
+  .lens.none { display:flex; align-items:center; justify-content:center; }
+  .lens.none svg { width:16px; height:16px; stroke:#fff; stroke-width:1.8; fill:none; stroke-linecap:round; }
+  .lens.sel { border-color:var(--cyan); box-shadow:0 0 0 2px rgba(53,224,255,.45); transform:scale(1.12); }
+  .lens.l1 { background:radial-gradient(circle at 32% 30%, #FFD9A1, #C2255C); }
+  .lens.l2 { background:radial-gradient(circle at 32% 30%, #A5F3FC, #0E7490); }
+  .lens.l3 { background:radial-gradient(circle at 32% 30%, #DDD6FE, #6D28D9); }
+  .fx-chip { position:absolute; left:50%; transform:translateX(-50%); bottom:112px; border-radius:999px; padding:5px 11px; font-size:10.5px; color:#fff; z-index:3; }
+
+  /* modal */
+  .modal { position:absolute; inset:0; z-index:5; display:flex; align-items:flex-end; background:rgba(5,8,12,.55); }
+  .modal .card { width:100%; background:var(--ink-2); border-top-left-radius:18px; border-top-right-radius:18px; border-top:1px solid var(--line-strong); padding:16px 14px 20px; }
+  .bar-row { display:flex; align-items:center; gap:10px; font-size:12px; padding:7px 0; }
+  .bar-row span { width:64px; color:var(--text-mid); flex:none; }
+  .bar-row .bar { flex:1; height:5px; border-radius:3px; background:var(--ink-3); overflow:hidden; }
+  .bar-row .bar i { display:block; height:100%; border-radius:3px; background:var(--beam); }
+  .bar-row code { font-family:var(--mono); font-size:10.5px; color:var(--text-hi); width:76px; text-align:right; flex:none; font-variant-numeric:tabular-nums; }
+  .verdict { margin-top:12px; border:1px solid rgba(62,229,143,.4); background:rgba(62,229,143,.08); border-radius:12px; padding:11px 12px; font-size:12px; }
+  .verdict b { color:var(--ok); font-family:var(--mono); font-size:11px; letter-spacing:.06em; display:block; margin-bottom:3px; }
+  .btn-row { display:flex; gap:10px; margin-top:14px; }
+  .btn { flex:1; text-align:center; border-radius:999px; padding:10px; font-size:12.5px; font-weight:600; border:1px solid var(--line-strong); color:var(--text-mid); }
+  .btn.primary { background:var(--beam); color:#06131A; border-color:transparent; }
+
+  /* receiver */
+  .rcv-idle { flex:1; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center; overflow:hidden; }
+  .rcv-idle .amb { position:absolute; inset:0; }
+  .rcv-mark { width:54px; height:54px; border-radius:16px; background:var(--beam); transform:rotate(45deg); box-shadow:0 0 44px rgba(53,224,255,.45); position:relative; z-index:1; margin-bottom:8px; }
+  .rcv-idle h4 { font-family:var(--disp); font-weight:700; font-size:21px; position:relative; z-index:1; }
+  .rcv-idle p { font-family:var(--mono); font-size:10px; color:var(--text-mid); position:relative; z-index:1; letter-spacing:.06em; }
+  .rcv-foot { position:absolute; bottom:12px; left:0; right:0; text-align:center; font-family:var(--mono); font-size:8.5px; color:var(--text-low); letter-spacing:.1em; z-index:1; }
+  .paircode { font-family:var(--mono); font-size:30px; letter-spacing:.14em; color:var(--cyan); font-variant-numeric:tabular-nums; }
+  .qr { width:104px; height:104px; border-radius:10px; background:#fff; padding:9px; margin:0 auto; }
+  .qr svg { display:block; width:100%; height:100%; }
+  .pair-steps { text-align:left; font-size:11px; color:var(--text-mid); margin:14px auto 0; max-width:200px; }
+  .pair-steps li { margin-top:6px; }
+  .pair-steps b { color:var(--text-hi); font-weight:600; }
+
+  /* dashboard */
+  .side { width:184px; flex:none; background:var(--ink-1); border-right:1px solid var(--line); padding:16px 12px; display:flex; flex-direction:column; gap:2px; }
+  .side .wm { font-family:var(--disp); font-weight:800; font-size:10.5px; letter-spacing:.2em; padding:4px 10px 14px; }
+  .side .wm .holo { background:var(--beam); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .nav-it { display:flex; align-items:center; gap:9px; border-radius:9px; padding:8px 10px; font-size:12.5px; color:var(--text-mid); }
+  .nav-it.on { background:var(--ink-3); color:var(--text-hi); box-shadow:inset 2px 0 0 var(--cyan); }
+  .nav-it .nb { margin-left:auto; font-family:var(--mono); font-size:9.5px; background:rgba(255,77,141,.16); color:var(--err); border-radius:6px; padding:1px 6px; }
+  .main { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .topbar { display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid var(--line); font-size:12.5px; }
+  .topbar .org { font-weight:600; display:flex; align-items:center; gap:7px; }
+  .topbar .search { margin-left:auto; color:var(--text-low); background:var(--ink-1); border:1px solid var(--line); border-radius:8px; padding:6px 12px; width:200px; font-size:12px; }
+  .avatar { width:26px; height:26px; border-radius:50%; background:var(--beam); flex:none; }
+  .kpis { display:flex; gap:12px; padding:16px 18px 0; }
+  .kpi { flex:1; background:var(--ink-1); border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+  .kpi code { font-family:var(--mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-low); display:block; }
+  .kpi b { font-family:var(--disp); font-weight:700; font-size:22px; display:flex; align-items:baseline; gap:7px; margin-top:2px; }
+  .kpi b i { font-style:normal; font-family:var(--mono); font-size:10px; font-weight:400; }
+  .dash-body { display:flex; gap:12px; padding:14px 18px 18px; min-height:0; flex:1; }
+  .tablecard { flex:1.6; background:var(--ink-1); border:1px solid var(--line); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; min-width:0; }
+  .tablecard h3, .livecard h3 { font-family:var(--disp); font-weight:600; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-mid); padding:12px 14px 8px; }
+  table { width:100%; border-collapse:collapse; font-size:11.5px; }
+  th { font-family:var(--mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-low); text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); font-weight:400; }
+  td { padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  td.mono, th.num, td.num { font-family:var(--mono); font-size:10.5px; color:var(--text-mid); font-variant-numeric:tabular-nums; }
+  td.num, th.num { text-align:right; }
+  .spill { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:2.5px 9px; font-family:var(--mono); font-size:9px; letter-spacing:.08em; }
+  .spill.ok { background:rgba(62,229,143,.12); color:var(--ok); }
+  .spill.warn { background:rgba(255,180,84,.12); color:var(--warn); }
+  .spill.err { background:rgba(255,77,141,.12); color:var(--err); }
+  .spill.live { background:rgba(53,224,255,.12); color:var(--cyan); }
+  .rightcol { flex:1; display:flex; flex-direction:column; gap:12px; min-width:0; }
+  .livecard { background:var(--ink-1); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .live-sess { padding:0 14px 14px; }
+  .live-sess .who { display:flex; align-items:center; gap:9px; font-size:12px; }
+  .live-sess .who b { font-weight:600; display:block; }
+  .live-sess .who span { font-family:var(--mono); font-size:9.5px; color:var(--text-low); }
+  .live-sess .tele { font-family:var(--mono); font-size:9.5px; color:var(--text-mid); margin-top:9px; line-height:1.7; font-variant-numeric:tabular-nums; }
+  .spark { margin-top:8px; background:var(--ink-0); border:1px solid var(--line); border-radius:8px; padding:6px; }
+  .spark svg { display:block; width:100%; height:44px; }
+  .alerts { padding:0 14px 12px; font-size:11.5px; }
+  .alert { display:flex; gap:8px; align-items:flex-start; padding:7px 0; border-top:1px solid var(--line); color:var(--text-mid); }
+  .alert:first-child { border-top:0; }
+  .alert .dot { margin-top:5px; }
+  .alert code { font-family:var(--mono); font-size:9px; color:var(--text-low); display:block; }
+
+  footer { margin-top:72px; padding-top:20px; border-top:1px solid var(--line); font-size:12.5px; color:var(--text-low); display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div>
+      <div class="wordmark"><span class="holo">HOLO</span>CAST</div>
+      <h1>Design boards — telepresence voor de Holobox</h1>
+      <p>UI/UX/VFX-layout voor het HEREweHOLO streamingplatform: sender-app, receiver en cloud-dashboard.
+         Eigen ontwerp op de flow van het referentiemateriaal — geen enkel merkelement overgenomen.</p>
+    </div>
+    <div class="meta">
+      <span><b>HEREweHOLO B.V.</b> · Den Haag</span>
+      <span>versie <b>0.1</b> · 2026-08-27</span>
+      <span>naam <b>HoloCast</b> = werktitel</span>
+    </div>
+  </header>
+
+  <!-- ————————————————— DESIGN LANGUAGE ————————————————— -->
+  <section class="section">
+    <div class="kicker">01 · Design language</div>
+    <h2>Kalm, donker, eerlijk</h2>
+    <p class="lede">Volwassen AV/broadcast-software: gunmetal-donker, één gereserveerd beam-gradient voor de primaire actie,
+       monospace voor alles wat gemeten is. Geen decoratieve animatie — beweging verklaart uitsluitend een statuswissel.</p>
+    <div class="dl-grid">
+      <div class="panel">
+        <h3>Kleur</h3>
+        <div class="swatches">
+          <div class="sw" style="background:#0A0E13"><b>Ink 0</b><span>#0A0E13</span></div>
+          <div class="sw" style="background:#18202B"><b>Ink 2</b><span>#18202B</span></div>
+          <div class="sw" style="background:#35E0FF;color:#06131A"><b>Cyan</b><span>#35E0FF</span></div>
+          <div class="sw" style="background:#2DD4BF;color:#06131A"><b>Teal</b><span>#2DD4BF</span></div>
+          <div class="sw" style="background:#8F7BFF;color:#06131A"><b>Violet</b><span>#8F7BFF</span></div>
+          <div class="sw" style="background:linear-gradient(135deg,#35E0FF,#2DD4BF,#8F7BFF);color:#06131A"><b>Beam</b><span>alleen primaire actie</span></div>
+        </div>
+      </div>
+      <div class="panel type-sample">
+        <h3>Typografie</h3>
+        <div class="t-disp">Archivo 800</div>
+        <div class="t-ui">IBM Plex Sans voor alle lopende UI-tekst en knoppen.</div>
+        <div class="t-mono">00:12:47 · CONNECTED · 2160 × 3840 · 30 fps · 17.8 Mbps</div>
+        <div class="t-ui" style="font-size:12px; margin-top:10px;">IBM Plex Mono voor telemetrie — alles wat gemeten is, staat in mono. Wat in mono staat, is nooit verzonnen.</div>
+      </div>
+      <div class="panel">
+        <h3>Status — kleur + vorm + label</h3>
+        <div class="status-row"><i class="dot" style="background:#3EE58F"></i> Online / connected / geverifieerd <code>#3EE58F</code></div>
+        <div class="status-row"><i class="dot" style="background:#FFB454"></i> Degraded / stepping down <code>#FFB454</code></div>
+        <div class="status-row"><i class="dot" style="background:#FF4D8D"></i> Offline / error / stop <code>#FF4D8D</code></div>
+        <div class="status-row" style="border-top:1px solid var(--line); color:var(--text-low); font-size:12px;">Status krijgt altijd óók een tekstlabel — nooit kleur alleen.</div>
+      </div>
+    </div>
+    <div class="dl-grid">
+      <div class="panel">
+        <h3>VFX · Connecting</h3>
+        <div class="vfx-demo"><div class="rings"><i></i><i></i><i></i><b></b></div></div>
+        <p class="vfx-note">Concentrische beam-ringen tijdens verbindingsopbouw. <code>1200ms loop · stopt hard op CONNECTED</code></p>
+      </div>
+      <div class="panel">
+        <h3>VFX · Live-pulse</h3>
+        <div class="vfx-demo"><span class="pulse-badge"><i></i>LIVE</span></div>
+        <p class="vfx-note">Eén pulserende stip, 2s-cyclus. De enige permanente animatie tijdens een sessie. <code>freeze bij reduced-motion</code></p>
+      </div>
+      <div class="panel">
+        <h3>VFX · Receiver ambient</h3>
+        <div class="vfx-demo"><div class="shimmer"></div></div>
+        <p class="vfx-note">Traag driftende holo-gloed op het idle-scherm van de box. Merkgevoel, nooit een foutmelding. <code>6s alternate · GPU-composited</code></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ————————————————— FLOW ————————————————— -->
+  <section class="section">
+    <div class="kicker">02 · Flow</div>
+    <h2>Vier taps tot live</h2>
+    <p class="lede">Bestemming kiezen gebeurt vóór de camera opent. De netwerkcheck is de enige toegevoegde stap
+       t.o.v. de referentie — en die verdient zijn plek door een eerlijk kwaliteitsoordeel vooraf.</p>
+    <div class="flow">
+      <span class="st">SELECT DESTINATION</span><span class="ar">→</span>
+      <span class="st">PREVIEW + NETWORK CHECK</span><span class="ar">→</span>
+      <span class="st hot">GO LIVE</span><span class="ar">→</span>
+      <span class="st">LIVE ⇄ return feed · effects</span><span class="ar">→</span>
+      <span class="st">STOP</span><span class="ar">→</span>
+      <span class="st">receiver: READY-idle</span>
+    </div>
+  </section>
+
+  <!-- ————————————————— SENDER ————————————————— -->
+  <section class="section">
+    <div class="kicker">03 · Sender — mobiel &amp; browser</div>
+    <h2>De presentator-flow</h2>
+    <p class="lede">Portrait-first. De presentator staat vóór de telefoon; elk bedienelement is op armlengte-afstand leesbaar.
+       Scroll horizontaal door de acht schermen.</p>
+
+    <div class="shelf">
+
+      <!-- S1 SELECT DESTINATION -->
+      <div class="board">
+        <div class="phone"><div class="screen">
+          <div class="appbar">
+            <span class="icon-btn"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg></span>
+            <span class="wm"><span class="holo">HOLO</span>CAST</span>
+            <span class="pill">+ Pair device</span>
+          </div>
+          <div class="sc-title">
+            <h4>Select destination</h4>
+            <p>Choose one or more displays before the camera opens.</p>
+          </div>
+          <div class="devgrid">
+            <div class="devcard sel">
+              <span class="check"><svg viewBox="0 0 12 12"><path d="M2 6.5 5 9l5 -6"/></svg></span>
+              <div class="devviz"><span class="box"></span><span class="st" style="background:var(--ok)"></span></div>
+              <h5>Amsterdam HQ</h5><p>Holobox · reception</p>
+              <span class="slabel" style="color:var(--ok)">ONLINE</span>
+            </div>
+            <div class="devcard sel">
+              <span class="check"><svg viewBox="0 0 12 12"><path d="M2 6.5 5 9l5 -6"/></svg></span>
+              <div class="devviz"><span class="box mini"></span><span class="st" style="background:var(--ok)"></span></div>
+              <h5>Rotterdam Store</h5><p>Holomini · window</p>
+              <span class="slabel" style="color:var(--ok)">ONLINE</span>
+            </div>
+            <div class="devcard">
+              <span class="check"></span>
+              <div class="devviz"><span class="box"></span><span class="st" style="background:var(--warn)"></span></div>
+              <h5>New York Lobby</h5><p>Holobox · lobby east</p>
+              <span class="slabel" style="color:var(--warn)">IN SESSION</span>
+            </div>
+            <div class="devcard off">
+              <span class="check"></span>
+              <div class="devviz"><span class="box wall"></span><span class="st" style="background:var(--err)"></span></div>
+              <h5>Utrecht Expo</h5><p>Holowall · hall 3</p>
+              <span class="slabel" style="color:var(--err)">OFFLINE</span>
+            </div>
+          </div>
+          <div class="bottombar">
+            <span class="count"><b>2</b> destinations selected</span>
+            <span class="pill brand">Continue →</span>
+          </div>
+        </div></div>
+        <div class="note"><b><em>S1</em>Select destination</b>
+          <ul>
+            <li>Multi-select vóór de camera — je weet altijd waar je heen gaat</li>
+            <li>Status per device: kleur + label; offline = gedimd, niet verborgen</li>
+            <li>"In session" (amber) is nieuw t.o.v. referentie: bezet ≠ offline</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- S2 PREVIEW -->
+      <div class="board">
+        <div class="phone"><div class="screen">
+          <div class="cam">
+            <div class="top">
+              <span class="dest-chip glass">→ Amsterdam HQ +1</span>
+              <span class="icon-btn glass"><svg viewBox="0 0 16 16"><path d="M12.5 6.5a5 5 0 0 0 -9 -1.5M3.5 9.5a5 5 0 0 0 9 1.5"/><path d="M13 2v3h-3M3 14v-3h3"/></svg></span>
+            </div>
+            <div class="frame-guide"></div>
+            <div class="figure"><svg viewBox="0 0 100 260"><circle class="body" cx="50" cy="24" r="14"/><path class="body" d="M50 41c-11 0-18 6-20 15l-6 33c-1 5 6 8 8 3l7-27 1 30-7 82c-1 7 9 8 10 1l7-58 7 58c1 7 11 6 10-1l-7-82 1-30 7 27c2 5 9 2 8-3l-6-33c-2-9-9-15-20-15z"/></svg></div>
+            <span class="frame-hint glass">Step back ± 30 cm — feet not in frame</span>
+            <div class="netcard glass">
+              <span class="ic"><svg viewBox="0 0 12 12"><path d="M2 6.5 5 9l5-6"/></svg></span>
+              <span><b>Network check passed</b><span>42 Mbps up · 28 ms · verdict: 4K30 stable</span></span>
+              <span class="more">Details</span>
+            </div>
+            <div class="strip glass">00:00:00 <i>·</i> <span class="s-sb">STANDBY</span> <i>·</i> 0 × 0 <i>·</i> 0.0 fps <i>·</i> 0.0 Mbps</div>
+          </div>
+          <div class="toolbar">
+            <span class="tool"><span class="tico"><svg viewBox="0 0 16 16"><path d="M8 1.5 9.6 6l4.4 .3-3.4 2.8 1.2 4.4L8 11l-3.8 2.5 1.2-4.4L2 6.3 6.4 6z"/></svg></span>Effects</span>
+            <span class="golive"><span class="big">GO<br>LIVE</span></span>
+            <span class="tool"><span class="tico"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.6"/><path d="M8 1.8v2M8 12.2v2M1.8 8h2M12.2 8h2M3.6 3.6l1.4 1.4M11 11l1.4 1.4M12.4 3.6 11 5M5 11l-1.4 1.4"/></svg></span>Session</span>
+            <span class="tool"><span class="tico"><svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></span>Exit</span>
+          </div>
+        </div></div>
+        <div class="note"><b><em>S2</em>Preview &amp; pre-flight</b>
+          <ul>
+            <li>Framing-assistent (nieuw): full-body-detectie met één concrete instructie</li>
+            <li>Netwerkcheck met eerlijk oordeel vóórdat GO LIVE beschikbaar oogt</li>
+            <li>Statusstrook toont echte nullen — STANDBY, 0 × 0, geen fake waarden</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- S3 NETWORK CHECK -->
+      <div class="board">
+        <div class="phone"><div class="screen">
+          <div class="cam dim">
+            <div class="figure"><svg viewBox="0 0 100 260"><circle class="body" cx="50" cy="24" r="14"/><path class="body" d="M50 41c-11 0-18 6-20 15l-6 33c-1 5 6 8 8 3l7-27 1 30-7 82c-1 7 9 8 10 1l7-58 7 58c1 7 11 6 10-1l-7-82 1-30 7 27c2 5 9 2 8-3l-6-33c-2-9-9-15-20-15z"/></svg></div>
+          </div>
+          <div class="modal"><div class="card">
+            <div class="sheet-head"><h4>Network check</h4>
+              <span class="icon-btn"><svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></div>
+            <div class="bar-row"><span>Uplink</span><span class="bar"><i style="width:78%"></i></span><code>42.3 Mbps</code></div>
+            <div class="bar-row"><span>RTT</span><span class="bar"><i style="width:30%"></i></span><code>28 ms</code></div>
+            <div class="bar-row"><span>Jitter</span><span class="bar"><i style="width:14%"></i></span><code>3 ms</code></div>
+            <div class="bar-row"><span>Loss</span><span class="bar"><i style="width:6%"></i></span><code>0.2 %</code></div>
+            <div class="verdict"><b>VERDICT — 2160 × 3840 @ 30 fps STABLE</b>
+              Auto starts at 4K30 and steps down before you drop frames. Full HD 60 is also available.</div>
+            <div class="btn-row"><span class="btn">Run again</span><span class="btn primary">Use Auto · up to 4K30</span></div>
+          </div></div>
+        </div></div>
+        <div class="note"><b><em>S3</em>Network check — eerlijk oordeel</b>
+          <ul>
+            <li>Vier gemeten waarden, mono, met visuele schaal</li>
+            <li>Verdict in klare taal: wat haal je wél, wat is het alternatief</li>
+            <li>Geen referentie-UX — volledig eigen ontwerp (spec §-preflight)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- S4 LIVE -->
+      <div class="board">
+        <div class="phone"><div class="screen">
+          <div class="cam">
+            <div class="top">
+              <span class="live-badge glass"><i></i>LIVE</span>
+              <span class="icon-btn glass"><svg viewBox="0 0 16 16"><path d="M12.5 6.5a5 5 0 0 0 -9 -1.5M3.5 9.5a5 5 0 0 0 9 1.5"/><path d="M13 2v3h-3M3 14v-3h3"/></svg></span>
+            </div>
+            <div class="figure"><svg viewBox="0 0 100 260"><circle class="body" cx="50" cy="24" r="14"/><path class="body" d="M50 41c-11 0-18 6-20 15l-6 33c-1 5 6 8 8 3l7-27 1 30-7 82c-1 7 9 8 10 1l7-58 7 58c1 7 11 6 10-1l-7-82 1-30 7 27c2 5 9 2 8-3l-6-33c-2-9-9-15-20-15z"/></svg></div>
+            <div class="strip glass">00:12:47 <i>·</i> <span class="s-ok">CONNECTED</span> <i>·</i> 2160 × 3840 <i>·</i> 30 fps <i>·</i> 17.8 Mbps</div>
+          </div>
+          <div class="toolbar">
+            <span class="tool"><span class="tico"><svg viewBox="0 0 16 16"><path d="M8 1.5 9.6 6l4.4 .3-3.4 2.8 1.2 4.4L8 11l-3.8 2.5 1.2-4.4L2 6.3 6.4 6z"/></svg></span>Effects</span>
+            <span class="golive"><span class="big stop">STOP</span></span>
+            <span class="tool locked"><span class="tico"><svg viewBox="0 0 16 16"><rect x="4" y="7" width="8" height="6" rx="1.5"/><path d="M5.5 7V5.5a2.5 2.5 0 0 1 5 0V7"/></svg></span>Session</span>
+            <span class="tool"><span class="tico"><svg viewBox="0 0 16 16"><rect x="2.5" y="4" width="11" height="8" rx="1.5"/><path d="M5.5 12v1.5h5V12"/></svg></span>Return feed</span>
+          </div>
+        </div></div>
+        <div class="note"><b><em>S4</em>Live</b>
+          <ul>
+            <li>Statusstrook wordt groen en telt echt: zes waarden, per seconde</li>
+            <li>2160 × 3840 verschijnt pas als de hele keten het bevestigt</li>
+            <li>Session-instellingen bevroren (slotje) — Exit blijft altijd bereikbaar</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- S5 RETURN FEED -->
+      <div class="board">
+        <div class="phone"><div class="screen">
+          <div class="cam">
+            <div class="top">
+              <span class="live-badge glass"><i></i>LIVE</span>
+              <span class="icon-btn glass"><svg viewBox="0 0 16 16"><path d="M12.5 6.5a5 5 0 0 0 -9 -1.5M3.5 9.5a5 5 0 0 0 9 1.5"/><path d="M13 2v3h-3M3 14v-3h3"/></svg></span>
+            </div>
+            <div class="figure" style="margin-bottom:180px"><svg viewBox="0 0 100 260"><circle class="body" cx="50" cy="24" r="14"/><path class="body" d="M50 41c-11 0-18 6-20 15l-6 33c-1 5 6 8 8 3l7-27 1 30-7 82c-1 7 9 8 10 1l7-58 7 58c1 7 11 6 10-1l-7-82 1-30 7 27c2 5 9 2 8-3l-6-33c-2-9-9-15-20-15z"/></svg></div>
+            <div class="pip">
+              <div class="pip-top"><span class="tag">Amsterdam HQ · return feed</span>
+                <span class="icon-btn" style="width:22px;height:22px"><svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></div>
+              <div class="figure fig2"><svg viewBox="0 0 100 260"><circle class="body" cx="50" cy="24" r="14"/><path class="body" d="M50 41c-11 0-18 6-20 15l-6 33c-1 5 6 8 8 3l7-27 1 30-7 82c-1 7 9 8 10 1l7-58 7 58c1 7 11 6 10-1l-7-82 1-30 7 27c2 5 9 2 8-3l-6-33c-2-9-9-15-20-15z"/></svg></div>
+              <span class="aud"><i></i><i></i><i></i></span>
+            </div>
+            <div class="strip glass">00:14:02 <i>·</i> <span class="s-ok">CONNECTED</span> <i>·</i> 2160 × 3840 <i>·</i> 30 fps <i>·</i> 16.9 Mbps</div>
+          </div>
+          <div class="toolbar">
+            <span class="tool"><span class="tico"><svg viewBox="0 0 16 16"><path d="M8 1.5 9.6 6l4.4 .3-3.4 2.8 1.2 4.4L8 11l-3.8 2.5 1.2-4.4L2 6.3 6.4 6z"/></svg></span>Effects</span>
+            <span class="golive"><span class="big stop">STOP</span></span>
+            <span class="tool locked"><span class="tico"><svg viewBox="0 0 16 16"><rect x="4" y="7" width="8" height="6" rx="1.5"/><path d="M5.5 7V5.5a2.5 2.5 0 0 1 5 0V7"/></svg></span>Session</span>
+            <span class="tool" style="color:var(--cyan)"><span class="tico" style="border-color:var(--cyan)"><svg viewBox="0 0 16 16" style="stroke:var(--cyan)"><rect x="2.5" y="4" width="11" height="8" rx="1.5"/><path d="M5.5 12v1.5h5V12"/></svg></span>Return feed</span>
+          </div>
+        </div></div>
+        <div class="note"><b><em>S5</em>Return feed — dockbare inset</b>
+          <ul>
+            <li>Picture-in-picture, geen schermwissel: eigen kader blijft zichtbaar</li>
+            <li>Audio-indicator toont dat retourgeluid loopt (echo-cancelled)</li>
+            <li>Sluiten onderbreekt de stream nooit</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- S6 SESSION SETTINGS -->
+      <div class="board">
+        <div class="phone"><div class="screen">
+          <div class="cam dim" style="flex:0 0 150px"></div>
+          <div class="sheet" style="flex:1">
+            <div class="sheet-head"><h4>Session</h4>
+              <span class="icon-btn"><svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></div>
+            <div class="group-label">Destination</div>
+            <div class="rowgroup">
+              <div class="row">Amsterdam HQ · Holobox <span class="val mono" style="color:var(--ok)">ONLINE</span></div>
+              <div class="row">Rotterdam Store · Holomini <span class="val mono" style="color:var(--ok)">ONLINE</span></div>
+            </div>
+            <div class="group-label">Route</div>
+            <div class="rowgroup">
+              <div class="row">Edge region <span class="val">AMS-1 · auto <span class="chev">›</span></span></div>
+            </div>
+            <div class="group-label">Media</div>
+            <div class="rowgroup">
+              <div class="row">Camera <span class="val">Back camera <span class="chev">›</span></span></div>
+              <div class="row">Microphone <span class="val">Phone mic <span class="chev">›</span></span></div>
+              <div class="row">Echo cancellation <span class="val"><span class="lock-tag">ALWAYS ON</span></span></div>
+            </div>
+            <div class="group-label">Quality</div>
+            <div class="rowgroup">
+              <div class="row">Beam quality <span class="val">Auto · up to 4K30 <span class="chev">›</span></span></div>
+            </div>
+            <p class="foot-note">Destination and quality lock while live. Stop the beam to change them.</p>
+          </div>
+        </div></div>
+        <div class="note"><b><em>S6</em>Session-instellingen</b>
+          <ul>
+            <li>Route zichtbaar (edge-regio) — net als referentie, maar met "auto"</li>
+            <li>Echo cancellation verplicht aan: een badge, geen toggle</li>
+            <li>Vergrendelgedrag expliciet uitgelegd in de voetnoot</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- S7 QUALITY -->
+      <div class="board">
+        <div class="phone"><div class="screen">
+          <div class="appbar">
+            <span class="icon-btn"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg></span>
+            <span class="wm">QUALITY</span>
+            <span style="width:30px"></span>
+          </div>
+          <div style="padding:10px 14px; display:flex; flex-direction:column; gap:10px;">
+            <div class="radio-row sel"><span class="rd"></span>
+              <span><h6>Auto <span class="rec">RECOMMENDED</span></h6>
+              <p>Starts at the highest verified tier and steps down before frames drop. Recovers upward, controlled.</p>
+              <code>720p → 1080 × 1920 60 → 2160 × 3840 30</code></span></div>
+            <div class="radio-row"><span class="rd"></span>
+              <span><h6>Full HD</h6>
+              <p>Best for motion — highest frame rate.</p>
+              <code>1080 × 1920 · 60 fps · 6 Mbps</code></span></div>
+            <div class="radio-row"><span class="rd"></span>
+              <span><h6>4K</h6>
+              <p>Best for detail — needs a strong, stable uplink.</p>
+              <code>2160 × 3840 · 30 fps · 18 Mbps</code></span></div>
+            <p class="foot-note">A tier is only labelled as active when capture, encode, transport, decode and render all
+              confirm it. The status strip always shows the measured value.</p>
+          </div>
+        </div></div>
+        <div class="note"><b><em>S7</em>Quality — met consequenties</b>
+          <ul>
+            <li>Auto-modus toegevoegd náást expliciete keuzes (referentie had alleen handmatig)</li>
+            <li>Bitrate, resolutie en framerate onder elke optie — eerlijker dan "hoog/laag"</li>
+            <li>Portrait-notatie consequent: 2160 × 3840, nooit "4K portrait"</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- S8 EFFECTS -->
+      <div class="board">
+        <div class="phone"><div class="screen">
+          <div class="cam">
+            <div class="top">
+              <span class="live-badge glass"><i></i>LIVE</span>
+              <span class="icon-btn glass"><svg viewBox="0 0 16 16"><path d="M12.5 6.5a5 5 0 0 0 -9 -1.5M3.5 9.5a5 5 0 0 0 9 1.5"/><path d="M13 2v3h-3M3 14v-3h3"/></svg></span>
+            </div>
+            <div class="figure" style="margin-bottom:120px"><svg viewBox="0 0 100 260"><circle class="body" cx="50" cy="24" r="14"/><path class="body" d="M50 41c-11 0-18 6-20 15l-6 33c-1 5 6 8 8 3l7-27 1 30-7 82c-1 7 9 8 10 1l7-58 7 58c1 7 11 6 10-1l-7-82 1-30 7 27c2 5 9 2 8-3l-6-33c-2-9-9-15-20-15z"/></svg></div>
+            <span class="fx-chip glass">Effects render in the outgoing beam</span>
+            <div class="lens-rail">
+              <span class="lens none sel"><svg viewBox="0 0 16 16"><path d="M3 13 13 3"/></svg></span>
+              <span class="lens l1"></span>
+              <span class="lens l2"></span>
+              <span class="lens l3"></span>
+            </div>
+            <div class="strip glass">00:16:33 <i>·</i> <span class="s-ok">CONNECTED</span> <i>·</i> 2160 × 3840 <i>·</i> 30 fps <i>·</i> 17.2 Mbps</div>
+          </div>
+          <div class="toolbar">
+            <span class="tool" style="color:var(--cyan)"><span class="tico" style="border-color:var(--cyan)"><svg viewBox="0 0 16 16" style="stroke:var(--cyan)"><path d="M8 1.5 9.6 6l4.4 .3-3.4 2.8 1.2 4.4L8 11l-3.8 2.5 1.2-4.4L2 6.3 6.4 6z"/></svg></span>Effects</span>
+            <span class="golive"><span class="big stop">STOP</span></span>
+            <span class="tool locked"><span class="tico"><svg viewBox="0 0 16 16"><rect x="4" y="7" width="8" height="6" rx="1.5"/><path d="M5.5 7V5.5a2.5 2.5 0 0 1 5 0V7"/></svg></span>Session</span>
+            <span class="tool"><span class="tico"><svg viewBox="0 0 16 16"><rect x="2.5" y="4" width="11" height="8" rx="1.5"/><path d="M5.5 12v1.5h5V12"/></svg></span>Return feed</span>
+          </div>
+        </div></div>
+        <div class="note"><b><em>S8</em>Effects — AR-lenzen</b>
+          <ul>
+            <li>Carrousel van ronde lenzen; lege cirkel = geen effect (default)</li>
+            <li>Chip maakt expliciet: het effect gaat mee in de uitgaande stream</li>
+            <li>Snap Camera Kit-integratie — fase 2, niet MVP</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ————————————————— RECEIVER ————————————————— -->
+  <section class="section">
+    <div class="kicker">04 · Receiver — de Holobox zelf</div>
+    <h2>Nooit een foutmelding, nooit Windows</h2>
+    <p class="lede">De box toont precies drie dingen: een live stream, merk-idle-content, of een koppelscherm bij eerste
+       installatie. Elke andere toestand is een bug.</p>
+    <div class="shelf">
+
+      <!-- R1 IDLE -->
+      <div class="board" style="width:320px">
+        <div class="display"><div class="screen">
+          <div class="rcv-idle">
+            <div class="amb shimmer"></div>
+            <div class="rcv-mark"></div>
+            <h4>Ready when you are</h4>
+            <p>HOLOBOX · AMSTERDAM HQ</p>
+            <div class="rcv-foot">ONLINE · PAIRED TO HEREWEHOLO CLOUD</div>
+          </div>
+        </div></div>
+        <div class="note"><b><em>R1</em>Idle / fallback</b>
+          <ul>
+            <li>Ambient holo-gloed, traag en GPU-vriendelijk — draait maandenlang</li>
+            <li>Zelfde scherm bij verbindingsverlies: merkbeeld, geen error</li>
+            <li>Statusregel klein onderin — voor de installateur, niet de bezoeker</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- R2 PAIRING -->
+      <div class="board" style="width:320px">
+        <div class="display"><div class="screen">
+          <div class="rcv-idle" style="gap:10px">
+            <h4 style="font-size:17px">Pair this display</h4>
+            <div class="qr"><svg viewBox="0 0 25 25" fill="#0A0E13">
+              <rect x="0" y="0" width="7" height="7"/><rect x="2" y="2" width="3" height="3" fill="#fff"/>
+              <rect x="18" y="0" width="7" height="7"/><rect x="20" y="2" width="3" height="3" fill="#fff"/>
+              <rect x="0" y="18" width="7" height="7"/><rect x="2" y="20" width="3" height="3" fill="#fff"/>
+              <rect x="9" y="1" width="2" height="2"/><rect x="13" y="0" width="2" height="3"/><rect x="10" y="4" width="3" height="2"/>
+              <rect x="1" y="9" width="2" height="2"/><rect x="4" y="12" width="3" height="2"/><rect x="0" y="14" width="2" height="3"/>
+              <rect x="9" y="9" width="2" height="2"/><rect x="12" y="11" width="3" height="3"/><rect x="16" y="9" width="2" height="2"/>
+              <rect x="20" y="10" width="3" height="2"/><rect x="9" y="14" width="3" height="2"/><rect x="14" y="15" width="2" height="2"/>
+              <rect x="19" y="14" width="2" height="2"/><rect x="22" y="17" width="2" height="2"/><rect x="9" y="19" width="2" height="3"/>
+              <rect x="13" y="18" width="2" height="2"/><rect x="12" y="22" width="3" height="2"/><rect x="17" y="20" width="2" height="2"/>
+              <rect x="20" y="22" width="3" height="2"/>
+            </svg></div>
+            <div class="paircode">H7·K4·M2</div>
+            <ol class="pair-steps">
+              <li><b>Open HoloCast Cloud</b> as an admin</li>
+              <li><b>Scan the code</b> or type it in</li>
+              <li><b>Name the device</b> — done</li>
+            </ol>
+            <div class="rcv-foot">CODE EXPIRES IN 09:42 · DEVICE ID HWB-2041</div>
+          </div>
+        </div></div>
+        <div class="note"><b><em>R2</em>Pairing — eerste start</b>
+          <ul>
+            <li>QR + leesbare code: scannen of overtypen, beide onder 2 minuten</li>
+            <li>Code verloopt; device-identiteit is getekend, niet kopieerbaar</li>
+            <li>Geen terminal, geen configbestand — acceptance-eis</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ————————————————— CLOUD ————————————————— -->
+  <section class="section">
+    <div class="kicker">05 · Cloud — fleet &amp; operations</div>
+    <h2>Honderd boxen, één scherm</h2>
+    <p class="lede">Het dashboard is voor operators: samenvatting vóór detail, status in vorm én kleur,
+       elke live-sessie met echte telemetrie. Volledig eigen ontwerp — de referentie toont hiervan niets.</p>
+    <div class="shelf">
+      <div class="board wide">
+        <div class="desktop">
+          <div class="side">
+            <div class="wm"><span class="holo">HOLO</span>CAST <span style="color:var(--text-low)">CLOUD</span></div>
+            <div class="nav-it on">Fleet</div>
+            <div class="nav-it">Sessions</div>
+            <div class="nav-it">Content</div>
+            <div class="nav-it">Analytics</div>
+            <div class="nav-it">Alerts <span class="nb">2</span></div>
+            <div class="nav-it" style="margin-top:auto">Settings</div>
+          </div>
+          <div class="main">
+            <div class="topbar">
+              <span class="org">HEREweHOLO Demo B.V. <span style="color:var(--text-low)">▾</span></span>
+              <span class="search">Search devices, sessions…</span>
+              <span class="avatar"></span>
+            </div>
+            <div class="kpis">
+              <div class="kpi"><code>Devices</code><b>24</b></div>
+              <div class="kpi"><code>Online</code><b style="color:var(--ok)">21 <i>/24</i></b></div>
+              <div class="kpi"><code>Degraded</code><b style="color:var(--warn)">1</b></div>
+              <div class="kpi"><code>Offline</code><b style="color:var(--err)">2</b></div>
+              <div class="kpi"><code>Live now</code><b style="color:var(--cyan)">3</b></div>
+            </div>
+            <div class="dash-body">
+              <div class="tablecard">
+                <h3>Fleet</h3>
+                <div style="overflow-x:auto">
+                <table>
+                  <tr><th>Device</th><th>Type · location</th><th>Status</th><th class="num">Uptime</th><th class="num">Temp</th></tr>
+                  <tr><td>Amsterdam HQ</td><td class="mono">Holobox · reception</td><td><span class="spill live">● LIVE</span></td><td class="num">41 d</td><td class="num">62 °C</td></tr>
+                  <tr><td>Rotterdam Store</td><td class="mono">Holomini · window</td><td><span class="spill ok">● ONLINE</span></td><td class="num">18 d</td><td class="num">48 °C</td></tr>
+                  <tr><td>New York Lobby</td><td class="mono">Holobox · lobby east</td><td><span class="spill ok">● ONLINE</span></td><td class="num">67 d</td><td class="num">55 °C</td></tr>
+                  <tr><td>Berlin Fair</td><td class="mono">Holowall · booth 12</td><td><span class="spill warn">● HOT 81 °C</span></td><td class="num">3 d</td><td class="num">81 °C</td></tr>
+                  <tr><td>Utrecht Expo</td><td class="mono">Holowall · hall 3</td><td><span class="spill err">● OFFLINE 2 h</span></td><td class="num">—</td><td class="num">—</td></tr>
+                </table>
+                </div>
+              </div>
+              <div class="rightcol">
+                <div class="livecard">
+                  <h3>Live now</h3>
+                  <div class="live-sess">
+                    <div class="who"><span class="avatar"></span><span><b>Sarah Lin → Amsterdam HQ</b><span>guest link · New York · 00:14:02</span></span></div>
+                    <div class="tele">2160 × 3840 · 30 fps · 17.8 Mbps<br>RTT 96 ms · loss 0.1 % · AMS-1 edge</div>
+                    <div class="spark"><svg viewBox="0 0 200 44" preserveAspectRatio="none">
+                      <polyline points="0,26 20,24 40,25 60,20 80,22 100,16 120,18 140,12 160,15 180,10 200,12"
+                        fill="none" stroke="#35E0FF" stroke-width="1.6"/>
+                      <polyline points="0,26 20,24 40,25 60,20 80,22 100,16 120,18 140,12 160,15 180,10 200,12 200,44 0,44"
+                        fill="rgba(53,224,255,.09)" stroke="none"/>
+                      <circle cx="200" cy="12" r="2.4" fill="#35E0FF"/>
+                    </svg></div>
+                  </div>
+                </div>
+                <div class="livecard">
+                  <h3>Alerts</h3>
+                  <div class="alerts">
+                    <div class="alert"><i class="dot" style="background:var(--err)"></i><span>Utrecht Expo offline for 2 h 14 m<code>last seen 12:41 · auto-ticket #482</code></span></div>
+                    <div class="alert"><i class="dot" style="background:var(--warn)"></i><span>Berlin Fair GPU at 81 °C<code>threshold 80 °C · fan check advised</code></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="note"><b><em>C1</em>Cloud dashboard — fleet</b>
+          <ul>
+            <li>Samenvatting (KPI-rij) vóór detail; status altijd kleur + vorm + label</li>
+            <li>Live-sessie met echte telemetrie en bitrate-sparkline</li>
+            <li>Alerts koppelen aan remote acties: restart, logs, netwerktest (M7)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>HoloCast design boards · HEREweHOLO B.V. · werktitel, naamkeuze open</span>
+    <span>Bron: design/tokens.json · plan: design/UI-UX-PLAN.md</span>
+  </footer>
+</div>
