@@ -34,6 +34,7 @@
     "@types/ws": "^8.5.12",
     "esbuild": "^0.23.1",
     "playwright-core": "^1.46.0",
+    "postject": "^1.0.0-alpha.6",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4"
   }

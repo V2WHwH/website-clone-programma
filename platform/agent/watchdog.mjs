@@ -9,23 +9,53 @@
 // same trust domain, secret in the launch URL); the watchdog then reports host health to
 // the platform and executes host-level remote actions (restart browser, reboot).
 //
+// M8 — this file is also what ships inside the Windows agent .exe (see windows/build-exe.mjs):
+// configuration then comes from a config.env next to the executable, and the code stays free
+// of top-level await so it bundles to CommonJS for Node's single-executable format.
+//
 //   RECEIVER_URL     required, e.g. https://app.example.com/receiver.html
-//   CHROMIUM         path to chrome/chromium (default: chromium on PATH)
+//   CHROMIUM         path to chrome/chromium/msedge (default: chromium on PATH)
 //   PROFILE_DIR      persistent user-data-dir (default: ./holosee-profile)
 //   EXTRA_FLAGS      extra chromium flags, space-separated (tests use headless here)
 //   NO_KIOSK=1       omit --kiosk (tests)
 //   HEALTH_EVERY_MS  host-health report interval (default 30000)
-//   ALLOW_REBOOT=1   allow the reboot_host action to actually run `shutdown -r now`
+//   ALLOW_REBOOT=1   allow the reboot_host action to actually reboot the host
+//   UPDATE_URL/UPDATE_CHANNEL/UPDATE_PUBKEY/UPDATE_DIR/AGENT_VERSION  signed updates (M8)
 import { execFile, spawn } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
+import { checkAndApply } from './updater.mjs';
+
+// ——— config.env next to the executable (the installed .exe) or via AGENT_CONFIG ———
+// Sets only keys the environment does not already define; the environment always wins.
+function loadConfigFile() {
+  const candidates = [
+    process.env.AGENT_CONFIG,
+    path.join(path.dirname(process.execPath), 'config.env'),
+  ].filter(Boolean);
+  for (const file of candidates) {
+    let text;
+    try {
+      text = fs.readFileSync(file, 'utf8');
+    } catch {
+      continue;
+    }
+    for (const line of text.split('\n')) {
+      const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/.exec(line);
+      if (m && !line.trim().startsWith('#') && process.env[m[1]] === undefined) process.env[m[1]] = m[2];
+    }
+    return file;
+  }
+  return undefined;
+}
+const configFile = loadConfigFile();
 
 const url = process.env.RECEIVER_URL;
 if (!url) {
-  console.error('RECEIVER_URL is required');
+  console.error('RECEIVER_URL is required (environment or config.env next to the executable)');
   process.exit(1);
 }
 const chromium = process.env.CHROMIUM ?? 'chromium';
@@ -39,6 +69,7 @@ const log = (msg, meta = {}) => console.log(JSON.stringify({ src: 'watchdog', ms
 // ——— localhost helper listener: token drop-off + host-level actions ———
 const secret = crypto.randomBytes(16).toString('base64url');
 let deviceToken = '';
+let helperPort = 0;
 
 const helper = http.createServer((req, res) => {
   res.setHeader('access-control-allow-origin', '*');
@@ -75,9 +106,6 @@ const helper = http.createServer((req, res) => {
     res.end('{}');
   });
 });
-await new Promise((r) => helper.listen(0, '127.0.0.1', r));
-const helperPort = helper.address().port;
-log('helper listening', { port: helperPort });
 
 // ——— host health: only what this host actually exposes; missing values stay null ———
 function readTemperatureC() {
@@ -123,7 +151,6 @@ async function reportHealth() {
     log('health report failed', { error: String(e).slice(0, 120) });
   }
 }
-setInterval(() => void reportHealth(), healthEveryMs);
 
 // ——— host-level remote actions, forwarded by the receiver page ———
 function runHostAction(action, actionId) {
@@ -134,7 +161,9 @@ function runHostAction(action, actionId) {
   }
   if (action === 'reboot_host') {
     if (process.env.ALLOW_REBOOT === '1') {
-      execFile('shutdown', ['-r', 'now'], (err) => err && log('reboot failed', { error: String(err).slice(0, 120) }));
+      const [cmd, args] =
+        process.platform === 'win32' ? ['shutdown', ['/r', '/t', '5']] : ['shutdown', ['-r', 'now']];
+      execFile(cmd, args, (err) => err && log('reboot failed', { error: String(err).slice(0, 120) }));
     } else {
       log('reboot_host ignored (set ALLOW_REBOOT=1 on real hardware)');
     }
@@ -147,8 +176,8 @@ function runHostAction(action, actionId) {
 // fails its health check after restart is rolled back by the service wrapper via
 // updater.rollback(). Both the sha256 and the Ed25519 signature must verify — see
 // agent/updater.mjs and its tests.
-if (process.env.UPDATE_URL && process.env.UPDATE_PUBKEY) {
-  const { checkAndApply } = await import('./updater.mjs');
+function startUpdateChecks() {
+  if (!process.env.UPDATE_URL || !process.env.UPDATE_PUBKEY) return;
   const updDir = process.env.UPDATE_DIR ?? path.join(profile, '..', 'holosee-agent');
   const check = async () => {
     try {
@@ -169,27 +198,33 @@ if (process.env.UPDATE_URL && process.env.UPDATE_PUBKEY) {
 }
 
 // ——— the kiosk browser itself ———
-const launchUrl = `${url}${url.includes('?') ? '&' : '?'}wd=${helperPort}&wds=${secret}`;
-const baseFlags = [
-  ...(process.env.NO_KIOSK ? [] : ['--kiosk']),
-  '--noerrdialogs',
-  '--disable-session-crashed-bubble',
-  '--disable-infobars',
-  '--no-first-run',
-  '--autoplay-policy=no-user-gesture-required',
-  `--user-data-dir=${profile}`,
-  ...extra,
-  launchUrl,
-];
-
 let backoffMs = 1000;
 let child;
 let stopping = false;
 
 function start() {
+  const launchUrl = `${url}${url.includes('?') ? '&' : '?'}wd=${helperPort}&wds=${secret}`;
+  const baseFlags = [
+    ...(process.env.NO_KIOSK ? [] : ['--kiosk']),
+    '--noerrdialogs',
+    '--disable-session-crashed-bubble',
+    '--disable-infobars',
+    '--no-first-run',
+    '--autoplay-policy=no-user-gesture-required',
+    `--user-data-dir=${profile}`,
+    ...extra,
+    launchUrl,
+  ];
   const startedAt = Date.now();
   child = spawn(chromium, baseFlags, { stdio: 'ignore' });
   log('browser started', { pid: child.pid, profile });
+  // A wrong CHROMIUM path (spawn ENOENT) must never kill the agent — log and keep retrying.
+  child.on('error', (err) => {
+    if (stopping) return;
+    log('browser failed to start — retrying', { error: String(err).slice(0, 120), chromium, backoffMs });
+    setTimeout(start, backoffMs);
+    backoffMs = Math.min(backoffMs * 2, 15_000);
+  });
   child.on('exit', (code, signal) => {
     if (stopping) return;
     const uptimeMs = Date.now() - startedAt;
@@ -208,4 +243,14 @@ for (const sig of ['SIGINT', 'SIGTERM']) {
   });
 }
 
-start();
+async function main() {
+  if (configFile) log('config loaded', { file: configFile });
+  await new Promise((r) => helper.listen(0, '127.0.0.1', r));
+  helperPort = helper.address().port;
+  log('helper listening', { port: helperPort });
+  setInterval(() => void reportHealth(), healthEveryMs);
+  startUpdateChecks();
+  start();
+}
+
+void main();
