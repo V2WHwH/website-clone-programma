@@ -8,7 +8,9 @@ import { env } from './env.js';
 import { migrate } from './migrate.js';
 import { authRouter } from './api-auth.js';
 import { devicesRouter } from './api-devices.js';
+import { fleetRouter } from './api-fleet.js';
 import { sessionsRouter } from './api-sessions.js';
+import { startAlertEngine } from './alerts.js';
 import { verifyToken, type DeviceClaims } from './auth.js';
 import { deviceConnected, deviceDisconnected, deviceHeartbeat, setDeviceStats, startPresenceSweep } from './presence.js';
 
@@ -23,6 +25,7 @@ app.get('/api/v1/config', (_req, res) => res.json({ livekitUrl: env.livekit.url 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1', devicesRouter);
 app.use('/api/v1', sessionsRouter);
+app.use('/api/v1', fleetRouter);
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ noServer: true });
@@ -61,6 +64,7 @@ async function main(): Promise<void> {
   const applied = await migrate();
   if (applied.length) console.log(`migrations applied: ${applied.join(', ')}`);
   startPresenceSweep();
+  startAlertEngine();
   server.listen(env.port, () => {
     console.log(`HoloMe/HoloSee platform on :${env.port}`);
     console.log(`  app      : http://localhost:${env.port}/login.html`);

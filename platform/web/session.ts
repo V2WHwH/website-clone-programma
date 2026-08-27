@@ -39,7 +39,7 @@ let startedAt = 0;
 let audioOk = false;
 let lastBytes = 0;
 let lastTs = 0;
-const summary = { maxWidth: 0, maxHeight: 0, maxMbps: 0 };
+const summary = { maxWidth: 0, maxHeight: 0, maxMbps: 0, egressBytes: 0 };
 
 $('dest').textContent = `→ ${deviceIds.length} destination${deviceIds.length === 1 ? '' : 's'}`;
 $('pip').addEventListener('click', () => document.body.classList.toggle('pip-open'));
@@ -264,6 +264,9 @@ async function goLive(): Promise<void> {
     rungIdx = ceilIdx;
     badTicks = 0;
     goodTicks = 0;
+    lastBytes = 0;
+    lastTs = 0;
+    summary.egressBytes = 0;
     await setCaptureRung(RUNGS[rungIdx]!);
     // A discarded room (previous session or failed attempt) must never touch the UI again.
     room?.removeAllListeners();
@@ -333,6 +336,7 @@ async function stop(): Promise<void> {
     maxResolution: `${summary.maxWidth} × ${summary.maxHeight}`,
     maxMbps: Number(summary.maxMbps.toFixed(2)),
     audio: audioOk,
+    egressBytes: summary.egressBytes, // measured video egress, all layers
     ladder: ladderHistory.map((l) => `${l.from}→${l.to}(${l.reason})`),
   };
   await api(`/sessions/${sessionId}/stop`, { body: { stats }, token }).catch(() => undefined);
@@ -386,6 +390,8 @@ async function tick(): Promise<void> {
   }
   let limitation = 'none';
   let encFps = 0;
+  let sumBytes = 0;
+  let tsNow = 0;
   if (room && sessionId) {
     state = 'CONNECTED';
     cls = 'ok';
@@ -418,9 +424,8 @@ async function tick(): Promise<void> {
           if (rr.encoderImplementation) diag.encoder = rr.encoderImplementation;
           if (rr.powerEfficientEncoder !== undefined) diag.encoderHw = rr.powerEfficientEncoder;
           if (rr.bytesSent !== undefined) {
-            if (lastTs) mbps = ((rr.bytesSent - lastBytes) * 8) / ((rr.timestamp - lastTs) / 1000) / 1e6;
-            lastBytes = rr.bytesSent;
-            lastTs = rr.timestamp;
+            sumBytes += rr.bytesSent; // all simulcast layers together = real egress
+            tsNow = Math.max(tsNow, rr.timestamp);
           }
         }
         if (r.type === 'candidate-pair' && (r as { state?: string }).state === 'succeeded') {
@@ -430,6 +435,12 @@ async function tick(): Promise<void> {
       });
     } catch {
       /* stats unavailable — show what we can measure */
+    }
+    if (sumBytes && tsNow) {
+      if (lastTs) mbps = ((sumBytes - lastBytes) * 8) / ((tsNow - lastTs) / 1000) / 1e6;
+      lastBytes = sumBytes;
+      lastTs = tsNow;
+      summary.egressBytes = sumBytes;
     }
     if (encFps) fps = encFps;
     diag.limitation = limitation;

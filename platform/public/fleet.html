@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HoloMe — Fleet</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap" />
+  <link rel="stylesheet" href="/app.css" />
+  <style>
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 14px 0 18px; }
+    .kpi { padding: 14px 16px; border-radius: 12px; background: var(--bg-2, #10161e); border: 1px solid rgba(53, 224, 255, 0.12); }
+    .kpi b { display: block; font: 800 26px Archivo, sans-serif; }
+    .kpi span { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.65; }
+    table.fleet { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.fleet th { text-align: left; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.55; padding: 6px 8px; }
+    table.fleet td { padding: 8px; border-top: 1px solid rgba(150, 180, 210, 0.1); vertical-align: top; }
+    table.fleet .mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+    .st { font-weight: 600; letter-spacing: 0.06em; font-size: 11px; }
+    .st.online { color: var(--ok, #3ee58f); }
+    .st.offline { color: var(--err, #ff4d8d); }
+    .act { padding: 3px 9px; font-size: 11px; margin: 1px 2px 1px 0; }
+    .alert { display: flex; gap: 10px; align-items: baseline; padding: 8px 10px; border-radius: 10px; margin-bottom: 6px; border: 1px solid rgba(255, 77, 141, 0.35); }
+    .alert.resolved { border-color: rgba(62, 229, 143, 0.25); opacity: 0.7; }
+    .alert .k { font: 600 11px 'IBM Plex Mono', monospace; text-transform: uppercase; }
+    .alert.open .k { color: var(--err, #ff4d8d); }
+    .alert.resolved .k { color: var(--ok, #3ee58f); }
+    .panel { margin-bottom: 22px; }
+    #actionOut { white-space: pre-wrap; max-height: 260px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <div class="wrap" style="max-width:1200px">
+    <div class="topbar">
+      <div class="wm"><b>HOLO</b>ME <span style="opacity:.5;font-weight:400">/ fleet</span></div>
+      <div class="spacer"></div>
+      <span class="who" id="who"></span>
+      <a class="ghost small" href="/app.html" style="text-decoration:none;display:inline-flex;align-items:center">Console</a>
+      <button class="ghost small" id="logout">Sign out</button>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="card panel">
+      <h1 style="font-size:16px">Alerts <small id="alertSub"></small></h1>
+      <div id="alerts"></div>
+    </div>
+
+    <div class="card panel">
+      <h1 style="font-size:16px">Devices <small>health is measured on the host by the watchdog agent; — means not exposed there</small></h1>
+      <div style="overflow-x:auto"><table class="fleet" id="devTable"></table></div>
+      <div class="msg mono" id="actionOut"></div>
+    </div>
+
+    <div class="card panel">
+      <h1 style="font-size:16px">Sessions <small>last 50 · duration, peak quality and egress are measured</small></h1>
+      <div style="overflow-x:auto"><table class="fleet" id="sesTable"></table></div>
+    </div>
+
+    <div class="card panel">
+      <h1 style="font-size:16px">Audit trail <small>every consequential act, attributable</small></h1>
+      <div style="overflow-x:auto"><table class="fleet mono" id="auditTable"></table></div>
+    </div>
+  </div>
+  <script type="module" src="/js/fleet.js"></script>
+</body>
+</html>

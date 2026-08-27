@@ -158,6 +158,20 @@ export function requireDevice() {
   };
 }
 
+/** Netprobe access (M7): a presenting human/guest OR a device running its own network test. */
+export function requirePresenterOrDevice() {
+  return async (req: AuthedRequest & DeviceRequest, res: Response, next: NextFunction): Promise<void> => {
+    const t = bearer(req);
+    const d = t ? await verifyToken<DeviceClaims>(t, 'device') : undefined;
+    if (d) {
+      req.deviceClaims = d;
+      next();
+      return;
+    }
+    return requireUserOrGuest('presenter')(req, res, next);
+  };
+}
+
 export async function audit(
   orgId: string | null,
   actor: string,

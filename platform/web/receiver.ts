@@ -65,6 +65,21 @@ const b64url = (buf: ArrayBuffer): string =>
 let keys: KeyRecord;
 let restToken = '';
 
+// M7: the watchdog (host agent) cannot hold the keypair — the receiver hands it the
+// short-lived device token over the localhost helper the watchdog put in our launch URL.
+const wdParams = new URLSearchParams(location.search);
+const wdPort = wdParams.get('wd');
+const wdSecret = wdParams.get('wds');
+
+async function tellWatchdog(pathname: string, body: Record<string, unknown>): Promise<void> {
+  if (!wdPort) return;
+  await fetch(`http://127.0.0.1:${wdPort}${pathname}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ secret: wdSecret, ...body }),
+  }).catch(() => undefined);
+}
+
 async function deviceToken(): Promise<string> {
   const { nonce } = await api<{ nonce: string }>(`/devices/${keys.deviceId}/auth/nonce`, { body: {}, token: '' });
   const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, keys.priv, new TextEncoder().encode(nonce));
@@ -73,12 +88,67 @@ async function deviceToken(): Promise<string> {
     token: '',
   });
   restToken = r.token;
+  void tellWatchdog('/token', { token: r.token });
   return r.token;
 }
 
+// M7: last 200 log lines stay on the device for the send_logs remote action.
+const recentLogs: string[] = [];
+function remember(line: string): void {
+  recentLogs.push(`${new Date().toISOString()} ${line}`.slice(0, 300));
+  if (recentLogs.length > 200) recentLogs.shift();
+}
+
 function postEvent(type: string, sessionId?: string, meta: Record<string, unknown> = {}): void {
+  remember(`${type}${sessionId ? ` session=${sessionId.slice(0, 8)}` : ''} ${JSON.stringify(meta).slice(0, 160)}`);
   if (!restToken) return;
   void api('/devices/events', { body: { type, sessionId, meta }, token: restToken }).catch(() => undefined);
+}
+
+// ——— M7 remote actions: pushed by an operator over the presence socket ———
+async function onAction(msg: { action: string; actionId: string }): Promise<void> {
+  const done = (meta: Record<string, unknown> = {}): void =>
+    postEvent('action_result', current?.sessionId, { actionId: msg.actionId, action: msg.action, ...meta });
+  if (msg.action === 'reload') {
+    done({ ok: true });
+    setTimeout(() => location.reload(), 500);
+  } else if (msg.action === 'clear_cache') {
+    localStorage.clear();
+    sessionStorage.clear(); // the device keypair lives in IndexedDB and is untouched
+    done({ ok: true });
+    setTimeout(() => location.reload(), 500);
+  } else if (msg.action === 'send_logs') {
+    done({ ok: true, logs: recentLogs.slice(-50) });
+  } else if (msg.action === 'net_test') {
+    try {
+      const t: number[] = [];
+      for (let i = 0; i < 5; i++) {
+        const s = performance.now();
+        await fetch('/api/v1/health', { cache: 'no-store' });
+        t.push(performance.now() - s);
+      }
+      const rttMs = t.sort((a, b) => a - b)[Math.floor(t.length / 2)] ?? 0;
+      const bytes = 4_194_304;
+      const s2 = performance.now();
+      const r = await fetch(`/api/v1/netprobe/download?bytes=${bytes}`, {
+        headers: { authorization: `Bearer ${restToken}` },
+        cache: 'no-store',
+      });
+      await r.arrayBuffer();
+      done({
+        ok: r.ok,
+        rttMs: Math.round(rttMs * 10) / 10,
+        downMbps: Math.round((bytes * 8) / ((performance.now() - s2) / 1000) / 1e6),
+      });
+    } catch (e) {
+      done({ ok: false, error: String(e).slice(0, 200) });
+    }
+  } else if (msg.action === 'restart_browser' || msg.action === 'reboot_host') {
+    done({ ok: true, forwarded: 'watchdog' });
+    void tellWatchdog('/do', { action: msg.action, actionId: msg.actionId });
+  } else {
+    done({ ok: false, error: 'unknown action' });
+  }
 }
 
 // ——— UI states (brand only — errors are never rendered on the glass) ———
@@ -348,6 +418,7 @@ async function connectPresence(): Promise<void> {
       const msg = JSON.parse(e.data as string);
       if (msg.t === 'session-start') onSessionStart(msg);
       if (msg.t === 'session-stop') onSessionStop();
+      if (msg.t === 'action') void onAction(msg);
     };
     ws.onclose = () => setTimeout(() => void connectPresence(), 2000);
   } catch {

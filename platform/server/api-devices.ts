@@ -14,7 +14,7 @@ import {
   type DeviceRequest,
   sha256,
 } from './auth.js';
-import { isOnline, logDeviceEvent } from './presence.js';
+import { isOnline, logDeviceEvent, pushToDevice } from './presence.js';
 
 export const devicesRouter = Router();
 
@@ -118,7 +118,8 @@ devicesRouter.post('/pairing/poll', async (req, res) => {
 
 devicesRouter.get('/devices', requireUser('viewer'), async (req: AuthedRequest, res) => {
   const r = await q<{ id: string; name: string; kind: string; state: string; last_seen_at: string | null }>(
-    `SELECT d.id, d.name, d.kind, d.state, d.last_seen_at, d.caps, l.name AS location
+    `SELECT d.id, d.name, d.kind, d.state, d.last_seen_at, d.caps, d.health, d.health_at,
+            d.agent_version, l.name AS location
      FROM devices d LEFT JOIN locations l ON l.id = d.location_id
      WHERE d.org_id = $1 ORDER BY d.created_at`,
     [req.user!.org],
@@ -175,7 +176,7 @@ devicesRouter.post('/devices/:id/auth', async (req, res) => {
 });
 
 // ——— M5: structured device events (fallback shown, recovered, playing, boot, log) ———
-const EVENT_TYPES = new Set(['boot', 'session_playing', 'fallback_shown', 'recovered', 'log']);
+const EVENT_TYPES = new Set(['boot', 'session_playing', 'fallback_shown', 'recovered', 'log', 'action_result']);
 
 devicesRouter.post('/devices/events', requireDevice(), async (req: DeviceRequest, res) => {
   const type = typeof req.body?.type === 'string' ? req.body.type : '';
@@ -191,6 +192,48 @@ devicesRouter.post('/devices/events', requireDevice(), async (req: DeviceRequest
 
 // M6: the receiver reports what it can actually decode (MediaCapabilities) + its screen.
 // Session starts use this to cap the sender's ladder — capability negotiation, not assumption.
+// M7: host health measured by the watchdog agent (load, memory, disk, temperature where
+// the host exposes one, uptime) — the browser cannot measure these; the agent can, honestly.
+devicesRouter.post('/devices/health', requireDevice(), async (req: DeviceRequest, res) => {
+  const health = typeof req.body?.health === 'object' && req.body.health ? req.body.health : undefined;
+  if (!health) {
+    res.status(400).json({ error: 'health object required' });
+    return;
+  }
+  await q('UPDATE devices SET health = $2, health_at = now() WHERE id = $1', [
+    req.deviceClaims!.device,
+    JSON.stringify(health),
+  ]);
+  res.json({ ok: true });
+});
+
+// M7: remote actions — pushed over the device's presence socket, executed on the device
+// (or its watchdog for host-level actions), result posted back as an action_result event.
+const ACTIONS = new Set(['reload', 'clear_cache', 'send_logs', 'net_test', 'restart_browser', 'reboot_host']);
+
+devicesRouter.post('/devices/:id/actions', requireUser('operator'), async (req: AuthedRequest, res) => {
+  const action = typeof req.body?.action === 'string' ? req.body.action : '';
+  if (!ACTIONS.has(action)) {
+    res.status(400).json({ error: `action must be one of ${[...ACTIONS].join(', ')}` });
+    return;
+  }
+  const dev = await one<{ id: string }>('SELECT id FROM devices WHERE id = $1 AND org_id = $2', [
+    req.params.id,
+    req.user!.org,
+  ]);
+  if (!dev) {
+    res.status(404).json({ error: 'not found' });
+    return;
+  }
+  const actionId = crypto.randomUUID();
+  if (!pushToDevice(dev.id, { t: 'action', action, actionId })) {
+    res.status(409).json({ error: 'device is offline — actions need a live connection' });
+    return;
+  }
+  await audit(req.user!.org, `user:${req.user!.sub}`, 'device.action', dev.id, { action, actionId });
+  res.status(202).json({ actionId });
+});
+
 devicesRouter.post('/devices/caps', requireDevice(), async (req: DeviceRequest, res) => {
   const caps = typeof req.body?.caps === 'object' && req.body.caps ? req.body.caps : undefined;
   if (!caps) {

@@ -244,3 +244,31 @@ test('audit trail exists for the actions above', async () => {
     assert.ok(out.includes(action), `missing audit action ${action}: ${out}`);
   }
 });
+
+test('M7: fleet endpoints are org-scoped and role-gated', async () => {
+  // health lands on the device via its own token…
+  const h = await api('/devices/health', {
+    token: orgs.a.deviceToken,
+    body: { health: { load1: 0.5, cores: 4, disk: { freePct: 42 } } },
+  });
+  assert.equal(h.status, 200);
+  const dev = (await api('/devices', { token: orgs.a.token })).data.devices[0];
+  assert.equal(dev.health.disk.freePct, 42, 'reported health must be visible to the org');
+
+  // …and org B sees none of org A's fleet
+  const sumB = await api('/fleet/summary', { token: orgs.b.token });
+  assert.equal(sumB.data.devices.total, 0, 'org B must not count org A devices');
+  const alertsB = await api('/alerts', { token: orgs.b.token });
+  assert.equal((alertsB.data.alerts ?? []).length, 0, 'org B must not see org A alerts');
+  const auditB = await api('/audit', { token: orgs.b.token });
+  assert.ok(
+    !(auditB.data.entries ?? []).some((e) => e.action === 'device.paired'),
+    'org B must not see org A audit entries',
+  );
+
+  // remote actions demand operator role and an org-owned device
+  const actB = await api(`/devices/${orgs.a.deviceId}/actions`, { token: orgs.b.token, body: { action: 'reload' } });
+  assert.equal(actB.status, 404, 'org B cannot act on org A devices');
+  const offline = await api(`/devices/${orgs.a.deviceId}/actions`, { token: orgs.a.token, body: { action: 'reload' } });
+  assert.equal(offline.status, 409, 'actions need a live device connection');
+});

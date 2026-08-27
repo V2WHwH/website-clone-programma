@@ -5,7 +5,7 @@
   "description": "HoloMe / HoloSee platform - M2 (SFU media path), M3 (identity, orgs, devices, pairing), M4 (the session).",
   "type": "module",
   "scripts": {
-    "build": "esbuild web/login.ts web/app.ts web/session.ts web/join.ts web/receiver.ts --bundle --format=esm --outdir=public/js --sourcemap",
+    "build": "esbuild web/login.ts web/app.ts web/session.ts web/join.ts web/receiver.ts web/fleet.ts --bundle --format=esm --outdir=public/js --sourcemap",
     "typecheck": "tsc --noEmit",
     "migrate": "tsx server/migrate.ts",
     "start": "npm run build && tsx server/index.ts",
@@ -14,6 +14,7 @@
     "test:e2e": "npm run build && node test/e2e-media.mjs",
     "test:e2e:m5": "npm run build && node test/e2e-m5.mjs",
     "test:e2e:m6": "npm run build && node test/e2e-m6.mjs",
+    "test:e2e:m7": "npm run build && node test/e2e-m7.mjs",
     "bench:encode": "node test/bench-encode.mjs"
   },
   "dependencies": {

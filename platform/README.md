@@ -1,4 +1,4 @@
-# platform/ — HoloMe & HoloSee (M2 – M6)
+# platform/ — HoloMe & HoloSee (M2 – M7)
 
 The product platform on the accepted ADRs: PostgreSQL control plane, LiveKit SFU media plane,
 device pairing with signed keypairs, invite links, and the presenter/guest session flow with an
@@ -97,6 +97,33 @@ invites) · `/receiver.html` (HoloSee — open on the display machine) · `/join
   ladder steps down, session never drops, no fallback on the glass → throttle released →
   recovery up after the stable window → diagnostic chain asserted → ladder history in the
   session record.
+
+**M7 — fleet and operations**
+- **Fleet dashboard** (`/fleet.html`, operators): KPIs (online devices, open alerts, live
+  sessions, 24 h sessions / media minutes / measured egress), the device table with host
+  health, alert history, session analytics and the audit trail — refreshed live.
+- **Host health via the watchdog:** the browser cannot measure CPU load, memory, disk or
+  temperature; the watchdog agent can, honestly. The receiver hands its short-lived device
+  token to the watchdog over a localhost-only helper (secret in the launch URL); the agent
+  reports load/cores, memory, disk, temperature (null where the host exposes no thermal
+  zone — shown as "—", never invented) and uptime.
+- **Alert engine** (server-side, auto-resolving): `offline` (too long unseen), `disk_low`
+  (agent-measured), `stuck_fallback` (glass on the brand screen without recovery). Alerts
+  resolve themselves with a note the moment the condition measures healthy — or manually
+  from the fleet view. Every alert is a measured condition, never a guess.
+- **Remote actions** over the device's presence socket: reload, clear cache (the keypair in
+  IndexedDB is untouched), send logs (on-device ring buffer), net test (measured RTT +
+  downlink), restart browser and reboot host (executed by the watchdog; reboot requires
+  `ALLOW_REBOOT=1` on real hardware). Results come back as `action_result` device events;
+  every action is audited.
+- **Session analytics:** measured video egress (all simulcast layers) per session
+  (`sessions.egress_bytes`), media minutes and egress rolled up per 24 h — the honest cost
+  drivers, with no invented rates.
+- **The fleet e2e** (`npm run test:e2e:m7`) is the M7 gate scenario: host health on record →
+  SFU dies mid-session → `stuck_fallback` raised → operator sends a remote reload → alert
+  auto-resolves ("playback recovered"), device untouched → net test / logs / browser restart
+  via the watchdog (same identity) → dashboard renders KPIs, health, alerts, measured egress,
+  audit → total device death → `offline` alert.
 
 ## Tests (the test → fix → test loop)
 

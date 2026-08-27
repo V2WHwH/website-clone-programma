@@ -9,6 +9,7 @@ import {
   audit,
   hashPassword,
   randomToken,
+  requirePresenterOrDevice,
   requireUser,
   requireUserOrGuest,
   sha256,
@@ -253,9 +254,11 @@ sessionsRouter.post('/sessions/:id/stop', requireUserOrGuest('presenter'), async
     return;
   }
   const stats = typeof req.body?.stats === 'object' && req.body.stats ? req.body.stats : {};
-  await q(`UPDATE sessions SET state = 'ended', ended_at = now(), stats = $2 WHERE id = $1`, [
+  const egress = Number((stats as { egressBytes?: unknown }).egressBytes);
+  await q(`UPDATE sessions SET state = 'ended', ended_at = now(), stats = $2, egress_bytes = $3 WHERE id = $1`, [
     s.id,
     JSON.stringify(stats),
+    Number.isFinite(egress) && egress >= 0 ? Math.round(egress) : null,
   ]);
   const dest = await q<{ device_id: string }>('SELECT device_id FROM session_destinations WHERE session_id = $1', [s.id]);
   for (const d of dest.rows) pushToDevice(d.device_id, { t: 'session-stop', sessionId: s.id });
@@ -308,7 +311,7 @@ sessionsRouter.post('/sessions/:id/log', requireUserOrGuest('presenter'), async 
 // ——— M6 network pre-flight: measured throughput to THIS platform, nothing invented ———
 const PROBE_CHUNK = crypto.randomBytes(262144); // incompressible, so proxies can't flatter the number
 
-sessionsRouter.get('/netprobe/download', requireUserOrGuest('presenter'), (req, res) => {
+sessionsRouter.get('/netprobe/download', requirePresenterOrDevice(), (req, res) => {
   const bytes = Math.min(Math.max(Number(req.query.bytes ?? 4_194_304), 65536), 16_777_216);
   res.setHeader('content-type', 'application/octet-stream');
   res.setHeader('cache-control', 'no-store');
@@ -328,7 +331,7 @@ sessionsRouter.get('/netprobe/download', requireUserOrGuest('presenter'), (req, 
   push();
 });
 
-sessionsRouter.post('/netprobe/upload', requireUserOrGuest('presenter'), (req, res) => {
+sessionsRouter.post('/netprobe/upload', requirePresenterOrDevice(), (req, res) => {
   let received = 0;
   req.on('data', (c: Buffer) => {
     received += c.length;
@@ -341,7 +344,7 @@ sessionsRouter.post('/netprobe/upload', requireUserOrGuest('presenter'), (req, r
 sessionsRouter.get('/sessions', requireUser('viewer'), async (req: AuthedRequest, res) => {
   const r = await q(
     `SELECT s.id, s.presenter_kind, s.presenter_name, s.state, s.started_at, s.ended_at, s.stats,
-            array_agg(d.name) AS destinations
+            s.egress_bytes, array_agg(d.name) AS destinations
      FROM sessions s
      LEFT JOIN session_destinations sd ON sd.session_id = s.id
      LEFT JOIN devices d ON d.id = sd.device_id
