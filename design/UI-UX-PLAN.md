@@ -95,7 +95,12 @@ Full HD/4K met consequenties en honesty-voetnoot) · S8 Effects — segmented co
 Snap Camera Kit) en **VOICE** (voice changer met presets None · Deep · Robot · High · Anon; besloten eigen
 toevoeging). Face- én voice-effecten renderen in de uitgaande stream: de ontvangende kant hoort het effect,
 nooit de rauwe stem. Het voice-effect zit in het audiopad vóór encode, ná echo-cancellation; beide
-effecttypes zijn fase 2, geen MVP.
+effecttypes zijn fase 2, geen MVP. · S9 Invite a guest (tijdslimiet, single-use/herbruikbaar,
+wachtwoord, kopieerbare link, intrekbaar).
+
+**Gastflow (browser)** — G1 Landing (bestemming + uitnodiger zichtbaar vóór elke permissie, geldigheid
+expliciet, geen installatie) · G2 Camera/mic-toestemming (één keer, met context en stepper; daarna de
+normale preview-flow van S2).
 
 **HoloSee (receiver)** — R1 Idle/fallback ("Ready when you are" + ambient gloed; identiek bij
 verbindingsverlies) · R2 Pairing (QR + leesbare code, drie stappen, verloopteller, device-ID).
@@ -104,9 +109,8 @@ Altijd donker thema.
 **Cloud** — C1 Fleet-dashboard (KPI-rij vóór detail, statuspills, live-sessie met echte telemetrie en
 bitrate-sparkline, alerts met auto-ticket).
 
-Nog te ontwerpen in de eerstvolgende Figma-iteratie: auth/org-switch, guest-invite-flow (link → browser →
-permissions → preview), sessie-detail + analytics, remote-actions op device-detail, diagnostic view
-(resolutieketen — M6), installer/update-flow (M8).
+Nog te ontwerpen in een volgende iteratie: auth/org-switch, sessie-detail + analytics, remote-actions op
+device-detail, diagnostic view (resolutieketen — M6), installer/update-flow (M8).
 
 ## 6. Figma-plan
 
@@ -162,7 +166,7 @@ gedocumenteerd voor een eventueel Pro-plan.
 
 | Milestone | Design-deliverable |
 |---|---|
-| **M0** (nu) | Dit plan + tokens + mockups + Figma-file — ter goedkeuring |
+| **M0** (nu) | Dit plan + tokens + mockups + Figma-file — ter goedkeuring. Technische M0-stukken staan in [`docs/`](../docs/): ARCHITECTURE, STREAMING, SECURITY, DATA-MODEL + 5 [ADR-voorstellen](../docs/adr/) |
 | M1–M2 | Alleen diagnostische UI (resolutieketen-printout); geen polish |
 | M3 | Pairing-flow (R2) + minimale device-lijst in Cloud |
 | **M4** | S1–S8 volledig — dit is de UI-milestone; guest-invite-flow erbij |

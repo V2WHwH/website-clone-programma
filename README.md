@@ -92,3 +92,12 @@ staan twee dingen nog open:
   `.mcp.json` daarop aangepast worden.
 - **Beschikbare tools** — de tool-namen en schema's van de server zijn nog
   onbekend en dus nergens gedocumenteerd in deze repo.
+
+## HEREweHOLO — HoloMe & HoloSee
+
+Deze repo bevat ook de kickoff van het HEREweHOLO telepresence-platform:
+
+- [`design/`](design/) — UI/UX/VFX-plan, design tokens en de design boards (HoloMe · HoloSee · Cloud)
+- [`docs/`](docs/) — M0-documenten: ARCHITECTURE, STREAMING, SECURITY, DATA-MODEL
+- [`docs/adr/`](docs/adr/) — vijf ADR-voorstellen (SFU, receiver-runtime, encoders, signaling, hosting) — wachten op goedkeuring (M0-gate)
+- [`beam-kickoff/`](beam-kickoff/) — projectgrondwet, milestones en acceptance-scenario
