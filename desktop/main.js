@@ -163,9 +163,19 @@ function createWindow() {
   win.webContents.on('render-process-gone', (e, details) => {
     log('error', 'render-process-gone', { reason: details.reason, exitCode: details.exitCode });
     if (details.reason !== 'clean-exit' && win && !win.isDestroyed()) {
-      setTimeout(() => win.webContents.reload(), 1000);
+      recover('render-process-gone: ' + details.reason);
     }
   });
+
+  // Vastgelopen rendermodule: Chromium meldt dit zelf.
+  win.on('unresponsive', () => {
+    log('error', 'venster reageert niet — herstellen');
+    recover('venster reageerde niet');
+  });
+  win.on('responsive', () => log('info', 'venster reageert weer'));
+
+  // Hartslag opnieuw starten na elke (her)lading van de pagina.
+  win.webContents.on('did-finish-load', () => { lastBeat = Date.now(); });
 
   // Externe links (bijv. uit het Help-tabblad) in de systeembrowser.
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -175,6 +185,97 @@ function createWindow() {
 
   win.on('closed', () => { win = null; });
 }
+
+/* ---------------- Watchdog & onderhoud (24/7-bedrijf) ----------------
+   De Studio stuurt elke seconde een hartslag. Blijft die weg, dan is de
+   rendermodule vastgelopen: eerst herladen, en helpt dat niet, dan de
+   applicatie volledig herstarten. Daarnaast wordt de HTTP/GPU-cache
+   periodiek geleegd en het geheugen bewaakt. */
+
+let lastBeat = Date.now();
+let recovering = false;
+let reloadAttempts = 0;
+let lastRecoverAt = 0;
+
+ipcMain.on('health:beat', () => { lastBeat = Date.now(); });
+ipcMain.on('health:restart', (e, reason) => {
+  log('warn', 'app herstart zichzelf', { reason });
+  lastBeat = Date.now();          // eigen herstart is geen vastloper
+});
+
+// De Studio vraagt om een echte herstart (geheugen, watchdog, nachtrondje).
+ipcMain.on('health:hardRestart', (e, reason) => {
+  log('warn', 'herstart aangevraagd door de presentatie', { reason });
+  if (!win || win.isDestroyed()) return;
+  lastBeat = Date.now();
+  const nightly = /nachtelijke/i.test(reason || '');
+  if (nightly) {                 // preventief: volledige, schone herstart
+    app.relaunch();
+    setTimeout(() => app.exit(0), 500);
+  } else {
+    try { win.reload(); } catch { app.relaunch(); app.exit(0); }
+  }
+});
+
+function recover(reason) {
+  if (recovering || !win || win.isDestroyed()) return;
+  recovering = true;
+  const sinceLast = Date.now() - lastRecoverAt;
+  if (sinceLast > 10 * 60000) reloadAttempts = 0;   // ver uit elkaar = losse incidenten
+  lastRecoverAt = Date.now();
+  reloadAttempts++;
+  log('error', 'herstel gestart', { reason, poging: reloadAttempts });
+  if (reloadAttempts <= 2) {
+    try { win.webContents.forcefullyCrashRenderer(); } catch {}
+    setTimeout(() => {
+      try { win.reload(); } catch {}
+      lastBeat = Date.now();
+      recovering = false;
+    }, 800);
+  } else {
+    log('error', 'herladen hielp niet — applicatie wordt herstart');
+    app.relaunch();
+    setTimeout(() => app.exit(0), 600);
+  }
+}
+
+// Watchdog: elke 5 s controleren of de hartslag nog binnenkomt.
+setInterval(() => {
+  if (!win || win.isDestroyed()) return;
+  const gap = (Date.now() - lastBeat) / 1000;
+  if (gap > 30) {
+    log('error', 'geen hartslag', { seconden: Math.round(gap) });
+    recover('geen hartslag gedurende ' + Math.round(gap) + 's');
+  }
+}, 5000);
+
+// Onderhoud: cache legen en geheugen bewaken. Chromium houdt bij langdurig
+// videogebruik veel cache aan; periodiek legen voorkomt trage weergave.
+setInterval(async () => {
+  if (!win || win.isDestroyed()) return;
+  try {
+    await session.defaultSession.clearCache();
+    await session.defaultSession.clearCodeCaches({ urls: [] });
+    log('info', 'onderhoud: cache geleegd');
+  } catch (err) { log('warn', 'cache legen mislukt', { err: String(err) }); }
+}, 6 * 3600 * 1000);
+
+// Geheugenbewaking van het hoofdproces + rendermodule.
+setInterval(async () => {
+  if (!win || win.isDestroyed()) return;
+  try {
+    const metrics = app.getAppMetrics();
+    const totalMb = metrics.reduce((a, m) => a + (m.memory?.workingSetSize || 0), 0) / 1024;
+    if (totalMb > 2600) {
+      log('error', 'geheugengebruik hoog — venster verversen', { mb: Math.round(totalMb) });
+      win.reload();
+      lastBeat = Date.now();
+    } else if (totalMb > 1800) {
+      log('warn', 'geheugengebruik loopt op', { mb: Math.round(totalMb) });
+      try { await session.defaultSession.clearCache(); } catch {}
+    }
+  } catch (err) { log('warn', 'geheugenmeting mislukt', { err: String(err) }); }
+}, 10 * 60000);
 
 /* ---------------- Diagnosticsvenster ---------------- */
 

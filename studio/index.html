@@ -121,7 +121,30 @@
     box-shadow: inset 0 calc(var(--fdepth, 0.5) * 0.5em) calc(var(--fdepth, 0.5) * 1.1em) rgba(0,0,0,calc(var(--fdepth, 0.5) * 0.85)),
       inset 0 0 0 1px rgba(0,0,0,0.35);
     pointer-events: none; z-index: 2; }
-  .vbtn.has-preview.shape-circle { aspect-ratio: 1; }
+  /* De gekozen knopvorm gaat vóór de frame-afronding — anders werd een ronde
+     of ovale knop alsnog rechthoekig weergegeven. Ook het videovlak, de
+     glans-laag, de diepte-schaduw en het label volgen de vorm. */
+  .vbtn.has-preview.shape-circle { aspect-ratio: 1 !important; border-radius: 50%; }
+  .vbtn.has-preview.shape-circle video.preview,
+  .vbtn.has-preview.shape-circle canvas.preview3d,
+  .vbtn.has-preview.shape-circle .pv-well { border-radius: 50%; }
+  .vbtn.has-preview.shape-pill { border-radius: 999px; }
+  .vbtn.has-preview.shape-pill video.preview,
+  .vbtn.has-preview.shape-pill canvas.preview3d,
+  .vbtn.has-preview.shape-pill .pv-well { border-radius: 999px; }
+  /* Bij ronde en ovale vormen zou een balklabel over de rand vallen. */
+  .vbtn.has-preview.shape-circle .pv-label,
+  .vbtn.has-preview.shape-pill .pv-label {
+    left: 12%; right: 12%; bottom: 8%; border-radius: 999px;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(3px); }
+  .vbtn.has-preview.shape-circle .pv-label { bottom: 12%; }
+  /* Vierkant: expliciet zonder afronding, ongeacht de globale frame-radius. */
+  .vbtn.has-preview.shape-square { border-radius: 0; }
+  .vbtn.has-preview.shape-square video.preview,
+  .vbtn.has-preview.shape-square canvas.preview3d,
+  .vbtn.has-preview.shape-square .pv-well,
+  .vbtn.has-preview.shape-square .pv-label { border-radius: 0; }
+  .vbtn.shape-square { border-radius: 0; }
   .vbtn.has-preview .pv-label { position: absolute; left: var(--fpad, 0.45em); right: var(--fpad, 0.45em);
     bottom: var(--fpad, 0.45em); padding: 0.4em 0.6em 0.35em; z-index: 2;
     border-radius: 0 0 var(--frid, 0.35em) var(--frid, 0.35em);
@@ -773,7 +796,9 @@
     <button data-tab="dashboard"><span class="nav-ic">&#8962;</span><span class="nav-txt">Dashboard</span></button>
     <button data-tab="buttons" class="active"><span class="nav-ic">&#9678;</span><span class="nav-txt">Knoppen &amp; sc&egrave;nes</span></button>
     <button data-tab="media"><span class="nav-ic">&#9654;</span><span class="nav-txt">Media</span></button>
-    <button data-tab="look"><span class="nav-ic">&#9671;</span><span class="nav-txt">Experience &amp; thema</span></button>
+    <button data-tab="look"><span class="nav-ic">&#9635;</span><span class="nav-txt">Scherm &amp; sc&egrave;ne</span></button>
+    <button data-tab="style"><span class="nav-ic">&#9671;</span><span class="nav-txt">Vormgeving</span></button>
+    <button data-tab="3d"><span class="nav-ic">&#9707;</span><span class="nav-txt">3D-objecten</span></button>
     <button data-tab="fx"><span class="nav-ic">&#12316;</span><span class="nav-txt">Motion</span></button>
     <button data-tab="saver"><span class="nav-ic">&#10033;</span><span class="nav-txt">Screensaver</span></button>
     <button data-tab="cam"><span class="nav-ic">&#9737;</span><span class="nav-txt">Camera</span></button>
@@ -867,8 +892,11 @@
   </div>
 
   <!-- ================= PRESENTATIE ================= -->
+    <!-- ================= SCHERM & SCÈNE ================= -->
   <div class="tabpage hidden" id="page-look">
-    <h2>Scherm</h2>
+    <p class="note">Wat er op het scherm staat: de titel van deze sc&egrave;ne, de achtergrond,
+    het geluid en hoe bezoekers navigeren.</p>
+    <h2>Deze sc&egrave;ne</h2>
     <div class="card">
       <label class="field">Titel op het scherm
         <input type="text" id="cfgTitle" placeholder="Optioneel &mdash; bijv. Welkom bij HereWeHolo">
@@ -914,6 +942,45 @@
         <label class="switch"><input type="checkbox" id="cfgClean"><i></i></label>
       </div>
     </div>
+    <h2>Taal &amp; navigatie</h2>
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Meertalig</div>
+          <div class="t-sub">Knoplabels en titels per taal; bezoekers kiezen rechtsonder</div></div>
+        <label class="switch"><input type="checkbox" id="lgEnabled"><i></i></label>
+      </div>
+      <label class="field">Beschikbare talen
+        <div id="lgList" class="row" style="flex-wrap:wrap;gap:10px"></div>
+      </label>
+      <div class="row">
+        <label class="field">Standaardtaal
+          <select id="lgCurrent"></select>
+        </label>
+        <label class="field">Taal automatisch herkennen
+          <select id="lgAuto">
+            <option value="yes">Ja &mdash; volg de systeemtaal</option>
+            <option value="no">Nee &mdash; altijd de standaardtaal</option>
+          </select>
+        </label>
+      </div>
+      <div class="divider"></div>
+      <div class="toggle-row">
+        <div><div class="t-label">Kruimelpad tonen</div>
+          <div class="t-sub">Toont de route Home &rsaquo; sc&egrave;ne &rsaquo; sc&egrave;ne bovenin</div></div>
+        <label class="switch"><input type="checkbox" id="navCrumb"><i></i></label>
+      </div>
+      <div class="toggle-row">
+        <div><div class="t-label">Vegen om terug te gaan</div>
+          <div class="t-sub">Naar rechts vegen opent de vorige sc&egrave;ne</div></div>
+        <label class="switch"><input type="checkbox" id="navSwipe"><i></i></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= VORMGEVING ================= -->
+  <div class="tabpage hidden" id="page-style">
+    <p class="note">Hoe de experience eruitziet: huisstijl, typografie, logo en de
+    stijl van de kaders om de videoknoppen.</p>
     <h2>Huisstijl</h2>
     <div class="card">
       <div class="row">
@@ -966,39 +1033,6 @@
         </select>
       </label>
     </div>
-    <h2>Taal &amp; navigatie</h2>
-    <div class="card">
-      <div class="toggle-row">
-        <div><div class="t-label">Meertalig</div>
-          <div class="t-sub">Knoplabels en titels per taal; bezoekers kiezen rechtsonder</div></div>
-        <label class="switch"><input type="checkbox" id="lgEnabled"><i></i></label>
-      </div>
-      <label class="field">Beschikbare talen
-        <div id="lgList" class="row" style="flex-wrap:wrap;gap:10px"></div>
-      </label>
-      <div class="row">
-        <label class="field">Standaardtaal
-          <select id="lgCurrent"></select>
-        </label>
-        <label class="field">Taal automatisch herkennen
-          <select id="lgAuto">
-            <option value="yes">Ja &mdash; volg de systeemtaal</option>
-            <option value="no">Nee &mdash; altijd de standaardtaal</option>
-          </select>
-        </label>
-      </div>
-      <div class="divider"></div>
-      <div class="toggle-row">
-        <div><div class="t-label">Kruimelpad tonen</div>
-          <div class="t-sub">Toont de route Home &rsaquo; sc&egrave;ne &rsaquo; sc&egrave;ne bovenin</div></div>
-        <label class="switch"><input type="checkbox" id="navCrumb"><i></i></label>
-      </div>
-      <div class="toggle-row">
-        <div><div class="t-label">Vegen om terug te gaan</div>
-          <div class="t-sub">Naar rechts vegen opent de vorige sc&egrave;ne</div></div>
-        <label class="switch"><input type="checkbox" id="navSwipe"><i></i></label>
-      </div>
-    </div>
     <h2>Video Frame Style</h2>
     <div class="card">
       <label class="field">Framekleur
@@ -1049,13 +1083,19 @@
       </label>
       <p class="note">Deze stijl geldt automatisch voor alle videoknoppen in de experience. Per knop kun je op het tabblad Knoppen kiezen om toch de eigen knopkleur te gebruiken.</p>
     </div>
-    <h2>3D-objecten</h2>
+  </div>
+
+  <!-- ================= 3D-OBJECTEN ================= -->
+  <div class="tabpage hidden" id="page-3d">
+    <p class="note">Deze instellingen gelden voor <b>alle</b> 3D-objecten. Per model
+    (schaal, draai-as, kanteling, animatie) stel je het in bij <b>Media &rarr; 3D-instellingen</b>.</p>
+    <h2>Weergave</h2>
     <div class="card">
       <div class="row">
         <label class="field">Kleur
           <input type="color" id="o3Color" style="width:100%">
         </label>
-        <label class="field">Detail-limiet
+        <label class="field">Detail-limiet (prestaties)
           <select id="o3MaxTris">
             <option value="50000">Licht &mdash; 50k driehoeken</option>
             <option value="150000">Normaal &mdash; 150k</option>
@@ -1064,7 +1104,7 @@
           </select>
         </label>
       </div>
-      <label class="field">Draaisnelheid
+      <label class="field">Draaisnelheid (standaard voor alle modellen)
         <input type="range" id="o3Rot" min="0" max="3" step="0.1">
       </label>
       <div class="row">
@@ -1075,6 +1115,9 @@
           <input type="range" id="o3Shine" min="0" max="1" step="0.05">
         </label>
       </div>
+    </div>
+    <h2>Studio-achtergrond</h2>
+    <div class="card">
       <div class="toggle-row">
         <div><div class="t-label">Witte studio-achtergrond</div>
           <div class="t-sub">Fullscreen 3D op een licht decor met schaduw achter het object</div></div>
@@ -1083,6 +1126,9 @@
       <label class="field">Schaduw achter en onder het object
         <input type="range" id="o3Shadow" min="0" max="0.8" step="0.05">
       </label>
+    </div>
+    <h2>Prestaties &amp; gedrag</h2>
+    <div class="card">
       <label class="field">Fullscreen automatisch sluiten na (sec; 0 = nooit)
         <input type="number" id="o3Close" min="0" max="600" step="5">
       </label>
@@ -1090,7 +1136,7 @@
     </div>
   </div>
 
-  <!-- ================= EFFECTEN ================= -->
+<!-- ================= EFFECTEN ================= -->
   <div class="tabpage hidden" id="page-fx">
     <h2>Motion</h2>
     <div class="card">
@@ -1338,6 +1384,40 @@
       <p class="note">Via het beheerpaneel kun je daarna per box: live status zien, een
       schermafdruk opvragen, het volume zetten, herstarten en een ontwerp publiceren.</p>
     </div>
+    <h2>Continu bedrijf &amp; onderhoud</h2>
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Zelfonderhoud</div>
+          <div class="t-sub">Ruimt tijdens rust animaties, caches en videobuffers op zodat de
+          box weken achter elkaar vloeiend blijft draaien</div></div>
+        <label class="switch"><input type="checkbox" id="mtEnabled"><i></i></label>
+      </div>
+      <label class="field">Geheugengrens voor ingrijpen (MB)
+        <input type="number" id="mtMemory" min="300" max="4000" step="50">
+      </label>
+      <div class="toggle-row">
+        <div><div class="t-label">Nachtelijke verversing</div>
+          <div class="t-sub">Herstart de presentatie &eacute;&eacute;n keer per nacht, alleen als er
+          niemand aan het kijken is</div></div>
+        <label class="switch"><input type="checkbox" id="mtNightly"><i></i></label>
+      </div>
+      <div class="row">
+        <label class="field" style="max-width:150px">Tijdstip (uur)
+          <input type="number" id="mtHour" min="0" max="23" step="1">
+        </label>
+        <label class="field" style="max-width:190px">Watchdog grijpt in na (sec)
+          <input type="number" id="mtWatchdog" min="10" max="120" step="5">
+        </label>
+      </div>
+      <p class="note" id="mtStatus"></p>
+      <div class="row">
+        <button id="mtSweep" class="btn small">Nu opruimen</button>
+        <button id="mtRestart" class="btn small">Nu herstarten</button>
+      </div>
+      <p class="note">Loopt de weergave ondanks alles vast, dan merkt de watchdog dat het beeld
+      stilstaat en herstart de presentatie automatisch. In de Windows-app wordt de app
+      zelf opnieuw gestart als herladen niet helpt.</p>
+    </div>
     <h2>Beveiliging</h2>
     <div class="card">
       <p class="note" id="pinStatus"></p>
@@ -1446,7 +1526,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.8.0';
+const APP_VERSION = '2.9.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -1496,6 +1576,8 @@ const defaultConfig = () => ({
   projectName: '',
   publishedAt: null,
   reducedMotion: false, // toegankelijkheid: Galaxy wordt fade + subtiele scale
+  // Zelfonderhoud voor 24/7-gebruik: opruimen, geheugenbewaking en herstart.
+  maintenance: { enabled: true, memoryLimitMb: 900, nightlyRestart: true, restartHour: 4, watchdogSec: 25 },
   // Galaxy Tiles-parameters (spec 15-22, 30, 52-55, 61)
   galaxy: { durationMs: 1750, staggerMs: 110, chaos: 25, rotation: 12, vertOffset: 220,
     depth: 30, overshoot: 2.5, easing: 'outExpo', seed: 7, interaction: 'after50' },
@@ -1540,6 +1622,7 @@ function migrateConfig(stored) {
     nav: { ...d.nav, ...stored.nav },
     remote: { ...d.remote, ...stored.remote },
     galaxy: { ...d.galaxy, ...stored.galaxy },
+    maintenance: { ...d.maintenance, ...stored.maintenance },
     analytics: { ...d.analytics, ...stored.analytics } };
   if (!Array.isArray(c.scenes) || !c.scenes.length) {
     c.scenes = [{
@@ -1840,7 +1923,15 @@ function mediaByName(name) {
 }
 
 /* ---- per-model optimalisatie-instellingen (alleen relevant mét 3D-object) ---- */
-const MODEL_DEFAULTS = { scale: 1, yOffset: 0, animate: true, animSpeed: 1 };
+const MODEL_DEFAULTS = {
+  scale: 1, yOffset: 0, animate: true, animSpeed: 1,
+  spinAxis: 'y',        // y | x | z | none — as waarom het model automatisch draait
+  tilt: -20,            // vaste kijkhoek in graden (negatief = licht van boven)
+  tiltLimit: 35,        // maximale kanteling die de bezoeker met slepen kan halen
+  spinSpeed: null,      // null = globale draaisnelheid volgen
+  upAxis: 'y',          // y | z — Z-up-modellen (veel FBX) rechtzetten
+  zoomMin: 2.2, zoomMax: 7, damping: 0.12
+};
 function modelSettings(mediaId) {
   return { ...MODEL_DEFAULTS, ...(config.modelSettings[mediaId] || {}) };
 }
@@ -2329,14 +2420,25 @@ void main() {
   vUV = aUV;
   vec4 p = uView * uModel * vec4(aPos, 1.0); vPos = p.xyz; gl_Position = uProj * p; }`;
 const FRAG_SRC = `precision mediump float; varying vec3 vNor, vPos; varying vec2 vUV;
-uniform vec3 uColor; uniform float uLight, uShin, uUseTex;
+uniform vec3 uColor; uniform float uLight, uShin, uUseTex, uRim, uMaxLum;
 uniform sampler2D uTex;
-void main() { vec3 n = normalize(vNor); vec3 l = normalize(vec3(0.5, 0.8, 0.6));
-  float diff = max(dot(n, l), 0.0) * 0.75 + 0.28;
-  vec3 h = normalize(l + normalize(-vPos));
+void main() {
+  vec3 n = normalize(vNor);
+  vec3 v = normalize(-vPos);
+  vec3 l = normalize(vec3(0.5, 0.8, 0.6));
+  vec3 l2 = normalize(vec3(-0.6, 0.25, 0.35));      // zachte invullamp
+  float diff = max(dot(n, l), 0.0) * 0.68 + max(dot(n, l2), 0.0) * 0.22 + 0.18;
+  vec3 h = normalize(l + v);
   float spec = pow(max(dot(n, h), 0.0), 40.0) * uShin;
   vec3 base = mix(uColor, texture2D(uTex, vUV).rgb, uUseTex);
-  gl_FragColor = vec4(base * diff * uLight + vec3(spec), 1.0); }`;
+  vec3 col = base * diff * uLight + vec3(spec);
+  // Randverdonkering: houdt een licht model ook op een witte achtergrond leesbaar.
+  float rim = pow(1.0 - max(dot(n, v), 0.0), 2.2);
+  col *= 1.0 - rim * uRim;
+  // Helderheidsplafond: op een licht decor mag het model niet volledig
+  // uitbranden, anders valt een wit object weg tegen de achtergrond.
+  col = min(col, vec3(uMaxLum));
+  gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0); }`;
 
 function hexToRgb(hex) {
   const n = parseInt(hex.slice(1), 16);
@@ -2361,8 +2463,20 @@ function mat4View(rx, ry, dist) {
   ]);
 }
 
-function createObjViewer(canvas, geom, { interactive, dist, mediaId }) {
-  const gl = canvas.getContext('webgl', { antialias: true, alpha: true, preserveDrawingBuffer: true });
+// Eén WebGL-context per canvas: het fullscreen-canvas wordt hergebruikt, en
+// een verloren context (loseContext) is niet meer terug te krijgen. Daarom
+// cachen we de context en ruimen we bij destroy alleen de GPU-resources op.
+const glContexts = new WeakMap();
+function canvasGL(canvas) {
+  let gl = glContexts.get(canvas);
+  if (gl && !gl.isContextLost()) return gl;
+  gl = canvas.getContext('webgl', { antialias: true, alpha: true, preserveDrawingBuffer: true });
+  if (gl) glContexts.set(canvas, gl);
+  return gl;
+}
+
+function createObjViewer(canvas, geom, { interactive, dist, mediaId, reusable }) {
+  const gl = canvasGL(canvas);
   if (!gl) return null;
   const mk = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
   const prog = gl.createProgram();
@@ -2412,29 +2526,69 @@ function createObjViewer(canvas, geom, { interactive, dist, mediaId }) {
   const uShin = gl.getUniformLocation(prog, 'uShin');
   const uUseTex = gl.getUniformLocation(prog, 'uUseTex');
   const uTex = gl.getUniformLocation(prog, 'uTex');
+  const uRim = gl.getUniformLocation(prog, 'uRim');
+  const uMaxLum = gl.getUniformLocation(prog, 'uMaxLum');
   gl.enable(gl.DEPTH_TEST);
 
-  const st = { rx: -0.35, ry: 0.6, dist: dist || 3.1, dragging: false, paused: false, dead: false, animT: 0 };
+  // Doelwaarden + weergavewaarden: de weergave loopt de doelwaarden gedempt
+  // achterna, zodat slepen en uitrollen vloeiend zijn (geen schokkerig kantelen).
+  const ms0 = modelSettings(mediaId);
+  const st = {
+    rx: (ms0.tilt || 0) * Math.PI / 180, ry: 0.6, dist: dist || 3.1,
+    tx: (ms0.tilt || 0) * Math.PI / 180, ty: 0.6, tdist: dist || 3.1,
+    vy: 0, dragging: false, paused: false, dead: false, animT: 0
+  };
   if (interactive) {
-    canvas.addEventListener('pointerdown', (e) => { st.dragging = true; st.lx = e.clientX; st.ly = e.clientY; canvas.setPointerCapture(e.pointerId); });
+    canvas.addEventListener('pointerdown', (e) => {
+      st.dragging = true; st.lx = e.clientX; st.ly = e.clientY; st.vy = 0;
+      canvas.setPointerCapture(e.pointerId);
+    });
     canvas.addEventListener('pointermove', (e) => {
       if (!st.dragging) return;
-      st.ry += (e.clientX - st.lx) * 0.008;
-      st.rx = Math.max(-1.5, Math.min(1.5, st.rx + (e.clientY - st.ly) * 0.008));
+      const ms = modelSettings(mediaId);
+      const lim = Math.abs(ms.tiltLimit ?? 35) * Math.PI / 180;
+      const base = (ms.tilt || 0) * Math.PI / 180;
+      const dx = (e.clientX - st.lx) * 0.008;
+      st.ty += dx;
+      st.vy = dx;                                   // voor uitrollen na loslaten
+      st.tx = Math.max(base - lim, Math.min(base + lim, st.tx + (e.clientY - st.ly) * 0.006));
       st.lx = e.clientX; st.ly = e.clientY;
     });
-    canvas.addEventListener('pointerup', () => { st.dragging = false; });
-    canvas.addEventListener('wheel', (e) => { e.preventDefault(); st.dist = Math.max(1.6, Math.min(8, st.dist + e.deltaY * 0.002)); }, { passive: false });
+    const endDrag = () => { st.dragging = false; };
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const ms = modelSettings(mediaId);
+      st.tdist = Math.max(ms.zoomMin ?? 2.2, Math.min(ms.zoomMax ?? 7, st.tdist + e.deltaY * 0.002));
+    }, { passive: false });
   }
 
   // Normalisatie (centreren + schalen) als modelmatrix; de gebruikersschaal
   // en verticale positie komen uit de per-model instellingen.
-  function normMatrix(ms) {
+  function normMatrix(ms, spinAngle) {
     const n = geom.norm || { c: [0, 0, 0], s: 1 };
     const k = n.s * (ms.scale || 1);
-    const m = mat4Identity();
+    // centreren + schalen
+    let m = mat4Identity();
     m[0] = m[5] = m[10] = k;
-    m[12] = -n.c[0] * k; m[13] = -n.c[1] * k + (ms.yOffset || 0) / 40; m[14] = -n.c[2] * k;
+    m[12] = -n.c[0] * k; m[13] = -n.c[1] * k; m[14] = -n.c[2] * k;
+    // Z-up-modellen (veel FBX/CAD) rechtzetten: -90° om X.
+    if ((ms.upAxis || 'y') === 'z') {
+      const r = mat4Identity();
+      r[5] = 0; r[6] = -1; r[9] = 1; r[10] = 0;
+      m = mat4Mul(r, m);
+    }
+    // Draaien om X of Z gebeurt in de modelmatrix (Y zit in de camera).
+    const ax = ms.spinAxis || 'y';
+    if ((ax === 'x' || ax === 'z') && spinAngle) {
+      const c = Math.cos(spinAngle), si = Math.sin(spinAngle);
+      const r = mat4Identity();
+      if (ax === 'x') { r[5] = c; r[6] = si; r[9] = -si; r[10] = c; }
+      else { r[0] = c; r[1] = si; r[4] = -si; r[5] = c; }
+      m = mat4Mul(r, m);
+    }
+    m[13] += (ms.yOffset || 0) / 40;
     return m;
   }
 
@@ -2446,7 +2600,19 @@ function createObjViewer(canvas, geom, { interactive, dist, mediaId }) {
     const dt = Math.min(100, t - last); last = t;
     const o = config.object3d;
     const ms = modelSettings(mediaId);
-    if (!st.dragging) st.ry += o.rotSpeed * dt / 1000;
+    const spinSpeed = ms.spinSpeed == null ? o.rotSpeed : ms.spinSpeed;
+    if (!st.dragging) {
+      if (Math.abs(st.vy) > 0.0002) {           // uitrollen na het loslaten
+        st.ty += st.vy;
+        st.vy *= 0.92;
+      } else st.vy = 0;
+      if ((ms.spinAxis || 'y') !== 'none') st.ty += spinSpeed * dt / 1000;
+    }
+    // Gedempte interpolatie -> vloeiende beweging, ook bij snelle input.
+    const k = Math.min(1, (ms.damping ?? 0.12) * dt / 16);
+    st.rx += (st.tx - st.rx) * k;
+    st.ry += (st.ty - st.ry) * k;
+    st.dist += (st.tdist - st.dist) * k;
     const dpr = Math.min(devicePixelRatio || 1, 2);
     const w = Math.max(1, Math.round(canvas.clientWidth * dpr));
     const h = Math.max(1, Math.round(canvas.clientHeight * dpr));
@@ -2455,9 +2621,16 @@ function createObjViewer(canvas, geom, { interactive, dist, mediaId }) {
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.uniformMatrix4fv(uProj, false, mat4Perspective(0.9, w / h, 0.1, 50));
-    gl.uniformMatrix4fv(uView, false, mat4View(st.rx, st.ry, st.dist));
+    // De automatische draaiing gaat om de gekozen as; de kijkhoek (kanteling)
+    // blijft daarbij vast, zodat het model niet ongecontroleerd omvalt.
+    const axis = ms.spinAxis || 'y';
+    const spin = axis === 'none' ? 0 : st.ry;
+    gl.uniformMatrix4fv(uView, false, mat4View(st.rx, axis === 'y' ? spin : st.ry * 0.0001, st.dist));
     gl.uniform1f(uLight, o.light);
     gl.uniform1f(uShin, o.shininess);
+    const onLight = playOverlay.classList.contains('light');
+    gl.uniform1f(uRim, onLight ? 0.55 : 0.25);
+    gl.uniform1f(uMaxLum, onLight ? 0.88 : 1.0);
     gl.uniform1i(uTex, 0);
     // Animatie (glTF): nodematrices op het huidige tijdstip.
     let worlds = null;
@@ -2468,7 +2641,7 @@ function createObjViewer(canvas, geom, { interactive, dist, mediaId }) {
     } else if (geom.nodes) {
       worlds = geom.restWorlds || (geom.restWorlds = computeNodeWorlds(geom, null, 0));
     }
-    const N = normMatrix(ms);
+    const N = normMatrix(ms, axis === 'x' || axis === 'z' ? st.ry : 0);
     for (const pr of prims) {
       gl.bindBuffer(gl.ARRAY_BUFFER, pr.pos); gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 0, 0);
       gl.bindBuffer(gl.ARRAY_BUFFER, pr.nor); gl.vertexAttribPointer(aNor, 3, gl.FLOAT, false, 0, 0);
@@ -2485,7 +2658,23 @@ function createObjViewer(canvas, geom, { interactive, dist, mediaId }) {
 
   return {
     setPaused(p) { st.paused = p; last = performance.now(); },
-    destroy() { st.dead = true; cancelAnimationFrame(raf); gl.getExtension('WEBGL_lose_context')?.loseContext(); }
+    destroy() {
+      st.dead = true;
+      cancelAnimationFrame(raf);
+      // GPU-resources vrijgeven, maar de context laten leven wanneer het
+      // canvas hergebruikt wordt (anders blijft het scherm daarna leeg).
+      try {
+        for (const pr of prims) {
+          gl.deleteBuffer(pr.pos); gl.deleteBuffer(pr.nor); gl.deleteBuffer(pr.uv);
+          if (pr.tex) gl.deleteTexture(pr.tex);
+        }
+        gl.deleteProgram(prog);
+      } catch {}
+      if (!reusable) {
+        glContexts.delete(canvas);
+        gl.getExtension('WEBGL_lose_context')?.loseContext();
+      }
+    }
   };
 }
 const objViewers = new Map(); // buttonId of 'fullscreen' -> viewer
@@ -3002,7 +3191,7 @@ function playObject(mediaId) {
       objViewers.get('fullscreen')?.destroy();
       // Fullscreen iets verder weg: het object blijft ook gedraaid (diagonaal)
       // en in portrait volledig in beeld, met ruimte voor de schaduw eronder.
-      const v = createObjViewer($('#playCanvas'), g, { interactive: true, dist: 4.4, mediaId });
+      const v = createObjViewer($('#playCanvas'), g, { interactive: true, dist: 4.4, mediaId, reusable: true });
       if (v) objViewers.set('fullscreen', v);
       armObjAutoClose();
     })
@@ -4400,9 +4589,12 @@ function renderInspector() {
   body.append(inspSection('UITERLIJK',
     el('label', { class: 'field' }, 'Vorm', (() => {
       const sel = el('select', { onchange: commit((e) => { b.shape = e.target.value; }) },
-        el('option', { value: 'pill' }, 'Ovaal'), el('option', { value: 'rounded' }, 'Rechthoek'),
-        el('option', { value: 'circle' }, 'Rond ▶'), el('option', { value: 'hotspot' }, 'Onzichtbare hotspot'));
-      sel.value = b.shape || 'pill'; return sel;
+        el('option', { value: 'rounded' }, 'Afgerond (volgt frame-radius)'),
+        el('option', { value: 'square' }, 'Vierkant / recht'),
+        el('option', { value: 'pill' }, 'Ovaal (pill)'),
+        el('option', { value: 'circle' }, 'Rond'),
+        el('option', { value: 'hotspot' }, 'Onzichtbare hotspot'));
+      sel.value = b.shape || 'rounded'; return sel;
     })()),
     el('div', { class: 'field' }, 'Kleur', el('div', { class: 'swatches' },
       PALETTE.map((c) => el('button', { class: 'swatch' + (b.color === c ? ' sel' : ''), style: `background:${c}`,
@@ -4784,11 +4976,14 @@ function renderBtnList() {
         el('label', { class: 'field' }, 'Media die deze knop opent (video of 3D-object)',
           (() => { const sel = mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); if (v) ensurePreviewRendition(v); renderStage(); });
                    sel.dataset.role = 'media'; return sel; })()),
-        el('label', { class: 'field', style: 'max-width:110px' }, 'Vorm',
+        el('label', { class: 'field', style: 'max-width:150px' }, 'Vorm',
           (() => { const s = el('select', { 'data-role': 'shape', onchange: (e) => { b.shape = e.target.value; save(); renderStage(); } },
-              el('option', { value: 'pill' }, 'Ovaal'), el('option', { value: 'rounded' }, 'Rechthoek'),
-              el('option', { value: 'circle' }, 'Rond ▶'), el('option', { value: 'hotspot' }, 'Onzichtbare hotspot'));
-            s.value = b.shape || 'pill'; return s; })())),
+              el('option', { value: 'rounded' }, 'Afgerond (volgt frame-radius)'),
+              el('option', { value: 'square' }, 'Vierkant / recht'),
+              el('option', { value: 'pill' }, 'Ovaal (pill)'),
+              el('option', { value: 'circle' }, 'Rond'),
+              el('option', { value: 'hotspot' }, 'Onzichtbare hotspot'));
+            s.value = b.shape || 'rounded'; return s; })())),
       el('label', { class: 'field' }, 'Grootte',
         el('input', { type: 'range', min: 4, max: 20, step: 0.5, value: b.size || 8,
           oninput: (e) => { b.size = Number(e.target.value); save(); renderStage(); } })),
@@ -4974,9 +5169,48 @@ async function modelSettingsBox(m) {
         } }));
     return lab;
   };
+  const select = (label, key, opts, sub) => el('label', { class: 'field' }, label,
+    (() => {
+      const sel = el('select', { onchange: (e) => setMs({ [key]: e.target.value }) },
+        opts.map(([v, t]) => el('option', { value: v }, t)));
+      sel.value = ms()[key];
+      return sel;
+    })(),
+    sub ? el('div', { class: 'note' }, sub) : null);
+
   box.append(
-    slider('Schaal', 0.4, 2.5, 0.05, 'scale', '×'),
-    slider('Verticale positie', -30, 30, 1, 'yOffset'));
+    el('div', { class: 'row', style: 'display:flex;gap:10px' },
+      slider('Schaal', 0.4, 2.5, 0.05, 'scale', '×'),
+      slider('Verticale positie', -30, 30, 1, 'yOffset')),
+    el('div', { class: 'row', style: 'display:flex;gap:10px' },
+      select('Draait om', 'spinAxis', [['y', 'Verticale as (staand)'], ['x', 'Horizontale as (tuimelen)'],
+        ['z', 'Beeldvlak (klok)'], ['none', 'Niet automatisch draaien']],
+        'Geldt voor het automatisch ronddraaien. Een eigen animatie in het model zet je hieronder apart uit.'),
+      select('Rechtop zetten', 'upAxis', [['y', 'Y-up (standaard)'], ['z', 'Z-up (veel FBX/CAD)']])),
+    el('div', { class: 'row', style: 'display:flex;gap:10px' },
+      slider('Kijkhoek', -60, 60, 1, 'tilt', '°'),
+      slider('Max. kanteling door bezoeker', 0, 80, 5, 'tiltLimit', '°')),
+    el('div', { class: 'row', style: 'display:flex;gap:10px' },
+      slider('Dichtstbij (zoom)', 1.6, 5, 0.1, 'zoomMin', '×'),
+      slider('Verstweg (zoom)', 3, 10, 0.5, 'zoomMax', '×')),
+    slider('Vloeiendheid', 0.04, 0.4, 0.02, 'damping'),
+    el('label', { class: 'field' }, 'Draaisnelheid',
+      (() => {
+        const wrap = el('div', { class: 'row', style: 'display:flex;gap:8px;align-items:center' });
+        const rng = el('input', { type: 'range', min: 0, max: 3, step: 0.1,
+          value: ms().spinSpeed == null ? config.object3d.rotSpeed : ms().spinSpeed,
+          oninput: (e) => setMs({ spinSpeed: Number(e.target.value) }) });
+        const btn = el('button', { class: 'btn small', onclick: () => { setMs({ spinSpeed: null }); rng.value = config.object3d.rotSpeed; } }, 'Globaal');
+        wrap.append(rng, btn);
+        return wrap;
+      })()),
+    el('button', { class: 'btn small', onclick: () => {
+      config.modelSettings[m.id] = { ...MODEL_DEFAULTS };
+      save();
+      const card = document.querySelector('#mediaList .model-settings');
+      if (card) { const parent = card.parentElement; card.remove(); modelSettingsBox(m).then((b) => parent.append(b)); }
+      toast('Terug naar de standaardwaarden');
+    } }, 'Standaardwaarden herstellen'));
   // animatie-opties alleen tonen als het model echt animaties heeft
   try {
     const g = await loadObjGeometry(m.id);
@@ -5002,7 +5236,7 @@ async function modelSettingsBox(m) {
     info.textContent = `${fmt}-model — niet leesbaar: ` + (err.message || err);
   }
   box.append(el('p', { class: 'note' },
-    'Wijzigingen zijn direct zichtbaar in draaiende voorbeelden. Draaisnelheid, belichting, kleur en de detail-limiet staan bij Experience & thema → 3D-objecten.'));
+    'Wijzigingen zijn direct zichtbaar. Belichting, kleur, achtergrond, schaduw en de detail-limiet gelden voor álle modellen en staan bij Experience & thema → 3D-objecten.'));
   return box;
 }
 
@@ -5476,7 +5710,31 @@ async function requireAdmin() {
   return false;
 }
 
+function fmtDuration(ms) {
+  const h = Math.floor(ms / 3600000), d = Math.floor(h / 24);
+  if (d > 0) return `${d} dag${d === 1 ? '' : 'en'} ${h % 24} uur`;
+  if (h > 0) return `${h} uur ${Math.floor(ms / 60000) % 60} min`;
+  return `${Math.max(1, Math.floor(ms / 60000))} min`;
+}
+
+function renderMaintenance() {
+  const mt = config.maintenance;
+  $('#mtEnabled').checked = mt.enabled !== false;
+  $('#mtMemory').value = mt.memoryLimitMb;
+  $('#mtNightly').checked = mt.nightlyRestart !== false;
+  $('#mtHour').value = mt.restartHour;
+  $('#mtWatchdog').value = mt.watchdogSec;
+  const parts = [`Draait nu ${fmtDuration(Date.now() - health.bootAt)}`];
+  if (health.startedAt) parts.push(`in bedrijf sinds ${new Date(health.startedAt).toLocaleDateString('nl-NL')}`);
+  parts.push(`${health.sweeps} onderhoudsronden`);
+  if (health.freedAnims) parts.push(`${health.freedAnims} animaties opgeruimd`);
+  if (heapMb()) parts.push(`geheugen ${Math.round(heapMb())} MB (piek ${Math.round(health.peakHeapMb)} MB)`);
+  if (health.reloads) parts.push(`${health.reloads} automatische herstart(s), laatst: ${health.lastReloadReason}`);
+  $('#mtStatus').textContent = parts.join(' · ');
+}
+
 function renderShare() {
+  renderMaintenance();
   $('#rmEnabled').checked = !!config.remote.enabled;
   $('#rmUrl').value = config.remote.url || '';
   $('#rmKey').value = config.remote.key || '';
@@ -5768,6 +6026,10 @@ function captureStage() {
 function remoteStatusPayload() {
   return {
     app: 'studio', version: APP_VERSION,
+    uptimeHours: Math.round((Date.now() - health.bootAt) / 36000) / 100,
+    heapMb: Math.round(heapMb()),
+    autoRestarts: health.reloads,
+    lastRestartReason: health.lastReloadReason,
     scene: curScene().name,
     scenes: config.scenes.length,
     buttons: curButtons().length,
@@ -5860,6 +6122,21 @@ function applyRemoteSettings() {
     setRemoteStatus('Niet verbonden');
   }
 }
+
+$('#mtEnabled').addEventListener('change', (e) => { config.maintenance.enabled = e.target.checked; save(); });
+$('#mtMemory').addEventListener('change', (e) => { config.maintenance.memoryLimitMb = Math.max(300, Math.min(4000, Number(e.target.value) || 900)); save(); });
+$('#mtNightly').addEventListener('change', (e) => { config.maintenance.nightlyRestart = e.target.checked; save(); });
+$('#mtHour').addEventListener('change', (e) => { config.maintenance.restartHour = Math.max(0, Math.min(23, Number(e.target.value) || 4)); save(); });
+$('#mtWatchdog').addEventListener('change', (e) => { config.maintenance.watchdogSec = Math.max(10, Math.min(120, Number(e.target.value) || 25)); save(); });
+$('#mtSweep').addEventListener('click', () => {
+  const freed = sweepLight();
+  sweepDeep();
+  renderMaintenance();
+  toast(`Opgeruimd — ${freed} animaties vrijgegeven`);
+});
+$('#mtRestart').addEventListener('click', () => {
+  if (confirm('De presentatie nu herstarten? Instellingen en media blijven bewaard.')) selfRestart('handmatig herstart');
+});
 
 $('#rmEnabled').addEventListener('change', (e) => { config.remote.enabled = e.target.checked; save(); applyRemoteSettings(); });
 $('#rmUrl').addEventListener('change', (e) => { config.remote.url = e.target.value.trim(); save(); applyRemoteSettings(); });
@@ -6363,6 +6640,168 @@ function applyOrientationMode() {
 }
 
 window.addEventListener('resize', applyOrientationMode);
+
+/* ================= Zelfonderhoud & watchdog =================
+   Een holobox draait weken achter elkaar. Zonder onderhoud groeien
+   WAAPI-animaties, decoder-buffers, bitmaps en statistiek-arrays langzaam
+   dicht. Deze module ruimt periodiek op (alleen wanneer dat veilig is),
+   bewaakt het geheugen in stappen, en herstart pas als laatste redmiddel. */
+
+const HEALTH_KEY = 'hwh_health_v1';
+const health = (() => {
+  let h = {};
+  try { h = JSON.parse(localStorage.getItem(HEALTH_KEY)) || {}; } catch {}
+  return {
+    bootAt: Date.now(),
+    startedAt: h.startedAt || Date.now(),   // eerste start sinds de laatste handmatige reset
+    reloads: h.reloads || 0,
+    lastReloadReason: h.lastReloadReason || null,
+    lastReloadAt: h.lastReloadAt || null,
+    sweeps: 0, freedAnims: 0, peakHeapMb: 0
+  };
+})();
+function saveHealth(extra = {}) {
+  try {
+    localStorage.setItem(HEALTH_KEY, JSON.stringify({
+      startedAt: health.startedAt, reloads: health.reloads,
+      lastReloadReason: health.lastReloadReason, lastReloadAt: health.lastReloadAt, ...extra
+    }));
+  } catch {}
+}
+
+const heapMb = () => (performance.memory ? performance.memory.usedJSHeapSize / 1048576 : 0);
+
+// Is het veilig om nu op te ruimen? Niet tijdens afspelen of interactie.
+function maintenanceIdle() {
+  return !playOverlay.classList.contains('show') &&
+    !panel.classList.contains('open') &&
+    !editing &&
+    document.getElementById('webOverlay').classList.contains('hidden') &&
+    Date.now() - lastInteraction > 8000;
+}
+
+// Lichte opruiming — mag altijd draaien, ook tijdens de screensaver.
+function sweepLight() {
+  let freed = 0;
+  // 1. Afgelopen WAAPI-animaties met fill blijven anders in de lijst hangen.
+  for (const a of document.getAnimations()) {
+    if (a.playState === 'finished') { try { a.cancel(); freed++; } catch {} }
+  }
+  // 2. Undo-geschiedenis begrenzen (elke stap is een volledige config-kopie).
+  while (undoStack.length > 25) undoStack.shift();
+  while (redoStack.length > 25) redoStack.shift();
+  // 3. Statistiek-arrays begrenzen.
+  if (stats && Array.isArray(stats.heatmap) && stats.heatmap.length > 400) {
+    stats.heatmap = stats.heatmap.slice(-400);
+  }
+  health.sweeps++;
+  health.freedAnims += freed;
+  health.peakHeapMb = Math.max(health.peakHeapMb, heapMb());
+  return freed;
+}
+
+// Zware opruiming — alleen wanneer er niemand kijkt of bedient.
+function sweepDeep() {
+  // 3D-geometrie en textures loslaten; ze worden bij gebruik opnieuw geladen.
+  for (const [, g] of objGeomCache) {
+    Promise.resolve(g).then((geo) => {
+      if (!geo || !geo.prims) return;
+      for (const pr of geo.prims) { try { pr.texture?.close?.(); } catch {} }
+    }).catch(() => {});
+  }
+  objGeomCache.clear();
+  alphaCache.clear();
+  // Niet-zichtbare 3D-viewers stoppen (preview-viewers van andere scènes).
+  for (const [key, v] of objViewers) {
+    if (key === 'fullscreen') continue;
+    if (!document.querySelector(`.vbtn[data-id="${key}"]`)) { v?.destroy(); objViewers.delete(key); }
+  }
+  // Videodecoders van ongebruikte spelers vrijgeven.
+  for (const v of [playVideoA, playVideoB]) {
+    if (v !== playVideo && v.src && !playOverlay.classList.contains('show')) {
+      v.pause(); v.removeAttribute('src'); v.load();
+    }
+  }
+  // Previewvideo's opnieuw aankoppelen: forceert het vrijgeven van oude buffers.
+  if (maintenanceIdle()) {
+    for (const v of document.querySelectorAll('.vbtn video.preview')) {
+      const src = v.src;
+      v.pause(); v.removeAttribute('src'); v.load();
+      v.src = src; v.play().catch(() => {});
+    }
+  }
+  saveHealth();
+}
+
+// Herstart met reden: bewaren, melden aan de desktop-app, dan herladen.
+function selfRestart(reason) {
+  health.reloads++;
+  health.lastReloadReason = reason;
+  health.lastReloadAt = Date.now();
+  saveHealth();
+  try { window.hwhDesktop?.notifyRestart?.(reason); } catch {}
+  setTimeout(() => {
+    // In de Windows-app herstart het hoofdproces: dat kan ook de hele
+    // applicatie opnieuw starten wanneer alleen herladen niet meer helpt.
+    if (window.hwhDesktop && typeof window.hwhDesktop.restart === 'function') {
+      try { window.hwhDesktop.restart(reason); return; } catch {}
+    }
+    location.reload();
+  }, 400);
+}
+
+let memoryStrikes = 0;
+function maintenanceTick() {
+  const mt = config.maintenance || {};
+  if (mt.enabled === false) return;
+  sweepLight();
+
+  // Geheugenbewaking in stappen: opruimen → diep opruimen → herstarten.
+  const mb = heapMb();
+  const limit = mt.memoryLimitMb || 900;
+  if (mb && mb > limit * 0.75) {
+    sweepDeep();
+    if (mb > limit) {
+      memoryStrikes++;
+      if (memoryStrikes >= 3 && maintenanceIdle()) selfRestart('geheugenlimiet (' + Math.round(mb) + ' MB)');
+    } else memoryStrikes = 0;
+  } else memoryStrikes = 0;
+
+  // Nachtelijke preventieve herstart wanneer de box toch stilstaat.
+  if (mt.nightlyRestart !== false) {
+    const now = new Date();
+    const upHours = (Date.now() - health.bootAt) / 3600000;
+    if (now.getHours() === (mt.restartHour ?? 4) && now.getMinutes() < 5 && upHours > 6 && maintenanceIdle()) {
+      selfRestart('geplande nachtelijke verversing');
+    }
+  }
+}
+setInterval(maintenanceTick, 60000);
+// Diepe opruiming elk kwartier wanneer de box rustig staat.
+setInterval(() => { if (maintenanceIdle()) sweepDeep(); }, 15 * 60000);
+
+/* Watchdog: de rendermodule geeft elke seconde een hartslag af. Blijft die
+   weg (vastgelopen scriptlus), dan grijpt de desktop-app in; in de browser
+   detecteert een tweede timer de stilstand zelf. */
+let lastBeat = Date.now();
+(function beat() {
+  lastBeat = Date.now();
+  try { window.hwhDesktop?.heartbeat?.(); } catch {}
+  requestAnimationFrame(() => setTimeout(beat, 1000));
+})();
+setInterval(() => {
+  const gap = (Date.now() - lastBeat) / 1000;
+  const limit = (config.maintenance?.watchdogSec) || 25;
+  if (gap > limit) selfRestart('watchdog: beeld stond ' + Math.round(gap) + 's stil');
+}, 5000);
+
+// Onverwachte fouten tellen; blijft het stapelen, dan verversen we.
+let errorBurst = 0;
+window.addEventListener('error', () => {
+  errorBurst++;
+  if (errorBurst > 25 && maintenanceIdle()) selfRestart('herhaalde scriptfouten');
+});
+setInterval(() => { errorBurst = Math.max(0, errorBurst - 5); }, 60000);
 
 /* ================= Start ================= */
 (async () => {

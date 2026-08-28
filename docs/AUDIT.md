@@ -62,7 +62,7 @@ Legenda: ✅ EXISTING · ◐ PARTIAL · ✗ MISSING · ⟳ REQUIRES REFACTOR
 - **Motion Engine**: één `runEntrance(elementen, cfg)`/presetlaag (WAAPI, alleen transform/opacity/filter), gebruikt bij laden, scènewissel, terugkeer na content en na de screensaver.
 - **Figma-workflow**: gereserveerd voor de volgende fase — het editor-IDE-herontwerp (sidebar 240 px, topbar 56 px, canvas, inspector 320 px) wordt eerst als Figma-componentsysteem ontworpen en daarna geïmplementeerd, conform spec-fasen C–H.
 
-## 4. Openstaande taken (stand v2.8.0)
+## 4. Openstaande taken (stand v2.9.0)
 
 Geverifieerd tegen de code én tegen de testsuites (14 suites, allemaal groen).
 
@@ -158,6 +158,53 @@ kruimelpad, veegnavigatie, webcontent-module, motion-catalogus
   matrix zodat animaties hun eigen transforms houden.
 - Tests: nieuwe modeltest-suite (10 controles, met in de test geconstrueerde
   GLB mét animatie/texture en een binaire FBX); alle 16 suites groen.
+
+### Verwerkt in v2.9.0
+- **Bugfix 3D — wit beeld na een instelling**: de viewer vernietigde de
+  WebGL-context van het gedeelde fullscreen-canvas; die is daarna niet meer
+  terug te krijgen, waardoor elk volgend 3D-object leeg bleef. De context
+  wordt nu per canvas hergebruikt en alleen de GPU-resources worden
+  vrijgegeven. Extra vangnet: een helderheidsplafond en randverdonkering
+  houden ook een wit model op het witte decor afleesbaar.
+- **3D-besturing vloeiend + per-object maxima**: gedempte rotatie met
+  uitrollen na loslaten, en per model instelbaar: draai-as (verticaal /
+  tuimelen / beeldvlak / niet draaien), kijkhoek, **maximale kanteling**,
+  zoomgrenzen, vloeiendheid, rechtop zetten voor Z-up-modellen (FBX/CAD),
+  eigen draaisnelheid en een knop "standaardwaarden herstellen".
+- **Knopvormen hersteld**: de globale frame-radius overschreef de vormklassen,
+  waardoor rond rechthoekig werd en ovaal verdween. Vorm gaat nu vóór, inclusief
+  het videovlak, de glans, de diepteschaduw en het label; nieuw: **Vierkant**.
+- **Logischere indeling**: het overvolle tabblad "Experience & thema" is
+  gesplitst in **Scherm & scène**, **Vormgeving** en **3D-objecten**, elk met
+  een inleidende regel; het 3D-tabblad is verdeeld in Weergave,
+  Studio-achtergrond en Prestaties & gedrag.
+- **Volledige veldtest**: nieuwe fieldtest-suite stuurt 107 controles aan —
+  elk invoerveld, elke schakelaar, keuzelijst, actieknop, per-knop-kaartveld,
+  scène-, groeps-, uitlijn-, layout-, undo-, publish- en PIN-actie — en
+  controleert of de waarde in de configuratie landt, doorwerkt in de weergave
+  én een herlaadbeurt overleeft.
+
+### Verwerkt in v2.9.0 — continu bedrijf (24/7)
+- **Zelfonderhoud in de presentatie**: elke minuut een lichte ronde (blijvende
+  animaties opruimen, undo-geschiedenis en statistiek-arrays begrenzen) en elk
+  kwartier — alleen bij rust — een diepe ronde: 3D-geometrie en textures
+  vrijgeven (`ImageBitmap.close()`), weesviewers stoppen, ongebruikte
+  videodecoders loslaten en previewvideo's opnieuw koppelen.
+- **Geheugenbewaking in stappen**: boven 75% van de grens diep opruimen, en pas
+  na drie opeenvolgende overschrijdingen — en alleen wanneer niemand kijkt —
+  een herstart. Instelbare grens (standaard 900 MB).
+- **Watchdog**: de presentatie zendt elke seconde een hartslag. Blijft die weg
+  (vastgelopen scriptlus), dan herstart de presentatie zichzelf; in de
+  Windows-app grijpt het hoofdproces in — eerst herladen, en als dat twee keer
+  niet helpt wordt de applicatie volledig opnieuw gestart. Ook Chromium's eigen
+  `unresponsive`- en `render-process-gone`-signalen leiden tot herstel.
+- **Onderhoud in de Windows-app**: elke 6 uur HTTP- en code-cache legen, elke
+  10 minuten geheugenmeting van alle processen (waarschuwing bij 1,8 GB,
+  verversing bij 2,6 GB).
+- **Geplande nachtelijke verversing** (standaard 04:00, alleen bij rust) en een
+  statusregel met bedrijfstijd, aantal onderhoudsronden, geheugenpiek en de
+  reden van de laatste automatische herstart — ook zichtbaar in het
+  beheerplatform via de hartslag.
 
 ### Nog open (vergt zaken buiten de software)
 | Punt | Waarom open |
