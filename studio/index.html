@@ -861,8 +861,8 @@
   <!-- ================= MEDIA ================= -->
   <div class="tabpage hidden" id="page-media">
     <button id="addMedia" class="btn primary block">+ Bestanden toevoegen</button>
-    <input type="file" id="mediaInput" accept="video/*,.obj,.mtl,image/png,image/jpeg,.webp" multiple hidden>
-    <p class="note">Video (mp4 H.264/H.265, 4K, liggend of staand) &middot; PNG met transparantie (wordt een knop in de vorm van de afbeelding) &middot; 3D-object (Wavefront .obj &mdash; voeg het .mtl-bestand en de texture-afbeeldingen samen toe, dan wordt het model met texture getoond). Alles wordt in de browser opgeslagen en werkt daarna ook offline.</p>
+    <input type="file" id="mediaInput" accept="video/*,.obj,.mtl,.glb,.gltf,.bin,.fbx,image/png,image/jpeg,.webp" multiple hidden>
+    <p class="note">Video (mp4 H.264/H.265, 4K, liggend of staand) &middot; PNG met transparantie (wordt een knop in de vorm van de afbeelding) &middot; 3D-objecten: <b>.glb / .gltf</b> (aanbevolen &mdash; licht, incl. textures en animaties), <b>.obj</b> (+ .mtl en texture-afbeeldingen samen toevoegen) en <b>.fbx</b> (statisch; voor animaties converteer je naar .glb). Alles wordt in de browser opgeslagen en werkt daarna ook offline.</p>
     <div id="mediaList"></div>
   </div>
 
@@ -1446,7 +1446,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.7.0';
+const APP_VERSION = '2.8.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -1484,6 +1484,7 @@ const defaultConfig = () => ({
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
   // Globale Video Frame Style (per knop te overriden met de knopkleur).
   mediaSettings: {},   // per mediaId: trimStart, trimEnd, volume, fadeSec, loop, holdLastFrame
+  modelSettings: {},   // per 3D-model: scale, yOffset, animate, animSpeed
   frameStyle: { mode: 'button', color1: '#1b2a5e', color2: '#7b2ff0', angle: 135,
     radius: 14, thickness: 9, depth: 8, gloss: 0.3, highlight: 0.35, shadow: 0.55, glow: 1 },
   // Meertaligheid (spec 84-85): labels en titels per taal, met autodetectie.
@@ -1531,6 +1532,7 @@ function migrateConfig(stored) {
     motion: { ...d.motion, ...stored.motion, overrides: { ...(stored.motion?.overrides || {}) } },
     frameStyle: { ...d.frameStyle, ...stored.frameStyle },
     mediaSettings: { ...(stored.mediaSettings || {}) },
+    modelSettings: { ...(stored.modelSettings || {}) },
     editor: { ...d.editor, ...stored.editor },
     theme: { ...d.theme, ...stored.theme },
     security: { ...d.security, ...stored.security },
@@ -1603,8 +1605,9 @@ const dbAll = () => new Promise((res, rej) => { const r = tx('readonly').getAll(
 let mediaCache = new Map(); // id -> {id, name, size, url, kind, aspect?}
 
 // 'model' = 3D-object (.obj), 'image' = PNG-knopafbeelding, anders video.
-const mediaKind = (name) => /\.obj$/i.test(name || '') ? 'model'
+const mediaKind = (name) => /\.(obj|glb|gltf|fbx)$/i.test(name || '') ? 'model'
   : /\.mtl$/i.test(name || '') ? 'mtl'
+  : /\.bin$/i.test(name || '') ? 'bin'
   : /\.(png|jpe?g|webp)$/i.test(name || '') ? 'image' : 'video';
 
 /* ================= Hulpjes ================= */
@@ -1836,32 +1839,482 @@ function mediaByName(name) {
   return null;
 }
 
+/* ---- per-model optimalisatie-instellingen (alleen relevant mét 3D-object) ---- */
+const MODEL_DEFAULTS = { scale: 1, yOffset: 0, animate: true, animSpeed: 1 };
+function modelSettings(mediaId) {
+  return { ...MODEL_DEFAULTS, ...(config.modelSettings[mediaId] || {}) };
+}
+
+/* ---- kleine matrixhulpjes voor modelmatrices en animatie ---- */
+function mat4Identity() { const m = new Float32Array(16); m[0] = m[5] = m[10] = m[15] = 1; return m; }
+function mat4Mul(a, b) { // a × b (kolom-major)
+  const o = new Float32Array(16);
+  for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) {
+    o[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
+  }
+  return o;
+}
+function mat4FromTRS(t, q, sc) {
+  const [x, y, z, w] = q;
+  const x2 = x + x, y2 = y + y, z2 = z + z;
+  const xx = x * x2, xy = x * y2, xz = x * z2, yy = y * y2, yz = y * z2, zz = z * z2;
+  const wx = w * x2, wy = w * y2, wz = w * z2;
+  const m = new Float32Array(16);
+  m[0] = (1 - (yy + zz)) * sc[0]; m[1] = (xy + wz) * sc[0]; m[2] = (xz - wy) * sc[0];
+  m[4] = (xy - wz) * sc[1]; m[5] = (1 - (xx + zz)) * sc[1]; m[6] = (yz + wx) * sc[1];
+  m[8] = (xz + wy) * sc[2]; m[9] = (yz - wx) * sc[2]; m[10] = (1 - (xx + yy)) * sc[2];
+  m[12] = t[0]; m[13] = t[1]; m[14] = t[2]; m[15] = 1;
+  return m;
+}
+
+/* ---- glTF / GLB (statisch + node-animaties + textures) ---- */
+async function parseGLTF(buffer, name) {
+  let json, bin = null;
+  const u8 = new Uint8Array(buffer);
+  if (u8[0] === 0x67 && u8[1] === 0x6C && u8[2] === 0x54 && u8[3] === 0x46) { // 'glTF'
+    const dv = new DataView(buffer);
+    let off = 12;
+    while (off < buffer.byteLength) {
+      const len = dv.getUint32(off, true), type = dv.getUint32(off + 4, true);
+      const chunk = buffer.slice(off + 8, off + 8 + len);
+      if (type === 0x4E4F534A) json = JSON.parse(new TextDecoder().decode(chunk));
+      else if (type === 0x004E4942) bin = chunk;
+      off += 8 + len + (len % 4 ? 4 - len % 4 : 0);
+    }
+  } else {
+    json = JSON.parse(new TextDecoder().decode(buffer));
+  }
+  if (!json || !json.meshes) throw new Error('Geen meshes in glTF');
+
+  // Buffers: GLB-bin, data-URI of extern .bin uit de mediabibliotheek.
+  const buffers = await Promise.all((json.buffers || []).map(async (b) => {
+    if (b.uri == null) return bin;
+    if (b.uri.startsWith('data:')) {
+      const b64 = b.uri.slice(b.uri.indexOf(',') + 1);
+      const raw = atob(b64), arr = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+      return arr.buffer;
+    }
+    const m = mediaByName(decodeURIComponent(b.uri.split('/').pop()));
+    if (!m) throw new Error('Buffer ontbreekt: ' + b.uri + ' — voeg het .bin-bestand toe');
+    return await (await fetch(m.url)).arrayBuffer();
+  }));
+
+  const view = (i) => {
+    const bv = json.bufferViews[i];
+    return { buf: buffers[bv.buffer], off: bv.byteOffset || 0, len: bv.byteLength, stride: bv.byteStride || 0 };
+  };
+  const CTYPE = { 5120: Int8Array, 5121: Uint8Array, 5122: Int16Array, 5123: Uint16Array, 5125: Uint32Array, 5126: Float32Array };
+  const NCOMP = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4, MAT4: 16 };
+  function accessor(i) {
+    const a = json.accessors[i];
+    const n = NCOMP[a.type], T = CTYPE[a.componentType];
+    const out = new Float32Array(a.count * n);
+    if (a.bufferView == null) return out;
+    const v = view(a.bufferView);
+    const base = v.off + (a.byteOffset || 0);
+    const stride = v.stride || n * T.BYTES_PER_ELEMENT;
+    const dv = new DataView(v.buf);
+    const rd = { 5126: (o) => dv.getFloat32(o, true), 5123: (o) => dv.getUint16(o, true), 5125: (o) => dv.getUint32(o, true),
+      5121: (o) => dv.getUint8(o), 5120: (o) => dv.getInt8(o), 5122: (o) => dv.getInt16(o, true) }[a.componentType];
+    const bytes = T.BYTES_PER_ELEMENT;
+    const norm = a.normalized ? { 5121: 255, 5123: 65535, 5120: 127, 5122: 32767 }[a.componentType] : 0;
+    for (let e = 0; e < a.count; e++) for (let c = 0; c < n; c++) {
+      let val = rd(base + e * stride + c * bytes);
+      if (norm) val = Math.max(val / norm, -1);
+      out[e * n + c] = val;
+    }
+    return out;
+  }
+
+  // Afbeeldingen (embedded of extern) — geen flipY: glTF heeft de v-as al goed.
+  const bitmaps = await Promise.all((json.images || []).map(async (img) => {
+    try {
+      let blob;
+      if (img.bufferView != null) {
+        const v = view(img.bufferView);
+        blob = new Blob([new Uint8Array(v.buf, v.off, v.len)], { type: img.mimeType || 'image/png' });
+      } else if (img.uri && img.uri.startsWith('data:')) {
+        blob = await (await fetch(img.uri)).blob();
+      } else if (img.uri) {
+        const m = mediaByName(decodeURIComponent(img.uri.split('/').pop()));
+        if (!m) return null;
+        blob = await (await fetch(m.url)).blob();
+      } else return null;
+      return await createImageBitmap(blob);
+    } catch { return null; }
+  }));
+  const matTexture = (mi) => {
+    const mat = json.materials?.[mi];
+    const ti = mat?.pbrMetallicRoughness?.baseColorTexture?.index;
+    if (ti == null) return { tex: null, color: mat?.pbrMetallicRoughness?.baseColorFactor?.slice(0, 3) || null };
+    const src = json.textures?.[ti]?.source;
+    return { tex: src != null ? bitmaps[src] : null, color: null };
+  };
+
+  // Nodes + hiërarchie (topologische volgorde vanaf de scene-roots).
+  const nodes = (json.nodes || []).map((n) => ({
+    parent: -1,
+    t: n.translation ? n.translation.slice() : [0, 0, 0],
+    r: n.rotation ? n.rotation.slice() : [0, 0, 0, 1],
+    s: n.scale ? n.scale.slice() : [1, 1, 1],
+    m: n.matrix ? new Float32Array(n.matrix) : null,
+    mesh: n.mesh ?? -1
+  }));
+  (json.nodes || []).forEach((n, i) => (n.children || []).forEach((c) => { nodes[c].parent = i; }));
+  const order = [];
+  const roots = json.scenes?.[json.scene ?? 0]?.nodes || nodes.map((_, i) => i).filter((i) => nodes[i].parent === -1);
+  const visit = (i) => { order.push(i); (json.nodes[i].children || []).forEach(visit); };
+  roots.forEach(visit);
+
+  // Primitives (getrianguleerd, indices uitgeschreven naar platte arrays).
+  const prims = [];
+  let totalTris = 0;
+  nodes.forEach((node, ni) => {
+    if (node.mesh < 0) return;
+    for (const prim of json.meshes[node.mesh].primitives || []) {
+      if ((prim.mode ?? 4) !== 4 || prim.attributes.POSITION == null) continue;
+      const pos0 = accessor(prim.attributes.POSITION);
+      const nor0 = prim.attributes.NORMAL != null ? accessor(prim.attributes.NORMAL) : null;
+      const uv0 = prim.attributes.TEXCOORD_0 != null ? accessor(prim.attributes.TEXCOORD_0) : null;
+      let idx = null;
+      if (prim.indices != null) idx = accessor(prim.indices);
+      const count = idx ? idx.length : pos0.length / 3;
+      const pos = new Float32Array(count * 3), nor = new Float32Array(count * 3);
+      const uv = uv0 ? new Float32Array(count * 2) : null;
+      for (let k = 0; k < count; k++) {
+        const vi = idx ? idx[k] : k;
+        pos[k * 3] = pos0[vi * 3]; pos[k * 3 + 1] = pos0[vi * 3 + 1]; pos[k * 3 + 2] = pos0[vi * 3 + 2];
+        if (nor0) { nor[k * 3] = nor0[vi * 3]; nor[k * 3 + 1] = nor0[vi * 3 + 1]; nor[k * 3 + 2] = nor0[vi * 3 + 2]; }
+        if (uv) { uv[k * 2] = uv0[vi * 2]; uv[k * 2 + 1] = uv0[vi * 2 + 1]; }
+      }
+      if (!nor0) { // vlaknormalen
+        for (let k = 0; k < count; k += 3) {
+          const ux = pos[k * 3 + 3] - pos[k * 3], uy = pos[k * 3 + 4] - pos[k * 3 + 1], uz = pos[k * 3 + 5] - pos[k * 3 + 2];
+          const wx = pos[k * 3 + 6] - pos[k * 3], wy = pos[k * 3 + 7] - pos[k * 3 + 1], wz = pos[k * 3 + 8] - pos[k * 3 + 2];
+          let fx = uy * wz - uz * wy, fy = uz * wx - ux * wz, fz = ux * wy - uy * wx;
+          const fl = Math.hypot(fx, fy, fz) || 1; fx /= fl; fy /= fl; fz /= fl;
+          for (let q = 0; q < 3; q++) { nor[(k + q) * 3] = fx; nor[(k + q) * 3 + 1] = fy; nor[(k + q) * 3 + 2] = fz; }
+        }
+      }
+      const mt = prim.material != null ? matTexture(prim.material) : { tex: null, color: null };
+      prims.push({ pos, nor, uv, texture: mt.tex, color: mt.color, node: ni, verts: count });
+      totalTris += count / 3;
+    }
+  });
+  if (!prims.length) throw new Error('Geen driehoeks-meshes in ' + name);
+
+  // Animaties: node-TRS-kanalen (LINEAR/STEP); skinning valt buiten scope.
+  const animations = (json.animations || []).map((an) => {
+    let duration = 0;
+    const channels = [];
+    for (const ch of an.channels || []) {
+      if (ch.target?.node == null || !['translation', 'rotation', 'scale'].includes(ch.target.path)) continue;
+      const smp = an.samplers[ch.sampler];
+      const times = accessor(smp.input);
+      const values = accessor(smp.output);
+      duration = Math.max(duration, times[times.length - 1] || 0);
+      channels.push({ node: ch.target.node, path: ch.target.path, times, values, step: smp.interpolation === 'STEP' });
+    }
+    return { channels, duration };
+  }).filter((a) => a.channels.length && a.duration > 0);
+
+  return { prims, nodes, order, animations, verts: prims.reduce((a, p) => a + p.verts, 0), tris: totalTris, format: 'gltf' };
+}
+
+/* ---- FBX (statisch): binair (incl. zlib-arrays) en ASCII 7.x ---- */
+async function inflateZlib(u8) {
+  const ds = new DecompressionStream('deflate');
+  const stream = new Blob([u8]).stream().pipeThrough(ds);
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+async function parseFBXBinary(buffer) {
+  const dv = new DataView(buffer);
+  const version = dv.getUint32(23, true);
+  const wide = version >= 7500; // 64-bits recordvelden vanaf 7.5
+  const td = new TextDecoder();
+
+  async function readNode(off) {
+    const end = wide ? Number(dv.getBigUint64(off, true)) : dv.getUint32(off, true);
+    const numProps = wide ? Number(dv.getBigUint64(off + 8, true)) : dv.getUint32(off + 4, true);
+    const propLen = wide ? Number(dv.getBigUint64(off + 16, true)) : dv.getUint32(off + 8, true);
+    const nameLen = dv.getUint8(off + (wide ? 24 : 12));
+    let p = off + (wide ? 25 : 13);
+    if (end === 0) return null; // null-record
+    const name = td.decode(new Uint8Array(buffer, p, nameLen));
+    p += nameLen;
+    const props = [];
+    for (let i = 0; i < numProps; i++) {
+      const t = String.fromCharCode(dv.getUint8(p)); p += 1;
+      if (t === 'Y') { props.push(dv.getInt16(p, true)); p += 2; }
+      else if (t === 'C') { props.push(!!dv.getUint8(p)); p += 1; }
+      else if (t === 'I') { props.push(dv.getInt32(p, true)); p += 4; }
+      else if (t === 'F') { props.push(dv.getFloat32(p, true)); p += 4; }
+      else if (t === 'D') { props.push(dv.getFloat64(p, true)); p += 8; }
+      else if (t === 'L') { props.push(Number(dv.getBigInt64(p, true))); p += 8; }
+      else if (t === 'S' || t === 'R') {
+        const len = dv.getUint32(p, true); p += 4;
+        props.push(t === 'S' ? td.decode(new Uint8Array(buffer, p, len)) : new Uint8Array(buffer, p, len));
+        p += len;
+      } else if ('fdlib'.includes(t)) {
+        const n = dv.getUint32(p, true), enc = dv.getUint32(p + 4, true), clen = dv.getUint32(p + 8, true);
+        p += 12;
+        let raw = new Uint8Array(buffer, p, enc ? clen : n * { f: 4, d: 8, l: 8, i: 4, b: 1 }[t]);
+        p += raw.length;
+        if (enc) raw = await inflateZlib(raw);
+        const ab = raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength);
+        props.push(t === 'f' ? new Float32Array(ab) : t === 'd' ? new Float64Array(ab)
+          : t === 'l' ? new BigInt64Array(ab) : t === 'i' ? new Int32Array(ab) : new Uint8Array(ab));
+      } else throw new Error('Onbekend FBX-propertytype ' + t);
+    }
+    const children = [];
+    while (p < end) {
+      const child = await readNode(p);
+      const cend = wide ? Number(dv.getBigUint64(p, true)) : dv.getUint32(p, true);
+      if (!child) { p += wide ? 25 : 13; break; }
+      children.push(child);
+      p = cend;
+    }
+    return { name, props, children, end };
+  }
+
+  const top = [];
+  let off = 27;
+  while (off + (wide ? 25 : 13) < buffer.byteLength) {
+    const node = await readNode(off);
+    if (!node) break;
+    top.push(node);
+    off = node.end;
+  }
+  return top;
+}
+
+function parseFBXAscii(text) {
+  // Minimale ASCII-lezer: haalt per sectie "Naam: ... a: n,n,n" de getallenreeksen op.
+  const grab = (label) => {
+    const re = new RegExp(label + '\\s*:\\s*\\*?\\d*\\s*\\{?\\s*a?:?([^}]*)', 'm');
+    const m = re.exec(text);
+    if (!m) return null;
+    return m[1].split(/[\s,]+/).map(Number).filter((x) => !Number.isNaN(x));
+  };
+  const verts = grab('Vertices');
+  const idx = grab('PolygonVertexIndex');
+  if (!verts || !idx) throw new Error('Geen geometrie in FBX');
+  return { verts, idx, normals: grab('Normals'), uv: grab('UV'), uvIndex: grab('UVIndex'),
+    normMapping: /MappingInformationType:\s*"?ByVertice/.test(text) ? 'vertex' : 'pvertex' };
+}
+
+async function parseFBX(buffer, name) {
+  const head = new TextDecoder().decode(new Uint8Array(buffer, 0, Math.min(20, buffer.byteLength)));
+  let data;
+  if (head.startsWith('Kaydara FBX Binary')) {
+    const top = await parseFBXBinary(buffer);
+    const find = (list, nm) => list.find((n) => n.name === nm);
+    const objects = find(top, 'Objects');
+    const geo = objects && objects.children.find((n) => n.name === 'Geometry');
+    if (!geo) throw new Error('Geen Geometry-node in FBX');
+    const child = (nm) => geo.children.find((n) => n.name === nm);
+    const arr = (node) => node && node.props.find((p) => ArrayBuffer.isView(p));
+    const layerN = child('LayerElementNormal');
+    const layerUV = child('LayerElementUV');
+    const mapping = (layer) => {
+      const m = layer && layer.children.find((n) => n.name === 'MappingInformationType');
+      return m && /ByVertice/i.test(m.props[0] || '') ? 'vertex' : 'pvertex';
+    };
+    data = {
+      verts: arr(child('Vertices')),
+      idx: arr(child('PolygonVertexIndex')),
+      normals: layerN ? arr(layerN.children.find((n) => n.name === 'Normals')) : null,
+      uv: layerUV ? arr(layerUV.children.find((n) => n.name === 'UV')) : null,
+      uvIndex: layerUV ? arr(layerUV.children.find((n) => n.name === 'UVIndex')) : null,
+      normMapping: mapping(layerN)
+    };
+    if (!data.verts || !data.idx) throw new Error('Geen geometrie in FBX');
+  } else {
+    data = parseFBXAscii(new TextDecoder().decode(buffer));
+  }
+
+  // Polygonen (negatieve index = laatste hoekpunt, XOR -1) triangulren als waaier.
+  const vs = data.verts, pvi = data.idx;
+  const polys = [];
+  let cur = [];
+  for (let i = 0; i < pvi.length; i++) {
+    let v = Number(pvi[i]);
+    if (v < 0) { cur.push({ v: v ^ -1, pv: i }); polys.push(cur); cur = []; }
+    else cur.push({ v, pv: i });
+  }
+  const tris = [];
+  for (const poly of polys) for (let i = 1; i + 1 < poly.length; i++) tris.push([poly[0], poly[i], poly[i + 1]]);
+  if (!tris.length) throw new Error('Geen faces in FBX');
+  const count = tris.length * 3;
+  const pos = new Float32Array(count * 3), nor = new Float32Array(count * 3);
+  const hasUV = !!data.uv;
+  const uv = hasUV ? new Float32Array(count * 2) : null;
+  let w = 0;
+  for (const tri of tris) {
+    // vlaknormaal als fallback
+    const px = [], py = [], pz = [];
+    for (const { v } of tri) { px.push(Number(vs[v * 3])); py.push(Number(vs[v * 3 + 1])); pz.push(Number(vs[v * 3 + 2])); }
+    const ux = px[1] - px[0], uy = py[1] - py[0], uz = pz[1] - pz[0];
+    const wx = px[2] - px[0], wy = py[2] - py[0], wz = pz[2] - pz[0];
+    let fx = uy * wz - uz * wy, fy = uz * wx - ux * wz, fz = ux * wy - uy * wx;
+    const fl = Math.hypot(fx, fy, fz) || 1; fx /= fl; fy /= fl; fz /= fl;
+    tri.forEach(({ v, pv }, k) => {
+      pos[w] = px[k]; pos[w + 1] = py[k]; pos[w + 2] = pz[k];
+      const nsrc = data.normals;
+      const nOff = data.normMapping === 'vertex' ? v * 3 : pv * 3;
+      if (nsrc && nsrc.length > nOff + 2) { nor[w] = Number(nsrc[nOff]); nor[w + 1] = Number(nsrc[nOff + 1]); nor[w + 2] = Number(nsrc[nOff + 2]); }
+      else { nor[w] = fx; nor[w + 1] = fy; nor[w + 2] = fz; }
+      if (hasUV) {
+        const ui = data.uvIndex && data.uvIndex.length ? Number(data.uvIndex[pv]) : pv;
+        uv[w / 3 * 2] = Number(data.uv[ui * 2]); uv[w / 3 * 2 + 1] = Number(data.uv[ui * 2 + 1]);
+      }
+      w += 3;
+    });
+  }
+  // Texture: afbeelding met dezelfde basisnaam naast het model.
+  let texture = null;
+  if (hasUV) {
+    const base = name.replace(/\.fbx$/i, '');
+    for (const ext of ['.png', '.jpg', '.jpeg', '.webp']) {
+      const m = mediaByName(base + ext);
+      if (m && m.kind === 'image') {
+        try {
+          const blob = await (await fetch(m.url)).blob();
+          texture = await createImageBitmap(blob, { imageOrientation: 'flipY' });
+          break;
+        } catch {}
+      }
+    }
+  }
+  return { prims: [{ pos, nor, uv, texture, color: null, node: -1, verts: count }],
+    nodes: null, animations: [], verts: count, tris: tris.length, format: 'fbx' };
+}
+
+// Rustpose-bounds bepalen (over alle prims, met nodematrices) en de
+// normalisatie als aparte matrix bewaren; detail-limiet toepassen.
+function finalizeModel(g) {
+  if (!g.prims) return;
+  // detail-limiet: driehoeken gelijkmatig overslaan per prim
+  const maxTris = config.object3d.maxTriangles;
+  if (maxTris > 0 && g.tris > maxTris) {
+    const keep = maxTris / g.tris;
+    for (const pr of g.prims) {
+      const triCount = pr.verts / 3, keepTris = Math.max(1, Math.floor(triCount * keep));
+      const step = triCount / keepTris;
+      const pos = new Float32Array(keepTris * 9), nor = new Float32Array(keepTris * 9);
+      const uv = pr.uv ? new Float32Array(keepTris * 6) : null;
+      for (let t = 0; t < keepTris; t++) {
+        const srcT = Math.floor(t * step);
+        pos.set(pr.pos.subarray(srcT * 9, srcT * 9 + 9), t * 9);
+        nor.set(pr.nor.subarray(srcT * 9, srcT * 9 + 9), t * 9);
+        if (uv) uv.set(pr.uv.subarray(srcT * 6, srcT * 6 + 6), t * 6);
+      }
+      pr.pos = pos; pr.nor = nor; pr.uv = uv; pr.verts = keepTris * 3;
+    }
+    g.verts = g.prims.reduce((a, p) => a + p.verts, 0);
+  }
+  // rustpose-wereldmatrices
+  const worlds = computeNodeWorlds(g, null, 0);
+  let min = [1e9, 1e9, 1e9], max = [-1e9, -1e9, -1e9];
+  for (const pr of g.prims) {
+    const m = pr.node >= 0 && worlds ? worlds[pr.node] : null;
+    for (let i = 0; i < pr.pos.length; i += 3) {
+      let x = pr.pos[i], y = pr.pos[i + 1], z = pr.pos[i + 2];
+      if (m) {
+        const nx = m[0] * x + m[4] * y + m[8] * z + m[12];
+        const ny = m[1] * x + m[5] * y + m[9] * z + m[13];
+        const nz = m[2] * x + m[6] * y + m[10] * z + m[14];
+        x = nx; y = ny; z = nz;
+      }
+      if (x < min[0]) min[0] = x; if (x > max[0]) max[0] = x;
+      if (y < min[1]) min[1] = y; if (y > max[1]) max[1] = y;
+      if (z < min[2]) min[2] = z; if (z > max[2]) max[2] = z;
+    }
+  }
+  const c = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
+  const sc = 1.35 / (Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]) || 1);
+  g.norm = { c, s: sc };
+}
+
+// Wereldmatrices per node op tijdstip t (of rustpose bij anim == null).
+function computeNodeWorlds(g, anim, t) {
+  if (!g.nodes) return null;
+  const locals = g.nodes.map((n) => ({ t: n.t.slice(), r: n.r.slice(), s: n.s.slice(), m: n.m }));
+  if (anim) {
+    for (const ch of anim.channels) {
+      const times = ch.times, n = times.length;
+      let i = 0;
+      while (i < n - 1 && times[i + 1] < t) i++;
+      const t0 = times[i], t1 = times[Math.min(i + 1, n - 1)];
+      const f = ch.step || t1 === t0 ? 0 : Math.min(1, Math.max(0, (t - t0) / (t1 - t0)));
+      const L = locals[ch.node];
+      if (ch.path === 'rotation') {
+        const a = ch.values.subarray(i * 4, i * 4 + 4);
+        const b = ch.values.subarray(Math.min(i + 1, n - 1) * 4, Math.min(i + 1, n - 1) * 4 + 4);
+        const dot = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
+        const sgn = dot < 0 ? -1 : 1;
+        const q = [0, 0, 0, 1].map((_, k) => a[k] + (b[k] * sgn - a[k]) * f);
+        const ql = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+        L.r = q.map((v) => v / ql);
+        L.m = null;
+      } else {
+        const dim = 3;
+        const a = ch.values.subarray(i * dim, i * dim + dim);
+        const b = ch.values.subarray(Math.min(i + 1, n - 1) * dim, Math.min(i + 1, n - 1) * dim + dim);
+        L[ch.path === 'translation' ? 't' : 's'] = [0, 1, 2].map((k) => a[k] + (b[k] - a[k]) * f);
+        L.m = null;
+      }
+    }
+  }
+  const worlds = new Array(g.nodes.length);
+  for (const i of g.order || g.nodes.map((_, k) => k)) {
+    const n = g.nodes[i], L = locals[i];
+    const local = L.m || mat4FromTRS(L.t, L.r, L.s);
+    worlds[i] = n.parent >= 0 && worlds[n.parent] ? mat4Mul(worlds[n.parent], local) : local;
+  }
+  return worlds;
+}
+
 async function loadObjGeometry(mediaId) {
   if (objGeomCache.has(mediaId)) return objGeomCache.get(mediaId);
   const p = (async () => {
     const m = mediaCache.get(mediaId);
-    const text = await (await fetch(m.url)).text();
-    const g = parseOBJ(text, config.object3d.maxTriangles);
-    // Texture: mtllib -> map_Kd -> afbeelding uit de mediabibliotheek.
-    if (g.hasUV) {
-      let texName = null;
-      const mtl = mediaByName(g.mtllib);
-      if (mtl) texName = parseMTLTexture(await (await fetch(mtl.url)).text());
-      // fallback: afbeelding met dezelfde naam als het model (model.obj + model.png/jpg)
-      if (!texName) {
-        const base = m.name.replace(/\.obj$/i, '');
-        for (const ext of ['.png', '.jpg', '.jpeg', '.webp']) {
-          if (mediaByName(base + ext)) { texName = base + ext; break; }
+    let g;
+    if (/\.(glb|gltf)$/i.test(m.name)) {
+      g = await parseGLTF(await (await fetch(m.url)).arrayBuffer(), m.name);
+    } else if (/\.fbx$/i.test(m.name)) {
+      g = await parseFBX(await (await fetch(m.url)).arrayBuffer(), m.name);
+    } else {
+      const text = await (await fetch(m.url)).text();
+      g = parseOBJ(text, config.object3d.maxTriangles);
+      // Texture: mtllib -> map_Kd -> afbeelding uit de mediabibliotheek.
+      if (g.hasUV) {
+        let texName = null;
+        const mtl = mediaByName(g.mtllib);
+        if (mtl) texName = parseMTLTexture(await (await fetch(mtl.url)).text());
+        // fallback: afbeelding met dezelfde naam als het model (model.obj + model.png/jpg)
+        if (!texName) {
+          const base = m.name.replace(/\.obj$/i, '');
+          for (const ext of ['.png', '.jpg', '.jpeg', '.webp']) {
+            if (mediaByName(base + ext)) { texName = base + ext; break; }
+          }
+        }
+        const texMedia = mediaByName(texName);
+        if (texMedia && texMedia.kind === 'image') {
+          try {
+            const blob = await (await fetch(texMedia.url)).blob();
+            g.texture = await createImageBitmap(blob, { imageOrientation: 'flipY' });
+          } catch { /* texture niet leesbaar: model in effen kleur tonen */ }
         }
       }
-      const texMedia = mediaByName(texName);
-      if (texMedia && texMedia.kind === 'image') {
-        try {
-          const blob = await (await fetch(texMedia.url)).blob();
-          g.texture = await createImageBitmap(blob, { imageOrientation: 'flipY' });
-        } catch { /* texture niet leesbaar: model in effen kleur tonen */ }
-      }
+      // OBJ-uitvoer in het uniforme prims-model gieten (posities zijn al genormaliseerd).
+      g.prims = [{ pos: g.pos, nor: g.nor, uv: g.hasUV ? g.uv : null, texture: g.texture || null,
+        color: null, node: -1, verts: g.verts }];
+      g.format = 'obj';
     }
+    finalizeModel(g);
     return g;
   })();
   objGeomCache.set(mediaId, p);
@@ -1869,10 +2322,12 @@ async function loadObjGeometry(mediaId) {
 }
 
 const VERT_SRC = `attribute vec3 aPos; attribute vec3 aNor; attribute vec2 aUV;
-uniform mat4 uProj, uView; varying vec3 vNor, vPos; varying vec2 vUV;
-void main() { vNor = mat3(uView[0].xyz, uView[1].xyz, uView[2].xyz) * aNor;
+uniform mat4 uProj, uView, uModel; varying vec3 vNor, vPos; varying vec2 vUV;
+void main() {
+  vNor = mat3(uView[0].xyz, uView[1].xyz, uView[2].xyz) *
+         (mat3(uModel[0].xyz, uModel[1].xyz, uModel[2].xyz) * aNor);
   vUV = aUV;
-  vec4 p = uView * vec4(aPos, 1.0); vPos = p.xyz; gl_Position = uProj * p; }`;
+  vec4 p = uView * uModel * vec4(aPos, 1.0); vPos = p.xyz; gl_Position = uProj * p; }`;
 const FRAG_SRC = `precision mediump float; varying vec3 vNor, vPos; varying vec2 vUV;
 uniform vec3 uColor; uniform float uLight, uShin, uUseTex;
 uniform sampler2D uTex;
@@ -1906,7 +2361,7 @@ function mat4View(rx, ry, dist) {
   ]);
 }
 
-function createObjViewer(canvas, geom, { interactive, dist }) {
+function createObjViewer(canvas, geom, { interactive, dist, mediaId }) {
   const gl = canvas.getContext('webgl', { antialias: true, alpha: true, preserveDrawingBuffer: true });
   if (!gl) return null;
   const mk = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
@@ -1915,45 +2370,51 @@ function createObjViewer(canvas, geom, { interactive, dist }) {
   gl.attachShader(prog, mk(gl.FRAGMENT_SHADER, FRAG_SRC));
   gl.linkProgram(prog);
   gl.useProgram(prog);
-  const buf = (data, loc) => {
-    const b = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, b);
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(loc);
-    gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0);
-  };
-  buf(geom.pos, gl.getAttribLocation(prog, 'aPos'));
-  buf(geom.nor, gl.getAttribLocation(prog, 'aNor'));
-  // UV's (2 floats) — ook zonder texture aanwezig zodat de attribute bestaat.
-  const uvLoc = gl.getAttribLocation(prog, 'aUV');
-  {
-    const b = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, b);
-    gl.bufferData(gl.ARRAY_BUFFER, geom.uv && geom.uv.length ? geom.uv : new Float32Array(geom.verts * 2), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(uvLoc);
-    gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 0, 0);
-  }
-  // Diffuse texture uit het .mtl-bestand (NPOT-veilig: clamp + linear).
-  let hasTex = false;
-  if (geom.texture) {
-    const tex = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, geom.texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    hasTex = true;
-  }
+  const aPos = gl.getAttribLocation(prog, 'aPos');
+  const aNor = gl.getAttribLocation(prog, 'aNor');
+  const aUV = gl.getAttribLocation(prog, 'aUV');
+  gl.enableVertexAttribArray(aPos);
+  gl.enableVertexAttribArray(aNor);
+  gl.enableVertexAttribArray(aUV);
+
+  // Per primitive: eigen buffers + (optionele) texture — één model kan uit
+  // meerdere delen met verschillende materialen bestaan (glTF).
+  const prims = (geom.prims || []).map((pr) => {
+    const mkBuf = (data) => {
+      const b = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, b);
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+      return b;
+    };
+    let tex = null;
+    if (pr.texture) {
+      tex = gl.createTexture();
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, pr.texture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    }
+    return {
+      pos: mkBuf(pr.pos), nor: mkBuf(pr.nor),
+      uv: mkBuf(pr.uv && pr.uv.length ? pr.uv : new Float32Array((pr.verts || pr.pos.length / 3) * 2)),
+      tex, color: pr.color, node: pr.node, verts: pr.verts || pr.pos.length / 3
+    };
+  });
+
   const uProj = gl.getUniformLocation(prog, 'uProj');
   const uView = gl.getUniformLocation(prog, 'uView');
+  const uModel = gl.getUniformLocation(prog, 'uModel');
   const uColor = gl.getUniformLocation(prog, 'uColor');
   const uLight = gl.getUniformLocation(prog, 'uLight');
   const uShin = gl.getUniformLocation(prog, 'uShin');
+  const uUseTex = gl.getUniformLocation(prog, 'uUseTex');
+  const uTex = gl.getUniformLocation(prog, 'uTex');
   gl.enable(gl.DEPTH_TEST);
 
-  const st = { rx: -0.35, ry: 0.6, dist: dist || 3.1, dragging: false, paused: false, dead: false };
+  const st = { rx: -0.35, ry: 0.6, dist: dist || 3.1, dragging: false, paused: false, dead: false, animT: 0 };
   if (interactive) {
     canvas.addEventListener('pointerdown', (e) => { st.dragging = true; st.lx = e.clientX; st.ly = e.clientY; canvas.setPointerCapture(e.pointerId); });
     canvas.addEventListener('pointermove', (e) => {
@@ -1966,6 +2427,17 @@ function createObjViewer(canvas, geom, { interactive, dist }) {
     canvas.addEventListener('wheel', (e) => { e.preventDefault(); st.dist = Math.max(1.6, Math.min(8, st.dist + e.deltaY * 0.002)); }, { passive: false });
   }
 
+  // Normalisatie (centreren + schalen) als modelmatrix; de gebruikersschaal
+  // en verticale positie komen uit de per-model instellingen.
+  function normMatrix(ms) {
+    const n = geom.norm || { c: [0, 0, 0], s: 1 };
+    const k = n.s * (ms.scale || 1);
+    const m = mat4Identity();
+    m[0] = m[5] = m[10] = k;
+    m[12] = -n.c[0] * k; m[13] = -n.c[1] * k + (ms.yOffset || 0) / 40; m[14] = -n.c[2] * k;
+    return m;
+  }
+
   let last = performance.now(), raf = 0;
   function frame(t) {
     if (st.dead) return;
@@ -1973,6 +2445,7 @@ function createObjViewer(canvas, geom, { interactive, dist }) {
     if (st.paused) return;
     const dt = Math.min(100, t - last); last = t;
     const o = config.object3d;
+    const ms = modelSettings(mediaId);
     if (!st.dragging) st.ry += o.rotSpeed * dt / 1000;
     const dpr = Math.min(devicePixelRatio || 1, 2);
     const w = Math.max(1, Math.round(canvas.clientWidth * dpr));
@@ -1983,12 +2456,30 @@ function createObjViewer(canvas, geom, { interactive, dist }) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.uniformMatrix4fv(uProj, false, mat4Perspective(0.9, w / h, 0.1, 50));
     gl.uniformMatrix4fv(uView, false, mat4View(st.rx, st.ry, st.dist));
-    gl.uniform3fv(uColor, hexToRgb(o.color));
     gl.uniform1f(uLight, o.light);
     gl.uniform1f(uShin, o.shininess);
-    gl.uniform1f(gl.getUniformLocation(prog, 'uUseTex'), hasTex ? 1 : 0);
-    gl.uniform1i(gl.getUniformLocation(prog, 'uTex'), 0);
-    gl.drawArrays(gl.TRIANGLES, 0, geom.verts);
+    gl.uniform1i(uTex, 0);
+    // Animatie (glTF): nodematrices op het huidige tijdstip.
+    let worlds = null;
+    const anim = geom.animations && geom.animations.length && ms.animate !== false ? geom.animations[0] : null;
+    if (anim) {
+      st.animT = (st.animT + dt / 1000 * (ms.animSpeed || 1)) % anim.duration;
+      worlds = computeNodeWorlds(geom, anim, st.animT);
+    } else if (geom.nodes) {
+      worlds = geom.restWorlds || (geom.restWorlds = computeNodeWorlds(geom, null, 0));
+    }
+    const N = normMatrix(ms);
+    for (const pr of prims) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, pr.pos); gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, pr.nor); gl.vertexAttribPointer(aNor, 3, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, pr.uv); gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 0, 0);
+      const model = pr.node >= 0 && worlds ? mat4Mul(N, worlds[pr.node]) : N;
+      gl.uniformMatrix4fv(uModel, false, model);
+      gl.uniform3fv(uColor, pr.color || hexToRgb(o.color));
+      gl.uniform1f(uUseTex, pr.tex ? 1 : 0);
+      if (pr.tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, pr.tex); }
+      gl.drawArrays(gl.TRIANGLES, 0, pr.verts);
+    }
   }
   raf = requestAnimationFrame(frame);
 
@@ -1997,7 +2488,6 @@ function createObjViewer(canvas, geom, { interactive, dist }) {
     destroy() { st.dead = true; cancelAnimationFrame(raf); gl.getExtension('WEBGL_lose_context')?.loseContext(); }
   };
 }
-
 const objViewers = new Map(); // buttonId of 'fullscreen' -> viewer
 function destroyObjViewers(previewOnly = false) {
   for (const [key, v] of objViewers) {
@@ -2167,7 +2657,7 @@ function renderStage() {
         el('span', { class: 'pv-label' }, btnLabel(b) || media.name));
       if (b.shape !== 'circle') btn.style.aspectRatio = '5 / 4';
       loadObjGeometry(b.mediaId)
-        .then((g) => { if (cv.isConnected) { const v = createObjViewer(cv, g, { interactive: false }); if (v) objViewers.set(b.id, v); } })
+        .then((g) => { if (cv.isConnected) { const v = createObjViewer(cv, g, { interactive: false, mediaId: b.mediaId }); if (v) objViewers.set(b.id, v); } })
         .catch(() => { btn.querySelector('.pv-label').textContent = '⚠ OBJ niet leesbaar'; });
     } else if (preview) {
       // Kader met live videovoorbeeld (de gerenderde 1280×800/800×1280-renditie
@@ -2512,7 +3002,7 @@ function playObject(mediaId) {
       objViewers.get('fullscreen')?.destroy();
       // Fullscreen iets verder weg: het object blijft ook gedraaid (diagonaal)
       // en in portrait volledig in beeld, met ruimte voor de schaduw eronder.
-      const v = createObjViewer($('#playCanvas'), g, { interactive: true, dist: 4.4 });
+      const v = createObjViewer($('#playCanvas'), g, { interactive: true, dist: 4.4, mediaId });
       if (v) objViewers.set('fullscreen', v);
       armObjAutoClose();
     })
@@ -4134,7 +4624,7 @@ function refreshPanel() {
 function mediaSelect(selectedId, onchange) {
   const sel = el('select', { onchange: (e) => onchange(e.target.value || null) },
     el('option', { value: '' }, '— kies een video —'),
-    [...mediaCache.values()].filter((m) => m.kind !== 'mtl').map((m) => {
+    [...mediaCache.values()].filter((m) => m.kind !== 'mtl' && m.kind !== 'bin').map((m) => {
       const o = el('option', { value: m.id }, m.name);
       if (m.id === selectedId) o.selected = true;
       return o;
@@ -4423,7 +4913,7 @@ function renderMediaList() {
   for (const m of mediaCache.values()) {
     const thumb = m.kind === 'model'
       ? el('div', { style: 'width:76px;height:46px;border-radius:7px;background:#0a0f16;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none' }, '🧊')
-      : m.kind === 'mtl'
+      : m.kind === 'mtl' || m.kind === 'bin'
         ? el('div', { style: 'width:76px;height:46px;border-radius:7px;background:#0a0f16;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none' }, '🎨')
       : m.kind === 'image'
         ? el('img', { src: m.url, style: 'width:76px;height:46px;object-fit:contain;border-radius:7px;background:#0a0f16;flex:none' })
@@ -4438,6 +4928,13 @@ function renderMediaList() {
           if (box) return box.remove();
           card.append(playSettingsBox(m));
         } }, 'Instellingen') : null,
+      m.kind === 'model' ? el('button', { class: 'btn small', title: '3D-optimalisatie',
+        onclick: async (e) => {
+          const card = e.target.closest('.card');
+          const box = card.querySelector('.model-settings');
+          if (box) return box.remove();
+          card.append(await modelSettingsBox(m));
+        } }, '3D-instellingen') : null,
       el('button', { class: 'btn small danger', title: 'Verwijderen', onclick: async () => {
         if (!confirm(`"${m.name}" verwijderen?`)) return;
         await dbDel(m.id); await dbDel('prev_' + m.id);
@@ -4456,6 +4953,59 @@ function renderMediaList() {
 }
 
 // Uitklapbare afspeelinstellingen per video (spec 15-19, 23-25).
+// Optimalisatie-instellingen per 3D-model — alleen zichtbaar wanneer er
+// werkelijk zo'n object in de bibliotheek staat (contextueel, per model).
+async function modelSettingsBox(m) {
+  const ms = () => modelSettings(m.id);
+  const setMs = (patch) => {
+    config.modelSettings[m.id] = { ...modelSettings(m.id), ...patch };
+    save();
+  };
+  const box = el('div', { class: 'model-settings', style: 'margin-top:10px;display:flex;flex-direction:column;gap:9px' });
+  const fmt = m.name.split('.').pop().toUpperCase();
+  let info = el('div', { class: 'note' }, `${fmt}-model — analyseren…`);
+  box.append(info);
+  const slider = (label, min, max, step, key, suffix = '') => {
+    const lab = el('label', { class: 'field' }, `${label} (${ms()[key]}${suffix})`,
+      el('input', { type: 'range', min, max, step, value: ms()[key],
+        oninput: (e) => {
+          setMs({ [key]: Number(e.target.value) });
+          lab.firstChild.textContent = `${label} (${e.target.value}${suffix})`;
+        } }));
+    return lab;
+  };
+  box.append(
+    slider('Schaal', 0.4, 2.5, 0.05, 'scale', '×'),
+    slider('Verticale positie', -30, 30, 1, 'yOffset'));
+  // animatie-opties alleen tonen als het model echt animaties heeft
+  try {
+    const g = await loadObjGeometry(m.id);
+    const parts = [`${g.tris.toLocaleString('nl-NL')} driehoeken`, `${g.prims.length} onderdeel${g.prims.length === 1 ? '' : 'en'}`];
+    if (g.prims.some((pr) => pr.texture)) parts.push('met texture');
+    if (g.animations && g.animations.length) parts.push(`${g.animations.length} animatie(s)`);
+    info.textContent = `${fmt}-model — ` + parts.join(' · ');
+    if (g.animations && g.animations.length) {
+      const sw = el('label', { class: 'switch' });
+      const cb = el('input', { type: 'checkbox', onchange: (e) => setMs({ animate: e.target.checked }) });
+      cb.checked = ms().animate !== false;
+      sw.append(cb, el('i'));
+      box.append(
+        el('div', { class: 'toggle-row' },
+          el('div', {}, el('div', { class: 't-label' }, 'Animatie afspelen'),
+            el('div', { class: 't-sub' }, `Duur ${g.animations[0].duration.toFixed(1)}s, herhaalt automatisch`)),
+          sw),
+        slider('Animatiesnelheid', 0.2, 3, 0.1, 'animSpeed', '×'));
+    }
+    if (g.format === 'fbx') box.append(el('p', { class: 'note' },
+      'FBX wordt statisch getoond. Voor animaties: exporteer het model als .glb (bijv. via Blender).'));
+  } catch (err) {
+    info.textContent = `${fmt}-model — niet leesbaar: ` + (err.message || err);
+  }
+  box.append(el('p', { class: 'note' },
+    'Wijzigingen zijn direct zichtbaar in draaiende voorbeelden. Draaisnelheid, belichting, kleur en de detail-limiet staan bij Experience & thema → 3D-objecten.'));
+  return box;
+}
+
 function playSettingsBox(m) {
   const ps = playSettings(m.id);
   const set = (k, v) => {

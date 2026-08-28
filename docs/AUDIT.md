@@ -62,7 +62,7 @@ Legenda: ✅ EXISTING · ◐ PARTIAL · ✗ MISSING · ⟳ REQUIRES REFACTOR
 - **Motion Engine**: één `runEntrance(elementen, cfg)`/presetlaag (WAAPI, alleen transform/opacity/filter), gebruikt bij laden, scènewissel, terugkeer na content en na de screensaver.
 - **Figma-workflow**: gereserveerd voor de volgende fase — het editor-IDE-herontwerp (sidebar 240 px, topbar 56 px, canvas, inspector 320 px) wordt eerst als Figma-componentsysteem ontworpen en daarna geïmplementeerd, conform spec-fasen C–H.
 
-## 4. Openstaande taken (stand v2.7.0)
+## 4. Openstaande taken (stand v2.8.0)
 
 Geverifieerd tegen de code én tegen de testsuites (14 suites, allemaal groen).
 
@@ -139,6 +139,25 @@ kruimelpad, veegnavigatie, webcontent-module, motion-catalogus
   zodat het object ook gedraaid en in portrait volledig in beeld blijft.
 - Tests: nieuwe saver- (13) en web-suites (7), OBJ-suite herbouwd (11);
   15 suites totaal groen, soak stabiel met actieve achtergrondrotator.
+
+### Verwerkt in v2.8.0
+- **3D-formaten uitgebreid**: naast .obj nu ook **.glb/.gltf** (eigen parser:
+  meshes met indices, meerdere primitives/materialen, embedded en externe
+  textures, node-hiërarchie én **node-animaties** — TRS-kanalen met
+  LINEAR/STEP-interpolatie en quaternion-rotaties, automatisch afgespeeld en
+  herhaald) en **.fbx** (eigen parser voor het binaire formaat incl.
+  zlib-gecomprimeerde arrays via DecompressionStream, plus ASCII-fallback;
+  statische weergave met normalen/UV's en texture op bestandsnaam — het
+  paneel adviseert .glb voor animaties).
+- **Contextuele optimalisatie-instellingen per model** (alleen zichtbaar
+  wanneer er werkelijk een 3D-object in de bibliotheek staat): schaal,
+  verticale positie, en — uitsluitend bij modellen mét animaties — animatie
+  aan/uit en animatiesnelheid; met een analyse-regel (driehoeken, onderdelen,
+  texture, animaties). De viewer is omgebouwd naar meerdere primitives met
+  eigen modelmatrices; normalisatie (centreren/schalen) gebeurt nu via de
+  matrix zodat animaties hun eigen transforms houden.
+- Tests: nieuwe modeltest-suite (10 controles, met in de test geconstrueerde
+  GLB mét animatie/texture en een binaire FBX); alle 16 suites groen.
 
 ### Nog open (vergt zaken buiten de software)
 | Punt | Waarom open |
