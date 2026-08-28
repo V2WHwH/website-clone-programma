@@ -140,10 +140,19 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       spellcheck: false,
-      backgroundThrottling: false
+      backgroundThrottling: false,
+      // De webcontent-module gebruikt in de desktop-app een <webview>:
+      // die kan élke site tonen, ook sites die inline-embedding (iframe)
+      // met X-Frame-Options/CSP weigeren.
+      webviewTag: true
     }
   });
   win.setMenuBarVisibility(false);
+  win.webContents.on('will-attach-webview', (event, webPreferences) => {
+    delete webPreferences.preload;          // geen scripts van ons in externe sites
+    webPreferences.nodeIntegration = false;
+    webPreferences.contextIsolation = true;
+  });
   win.loadURL(APP_URL);
   win.once('ready-to-show', () => {
     win.show();

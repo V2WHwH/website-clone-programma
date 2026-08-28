@@ -62,7 +62,7 @@ Legenda: ✅ EXISTING · ◐ PARTIAL · ✗ MISSING · ⟳ REQUIRES REFACTOR
 - **Motion Engine**: één `runEntrance(elementen, cfg)`/presetlaag (WAAPI, alleen transform/opacity/filter), gebruikt bij laden, scènewissel, terugkeer na content en na de screensaver.
 - **Figma-workflow**: gereserveerd voor de volgende fase — het editor-IDE-herontwerp (sidebar 240 px, topbar 56 px, canvas, inspector 320 px) wordt eerst als Figma-componentsysteem ontworpen en daarna geïmplementeerd, conform spec-fasen C–H.
 
-## 4. Openstaande taken (stand v2.6.0)
+## 4. Openstaande taken (stand v2.7.0)
 
 Geverifieerd tegen de code én tegen de testsuites (14 suites, allemaal groen).
 
@@ -119,6 +119,26 @@ kruimelpad, veegnavigatie, webcontent-module, motion-catalogus
   klikbaar; het wordt nu op het gat geclipt.
 - Tests: nieuwe v26-suite (22 controles) + alle 13 bestaande suites groen;
   soaktest opnieuw stabiel.
+
+### Verwerkt in v2.7.0
+- **Screensaver v2 (eigen tab)**: geordende playlist (volgorde, omhoog/omlaag,
+  verwijderen), vijf overgangseffecten tussen de video's (crossfade, via zwart,
+  zoom-crossfade, schuiven, harde wissel) met instelbare overgangsduur — de
+  volgende video buffert alvast in een tweede speler en neemt het beeld
+  overlappend over. Nieuw: **achtergrondmodus** — dezelfde playlist draait met
+  dezelfde overgangen achter de knoppen door terwijl bezoekers aanwezig zijn
+  (pauzeert automatisch tijdens fullscreen afspelen en de klassieke saver).
+- **Webcontent-module**: in de Windows-app laadt een beveiligde Electron-webview
+  élke website volledig en bedienbaar (ook sites die iframe-embedding weigeren);
+  in de browser een laadindicator, bereikbaarheidscheck met nette foutmelding en
+  een discrete hulpbalk met venster-fallback. Kale adressen krijgen https://.
+- **3D-objecten**: OBJ met texture (vt + mtllib/map_Kd; fallback op
+  gelijknamige afbeelding), fullscreen op een witte studio-achtergrond met een
+  zachte schaduw achter en onder het object, instelbaar met een slider
+  (0–0,8, uit te schakelen voor de donkere look); ruimere fullscreen-camera
+  zodat het object ook gedraaid en in portrait volledig in beeld blijft.
+- Tests: nieuwe saver- (13) en web-suites (7), OBJ-suite herbouwd (11);
+  15 suites totaal groen, soak stabiel met actieve achtergrondrotator.
 
 ### Nog open (vergt zaken buiten de software)
 | Punt | Waarom open |

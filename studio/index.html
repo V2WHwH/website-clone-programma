@@ -39,6 +39,11 @@
     overflow: hidden; touch-action: none; }
   #idleVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
     transform: translateZ(0); }             /* eigen GPU-layer */
+  #idleVideoB { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    transform: translateZ(0); opacity: 0; }
+  #idleVideoB.front { opacity: 1; }
+  #idleVideo.rot { opacity: 0; }        /* rotator bestuurt beide idle-lagen */
+  #idleVideo.rot.front { opacity: 1; }
   /* Gelaagde video-overlay (spec 26): tweede laag boven de achtergrondvideo. */
   #overlayVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
     transform: translateZ(0); pointer-events: none; z-index: 2;
@@ -143,12 +148,26 @@
   .morph-clone video { width: 100%; height: 100%; object-fit: cover; display: block; }
   #playOverlay.mode-3d #playCanvas { display: block; }
   #playOverlay.mode-3d .playfull { display: none; }
+  /* 3D-studio-look: wit decor met een zachte schaduw achter en onder het object */
+  #playOverlay.mode-3d.light { background:
+    radial-gradient(120% 90% at 50% 34%, #ffffff 0%, #f2f4f7 52%, #dde2ea 100%); }
+  #objShadow { display: none; }
+  #playOverlay.mode-3d #objShadow { display: block; position: absolute; left: 50%; top: 50%;
+    width: 100%; height: 100%; transform: translate(-50%, -50%); pointer-events: none;
+    background:
+      radial-gradient(38vmin 26vmin at 50% 46%, rgba(20, 26, 38, calc(var(--objShadow, 0.35) * 0.5)), transparent 72%),
+      radial-gradient(30vmin 8.5vmin at 50% 71%, rgba(15, 20, 30, var(--objShadow, 0.35)), transparent 70%);
+    filter: blur(1.1vmin); }
+  #playOverlay.mode-3d.light #stopPlay { background: rgba(20,26,38,0.12); color: #1b2430;
+    border-color: rgba(20,26,38,0.25); }
 
   /* Screensaver-laag */
   #saver { position: absolute; inset: 0; background: #000; z-index: 25; opacity: 0;
     pointer-events: none; transition: opacity 0.8s ease; }
   #saver.show { opacity: 1; pointer-events: auto; }
-  #saver video { width: 100%; height: 100%; object-fit: cover; transform: translateZ(0); }
+  #saver video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    transform: translateZ(0); opacity: 0; }
+  #saver video.front { opacity: 1; }
 
   /* Camera-status in het menu */
   #camPreviewBox video { width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px; background: #000; }
@@ -240,8 +259,28 @@
   /* Webcontent-overlay */
   #webOverlay { position: absolute; inset: 0; z-index: 40; background: #05080d; display: flex;
     flex-direction: column; }
-  #webOverlay #webClose { position: absolute; top: 2vmin; right: 2vmin; z-index: 2; }
-  #webOverlay iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+  #webOverlay #webClose { position: absolute; top: 2vmin; right: 2vmin; z-index: 3; }
+  #webHost { flex: 1; display: flex; }
+  #webHost iframe, #webHost webview { flex: 1; width: 100%; height: 100%; border: 0; background: #fff; }
+  #webStatus { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2.4vmin; background: #05080d;
+    color: var(--color-text-secondary, #AAB4C0); font-size: clamp(13px, 1.9vmin, 20px);
+    text-align: center; padding: 6vmin; }
+  #webStatus .spin { width: 4.4vmin; height: 4.4vmin; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.15); border-top-color: var(--accent);
+    animation: webspin 0.9s linear infinite; }
+  @keyframes webspin { to { transform: rotate(360deg); } }
+  #webBlockedBox { max-width: 64vmin; display: flex; flex-direction: column; gap: 1.6vmin;
+    line-height: 1.55; }
+  #webBlockedBox b { color: var(--color-text-primary, #F5F7FA); }
+  #webStatus.blocked .spin { display: none; }
+  #webHintBar { position: absolute; left: 50%; bottom: 2.4vmin; transform: translateX(-50%);
+    z-index: 3; display: flex; align-items: center; gap: 12px; max-width: 90%;
+    background: rgba(8,11,16,0.92); border: 1px solid var(--color-border, rgba(255,255,255,.1));
+    border-radius: 12px; padding: 10px 16px; font-size: clamp(11px, 1.5vmin, 15px);
+    color: var(--color-text-secondary, #AAB4C0); backdrop-filter: blur(6px);
+    transition: opacity .4s; }
+  #webHintBar b { color: var(--color-text-primary, #F5F7FA); }
   #gridOverlay { position: absolute; inset: 0; z-index: 8; pointer-events: none; display: none;
     background-image: linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px);
@@ -592,6 +631,7 @@
 
 <div id="stage">
   <video id="idleVideo" class="hidden" autoplay muted loop playsinline></video>
+  <video id="idleVideoB" class="hidden" muted playsinline></video>
   <video id="overlayVideo" class="hidden" autoplay muted loop playsinline></video>
   <div id="stageTitle"></div>
   <img id="stageLogo" class="hidden" alt="">
@@ -611,8 +651,22 @@
        HTML-bestand in de presentatie, zonder de app te verlaten. -->
   <div id="webOverlay" class="hidden">
     <button id="webClose" class="btn small" type="button">&times; Sluiten</button>
-    <iframe id="webFrame" title="Webinhoud" referrerpolicy="no-referrer"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+    <div id="webHost"></div>
+    <div id="webStatus" class="hidden">
+      <div class="spin"></div>
+      <div id="webStatusText">Website laden&hellip;</div>
+      <div id="webBlockedBox" class="hidden">
+        <p id="webBlockedText">Deze website is niet bereikbaar.</p>
+        <p><b>In de HereWeHolo Windows-app laden websites volledig</b> &mdash;
+        zonder de inlaad-beperkingen van een browser-kader.</p>
+        <button id="webOpenWin" class="btn primary" type="button">Openen in een eigen venster</button>
+      </div>
+    </div>
+    <div id="webHintBar" class="hidden">
+      <span>Blijft de pagina wit? Deze site blokkeert mogelijk het inladen in een kader.
+      In de <b>Windows-app</b> laden alle sites volledig.</span>
+      <button id="webHintOpen" class="btn small" type="button">Open in eigen venster</button>
+    </div>
   </div>
   <div id="hand">
     <div id="handInner">
@@ -662,12 +716,16 @@
        neemt bij een playlistwissel zonder onderbreking het beeld over. -->
   <video id="playVideoA" class="playfull front" playsinline></video>
   <video id="playVideoB" class="playfull" playsinline></video>
+  <div id="objShadow"></div>
   <canvas id="playCanvas"></canvas>
   <button id="stopPlay" title="Stoppen">✕</button>
 </div>
 
 <div id="saver">
-  <video id="saverVideo" playsinline muted></video>
+  <!-- Twee spelers: de volgende video buffert alvast en neemt het beeld
+       over met het gekozen overgangseffect (crossfade, zwart, zoom, slide). -->
+  <video id="saverVideo" class="sv-layer front" playsinline muted></video>
+  <video id="saverVideoB" class="sv-layer" playsinline muted></video>
 </div>
 
 <button id="orFab" class="fab" title="Oriëntatie: automatisch / portrait / landscape">AUTO</button>
@@ -717,7 +775,7 @@
     <button data-tab="media"><span class="nav-ic">&#9654;</span><span class="nav-txt">Media</span></button>
     <button data-tab="look"><span class="nav-ic">&#9671;</span><span class="nav-txt">Experience &amp; thema</span></button>
     <button data-tab="fx"><span class="nav-ic">&#12316;</span><span class="nav-txt">Motion</span></button>
-    <button data-tab="saver"><span class="nav-ic">&#10033;</span><span class="nav-txt">Attract mode</span></button>
+    <button data-tab="saver"><span class="nav-ic">&#10033;</span><span class="nav-txt">Screensaver</span></button>
     <button data-tab="cam"><span class="nav-ic">&#9737;</span><span class="nav-txt">Camera</span></button>
     <button data-tab="share"><span class="nav-ic">&#8644;</span><span class="nav-txt">Beheer &amp; device</span></button>
     <button data-tab="help"><span class="nav-ic">?</span><span class="nav-txt">Help</span></button>
@@ -803,8 +861,8 @@
   <!-- ================= MEDIA ================= -->
   <div class="tabpage hidden" id="page-media">
     <button id="addMedia" class="btn primary block">+ Bestanden toevoegen</button>
-    <input type="file" id="mediaInput" accept="video/*,.obj,image/png" multiple hidden>
-    <p class="note">Video (mp4 H.264/H.265, 4K, liggend of staand) &middot; PNG met transparantie (wordt een knop in de vorm van de afbeelding) &middot; 3D-object (Wavefront .obj). Alles wordt in de browser opgeslagen en werkt daarna ook offline.</p>
+    <input type="file" id="mediaInput" accept="video/*,.obj,.mtl,image/png,image/jpeg,.webp" multiple hidden>
+    <p class="note">Video (mp4 H.264/H.265, 4K, liggend of staand) &middot; PNG met transparantie (wordt een knop in de vorm van de afbeelding) &middot; 3D-object (Wavefront .obj &mdash; voeg het .mtl-bestand en de texture-afbeeldingen samen toe, dan wordt het model met texture getoond). Alles wordt in de browser opgeslagen en werkt daarna ook offline.</p>
     <div id="mediaList"></div>
   </div>
 
@@ -1017,6 +1075,14 @@
           <input type="range" id="o3Shine" min="0" max="1" step="0.05">
         </label>
       </div>
+      <div class="toggle-row">
+        <div><div class="t-label">Witte studio-achtergrond</div>
+          <div class="t-sub">Fullscreen 3D op een licht decor met schaduw achter het object</div></div>
+        <label class="switch"><input type="checkbox" id="o3LightBg"><i></i></label>
+      </div>
+      <label class="field">Schaduw achter en onder het object
+        <input type="range" id="o3Shadow" min="0" max="0.8" step="0.05">
+      </label>
       <label class="field">Fullscreen automatisch sluiten na (sec; 0 = nooit)
         <input type="number" id="o3Close" min="0" max="600" step="5">
       </label>
@@ -1157,18 +1223,41 @@
 
   <!-- ================= SCREENSAVER ================= -->
   <div class="tabpage hidden" id="page-saver">
+    <h2>Screensaver</h2>
     <div class="card">
       <div class="toggle-row">
         <div><div class="t-label">Screensaver aan</div>
-          <div class="t-sub">Aanraking brengt de knoppen direct terug</div></div>
+          <div class="t-sub">Start vanzelf bij rust; aanraking brengt de knoppen direct terug</div></div>
         <label class="switch"><input type="checkbox" id="svEnabled"><i></i></label>
       </div>
       <label class="field">Start na (seconden zonder aanraking)
         <input type="number" id="svDelay" min="10" max="3600" step="5">
       </label>
-      <div class="divider"></div>
-      <div class="field">Video's (meerdere spelen om de beurt)</div>
-      <div id="svMediaList"></div>
+      <div class="toggle-row">
+        <div><div class="t-label">Ook op de achtergrond draaien</div>
+          <div class="t-sub">De playlist speelt &mdash; met dezelfde overgangen &mdash; achter de
+          knoppen door terwijl bezoekers aanwezig zijn</div></div>
+        <label class="switch"><input type="checkbox" id="svBackground"><i></i></label>
+      </div>
+      <p class="note">De achtergrondmodus vervangt de losse achtergrondvideo van de sc&egrave;ne
+      zolang hij aanstaat.</p>
+    </div>
+    <h2>Playlist</h2>
+    <div class="card">
+      <div id="svPlaylist"></div>
+      <p class="note">De video's spelen in deze volgorde en beginnen daarna opnieuw.
+      &Eacute;&eacute;n video loopt naadloos in een lus.</p>
+    </div>
+    <h2>Overgang tussen de video's</h2>
+    <div class="card">
+      <label class="field">Effect
+        <select id="svTransition"></select>
+      </label>
+      <label class="field">Duur van de overgang (seconden)
+        <input type="range" id="svTransitionSec" min="0.3" max="3" step="0.1">
+      </label>
+      <p class="note" id="svTransNote"></p>
+      <button id="svPreview" class="btn block">Screensaver nu testen</button>
     </div>
   </div>
 
@@ -1357,7 +1446,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.6.0';
+const APP_VERSION = '2.7.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -1418,9 +1507,11 @@ const defaultConfig = () => ({
   hideButtonsDuringPlay: true,
   cleanMode: false,
   orientationMode: 'auto', // 'auto' | 'portrait' | 'landscape'
-  screensaver: { enabled: false, delaySec: 120, mediaIds: [] },
+  screensaver: { enabled: false, delaySec: 120, mediaIds: [],
+    transition: 'crossfade', transitionSec: 1.2, background: false },
   camera: { enabled: false, dwellSec: 3, sensitivity: 5, deviceId: null },
-  object3d: { color: '#8fa3bd', rotSpeed: 0.8, light: 1.0, shininess: 0.35, maxTriangles: 150000, autoCloseSec: 60 },
+  object3d: { color: '#8fa3bd', rotSpeed: 0.8, light: 1.0, shininess: 0.35, maxTriangles: 150000, autoCloseSec: 60,
+    lightBg: true, shadow: 0.35 },
   theme: { font: 'system', weight: 700, logoMediaId: null, logoSize: 12, logoPos: 'top-left' },
   editor: { snap: true, gridPercent: 5, safeZone: 0 },  // raster, snap en veilige marge (%)
   fxIntervalSec: 7,      // hoe vaak een knop gemiddeld een aandachtseffect speelt
@@ -1512,7 +1603,9 @@ const dbAll = () => new Promise((res, rej) => { const r = tx('readonly').getAll(
 let mediaCache = new Map(); // id -> {id, name, size, url, kind, aspect?}
 
 // 'model' = 3D-object (.obj), 'image' = PNG-knopafbeelding, anders video.
-const mediaKind = (name) => /\.obj$/i.test(name || '') ? 'model' : /\.png$/i.test(name || '') ? 'image' : 'video';
+const mediaKind = (name) => /\.obj$/i.test(name || '') ? 'model'
+  : /\.mtl$/i.test(name || '') ? 'mtl'
+  : /\.(png|jpe?g|webp)$/i.test(name || '') ? 'image' : 'video';
 
 /* ================= Hulpjes ================= */
 const $ = (s) => document.querySelector(s);
@@ -1655,7 +1748,8 @@ function renderRendition(m) {
 const objGeomCache = new Map(); // mediaId -> geometry (of Promise)
 
 function parseOBJ(text, maxTris) {
-  const vs = [], vns = [], faces = [];
+  const vs = [], vns = [], vts = [], faces = [];
+  let mtllib = null;
   for (const line of text.split('\n')) {
     if (line[0] === 'v' && line[1] === ' ') {
       const p = line.slice(2).trim().split(/\s+/);
@@ -1663,12 +1757,18 @@ function parseOBJ(text, maxTris) {
     } else if (line[0] === 'v' && line[1] === 'n') {
       const p = line.slice(3).trim().split(/\s+/);
       vns.push(+p[0], +p[1], +p[2]);
+    } else if (line[0] === 'v' && line[1] === 't') {
+      const p = line.slice(3).trim().split(/\s+/);
+      vts.push(+p[0], +p[1]);
+    } else if (line.startsWith('mtllib ')) {
+      mtllib = line.slice(7).trim();
     } else if (line[0] === 'f' && line[1] === ' ') {
       const parts = line.slice(2).trim().split(/\s+/).map((t) => {
         const a = t.split('/');
         let vi = parseInt(a[0], 10); if (vi < 0) vi = vs.length / 3 + vi + 1;
+        let ti = a[1] ? parseInt(a[1], 10) : 0; if (ti < 0) ti = vts.length / 2 + ti + 1;
         let ni = a[2] ? parseInt(a[2], 10) : 0; if (ni < 0) ni = vns.length / 3 + ni + 1;
-        return [vi, ni];
+        return [vi, ni, ti];
       });
       for (let i = 1; i + 1 < parts.length; i++) faces.push([parts[0], parts[i], parts[i + 1]]);
     }
@@ -1677,6 +1777,8 @@ function parseOBJ(text, maxTris) {
   const step = maxTris > 0 && faces.length > maxTris ? faces.length / maxTris : 1;
   const count = Math.min(faces.length, maxTris > 0 ? maxTris : faces.length);
   const pos = new Float32Array(count * 9), nor = new Float32Array(count * 9);
+  const uv = new Float32Array(count * 6);
+  let hasUV = false;
   let w = 0;
   for (let f = 0; w < count * 9 && f < faces.length; f += step) {
     const tri = faces[Math.floor(f)];
@@ -1692,6 +1794,8 @@ function parseOBJ(text, maxTris) {
       const ni = tri[k][1];
       if (ni > 0) { const o = (ni - 1) * 3; nor[w] = vns[o]; nor[w + 1] = vns[o + 1]; nor[w + 2] = vns[o + 2]; }
       else { nor[w] = fx; nor[w + 1] = fy; nor[w + 2] = fz; }
+      const ti = tri[k][2];
+      if (ti > 0) { const o = (ti - 1) * 2; uv[w / 3 * 2] = vts[o]; uv[w / 3 * 2 + 1] = vts[o + 1]; hasUV = true; }
       w += 3;
     }
   }
@@ -1704,7 +1808,32 @@ function parseOBJ(text, maxTris) {
   const c = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
   const s = 1.35 / (Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]) || 1);
   for (let i = 0; i < w; i += 3) for (let a = 0; a < 3; a++) pos[i + a] = (pos[i + a] - c[a]) * s;
-  return { pos: pos.subarray(0, w), nor: nor.subarray(0, w), verts: w / 3, tris: faces.length };
+  return { pos: pos.subarray(0, w), nor: nor.subarray(0, w),
+    uv: uv.subarray(0, (w / 3) * 2), hasUV, mtllib, verts: w / 3, tris: faces.length };
+}
+
+// Minimale .mtl-parser: de eerste diffuse texture (map_Kd) is genoeg voor de
+// gebruikelijke één-texture-modellen.
+function parseMTLTexture(text) {
+  for (const line of text.split('\n')) {
+    const t = line.trim();
+    if (/^map_Kd\s/i.test(t)) {
+      const parts = t.split(/\s+/);
+      const file = parts[parts.length - 1];          // opties (-s, -o …) overslaan
+      return file.split(/[\\/]/).pop();            // alleen de bestandsnaam
+    }
+  }
+  return null;
+}
+
+// Zoek media op bestandsnaam (hoofdletterongevoelig, alleen basename).
+function mediaByName(name) {
+  if (!name) return null;
+  const want = name.toLowerCase();
+  for (const m of mediaCache.values()) {
+    if (m.name.toLowerCase() === want) return m;
+  }
+  return null;
 }
 
 async function loadObjGeometry(mediaId) {
@@ -1712,23 +1841,47 @@ async function loadObjGeometry(mediaId) {
   const p = (async () => {
     const m = mediaCache.get(mediaId);
     const text = await (await fetch(m.url)).text();
-    return parseOBJ(text, config.object3d.maxTriangles);
+    const g = parseOBJ(text, config.object3d.maxTriangles);
+    // Texture: mtllib -> map_Kd -> afbeelding uit de mediabibliotheek.
+    if (g.hasUV) {
+      let texName = null;
+      const mtl = mediaByName(g.mtllib);
+      if (mtl) texName = parseMTLTexture(await (await fetch(mtl.url)).text());
+      // fallback: afbeelding met dezelfde naam als het model (model.obj + model.png/jpg)
+      if (!texName) {
+        const base = m.name.replace(/\.obj$/i, '');
+        for (const ext of ['.png', '.jpg', '.jpeg', '.webp']) {
+          if (mediaByName(base + ext)) { texName = base + ext; break; }
+        }
+      }
+      const texMedia = mediaByName(texName);
+      if (texMedia && texMedia.kind === 'image') {
+        try {
+          const blob = await (await fetch(texMedia.url)).blob();
+          g.texture = await createImageBitmap(blob, { imageOrientation: 'flipY' });
+        } catch { /* texture niet leesbaar: model in effen kleur tonen */ }
+      }
+    }
+    return g;
   })();
   objGeomCache.set(mediaId, p);
   try { return await p; } catch (e) { objGeomCache.delete(mediaId); throw e; }
 }
 
-const VERT_SRC = `attribute vec3 aPos; attribute vec3 aNor;
-uniform mat4 uProj, uView; varying vec3 vNor, vPos;
+const VERT_SRC = `attribute vec3 aPos; attribute vec3 aNor; attribute vec2 aUV;
+uniform mat4 uProj, uView; varying vec3 vNor, vPos; varying vec2 vUV;
 void main() { vNor = mat3(uView[0].xyz, uView[1].xyz, uView[2].xyz) * aNor;
+  vUV = aUV;
   vec4 p = uView * vec4(aPos, 1.0); vPos = p.xyz; gl_Position = uProj * p; }`;
-const FRAG_SRC = `precision mediump float; varying vec3 vNor, vPos;
-uniform vec3 uColor; uniform float uLight, uShin;
+const FRAG_SRC = `precision mediump float; varying vec3 vNor, vPos; varying vec2 vUV;
+uniform vec3 uColor; uniform float uLight, uShin, uUseTex;
+uniform sampler2D uTex;
 void main() { vec3 n = normalize(vNor); vec3 l = normalize(vec3(0.5, 0.8, 0.6));
   float diff = max(dot(n, l), 0.0) * 0.75 + 0.28;
   vec3 h = normalize(l + normalize(-vPos));
   float spec = pow(max(dot(n, h), 0.0), 40.0) * uShin;
-  gl_FragColor = vec4(uColor * diff * uLight + vec3(spec), 1.0); }`;
+  vec3 base = mix(uColor, texture2D(uTex, vUV).rgb, uUseTex);
+  gl_FragColor = vec4(base * diff * uLight + vec3(spec), 1.0); }`;
 
 function hexToRgb(hex) {
   const n = parseInt(hex.slice(1), 16);
@@ -1753,7 +1906,7 @@ function mat4View(rx, ry, dist) {
   ]);
 }
 
-function createObjViewer(canvas, geom, { interactive }) {
+function createObjViewer(canvas, geom, { interactive, dist }) {
   const gl = canvas.getContext('webgl', { antialias: true, alpha: true, preserveDrawingBuffer: true });
   if (!gl) return null;
   const mk = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
@@ -1771,6 +1924,28 @@ function createObjViewer(canvas, geom, { interactive }) {
   };
   buf(geom.pos, gl.getAttribLocation(prog, 'aPos'));
   buf(geom.nor, gl.getAttribLocation(prog, 'aNor'));
+  // UV's (2 floats) — ook zonder texture aanwezig zodat de attribute bestaat.
+  const uvLoc = gl.getAttribLocation(prog, 'aUV');
+  {
+    const b = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, b);
+    gl.bufferData(gl.ARRAY_BUFFER, geom.uv && geom.uv.length ? geom.uv : new Float32Array(geom.verts * 2), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(uvLoc);
+    gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 0, 0);
+  }
+  // Diffuse texture uit het .mtl-bestand (NPOT-veilig: clamp + linear).
+  let hasTex = false;
+  if (geom.texture) {
+    const tex = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, geom.texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    hasTex = true;
+  }
   const uProj = gl.getUniformLocation(prog, 'uProj');
   const uView = gl.getUniformLocation(prog, 'uView');
   const uColor = gl.getUniformLocation(prog, 'uColor');
@@ -1778,7 +1953,7 @@ function createObjViewer(canvas, geom, { interactive }) {
   const uShin = gl.getUniformLocation(prog, 'uShin');
   gl.enable(gl.DEPTH_TEST);
 
-  const st = { rx: -0.35, ry: 0.6, dist: 3.1, dragging: false, paused: false, dead: false };
+  const st = { rx: -0.35, ry: 0.6, dist: dist || 3.1, dragging: false, paused: false, dead: false };
   if (interactive) {
     canvas.addEventListener('pointerdown', (e) => { st.dragging = true; st.lx = e.clientX; st.ly = e.clientY; canvas.setPointerCapture(e.pointerId); });
     canvas.addEventListener('pointermove', (e) => {
@@ -1811,6 +1986,8 @@ function createObjViewer(canvas, geom, { interactive }) {
     gl.uniform3fv(uColor, hexToRgb(o.color));
     gl.uniform1f(uLight, o.light);
     gl.uniform1f(uShin, o.shininess);
+    gl.uniform1f(gl.getUniformLocation(prog, 'uUseTex'), hasTex ? 1 : 0);
+    gl.uniform1i(gl.getUniformLocation(prog, 'uTex'), 0);
     gl.drawArrays(gl.TRIANGLES, 0, geom.verts);
   }
   raf = requestAnimationFrame(frame);
@@ -1910,15 +2087,18 @@ function renderStage() {
   renderBreadcrumb();
   renderLangBar();
 
-  // Achtergrondvideo
+  // Achtergrondvideo: de screensaver-achtergrondmodus (playlist met
+  // overgangen, achter de knoppen) heeft voorrang op de scène-idlevideo.
   const idle = $('#idleVideo');
-  const m = mediaCache.get(curScene().idleMediaId);
-  if (m) {
-    if (idle.dataset.mid !== m.id) { idle.src = m.url; idle.dataset.mid = m.id; }
-    idle.classList.remove('hidden');
-    idle.play().catch(() => {});
-  } else {
-    idle.classList.add('hidden'); idle.removeAttribute('src'); idle.dataset.mid = '';
+  if (!syncBackgroundRotator()) {
+    const m = mediaCache.get(curScene().idleMediaId);
+    if (m) {
+      if (idle.dataset.mid !== m.id) { idle.src = m.url; idle.dataset.mid = m.id; }
+      idle.classList.remove('hidden');
+      idle.play().catch(() => {});
+    } else {
+      idle.classList.add('hidden'); idle.removeAttribute('src'); idle.dataset.mid = '';
+    }
   }
 
   // Gelaagde video-overlay (spec 26): tweede videolaag boven de achtergrond.
@@ -2071,24 +2251,126 @@ function renderLangBar() {
   }
 }
 
-/* ---- Webcontent-module (spec 30) ---- */
+/* ---- Webcontent-module (spec 30) ----
+   In de Windows-app (Electron) laadt een <webview> élke site — ook sites die
+   inline-embedding weigeren — volledig bedienbaar. In een gewone browser
+   gebruiken we een iframe met laadindicator; weigert de site embedding
+   (X-Frame-Options/CSP), dan tonen we dat eerlijk met een venster-fallback. */
+const webviewSupported = () => !!(window.hwhDesktop && window.hwhDesktop.webviewAvailable);
+let webBlockTimer = null;
+let webPopup = null;
+let lastWebUrl = '';
+
+function setWebStatus(mode) { // 'loading' | 'blocked' | 'hidden'
+  const st = $('#webStatus');
+  st.classList.toggle('hidden', mode === 'hidden');
+  st.classList.toggle('blocked', mode === 'blocked');
+  $('#webBlockedBox').classList.toggle('hidden', mode !== 'blocked');
+  $('#webStatusText').textContent = mode === 'blocked' ? 'Deze site laat inladen niet toe' : 'Website laden…';
+}
+
+function normalizeWebUrl(url) {
+  const u = (url || '').trim();
+  if (!u) return '';
+  if (/^(https?:|file:|data:|\.{0,2}\/)/i.test(u)) return u;
+  return 'https://' + u; // "example.com" gewoon laten werken
+}
+
 function openWebContent(url) {
+  url = normalizeWebUrl(url);
   if (!url) return toast('Geen adres ingesteld voor deze knop');
+  lastWebUrl = url;
   const ov = $('#webOverlay');
-  $('#webFrame').src = url;
+  const host = $('#webHost');
+  host.innerHTML = '';
+  clearTimeout(webBlockTimer);
+  setWebStatus('loading');
   ov.classList.remove('hidden');
   AppState.set('CONTENT_PLAYBACK');
+  if (webviewSupported()) {
+    // Windows-app: volwaardige webview zonder embed-beperkingen.
+    const wv = document.createElement('webview');
+    wv.setAttribute('allowpopups', '');
+    wv.setAttribute('partition', 'persist:hwh-web');
+    wv.src = url;
+    wv.addEventListener('did-finish-load', () => setWebStatus('hidden'));
+    wv.addEventListener('did-fail-load', (e) => {
+      if (e.errorCode === -3) return; // afgebroken door navigatie: geen fout
+      setWebStatus('blocked');
+      $('#webStatusText').textContent = 'Website niet bereikbaar (' + (e.errorDescription || e.errorCode) + ')';
+      $('#webBlockedBox').classList.add('hidden');
+    });
+    host.append(wv);
+    return;
+  }
+  // Browser: iframe. Of een externe site het kader weigert (X-Frame-Options)
+  // is vanuit JavaScript bewust niet te zien; daarom tonen we bij externe
+  // sites kort een discrete hulpbalk met de venster-fallback.
+  const f = document.createElement('iframe');
+  f.id = 'webFrame';
+  f.title = 'Webinhoud';
+  f.referrerPolicy = 'no-referrer';
+  const external = /^https?:/i.test(url);
+  let unreachable = false;
+  if (external) {
+    // Bereikbaarheid checken kan wél (opaque fetch); een kaderweigering niet.
+    fetch(url, { mode: 'no-cors', cache: 'no-store' }).catch(() => {
+      unreachable = true;
+      setWebStatus('blocked');
+      $('#webBlockedText').textContent = 'Deze website reageert niet of is niet bereikbaar.';
+    });
+  }
+  f.addEventListener('load', () => {
+    clearTimeout(webBlockTimer);
+    setTimeout(() => {
+      if (unreachable) return; // netwerkfout heeft voorrang op het lege errorframe
+      setWebStatus('hidden');
+      if (external) showWebHint();
+    }, 250);
+  });
+  webBlockTimer = setTimeout(() => { // geen load-event: site onbereikbaar
+    setWebStatus('blocked');
+    $('#webBlockedText').textContent = 'Deze website reageert niet of is niet bereikbaar.';
+  }, 9000);
+  f.src = url;
+  host.append(f);
+}
+
+let webHintTimer = null;
+function showWebHint() {
+  const bar = $('#webHintBar');
+  bar.classList.remove('hidden');
+  bar.style.opacity = 1;
+  clearTimeout(webHintTimer);
+  webHintTimer = setTimeout(() => {
+    bar.style.opacity = 0;
+    setTimeout(() => bar.classList.add('hidden'), 450);
+  }, 9000);
 }
 
 function closeWebContent() {
   const ov = $('#webOverlay');
   if (ov.classList.contains('hidden')) return;
+  clearTimeout(webBlockTimer);
+  clearTimeout(webHintTimer);
   ov.classList.add('hidden');
-  $('#webFrame').removeAttribute('src');
+  $('#webHost').innerHTML = '';
+  $('#webHintBar').classList.add('hidden');
+  setWebStatus('hidden');
+  if (webPopup && !webPopup.closed) { webPopup.close(); webPopup = null; }
   AppState.set('IDLE');
   runEntrance(lastChosenId);
 }
 $('#webClose').addEventListener('click', closeWebContent);
+$('#webHintOpen').addEventListener('click', () => {
+  webPopup = window.open(lastWebUrl, 'hwh_web', 'popup=yes,width=' + screen.width + ',height=' + screen.height);
+  if (!webPopup) toast('Pop-up geblokkeerd door de browser — sta pop-ups toe voor deze pagina');
+});
+$('#webOpenWin').addEventListener('click', () => {
+  // Fallback in de browser: eigen (kaal) venster over de presentatie.
+  webPopup = window.open(lastWebUrl, 'hwh_web', 'popup=yes,width=' + screen.width + ',height=' + screen.height);
+  if (!webPopup) toast('Pop-up geblokkeerd door de browser — sta pop-ups toe voor deze pagina');
+});
 
 /* ================= Afspelen ================= */
 const playOverlay = $('#playOverlay');
@@ -2183,6 +2465,7 @@ function playMedia(mediaId) {
   playOverlay.classList.add('show');
   if (config.hideButtonsDuringPlay) $('#buttonLayer').style.visibility = 'hidden';
   $('#idleVideo').pause(); $('#overlayVideo').pause();
+  bgRotator.setPaused(true);
   setPreviewsPaused(true);
   playVideo.play().catch(() => {});
   preloadNextInQueue();
@@ -2219,13 +2502,17 @@ playOverlay.addEventListener('pointerdown', () => {
 
 function playObject(mediaId) {
   playOverlay.classList.add('show', 'mode-3d');
+  playOverlay.classList.toggle('light', config.object3d.lightBg !== false);
+  playOverlay.style.setProperty('--objShadow', config.object3d.shadow ?? 0.35);
   if (config.hideButtonsDuringPlay) $('#buttonLayer').style.visibility = 'hidden';
   $('#idleVideo').pause();
   setPreviewsPaused(true);
   loadObjGeometry(mediaId)
     .then((g) => {
       objViewers.get('fullscreen')?.destroy();
-      const v = createObjViewer($('#playCanvas'), g, { interactive: true });
+      // Fullscreen iets verder weg: het object blijft ook gedraaid (diagonaal)
+      // en in portrait volledig in beeld, met ruimte voor de schaduw eronder.
+      const v = createObjViewer($('#playCanvas'), g, { interactive: true, dist: 4.4 });
       if (v) objViewers.set('fullscreen', v);
       armObjAutoClose();
     })
@@ -2241,7 +2528,7 @@ function stopPlaying() {
   cancelSelectAnims(); // knoppen terug naar hun plek
   playOverlay.classList.remove('show');
   setTimeout(() => {
-    playOverlay.classList.remove('mode-3d');
+    playOverlay.classList.remove('mode-3d', 'light');
     for (const pv of [playVideoA, playVideoB]) { pv.pause(); pv.removeAttribute('src'); pv.load(); }
     playVideo = playVideoA;
     playVideoA.classList.add('front');
@@ -2252,6 +2539,7 @@ function stopPlaying() {
   if (!idle.classList.contains('hidden')) idle.play().catch(() => {});
   const ov = $('#overlayVideo');
   if (!ov.classList.contains('hidden')) ov.play().catch(() => {});
+  bgRotator.setPaused(false);
   setPreviewsPaused(false);
   lastInteraction = Date.now();
   // Contextual return (spec 229): gekozen knop keert eerst terug, de rest
@@ -3846,7 +4134,7 @@ function refreshPanel() {
 function mediaSelect(selectedId, onchange) {
   const sel = el('select', { onchange: (e) => onchange(e.target.value || null) },
     el('option', { value: '' }, '— kies een video —'),
-    [...mediaCache.values()].map((m) => {
+    [...mediaCache.values()].filter((m) => m.kind !== 'mtl').map((m) => {
       const o = el('option', { value: m.id }, m.name);
       if (m.id === selectedId) o.selected = true;
       return o;
@@ -4135,6 +4423,8 @@ function renderMediaList() {
   for (const m of mediaCache.values()) {
     const thumb = m.kind === 'model'
       ? el('div', { style: 'width:76px;height:46px;border-radius:7px;background:#0a0f16;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none' }, '🧊')
+      : m.kind === 'mtl'
+        ? el('div', { style: 'width:76px;height:46px;border-radius:7px;background:#0a0f16;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none' }, '🎨')
       : m.kind === 'image'
         ? el('img', { src: m.url, style: 'width:76px;height:46px;object-fit:contain;border-radius:7px;background:#0a0f16;flex:none' })
         : el('video', { src: m.url, preload: 'metadata', muted: '' });
@@ -4279,6 +4569,8 @@ function renderLook() {
   $('#o3Light').value = o3.light;
   $('#o3Shine').value = o3.shininess;
   $('#o3Close').value = o3.autoCloseSec;
+  $('#o3LightBg').checked = o3.lightBg !== false;
+  $('#o3Shadow').value = o3.shadow ?? 0.35;
 }
 
 // Huisstijl (spec 63-68).
@@ -4424,6 +4716,16 @@ $('#o3Rot').addEventListener('input', (e) => { config.object3d.rotSpeed = Number
 $('#o3Light').addEventListener('input', (e) => { config.object3d.light = Number(e.target.value); save(); });
 $('#o3Shine').addEventListener('input', (e) => { config.object3d.shininess = Number(e.target.value); save(); });
 $('#o3Close').addEventListener('change', (e) => { config.object3d.autoCloseSec = Math.max(0, Number(e.target.value) || 0); save(); });
+$('#o3LightBg').addEventListener('change', (e) => {
+  config.object3d.lightBg = e.target.checked;
+  save();
+  if (playOverlay.classList.contains('mode-3d')) playOverlay.classList.toggle('light', e.target.checked);
+});
+$('#o3Shadow').addEventListener('input', (e) => {
+  config.object3d.shadow = Number(e.target.value);
+  save();
+  playOverlay.style.setProperty('--objShadow', config.object3d.shadow);
+});
 $('#o3MaxTris').addEventListener('change', (e) => {
   config.object3d.maxTriangles = Number(e.target.value);
   save();
@@ -4702,19 +5004,42 @@ function renderSaver() {
   const sv = config.screensaver, cam = config.camera;
   $('#svEnabled').checked = sv.enabled;
   $('#svDelay').value = sv.delaySec;
-  const list = $('#svMediaList');
+  $('#svBackground').checked = !!sv.background;
+  // Geordende playlist met omhoog/omlaag/verwijderen + toevoeg-select.
+  const list = $('#svPlaylist');
   list.innerHTML = '';
-  if (!mediaCache.size) list.append(el('p', { class: 'note' }, 'Voeg eerst video’s toe op het tabblad Video’s.'));
-  for (const m of mediaCache.values()) {
-    const checked = sv.mediaIds.includes(m.id);
-    list.append(el('label', { class: 'row', style: 'flex-direction:row;align-items:center;color:var(--text);font-size:13.5px' },
-      el('input', { type: 'checkbox', style: 'width:auto', ...(checked ? { checked: '' } : {}), onchange: (e) => {
-        if (e.target.checked) sv.mediaIds.push(m.id);
-        else sv.mediaIds = sv.mediaIds.filter((id) => id !== m.id);
-        save();
-      } }),
-      ' ' + m.name));
+  const ids = sv.mediaIds || [];
+  if (!ids.length) list.append(el('p', { class: 'note' }, 'Nog geen video\u2019s in de playlist \u2014 voeg er hieronder toe.'));
+  ids.forEach((id, i) => {
+    const m = mediaCache.get(id);
+    list.append(el('div', { class: 'row', style: 'display:flex;gap:6px;align-items:center;margin-bottom:6px' },
+      el('span', { class: 'grow', style: 'font-size:12.5px;color:var(--p-ink)' }, `${i + 1}. ${m ? m.name : '(ontbreekt)'}`),
+      el('button', { class: 'btn small', title: 'Omhoog', onclick: () => {
+        if (i > 0) { [ids[i - 1], ids[i]] = [ids[i], ids[i - 1]]; save(); renderSaver(); syncBackgroundRotator(); } } }, '\u2191'),
+      el('button', { class: 'btn small', title: 'Omlaag', onclick: () => {
+        if (i < ids.length - 1) { [ids[i + 1], ids[i]] = [ids[i], ids[i + 1]]; save(); renderSaver(); syncBackgroundRotator(); } } }, '\u2193'),
+      el('button', { class: 'btn small danger', onclick: () => {
+        ids.splice(i, 1); save(); renderSaver(); syncBackgroundRotator(); } }, '\u2715')));
+  });
+  const addable = [...mediaCache.values()].filter((m) => m.kind === 'video');
+  const add = el('select', { 'data-role': 'sv-add', onchange: (e) => {
+    if (!e.target.value) return;
+    sv.mediaIds.push(e.target.value);
+    save(); renderSaver(); syncBackgroundRotator();
+  } }, el('option', { value: '' }, '+ video toevoegen\u2026'),
+     addable.map((m) => el('option', { value: m.id }, m.name)));
+  list.append(add);
+  if (!addable.length) list.append(el('p', { class: 'note' }, 'Voeg eerst video\u2019s toe op het tabblad Media.'));
+  // Overgang
+  const tr = $('#svTransition');
+  tr.innerHTML = '';
+  for (const [key, def] of Object.entries(SAVER_TRANSITIONS)) {
+    const o = el('option', { value: key }, def.label);
+    if ((sv.transition || 'crossfade') === key) o.selected = true;
+    tr.append(o);
   }
+  $('#svTransitionSec').value = sv.transitionSec ?? 1.2;
+  $('#svTransNote').textContent = `De overgang start ${(sv.transitionSec ?? 1.2).toFixed(1)}s voor het einde van de lopende video, zodat de wissel vloeiend overlapt.`;
   $('#camEnabled').checked = cam.enabled;
   $('#camDwell').value = cam.dwellSec;
   $('#camSens').value = cam.sensitivity;
@@ -4722,8 +5047,30 @@ function renderSaver() {
   updateCamLive();
 }
 
-$('#svEnabled').addEventListener('change', (e) => { config.screensaver.enabled = e.target.checked; save(); if (!config.screensaver.enabled) exitSaver(); });
+$('#svEnabled').addEventListener('change', (e) => {
+  config.screensaver.enabled = e.target.checked;
+  save();
+  if (!config.screensaver.enabled) exitSaver();
+  syncBackgroundRotator();
+  renderStage();
+});
 $('#svDelay').addEventListener('change', (e) => { config.screensaver.delaySec = Math.max(10, Number(e.target.value) || 120); save(); });
+$('#svBackground').addEventListener('change', (e) => {
+  config.screensaver.background = e.target.checked;
+  save();
+  renderStage(); // schakelt tussen scène-idlevideo en achtergrondplaylist
+});
+$('#svTransition').addEventListener('change', (e) => { config.screensaver.transition = e.target.value; save(); });
+$('#svTransitionSec').addEventListener('input', (e) => {
+  config.screensaver.transitionSec = Number(e.target.value);
+  save();
+  $('#svTransNote').textContent = `De overgang start ${Number(e.target.value).toFixed(1)}s voor het einde van de lopende video, zodat de wissel vloeiend overlapt.`;
+});
+$('#svPreview').addEventListener('click', () => {
+  if (!saverPlaylist().length) return toast('Zet eerst video\u2019s in de playlist');
+  closeEditor();
+  setTimeout(enterSaver, 350);
+});
 $('#camEnabled').addEventListener('change', (e) => {
   config.camera.enabled = e.target.checked;
   save();
@@ -4995,13 +5342,151 @@ document.getElementById('stage').addEventListener('pointerdown', (e) => {
   }
 }, true);
 
-/* ================= Screensaver ================= */
+/* ================= Screensaver =================
+   Dubbele-speler-rotator: dezelfde engine draait de playlist fullscreen
+   (klassieke screensaver) én — met de achtergrondmodus — achter de knoppen
+   door terwijl bezoekers aanwezig zijn. De volgende video buffert alvast in
+   de standby-speler en neemt het beeld over met het gekozen overgangseffect. */
 
 let lastInteraction = Date.now();
 let saverActive = false;
-let saverIndex = 0;
 const saverEl = $('#saver');
-const saverVideo = $('#saverVideo');
+const saverVideo = $('#saverVideo');   // naam blijft: actieve fullscreen-saverspeler bij start
+
+// Overgangseffecten tussen twee playlistvideo's (in = nieuwe, out = oude).
+const SAVER_TRANSITIONS = {
+  none:      { label: 'Geen — harde wissel' },
+  crossfade: { label: 'Crossfade (aanbevolen)' },
+  fadeBlack: { label: 'Via zwart' },
+  zoom:      { label: 'Zoom-crossfade (Ken Burns)' },
+  slide:     { label: 'Schuiven van rechts' }
+};
+
+function createRotator(elA, elB) {
+  const st = { list: [], idx: 0, active: elA, running: false, transitioning: false, anims: [] };
+  const standby = () => (st.active === elA ? elB : elA);
+
+  function applyTransition(effect, sec, inEl, outEl) {
+    const ms = Math.max(120, sec * 1000);
+    const done = [];
+    inEl.style.zIndex = 3; outEl.style.zIndex = 2;
+    const push = (el, kf, o) => { const a = el.animate(kf, o); st.anims.push(a); done.push(a.finished.catch(() => {})); };
+    if (effect === 'fadeBlack') {
+      push(outEl, [{ opacity: 1 }, { opacity: 0 }], { duration: ms / 2, fill: 'forwards', easing: 'ease-in' });
+      push(inEl, [{ opacity: 0 }, { opacity: 0, offset: 0.5 }, { opacity: 1 }], { duration: ms, fill: 'forwards', easing: 'ease-out' });
+    } else if (effect === 'zoom') {
+      push(inEl, [{ opacity: 0, transform: 'scale(1.12)' }, { opacity: 1, transform: 'scale(1)' }],
+        { duration: ms * 1.25, fill: 'forwards', easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' });
+      push(outEl, [{ opacity: 1 }, { opacity: 0 }], { duration: ms, fill: 'forwards', easing: 'ease-in-out' });
+    } else if (effect === 'slide') {
+      push(inEl, [{ opacity: 1, transform: 'translateX(100%)' }, { opacity: 1, transform: 'translateX(0)' }],
+        { duration: ms, fill: 'forwards', easing: 'cubic-bezier(0.3, 0.8, 0.25, 1)' });
+      push(outEl, [{ opacity: 1, transform: 'translateX(0)' }, { opacity: 0.6, transform: 'translateX(-22%)' }],
+        { duration: ms, fill: 'forwards', easing: 'cubic-bezier(0.3, 0.8, 0.25, 1)' });
+    } else { // crossfade
+      push(inEl, [{ opacity: 0 }, { opacity: 1 }], { duration: ms, fill: 'forwards', easing: 'ease-in-out' });
+      push(outEl, [{ opacity: 1 }, { opacity: 0 }], { duration: ms, fill: 'forwards', easing: 'ease-in-out' });
+    }
+    return Promise.all(done);
+  }
+
+  function clearAnims() {
+    for (const a of st.anims.splice(0)) { try { a.cancel(); } catch {} }
+  }
+
+  function settle(inEl, outEl) {
+    clearAnims();
+    inEl.classList.add('front'); outEl.classList.remove('front');
+    inEl.style.zIndex = ''; outEl.style.zIndex = '';
+    inEl.style.transform = ''; outEl.style.transform = '';
+    outEl.pause(); outEl.removeAttribute('src'); outEl.load();
+  }
+
+  async function advance(effect) {
+    if (st.transitioning || st.list.length < 2) return;
+    st.transitioning = true;
+    st.idx = (st.idx + 1) % st.list.length;
+    const inEl = standby(), outEl = st.active;
+    const next = st.list[st.idx];
+    if (inEl.src !== next.url) { inEl.src = next.url; }
+    try { await inEl.play(); } catch {}
+    st.active = inEl;
+    if (effect === 'none') {
+      settle(inEl, outEl);
+    } else {
+      await applyTransition(effect, config.screensaver.transitionSec ?? 1.2, inEl, outEl);
+      if (st.running) settle(inEl, outEl);
+    }
+    st.transitioning = false;
+  }
+
+  function onTime() {
+    if (!st.running || st.transitioning || st.list.length < 2) return;
+    const v = st.active;
+    if (!v.duration || !isFinite(v.duration)) return;
+    const remain = v.duration - v.currentTime;
+    const sec = config.screensaver.transitionSec ?? 1.2;
+    const effect = config.screensaver.transition || 'crossfade';
+    // volgende alvast bufferen, dan op tijd invaden zodat de wissel de
+    // resterende speelduur van de oude video overlapt
+    const nxt = st.list[(st.idx + 1) % st.list.length];
+    const sb = standby();
+    if (remain <= sec + 2.5 && nxt && sb.src !== nxt.url && st.active.src !== '') { sb.muted = true; sb.src = nxt.url; sb.load(); }
+    if (effect !== 'none' && remain <= sec + 0.05) advance(effect);
+  }
+
+  function onEnded(e) {
+    if (!st.running || e.target !== st.active) return;
+    if (st.list.length < 2) { return; } // loop-attribuut vangt dit al af
+    if (!st.transitioning) advance('none'); // harde wissel (effect 'none' of te korte video)
+  }
+
+  for (const el of [elA, elB]) {
+    el.addEventListener('timeupdate', onTime);
+    el.addEventListener('ended', onEnded);
+  }
+
+  return {
+    start(list) {
+      if (!list.length) return this.stop();
+      const same = st.running && st.list.length === list.length && st.list.every((m, i) => m.id === list[i].id);
+      if (same) { st.list = list; return; }
+      this.stop();          // maakt ook st.list leeg — daarom pas daarná zetten
+      st.list = list;
+      st.running = true;
+      st.idx = 0;
+      st.active = elA;
+      elA.classList.add('front'); elB.classList.remove('front');
+      elA.loop = list.length === 1;
+      elA.muted = true;
+      elA.src = list[0].url;
+      elA.play().catch(() => {});
+    },
+    stop() {
+      st.running = false;
+      st.transitioning = false;
+      clearAnims();
+      for (const el of [elA, elB]) {
+        el.classList.remove('front');
+        el.style.zIndex = ''; el.style.transform = '';
+        el.pause(); el.removeAttribute('src'); el.load();
+      }
+      elA.classList.add('front');
+      st.list = [];
+    },
+    setPaused(p) {
+      if (!st.running) return;
+      if (p) { elA.pause(); elB.pause(); }
+      else st.active.play().catch(() => {});
+    },
+    get running() { return st.running; },
+    get index() { return st.idx; },
+    get activeEl() { return st.active; }
+  };
+}
+
+const saverRotator = createRotator(saverVideo, $('#saverVideoB'));
+const bgRotator = createRotator($('#idleVideo'), $('#idleVideoB'));
 
 // Elke aanraking telt als activiteit; tijdens de screensaver wekt hij het menu.
 for (const evt of ['pointerdown', 'keydown']) {
@@ -5019,40 +5504,58 @@ function enterSaver() {
   const list = saverPlaylist();
   if (!list.length || saverActive) return;
   saverActive = true;
+  clearTimeout(saverStopTimer); // een net geplande opruim-stop mag deze start niet doden
   AppState.set('ATTRACT');
-  saverIndex = 0;
   saverEl.classList.add('show');
   setPreviewsPaused(true);
-  $('#idleVideo').pause();
-  playSaverItem(list);
+  bgRotator.setPaused(true);
+  $('#idleVideo').pause(); $('#overlayVideo').pause();
+  saverRotator.start(list);
 }
 
-function playSaverItem(list) {
-  const m = list[saverIndex % list.length];
-  saverVideo.loop = list.length === 1; // één video: naadloos loopen
-  saverVideo.src = m.url;
-  saverVideo.play().catch(() => {});
-}
-
-saverVideo.addEventListener('ended', () => {
-  if (!saverActive) return;
-  const list = saverPlaylist();
-  if (!list.length) return exitSaver();
-  saverIndex = (saverIndex + 1) % list.length;
-  playSaverItem(list);
-});
-
+let saverStopTimer = null;
 function exitSaver() {
   if (!saverActive) return;
   saverActive = false;
   AppState.set('IDLE');
   runEntrance();
   saverEl.classList.remove('show');
-  setTimeout(() => { saverVideo.pause(); saverVideo.removeAttribute('src'); saverVideo.load(); }, 850);
+  clearTimeout(saverStopTimer);
+  saverStopTimer = setTimeout(() => { if (!saverActive) saverRotator.stop(); }, 850);
   setPreviewsPaused(false);
+  bgRotator.setPaused(false);
   const idle = $('#idleVideo');
   if (!idle.classList.contains('hidden')) idle.play().catch(() => {});
+  const ov = $('#overlayVideo');
+  if (!ov.classList.contains('hidden')) ov.play().catch(() => {});
   lastInteraction = Date.now();
+}
+
+/* Achtergrondmodus: de screensaver-playlist draait — met dezelfde
+   overgangen — achter de knoppen door zolang bezoekers aanwezig zijn. */
+function syncBackgroundRotator() {
+  const sv = config.screensaver;
+  const list = saverPlaylist();
+  const idle = $('#idleVideo');
+  if (sv.enabled && sv.background && list.length) {
+    idle.classList.remove('hidden');
+    idle.classList.add('rot');
+    idle.dataset.mid = '';
+    $('#idleVideoB').classList.remove('hidden');
+    bgRotator.start(list);
+    if (!playOverlay.classList.contains('show') && !saverActive) bgRotator.setPaused(false);
+    return true;
+  }
+  if (bgRotator.running) {
+    bgRotator.stop();
+    idle.classList.add('hidden');
+    idle.classList.remove('rot', 'front');
+    $('#idleVideoB').classList.add('hidden');
+    $('#idleVideoB').classList.remove('front');
+  } else {
+    idle.classList.remove('rot');
+  }
+  return false;
 }
 
 // Bewaker: start de screensaver na de ingestelde tijd zonder aanraking.
