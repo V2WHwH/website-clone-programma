@@ -18,16 +18,9 @@ arms; these assets unblock early engineering and art direction.
 | `references/02_single_arm_isolated.png` | Isolated realistic arm+hand, studio lighting (16:9, 2752×1536) — 3D source image | `872128fe-ff4a-4814-b67b-b2d97ebac368` | https://d8j0ntlcm91z4.cloudfront.net/user_3CLfFwPRdxvZEiLtDM59k5jT7uE/hf_20260830_103309_872128fe-ff4a-4814-b67b-b2d97ebac368.png |
 | `references/03_giftbox_product.png` | Teal gift box product shot (1:1, 2048×2048) — campaign object source | `2260f24e-e042-4585-a72f-1d5955026576` | https://d8j0ntlcm91z4.cloudfront.net/user_3CLfFwPRdxvZEiLtDM59k5jT7uE/hf_20260830_103309_2260f24e-e042-4585-a72f-1d5955026576.png |
 | `models/arm_placeholder.glb` | Untextured 3D arm mesh from the isolated arm image (`image_to_3d`) | `9d4f491e-9d86-49b7-bb32-d72822039642` | https://d8j0ntlcm91z4.cloudfront.net/user_3CLfFwPRdxvZEiLtDM59k5jT7uE/hf_20260830_103411_9d4f491e-9d86-49b7-bb32-d72822039642.glb |
+| `models/arm_textured_rigged.glb` | **Textured + rigged** 3D arm mesh (`image_to_3d`, should_texture + enable_rigging) | `f04bf053-123a-4456-866d-35a211d1c95e` | https://d8j0ntlcm91z4.cloudfront.net/user_3CLfFwPRdxvZEiLtDM59k5jT7uE/hf_20260830_105932_f04bf053-123a-4456-866d-35a211d1c95e.glb |
+| `models/giftbox_textured.glb` | **Textured** gift box mesh (`image_to_3d`, should_texture) | `4df41877-3037-491d-9727-77027480ca0d` | https://d8j0ntlcm91z4.cloudfront.net/user_3CLfFwPRdxvZEiLtDM59k5jT7uE/hf_20260830_105935_4df41877-3037-491d-9727-77027480ca0d.glb |
 
-## Still to generate (blocked on credits)
-
-The workspace ran out of credits (12.7 left) before the **textured + rigged**
-variants could be submitted. When credits are topped up, rerun:
-
-- `image_to_3d` on job `872128fe…` with `should_texture: true,
-  enable_rigging: true` → `models/arm_textured_rigged.glb`
-- `image_to_3d` on job `2260f24e…` with `should_texture: true`
-  → `models/giftbox_textured.glb`
-
-All four completed generations are also visible in the Higgsfield library
-gallery of the account.
+All six completed generations are also visible in the Higgsfield library
+gallery of the account. The complete placeholder set (2 reference images,
+1 product image, 3 GLB meshes) is now generated — nothing is pending.
