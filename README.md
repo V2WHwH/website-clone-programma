@@ -1,8 +1,29 @@
-# website-clone-programma
+# HOLO ARMS / WALL HANDS ENGINE
 
-Repo voor het website-clone-programma. Op dit moment bevat de repo de configuratie
-om de **Ditto MCP-server** (`https://api.ditto.site/mcp`) te koppelen aan
-MCP-clients zoals Claude Code.
+Real-time spatial-illusion engine voor HEREweHOLO / Holowall / Holobox
+installaties: realistische 3D-armen die uit de achterwand van een display
+komen, objecten doorgeven over meerdere schermen, reageren op passanten en
+commercieel inzetbaar zijn via campagnes.
+
+**Status: Milestone 0 — architectuur + Figma-ontwerp.** Er is nog geen
+Unity-runtime; de spec verplicht eerst architectuur en het Figma-ontwerp.
+
+| Map | Inhoud |
+|---|---|
+| `Docs/` | Master-spec + volledig Milestone 0-architectuurpakket (`00`–`09`) |
+| `FigmaHandoff/` | Design-tokens, componentnamen en schermhiërarchie uit Figma (F5) |
+| `UnityProject/` | Unity 6 HDRP-project (vanaf Milestone 1) |
+| `Tools/`, `ContentSamples/`, `Tests/`, `BuildScripts/` | Zie `Docs/01_ARCHITECTURE.md` §7 |
+
+Startpunten: [`Docs/00_PRODUCT_OVERVIEW.md`](Docs/00_PRODUCT_OVERVIEW.md) en
+[`Docs/08_MILESTONE_BACKLOG.md`](Docs/08_MILESTONE_BACKLOG.md).
+
+---
+
+## Eerdere inhoud: Ditto MCP-serverconfiguratie
+
+De repo bevat daarnaast de configuratie om de **Ditto MCP-server**
+(`https://api.ditto.site/mcp`) te koppelen aan MCP-clients zoals Claude Code.
 
 ## Ditto MCP-server
 
