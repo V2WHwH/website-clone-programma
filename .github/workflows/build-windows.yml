@@ -1,0 +1,66 @@
+# Builds the Windows x64 player (HoloArms.exe) in CI via game-ci.
+#
+# ONE-TIME SETUP (repo Settings → Secrets and variables → Actions):
+#   Personal (free) Unity license:
+#     UNITY_EMAIL     - Unity account e-mail
+#     UNITY_PASSWORD  - Unity account password
+#     UNITY_LICENSE   - contents of your .ulf license file
+#       (get it: https://game.ci/docs/github/activation — activate once
+#        locally, then paste the .ulf file contents into the secret)
+#   Pro/Plus: also set UNITY_SERIAL and you can omit UNITY_LICENSE.
+#
+# NOTE: game-ci reads the editor version from
+# UnityProject/ProjectSettings/ProjectVersion.txt. If no docker image
+# exists for that exact version, the job fails early — open the project
+# locally once (Unity rewrites ProjectVersion.txt to your installed
+# 6000.x version), commit that file, and re-run.
+#
+# Run it from the Actions tab → "Build Windows Player" → Run workflow.
+# The finished build is attached as artifact "HoloArms_M1_Windows".
+
+name: Build Windows Player
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build StandaloneWindows64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: UnityProject/Library
+          key: unity-library-win64-${{ hashFiles('UnityProject/Packages/manifest.json') }}
+          restore-keys: unity-library-win64-
+
+      - name: Build with game-ci
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          projectPath: UnityProject
+          targetPlatform: StandaloneWindows64
+          buildName: HoloArms
+          # Our own build method: generates the M1 scene first, then builds to
+          # UnityProject/Builds/HoloArms_M1_Windows (the default game-ci
+          # builder would fail on the empty Build Settings scene list).
+          buildMethod: HoloArms.EditorTools.WindowsBuilder.BuildFromCommandLine
+          allowDirtyBuild: true
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HoloArms_M1_Windows
+          path: UnityProject/Builds/HoloArms_M1_Windows
+          if-no-files-found: error
+          retention-days: 14

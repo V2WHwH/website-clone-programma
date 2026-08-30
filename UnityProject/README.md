@@ -61,6 +61,25 @@ shadow do the "attached to the wall" work. The custom clip/stencil path is
 only needed for Transparent Overlay mode (composition mode B) and lands
 with that mode.
 
+## Building HoloArms.exe
+
+Unity builds produce a **folder** with `HoloArms.exe` plus its data — no
+installer needed: copy/zip the folder, double-click the exe. Three routes:
+
+1. **In the editor** (simplest): menu **HoloArms → Build Windows Player
+   (x64)** → output in `UnityProject/Builds/HoloArms_M1_Windows/`.
+2. **Command line**: run `BuildScripts\build_windows.bat` (finds Unity via
+   Unity Hub's default path, or pass the path to `Unity.exe` as the first
+   argument / set `UNITY_PATH`). Open the project once in the editor before
+   the first batch build so HDRP finishes its first-time setup.
+3. **GitHub Actions** (no local Unity needed): Actions tab → *Build
+   Windows Player* → Run workflow → download the `HoloArms_M1_Windows`
+   artifact. Requires one-time Unity-license secrets — see the comments at
+   the top of `.github/workflows/build-windows.yml`.
+
+The player runs fullscreen; `E` and `F1` work as in the editor, and Escape
+is not bound (Alt+F4 to quit — kiosk behavior lands in M9).
+
 ## Where things live
 
 ```
