@@ -1,4 +1,5 @@
 using HoloArms.Agents;
+using HoloArms.Behaviour;
 using HoloArms.Core.Config;
 using HoloArms.Core.Diagnostics;
 using HoloArms.Rendering;
@@ -7,12 +8,10 @@ using UnityEngine;
 namespace HoloArms.UI
 {
     /// <summary>
-    /// Milestone 1 engineering panel (F1 to toggle): the Basic Look &amp; Depth
-    /// controls from the Figma page plus quality preset and telemetry.
-    /// This is an IMGUI stand-in for engineering only — the real operator UI
-    /// is implemented later from the Figma design system (FigmaHandoff/),
-    /// which remains the UI source of truth. Values persist via ConfigService
-    /// (M1 acceptance: settings survive restart).
+    /// M1/M1.5 engineering panel (F1): Basic Look &amp; Depth controls,
+    /// quality preset, telemetry, and the cast list — every arm's identity
+    /// and temperament, plus the director's current group task. IMGUI
+    /// stand-in only; the operator UI comes from the Figma system.
     /// </summary>
     public sealed class M1DebugPanel : MonoBehaviour
     {
@@ -21,20 +20,22 @@ namespace HoloArms.UI
         private IHealthMonitor _health;
         private LightRigController _lights;
         private VolumeController _volume;
-        private ArmAgent _arm;
         private M1Bootstrap _bootstrap;
+        private RuleBasedBehaviourDirector _director;
 
         private bool _visible = true;
+        private Vector2 _castScroll;
         private static readonly string[] Presets = { "Auto", "Ultra", "High", "Balanced", "Performance" };
         private static readonly string[] RoomLights = { "Dark", "Indoor", "Bright" };
         private static readonly string[] Extensions = { "Near", "Normal", "Deep" };
 
         public void Bind(IConfigService config, IQualityManager quality, IHealthMonitor health,
-                         LightRigController lights, VolumeController volume, ArmAgent arm)
+                         LightRigController lights, VolumeController volume,
+                         M1Bootstrap bootstrap, RuleBasedBehaviourDirector director)
         {
             _config = config; _quality = quality; _health = health;
-            _lights = lights; _volume = volume; _arm = arm;
-            _bootstrap = GetComponent<M1Bootstrap>();
+            _lights = lights; _volume = volume;
+            _bootstrap = bootstrap; _director = director;
         }
 
         private void Update()
@@ -48,16 +49,16 @@ namespace HoloArms.UI
             var ld = _config.Config.LookDepth;
             var q = _config.Config.Quality;
 
-            const int w = 340;
+            const int w = 360;
             GUILayout.BeginArea(new Rect(12, 12, w, Screen.height - 24), GUI.skin.box);
-            GUILayout.Label("<b>HOLO ARMS — M1 Look & Depth</b>  (F1 hide · E extend/retract)",
+            GUILayout.Label("<b>HOLO ARMS — M1 panel</b>  (F1 hide · E extend · A add arm · T group task)",
                 new GUIStyle(GUI.skin.label) { richText = true });
 
-            GUILayout.Label($"FPS {_health.AverageFps:F0}  ·  frame {_health.AverageFrameTimeMs:F1} ms  ·  " +
-                            $"tier: {_quality.CurrentTierName}");
-            GUILayout.Label($"Arm: {_arm.State}  ·  reach {_arm.MaxReach:F2} m");
+            GUILayout.Label($"FPS {_health.AverageFps:F0} · frame {_health.AverageFrameTimeMs:F1} ms · " +
+                            $"tier {_quality.CurrentTierName}");
+            GUILayout.Label($"Group task: {_director.ActiveTask} · arms: {_bootstrap.Arms.Count}");
 
-            GUILayout.Space(6);
+            GUILayout.Space(4);
             ld.DepthStrength = LabeledSlider("Depth Strength", ld.DepthStrength, 0, 100);
             ld.ShadowStrength = LabeledSlider("Shadow Strength", ld.ShadowStrength, 0, 100);
             ld.ShadowSoftness = LabeledSlider("Shadow Softness", ld.ShadowSoftness, 0, 100);
@@ -77,16 +78,28 @@ namespace HoloArms.UI
                 _quality.ApplyPreset(q.Preset);
             }
 
-            GUILayout.Space(8);
+            GUILayout.Space(6);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Save settings")) _config.Save();
             if (GUILayout.Button("Reload")) { _config.Load(); _bootstrap.ApplyLookDepth(); }
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(8);
+            GUILayout.Space(6);
+            GUILayout.Label("<b>Cast</b> (unique identity + temperament per arm)",
+                new GUIStyle(GUI.skin.label) { richText = true });
+            _castScroll = GUILayout.BeginScrollView(_castScroll, GUILayout.Height(150));
+            foreach (var arm in _bootstrap.Arms)
+            {
+                GUILayout.Label(
+                    $"{arm.ArmId} [{arm.Personality.Temperament}/{arm.Personality.Emotion}] " +
+                    arm.Identity.Describe(),
+                    new GUIStyle(GUI.skin.label) { fontSize = 10 });
+            }
+            GUILayout.EndScrollView();
+
             GUILayout.Label("<b>Auto Quality log</b>", new GUIStyle(GUI.skin.label) { richText = true });
             var log = _quality.ChangeLog;
-            for (int i = Mathf.Max(0, log.Count - 5); i < log.Count; i++)
+            for (int i = Mathf.Max(0, log.Count - 4); i < log.Count; i++)
                 GUILayout.Label(log[i], new GUIStyle(GUI.skin.label) { fontSize = 10 });
 
             GUILayout.EndArea();

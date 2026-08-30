@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using HoloArms.Agents;
+using HoloArms.Behaviour;
 using HoloArms.Core;
 using HoloArms.Core.Config;
 using HoloArms.Core.Diagnostics;
@@ -10,15 +12,16 @@ using UnityEngine.Rendering.HighDefinition;
 namespace HoloArms.UI
 {
     /// <summary>
-    /// Milestone 1 composition root. Drop this on an empty GameObject in an
-    /// empty scene (or use the menu HoloArms → Create M1 Scene) and press
-    /// Play: it builds wall, light rig, volume, camera, one ArmAgent and the
-    /// debug panel entirely from code, loads persisted settings, and starts
-    /// the quality controller.
+    /// Composition root for the M1/M1.5 demo. Drop on an empty GameObject
+    /// (or use HoloArms → Create M1 Scene) and press Play: wall, light rig,
+    /// volume, camera, N uniquely-dressed arms with unique temperaments, the
+    /// rule-based director with mandatory group tasks, and the debug panel —
+    /// all from code.
     ///
-    /// Viewer convention: the wall's front face is the plane z = 0; the
-    /// camera sits on the -z side; the arm root hides at z &gt; 0 inside the
-    /// wall and extends toward -z.
+    /// Viewer convention: wall front face at z = 0; camera on the -z side;
+    /// arm roots hidden at z &gt; 0, extending toward -z.
+    /// Keys: E extend/retract all · A add an arm · T force group task ·
+    /// F1 panel.
     /// </summary>
     public sealed class M1Bootstrap : MonoBehaviour
     {
@@ -35,17 +38,21 @@ namespace HoloArms.UI
         private LightRigController _lights;
         private VolumeController _volume;
         private QualityManager _quality;
-        private ArmAgent _arm;
+        private RuleBasedBehaviourDirector _director;
+        private ArmIdentityGenerator _identities;
+        private TemperamentDealer _temperaments;
+        private readonly List<ArmAgent> _arms = new List<ArmAgent>();
         private M1DebugPanel _panel;
+
+        public IReadOnlyList<ArmAgent> Arms => _arms;
 
         private void Awake()
         {
             if (GraphicsSettings.currentRenderPipeline is not HDRenderPipelineAsset)
             {
                 Debug.LogError(
-                    "[HoloArms] Active render pipeline is not HDRP. Assign an HD Render Pipeline " +
-                    "asset (menu HoloArms → Validate Setup, or create the project from the HDRP " +
-                    "template) — the M1 scene will look wrong without it.");
+                    "[HoloArms] Active render pipeline is not HDRP. Run HoloArms → Validate Setup " +
+                    "or create the project from the HDRP template — the scene will look wrong without it.");
             }
 
             _events = new EventBus();
@@ -54,13 +61,11 @@ namespace HoloArms.UI
             _config.Load();
             var cfg = _config.Config;
 
-            // --- Wall (the portal plane) ---
             var wallGo = new GameObject("WallPortalSystem");
             _wall = wallGo.AddComponent<WallPortalSystem>();
             _wall.Build(cfg.Wall.PhysicalWidthM, cfg.Wall.PhysicalHeightM,
                         new Color(0.62f, 0.62f, 0.64f));
 
-            // --- Lights & volume ---
             var rigGo = new GameObject("LightRig");
             _lights = rigGo.AddComponent<LightRigController>();
             _lights.Build();
@@ -69,7 +74,6 @@ namespace HoloArms.UI
             _volume = volGo.AddComponent<VolumeController>();
             _volume.Build();
 
-            // --- Camera (4K portrait profile: 2160x3840 → aspect 9:16) ---
             var cam = Camera.main;
             if (cam == null)
             {
@@ -84,18 +88,21 @@ namespace HoloArms.UI
             cam.fieldOfView = 38f;
             cam.nearClipPlane = 0.05f;
 
-            // --- The arm ---
-            var armGo = new GameObject("ArmAgent R-01");
-            _arm = armGo.AddComponent<ArmAgent>();
-            _arm.Initialize("R-01", _wall, cfg.Arm.AnchorX, cfg.Arm.AnchorY,
-                            cfg.Arm.Side == "Left", cfg.Arm.ArmScale);
+            // Identity & personality casting (deterministic per seed).
+            _identities = new ArmIdentityGenerator(cfg.Arm.IdentitySeed);
+            _temperaments = new TemperamentDealer(cfg.Arm.IdentitySeed);
 
-            // --- Quality ---
+            var dirGo = new GameObject("BehaviourDirector");
+            _director = dirGo.AddComponent<RuleBasedBehaviourDirector>();
+            _director.Initialize(cfg.Wall.PhysicalWidthM, cfg.Arm.IdentitySeed);
+
+            int count = Mathf.Clamp(cfg.Arm.ArmCount, 1, 12);
+            for (int i = 0; i < count; i++) SpawnArm();
+
             _quality = new QualityManager(_health, _events, _lights, _volume,
                                           cfg.Quality.TargetFps, cfg.Quality.RenderScaleMin);
             _quality.ApplyPreset(cfg.Quality.Preset);
 
-            // --- Services + panel ---
             _services = new ServiceRegistry();
             _services.Register<IEventBus>(_events);
             _services.Register<IHealthMonitor>(_health);
@@ -103,13 +110,37 @@ namespace HoloArms.UI
             _services.Register<IQualityManager>(_quality);
 
             _panel = gameObject.AddComponent<M1DebugPanel>();
-            _panel.Bind(_config, _quality, _health, _lights, _volume, _arm);
+            _panel.Bind(_config, _quality, _health, _lights, _volume, this, _director);
 
             ApplyLookDepth();
-            _arm.Extend();
+            foreach (var a in _arms) a.Extend();
         }
 
-        /// <summary>Pushes every Look &amp; Depth config value into the live scene.</summary>
+        /// <summary>Adds one arm with a fresh unique identity + temperament, spread across the wall.</summary>
+        public ArmAgent SpawnArm()
+        {
+            var cfg = _config.Config;
+            int index = _arms.Count;
+            var identity = _identities.Generate();
+            var personality = new PersonalityProfile(_temperaments.Deal());
+
+            // Spread anchors across the wall width; stagger heights slightly.
+            float usable = cfg.Wall.PhysicalWidthM * 0.72f;
+            float x = _arms.Count == 0 ? 0f
+                : (index % 2 == 1 ? 1f : -1f) * usable * 0.5f * ((index + 1) / 2) / 3f;
+            float y = cfg.Arm.AnchorY + (index % 3 - 1) * 0.22f;
+
+            var go = new GameObject($"ArmAgent {(index + 1):00}");
+            var arm = go.AddComponent<ArmAgent>();
+            arm.Initialize($"A-{index + 1:00}", _wall, x, y, identity, personality);
+            arm.ConfigureDepth(cfg.LookDepth.DepthStrength, cfg.LookDepth.ArmExtension);
+            arm.Extend();
+            _arms.Add(arm);
+            _director.Register(arm);
+            Debug.Log($"[HoloArms] Spawned {arm.ArmId}: {personality.Temperament} · {identity.Describe()}");
+            return arm;
+        }
+
         public void ApplyLookDepth()
         {
             var ld = _config.Config.LookDepth;
@@ -121,7 +152,7 @@ namespace HoloArms.UI
             _volume.SetExposureEv(ld.ExposureEv);
             _volume.SetAoIntensity(ld.AoIntensity);
             _volume.SetContactShadows(true, ld.ContactShadowOpacity, 0.25f);
-            _arm.ConfigureDepth(ld.DepthStrength, ld.ArmExtension);
+            foreach (var a in _arms) a.ConfigureDepth(ld.DepthStrength, ld.ArmExtension);
         }
 
         private void Update()
@@ -129,7 +160,13 @@ namespace HoloArms.UI
             _health.Tick(Time.unscaledDeltaTime);
             _quality.Tick();
 
-            if (Input.GetKeyDown(KeyCode.E)) _arm.Toggle();
+            if (Input.GetKeyDown(KeyCode.E)) foreach (var a in _arms) a.Toggle();
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                SpawnArm();
+                _config.Config.Arm.ArmCount = _arms.Count;
+            }
+            if (Input.GetKeyDown(KeyCode.T)) _director.TriggerGroupTask(ArmTaskType.PointAt);
         }
     }
 }

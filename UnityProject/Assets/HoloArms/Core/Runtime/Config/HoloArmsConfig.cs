@@ -64,8 +64,8 @@ namespace HoloArms.Core.Config
 
     public class ArmConfig
     {
-        [JsonProperty("side")] public string Side = "Right";
-        [JsonProperty("anchorX")] public float AnchorX = 0.0f;   // metres from wall centre
+        [JsonProperty("armCount")] public int ArmCount = 1;      // M1 acceptance runs with 1; raise to preview the cast
+        [JsonProperty("identitySeed")] public int IdentitySeed = 1337; // same seed → same unique cast after restart
         [JsonProperty("anchorY")] public float AnchorY = 1.25f;  // metres from floor
         [JsonProperty("armScale")] public float ArmScale = 1.0f;
         [JsonProperty("appearance")] public string Appearance = "PlaceholderProcedural";

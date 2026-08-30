@@ -31,8 +31,20 @@ files to go stale.
 
 | Key | Action |
 |---|---|
-| `E` | Extend / retract the arm through the wall |
-| `F1` | Toggle the Look & Depth engineering panel |
+| `E` | Extend / retract all arms through the wall |
+| `A` | Add an arm with a fresh **unique identity + temperament** |
+| `T` | Force a mandatory group task (all arms point at the virtual passerby) |
+| `F1` | Toggle the engineering panel |
+
+Every arm gets a unique `ArmIdentityProfile` (gender presentation, skin
+tone, watch/bracelets/rings/nails/tattoo — no two alike, deterministic per
+`identitySeed`) and a unique temperament (expectant, bored, assertive,
+energetic, …) that visibly shapes its idle motion and how fast/vigorously
+it joins group tasks. The rule-based director issues mandatory cooperation
+tasks (pointing at a simulated passerby, offering toward the viewer) every
+12–24 s — participation is never optional, only the style is personal.
+See `Docs/10_ARM_IDENTITY_PERSONALITY.md`. Config: `arm.armCount` (default
+1 for M1 acceptance) and `arm.identitySeed` in the saved JSON.
 
 The panel carries the Basic controls from the Figma **Look & Depth** page
 (Depth/Shadow Strength, Softness, Room Light, Arm Extension, key-light

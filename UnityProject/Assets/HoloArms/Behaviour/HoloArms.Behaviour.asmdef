@@ -1,13 +1,9 @@
 {
-    "name": "HoloArms.UI",
-    "rootNamespace": "HoloArms.UI",
+    "name": "HoloArms.Behaviour",
+    "rootNamespace": "HoloArms.Behaviour",
     "references": [
         "HoloArms.Core",
-        "HoloArms.Rendering",
-        "HoloArms.Agents",
-        "HoloArms.Behaviour",
-        "Unity.RenderPipelines.HighDefinition.Runtime",
-        "Unity.RenderPipelines.Core.Runtime"
+        "HoloArms.Agents"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

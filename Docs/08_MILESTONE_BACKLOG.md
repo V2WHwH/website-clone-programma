@@ -29,7 +29,16 @@ realistic-arm asset swap (ContentSamples GLB / licensed scan) still open.
 ## M2 — Multi-arm local scene
 Dynamic left/right arms; reach volumes; neighbour graph; two-hand
 interactions; handshake/high-five; object grip/handoff.
-**Accept:** handoff without teleport; arms addable/removable at runtime.
+Plus the arm identity & personality requirement (Docs/10): unique
+identity per arm (gender presentation, skin tone, jewelry/watch/tattoo),
+unique temperament expressed in motion, mandatory group tasks via the
+behaviour director.
+**Accept:** handoff without teleport; arms addable/removable at runtime;
+no two arms share an identity signature; a group task is joined by every
+arm within its bounded personality delay.
+**Status 2026-08-30:** identity/personality/director foundations shipped
+early on the M1 scaffold (ArmIdentity, Personality, RuleBasedBehaviourDirector,
+identity-dressed procedural arm, multi-arm bootstrap with A/T demo keys).
 
 ## M3 — Object/content workflow
 GLB/glTF runtime import; PNG/JPG/WEBP card creation (aspect, thickness,
