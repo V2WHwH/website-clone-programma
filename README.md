@@ -5,8 +5,12 @@ installaties: realistische 3D-armen die uit de achterwand van een display
 komen, objecten doorgeven over meerdere schermen, reageren op passanten en
 commercieel inzetbaar zijn via campagnes.
 
-**Status: Milestone 0 — architectuur + Figma-ontwerp.** Er is nog geen
-Unity-runtime; de spec verplicht eerst architectuur en het Figma-ontwerp.
+**Status: Milestone 1 — single-arm visual proof (in validatie).**
+Milestone 0 (architectuur + Figma-designsysteem) is afgerond; het
+Unity 6/HDRP-projectskelet staat in `UnityProject/` en wacht op
+60 FPS-validatie op de referentie-GPU (RTX 4090) — zie
+[`UnityProject/README.md`](UnityProject/README.md) voor openen, besturing
+en de acceptatiechecklist.
 
 | Map | Inhoud |
 |---|---|

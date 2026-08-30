@@ -1,0 +1,23 @@
+{
+    "name": "HoloArms.EditorTools",
+    "rootNamespace": "HoloArms.EditorTools",
+    "references": [
+        "HoloArms.Core",
+        "HoloArms.Rendering",
+        "HoloArms.Agents",
+        "HoloArms.UI",
+        "Unity.RenderPipelines.HighDefinition.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

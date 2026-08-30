@@ -13,12 +13,18 @@
 - [x] `/FigmaHandoff` extraction (F5): tokens.json, components.md, screens.md
 - Rule: **no fake production claim** at any point.
 
-## M1 — Single arm visual proof
+## M1 — Single arm visual proof  ◀ in progress
 One realistic rigged arm; wall clipping; extension/retraction; IK target
 movement; contact + wall shadow; light calibration; 2160×3840 portrait
 profile; quality menu.
-**Accept:** stable 60 FPS on reference GPU; no visible geometry behind
-wall; shadow reacts in real time to light direction; settings persist.
+**Accept:** stable 60 FPS on reference GPU (RTX 4090); no visible geometry
+behind wall; shadow reacts in real time to light direction; settings persist.
+**Status 2026-08-30:** engineering scaffold delivered in `UnityProject/`
+(wall occlusion, procedural placeholder arm + two-bone IK, light rig,
+SSAO/contact-shadow volume, quality presets + auto controller, Look & Depth
+panel, versioned persistence, scene wizard). Awaiting first open + 60 FPS
+validation on the user's RTX 4090 (checklist in `UnityProject/README.md`);
+realistic-arm asset swap (ContentSamples GLB / licensed scan) still open.
 
 ## M2 — Multi-arm local scene
 Dynamic left/right arms; reach volumes; neighbour graph; two-hand

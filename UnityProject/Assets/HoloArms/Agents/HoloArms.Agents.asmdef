@@ -1,0 +1,17 @@
+{
+    "name": "HoloArms.Agents",
+    "rootNamespace": "HoloArms.Agents",
+    "references": [
+        "HoloArms.Core",
+        "HoloArms.Rendering"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,20 @@
+{
+    "name": "HoloArms.UI",
+    "rootNamespace": "HoloArms.UI",
+    "references": [
+        "HoloArms.Core",
+        "HoloArms.Rendering",
+        "HoloArms.Agents",
+        "Unity.RenderPipelines.HighDefinition.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

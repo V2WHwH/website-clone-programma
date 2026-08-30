@@ -7,15 +7,13 @@
 
 ## Blocking before the affected milestone (defaults chosen; please confirm or override)
 
-1. **Reference GPU profile (M1 acceptance).** "Stable 60 FPS on target
-   reference GPU" needs a named card. *Working default: NVIDIA RTX 4070-class
-   desktop GPU per node.* Blocks M1 sign-off only.
+1. **Reference GPU profile (M1 acceptance).** ~~Working default: RTX
+   4070-class.~~ **DECIDED 2026-08-30: NVIDIA RTX 4090** — user has a 4090
+   test system and validates M1 acceptance on it.
 
-2. **Repository/project location.** This work currently lives in
-   `website-clone-programma`, whose name and README describe an unrelated
-   MCP-config repo. *Working default: continue here on the designated
-   branch and restructure per spec §31.* Confirm whether a dedicated
-   repository is intended before the Unity project (M1) lands.
+2. **Repository/project location.** **DECIDED 2026-08-30: this repository**
+   (`website-clone-programma`) stays the project home; user confirmed
+   ("alles is goed") and the Unity project lands here per spec §31.
 
 3. **Reference images.** The spec references
    `references/01–03_*.png` as visual inspiration, but they were not
