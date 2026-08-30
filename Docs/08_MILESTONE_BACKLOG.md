@@ -7,9 +7,10 @@
 - [x] Architecture document set (`Docs/00–09`)
 - [x] Module diagram, runtime/editor separation, data model, event model
 - [x] Display topology model, network sync design, quality strategy
-- [ ] Figma design system (F2) + IA (F1)
-- [ ] Figma key screens (F3) + prototype flows A–D (F4)
-- [ ] `/FigmaHandoff` extraction (F5)
+- [x] Figma design system (F2) + IA (F1) — file `4F1MYTtxdladmJ8NnVNdYA`
+- [x] Figma key screens (F3: all 12) + flow strips A–D (F4; interactive
+      prototype reactions still to wire in the Figma UI)
+- [x] `/FigmaHandoff` extraction (F5): tokens.json, components.md, screens.md
 - Rule: **no fake production claim** at any point.
 
 ## M1 — Single arm visual proof
