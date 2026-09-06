@@ -2,8 +2,8 @@
 // Eén WebGL-canvas zonder dependencies dat zijn ouder vult.
 //
 // Aanpassingen voor deze site ten opzichte van de gegenereerde versie:
-// - Kleurenpalet omgezet van paars naar de Vision2watch-huisstijl:
-//   inkt-tinten met een warme amber/oranje gloed (zie UNIFORMS.colors).
+// - Kleurenpalet: het originele blauw/indigo/paars van de generator, op
+//   verzoek van de opdrachtgever ongewijzigd (zie UNIFORMS.colors).
 // - Renderresolutie begrensd (dpr 1, max ~1,2 Mpixel): de mesh is zacht,
 //   dus het verschil is onzichtbaar maar de GPU-kosten dalen fors.
 // - "use client" verwijderd (dit is Vite, geen Next) en de driftsnelheid
@@ -263,18 +263,19 @@ void main() {
 `;
 
 const UNIFORMS = {
-  // Huisstijlpalet: van inkt via nacht naar een diepe amber en het
-  // Vision2watch-oranje op halve kracht. Met screen-blending erboven blijft
-  // zwart onzichtbaar en verschijnt alleen de warme gloed.
+  // Origineel "Mesh drift"-palet van de 21st.dev Shader Builder, op verzoek
+  // van de opdrachtgever ongewijzigd aangehouden: donker nachtblauw via
+  // indigo naar lavendelpaars. Met screen-blending erboven blijft zwart
+  // onzichtbaar en schemert alleen de koele gloed door.
   colors: [
-    [0.043, 0.016, 0.008],
-    [0.075, 0.055, 0.043],
-    [0.31, 0.16, 0.05],
-    [0.55, 0.29, 0.08],
-    [0.55, 0.29, 0.08],
-    [0.55, 0.29, 0.08],
-    [0.55, 0.29, 0.08],
-    [0.55, 0.29, 0.08],
+    [0.00784313725490196, 0.00392156862745098, 0.0392156862745098],
+    [0.01568627450980392, 0.0196078431372549, 0.1803921568627451],
+    [0.23921568627450981, 0.17254901960784313, 0.5529411764705883],
+    [0.5686274509803921, 0.4196078431372549, 0.7490196078431373],
+    [0.5686274509803921, 0.4196078431372549, 0.7490196078431373],
+    [0.5686274509803921, 0.4196078431372549, 0.7490196078431373],
+    [0.5686274509803921, 0.4196078431372549, 0.7490196078431373],
+    [0.5686274509803921, 0.4196078431372549, 0.7490196078431373],
   ] as [number, number, number][],
   colorCount: 4,
   scale: 1.46,
@@ -285,7 +286,7 @@ const UNIFORMS = {
   contrast: 0.978,
   brightness: 0.0,
   saturation: 0.98,
-  hue: 0.0,
+  hue: 6.2657,
   vignette: 0.29,
   blur: 0.0092,
   grain: 0.084,
