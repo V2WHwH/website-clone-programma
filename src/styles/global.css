@@ -264,3 +264,12 @@ nav a {
 .navlink:focus-visible {
   background-size: 100% 2px;
 }
+
+/* De mesh-shader vloeit na het laden rustig in beeld. */
+.shader-in {
+  animation: shader-in 1.6s var(--ease-uit) both;
+}
+@keyframes shader-in {
+  from { opacity: 0; }
+  to { opacity: 0.45; }
+}
