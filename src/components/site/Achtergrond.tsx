@@ -5,23 +5,38 @@ import { useEffect, useRef } from "react";
 // verschuiven, zodat er diepte ontstaat. Daarbovenop een dunne oranje
 // voortgangslijn die toont hoe ver de pagina is gescrold.
 //
+// Het accent-effect is de "vloerspot": rond de muisaanwijzer lichten de
+// punten van het raster oranje op, met een lichte na-ijl — zoals de
+// interactieve vloeren van Vision2Watch zelf op een voetstap reageren.
+// De spot is een klein element (dus een kleine repaint) dat met transforms
+// wordt verplaatst; zijn puntpatroon wordt per frame uitgelijnd op het
+// grote raster zodat beide patronen één geheel vormen.
+//
 // Alles is puur decoratief (aria-hidden, geen pointer events) en bewust
-// goedkoop: alleen transform en opacity, bijgewerkt in één
-// requestAnimationFrame per scrollstap, dus zonder layout of paint van de
-// rest van de pagina. Bij reduced motion staat de laag stil en verdwijnt
-// de spotlight; zonder JavaScript blijft de site exact zoals hij was.
+// goedkoop: transforms en een kleine background-position, bijgewerkt in
+// één requestAnimationFrame-lus die stopt zodra alles stilstaat. Bij
+// reduced motion staat de laag stil en is er geen spot; zonder JavaScript
+// blijft de site exact zoals hij was.
+const SPOT = 440; // diameter van de vloerspot in px
+const RASTER = 26; // moet gelijk zijn aan background-size in global.css
+
 export function Achtergrond() {
   const raster = useRef<HTMLDivElement>(null);
   const gloedA = useRef<HTMLDivElement>(null);
   const gloedB = useRef<HTMLDivElement>(null);
   const balk = useRef<HTMLDivElement>(null);
+  const spot = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const rustig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const metMuis = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+    // doel- en huidige positie van de vloerspot (lerp geeft de na-ijl)
+    let doelX = -SPOT, doelY = -SPOT, spotX = -SPOT, spotY = -SPOT;
+    let spotAan = false;
     let bezig = false;
 
     const teken = () => {
-      bezig = false;
       const y = window.scrollY;
       const hoogte = document.documentElement.scrollHeight - window.innerHeight;
       if (balk.current) {
@@ -29,37 +44,76 @@ export function Achtergrond() {
         balk.current.style.transform = `scaleX(${deel})`;
         balk.current.style.opacity = y > 40 ? "1" : "0";
       }
-      if (rustig) return;
-      if (raster.current) raster.current.style.transform = `translate3d(0, ${y * -0.05}px, 0)`;
-      if (gloedA.current) gloedA.current.style.transform = `translate3d(0, ${y * -0.12}px, 0)`;
-      if (gloedB.current) gloedB.current.style.transform = `translate3d(0, ${y * -0.22}px, 0)`;
+
+      let nogBezig = false;
+      if (!rustig) {
+        if (raster.current) raster.current.style.transform = `translate3d(0, ${y * -0.05}px, 0)`;
+        if (gloedA.current) gloedA.current.style.transform = `translate3d(0, ${y * -0.12}px, 0)`;
+        if (gloedB.current) gloedB.current.style.transform = `translate3d(0, ${y * -0.22}px, 0)`;
+
+        // vloerspot: soepel richting de aanwijzer, patroon gelijk aan raster
+        if (spot.current && metMuis) {
+          spotX += (doelX - spotX) * 0.14;
+          spotY += (doelY - spotY) * 0.14;
+          const el = spot.current;
+          el.style.transform = `translate3d(${spotX - SPOT / 2}px, ${spotY - SPOT / 2}px, 0)`;
+          el.style.opacity = spotAan ? "1" : "0";
+          // uitlijnen op het grote raster: dat begint op -25% van de
+          // viewporthoogte en is zelf met de scroll verschoven
+          const rasterTop = -0.25 * window.innerHeight + y * -0.05;
+          const mod = (a: number, b: number) => ((a % b) + b) % b;
+          el.style.backgroundPosition = `${mod(-(spotX - SPOT / 2), RASTER)}px ${mod(rasterTop - (spotY - SPOT / 2), RASTER)}px`;
+          if (Math.abs(doelX - spotX) + Math.abs(doelY - spotY) > 0.3) nogBezig = true;
+        }
+      }
+
+      if (nogBezig) {
+        requestAnimationFrame(teken);
+      } else {
+        bezig = false;
+      }
     };
 
-    const bijScroll = () => {
+    const plan = () => {
       if (bezig) return;
       bezig = true;
       requestAnimationFrame(teken);
     };
+
+    const bijScroll = () => plan();
     teken();
+    bezig = true; // eerste frame draait al
+    requestAnimationFrame(() => { bezig = false; });
     window.addEventListener("scroll", bijScroll, { passive: true });
     window.addEventListener("resize", bijScroll, { passive: true });
 
-    // Spotlight op kaarten: één gedelegeerde listener zet de muspositie als
-    // custom property op de kaart; de CSS tekent daar een zachte lichtvlek.
+    // Aanwijzer volgen: doelpositie van de vloerspot en, voor de kaarten,
+    // de muspositie als custom property voor de spotlight in CSS.
     const bijBeweging = (e: PointerEvent) => {
+      doelX = e.clientX;
+      doelY = e.clientY;
+      spotAan = true;
+      plan();
       const kaart = (e.target as Element | null)?.closest?.(".kaart") as HTMLElement | null;
       if (!kaart) return;
       const vak = kaart.getBoundingClientRect();
       kaart.style.setProperty("--mx", `${e.clientX - vak.left}px`);
       kaart.style.setProperty("--my", `${e.clientY - vak.top}px`);
     };
-    const metMuis = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    if (!rustig && metMuis) document.addEventListener("pointermove", bijBeweging, { passive: true });
+    const bijVertrek = () => {
+      spotAan = false;
+      plan();
+    };
+    if (!rustig && metMuis) {
+      document.addEventListener("pointermove", bijBeweging, { passive: true });
+      document.documentElement.addEventListener("pointerleave", bijVertrek);
+    }
 
     return () => {
       window.removeEventListener("scroll", bijScroll);
       window.removeEventListener("resize", bijScroll);
       document.removeEventListener("pointermove", bijBeweging);
+      document.documentElement.removeEventListener("pointerleave", bijVertrek);
     };
   }, []);
 
@@ -69,6 +123,12 @@ export function Achtergrond() {
         {/* puntraster over de volle hoogte, met overmaat zodat de
             verschuiving nooit een rand blootlegt */}
         <div ref={raster} className="achtergrond-raster absolute inset-x-0 -top-1/4 h-[150%]" />
+        {/* vloerspot: oranje punten die rond de aanwijzer oplichten */}
+        <div
+          ref={spot}
+          className="achtergrond-spot absolute left-0 top-0 opacity-0"
+          style={{ width: SPOT, height: SPOT }}
+        />
         {/* warme gloed rechtsboven: het Vision2watch-oranje, heel zacht */}
         <div
           ref={gloedA}

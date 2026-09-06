@@ -233,3 +233,34 @@ nav a {
     opacity: 1;
   }
 }
+
+/* Vloerspot: het stukje raster rond de muisaanwijzer, in accent-oranje en
+   nét grotere punten, zacht uitlopend naar de rand. Het patroon wordt in
+   JavaScript per frame uitgelijnd op het grote raster (Achtergrond.tsx),
+   zodat de oranje punten exact op de witte vallen. */
+.achtergrond-spot {
+  background-image: radial-gradient(circle, rgb(245 130 32 / 0.5) 1.5px, transparent 1.5px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(circle, rgb(0 0 0 / 0.9) 0%, rgb(0 0 0 / 0.35) 45%, transparent 70%);
+  mask-image: radial-gradient(circle, rgb(0 0 0 / 0.9) 0%, rgb(0 0 0 / 0.35) 45%, transparent 70%);
+  transition: opacity 0.5s var(--ease-uit);
+  will-change: transform;
+}
+
+/* Navigatielinks: een oranje onderstreping die bij hover en
+   toetsenbordfocus van links naar rechts uitschuift. */
+.navlink {
+  background-image: linear-gradient(var(--color-accent), var(--color-accent));
+  background-repeat: no-repeat;
+  background-size: 0% 2px;
+  background-position: left calc(100% - 1.05rem);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .navlink {
+    transition: background-size 0.28s var(--ease-uit), color 0.2s;
+  }
+}
+.navlink:hover,
+.navlink:focus-visible {
+  background-size: 100% 2px;
+}

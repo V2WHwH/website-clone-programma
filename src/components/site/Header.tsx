@@ -72,7 +72,7 @@ export function Header() {
                     to={item.pad}
                     aria-expanded={soort ? paneel === item.pad : undefined}
                     className={({ isActive }) =>
-                      `inline-flex items-center gap-1.5 py-5 text-[0.92rem] transition-colors duration-200 hover:text-tekst ${isActive ? "text-tekst" : "text-zacht"}`
+                      `navlink inline-flex items-center gap-1.5 py-5 text-[0.92rem] transition-colors duration-200 hover:text-tekst ${isActive ? "text-tekst" : "text-zacht"}`
                     }
                   >
                     {item.label}
