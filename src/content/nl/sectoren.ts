@@ -237,10 +237,10 @@ export const SECTOREN: Sector[] = [
       },
       {
         kop: "Ontvangst met verhaal",
-        tekst: "Een interactieve tafel of virtual host in de entree vertelt bezoekers direct waar uw organisatie voor staat, zoals de AR-installatie waarmee we het kantoor van Timing tot leven brachten.",
+        tekst: "Een interactieve tafel of virtual host als digitale receptie in de entree vertelt bezoekers direct waar uw organisatie voor staat, zoals de AR-installatie waarmee we het kantoor van Timing tot leven brachten.",
       },
     ],
-    producten: ["interactieve-vloer", "interactieve-tafel", "touchscreens", "transparant-scherm", "led-displays", "panoramische-projectie"],
+    producten: ["interactieve-vloer", "interactieve-tafel", "touchscreens", "transparant-scherm", "led-displays", "panoramische-projectie", "virtual-host"],
     projecten: ["tieleman-keukens", "philips"],
     faq: [
       {

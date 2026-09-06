@@ -152,7 +152,7 @@ export const PRODUCTEN: Product[] = [
     description:
       "Elk oppervlak wordt een dynamisch communicatiemiddel: tafels en bars die reageren op aanraking en beweging. Ideaal voor showrooms, beurzen en horeca.",
     intro:
-      "De interactieve tafel of bar verandert elk oppervlak in een dynamisch communicatiemiddel. Het blad reageert op aanraking en beweging: bezoekers bladeren door content, spelen een spel of zien productinformatie verschijnen precies waar ze die verwachten.",
+      "De interactieve tafel, ook wel touchtafel genoemd, of bar verandert elk oppervlak in een dynamisch communicatiemiddel. Het blad reageert op aanraking en beweging: bezoekers bladeren door content, spelen een spel of zien productinformatie verschijnen precies waar ze die verwachten.",
     waarom:
       "Aan een tafel komen mensen vanzelf samen. Door dat moment interactief te maken, presenteert u producten en verhalen op het moment dat de aandacht er al is, in een showroom, op een stand of aan de bar.",
     beeld: { src: "/media/interactieve-tafel-kaart.webp", alt: "Interactieve overzichtstafel waar bezoekers samen content bedienen" },
@@ -203,11 +203,11 @@ export const PRODUCTEN: Product[] = [
     slug: "sketchwall",
     naam: "Sketchwall",
     categorie: "interactieve-projectie",
-    titel: "Sketchwall: tekeningen komen tot leven | Vision2Watch",
+    titel: "Sketchwall: interactieve tekenwand | Vision2Watch",
     description:
-      "Kinderen kleuren een tekening, scannen hem in en zien hun creatie levensgroot rondzwemmen op de muur. Een magische interactieve ervaring voor attracties en musea.",
+      "De interactieve tekenwand: kinderen kleuren een tekening, scannen hem in en zien hun creatie levensgroot rondzwemmen op de muur. Een magische ervaring voor attracties en musea.",
     intro:
-      "Met de Sketchwall komen zelfgemaakte tekeningen tot leven. Bezoekers kleuren een kleurplaat, scannen die in en zien hun creatie direct levensgroot op de muur verschijnen, als vis in een aquarium of auto in een stad. Via een infraroodcamera worden de figuren ook nog interactief: aanraken en ze reageren.",
+      "De Sketchwall is een interactieve tekenwand waarop zelfgemaakte tekeningen tot leven komen. Bezoekers kleuren een kleurplaat, scannen die in en zien hun creatie direct levensgroot op de muur verschijnen, als vis in een aquarium of auto in een stad. Via een infraroodcamera worden de figuren ook nog interactief: aanraken en ze reageren.",
     waarom:
       "Niets betrekt kinderen (en hun ouders) zo sterk als iets dat ze zelf hebben gemaakt. De Sketchwall verandert wachten en kijken in meedoen, en geeft locaties een attractie waar bezoekers over blijven praten.",
     beeld: { src: "/media/sketchwall-kinderen-aquarium.webp", alt: "Kinderen bekijken hun eigen getekende vissen op de Sketchwall bij Sea Life" },
@@ -249,6 +249,11 @@ export const PRODUCTEN: Product[] = [
         antwoord:
           "Ja. Bij Sea Life draait de Sketchwall als vaste attractie naast een permanente interactieve vloer. Tijdelijke huur voor een event kan ook.",
       },
+      {
+        vraag: "Is dit hetzelfde als een interactieve tekenwand?",
+        antwoord:
+          "Ja. Sketchwall is onze naam voor deze interactieve tekenwand: het scanproces en de tekenprojectie zijn precies wat de naam beschrijft.",
+      },
     ],
     projecten: ["sea-life"],
     verwant: ["interactieve-muur", "interactieve-vloer"],
@@ -257,9 +262,9 @@ export const PRODUCTEN: Product[] = [
     slug: "virtual-chef",
     naam: "Virtual Chef",
     categorie: "interactieve-projectie",
-    titel: "Virtual Chef: tafelprojectie voor restaurants | Vision2Watch",
+    titel: "Virtual Chef: 3D-tafelprojectie restaurant | Vision2Watch",
     description:
-      "Een mini-chef bereidt het gerecht op tafel terwijl gasten wachten: 3D-tafelprojectie die van een diner een belevenis maakt. Bekend van concepten als Le Petit Chef.",
+      "Een mini-chef bereidt het gerecht op tafel terwijl gasten wachten: 3D-tafelprojectie voor een interactief diner. Bekend van concepten als Le Petit Chef.",
     intro:
       "Met de Virtual Chef verschijnt via 3D-mapping een mini-chef op tafel die op speelse wijze het gerecht bereidt. Gasten worden meegenomen in een visueel verhaal terwijl ze op hun eten wachten: verwondering en vermaak aan tafel, bekend van concepten als Le Petit Chef en Dinner in Motion.",
     waarom:
@@ -543,11 +548,11 @@ export const PRODUCTEN: Product[] = [
     slug: "virtual-host",
     naam: "Virtual Host",
     categorie: "holografie",
-    titel: "Virtual Host: virtuele gastvrouw of gastheer | Vision2Watch",
+    titel: "Virtual Host: digitale en virtuele receptie | Vision2Watch",
     description:
-      "Een levensechte geprojecteerde host die passanten automatisch aanspreekt zodra ze naderen. Volledig op maat, 24 uur per dag inzetbaar. Te koop en te huur.",
+      "Een levensechte geprojecteerde host die passanten automatisch aanspreekt zodra ze naderen. Voor een digitale of virtuele receptie, stand of entree. Te koop en te huur.",
     intro:
-      "De Virtual Host(ess) is een levensechte projectie van een persoon die voorbijgangers direct aanspreekt en informeert zodra ze in de buurt komen. Slimme bewegingssensoren activeren de presentatie automatisch, waardoor uw stand of entree letterlijk tot leven komt.",
+      "De Virtual Host(ess) is een levensechte projectie van een persoon die voorbijgangers direct aanspreekt en informeert zodra ze in de buurt komen. Bij een ontvangstbalie werkt dezelfde techniek als digitale of virtuele receptie: bezoekers worden herkend en verwelkomd zonder dat er iemand fysiek aan de balie staat. Slimme bewegingssensoren activeren de presentatie automatisch, waardoor uw stand, entree of receptie letterlijk tot leven komt.",
     waarom:
       "Een goede host is er altijd, kent het verhaal perfect en wordt nooit moe. De Virtual Host communiceert 24 uur per dag zonder pauze en geeft elke bezoeker dezelfde sterke eerste indruk, op een beurs, in een winkel of bij de receptie.",
     beeld: { src: "/media/virtual-host-lounge.webp", alt: "Virtual host verwelkomt bezoekers in een ontvangstruimte" },
@@ -585,6 +590,11 @@ export const PRODUCTEN: Product[] = [
         vraag: "Welke formaten zijn er?",
         antwoord:
           "Van levensgrote projectie tot compacte miniatuur op de balie of in een holobox; met of zonder touchfunctionaliteit, te koop en te huur.",
+      },
+      {
+        vraag: "Is dit hetzelfde als een digitale of virtuele receptie?",
+        antwoord:
+          "De Virtual Host is onze uitvoering van dat concept: een geprojecteerde host vervangt of ondersteunt de balie, herkent en verwelkomt bezoekers automatisch en is te combineren met een touchscreen voor zelfbediening.",
       },
     ],
     projecten: [],
@@ -998,7 +1008,7 @@ export const PRODUCTEN: Product[] = [
     description:
       "Uw logo als dynamische projectie van licht en kleur, met 3D-effecten als vlammen of sneeuw. Voor kantoren, beursstands en gevels, 24/7 inzetbaar.",
     intro:
-      "Met logo-animatie verandert uw statische logo in een bewegend beeld van licht en kleur. Geprojecteerd op een kantoormuur, congresachtergrond of beursstand, met 3D-animaties en effecten zoals vlammen of sneeuw die uw merk letterlijk laten opvallen.",
+      "Met logo-animatie verandert uw statische logo in een bewegend beeld van licht en kleur. Waar traditionele gobo-projectie een vast beeld op de gevel werpt, animeert Vision2Watch dat logo: geprojecteerd op een kantoormuur, congresachtergrond, beursstand of gevel, met 3D-animaties en effecten zoals vlammen of sneeuw die uw merk letterlijk laten opvallen.",
     waarom:
       "Een logo dat beweegt wordt onthouden. Voor entrees, stands en gevels is logo-animatie de eenvoudigste manier om een ruimte direct van uw merk te voorzien, zonder verbouwing.",
     beeld: { src: "/media/vloer-valentijn.webp", alt: "Merkprojectie met animatie op de vloer" },
@@ -1030,6 +1040,11 @@ export const PRODUCTEN: Product[] = [
         vraag: "Is logo-animatie geschikt voor buiten?",
         antwoord:
           "Ja, met de juiste projector werkt logo-animatie ook op gevels en buitenvlakken, bijvoorbeeld tijdens een event of feestperiode.",
+      },
+      {
+        vraag: "Wat is het verschil met gobo-projectie van mijn logo op de gevel?",
+        antwoord:
+          "Klassieke gobo-projectie toont een vast, stilstaand logo. Onze logo-animatie voegt beweging toe: het logo verandert doorlopend van vorm, kleur of effect, wat meer aandacht trekt dan een statisch beeld.",
       },
     ],
     projecten: ["kanon"],

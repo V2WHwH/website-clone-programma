@@ -51,6 +51,10 @@ logo-animatie.
 - Touchscreen-zuil = informatiezuil, infozuil; interactieve tafel = touchtafel
 - Interactieve etalage = digitale etalage, etalagescherm (met touch foil)
 - LED-display = videowall, LED-scherm
+- Sketchwall = interactieve tekenwand, tekenprojectie
+- Interactieve tafel = touchtafel; Virtual Chef = 3D-tafelprojectie
+- Virtual Host = digitale receptie, virtuele receptie, virtuele gastvrouw/gastheer
+- Logo-animatie = bewegende gobo-projectie (i.t.t. statische gobo-projectie)
 
 ## Feiten
 

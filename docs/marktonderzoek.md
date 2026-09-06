@@ -1,4 +1,4 @@
-# Marktonderzoek klantzoektaal en concurrentie (27 aug 2026)
+# Marktonderzoek klantzoektaal en concurrentie (27 aug + 6 sep 2026)
 
 Doel: de vindbaarheids- en GEO-aanpak van hereweholo.nl toepassen op
 vision2watch.nl, met teksten in de taal waarin klanten daadwerkelijk zoeken.
@@ -124,6 +124,97 @@ kopen toegevoegd conform de bestaande leveringstekst.
 
 ---
 
+---
+
+## Ronde 2 (6 sep 2026): de productgroepen die ronde 1 nog niet dekte
+
+Ronde 1 onderzocht vloer, hologram, touchscreens, mapping, immersive,
+etalage, beurs en LED. Deze ronde vult de rest van het portfolio aan:
+Sketchwall, Virtual Chef, interactieve tafel, Virtual Host en
+logo-animatie, plus lokale vindbaarheid.
+
+### 9. Sketchwall (interactieve tekenwand)
+
+**Klanten zoeken op:** "interactieve tekenwand", "tekenprojectie",
+"tekening tot leven", kindvriendelijke termen eerder dan het merk
+"Sketchwall" zelf.
+
+**Spelers:** Lü/Jeppa Sport (interactieve wand-verhuur voor scholen, zorg,
+events), iCatch Media, fit4vit (interactief bewegen in zorg en onderwijs).
+
+**Tactiek:** "interactieve tekenwand" en "tekenprojectie" toegevoegd als
+synoniem in titel en intro; dat is de term waarmee ouders en organisatoren
+zoeken, niet het productnaam "Sketchwall".
+
+### 10. Virtual Chef (tafelprojectie horeca)
+
+**Klanten zoeken op:** "tafelprojectie restaurant", "3D diner",
+"interactief diner", en zoeken vaak direct op de bekende concepten
+"Le Petit Chef" en "Dinner in Motion" om te zien wat er nog meer bestaat.
+
+**Spelers:** PromoSound (tafelprojecties), Timmy's Eethuys/Le Petit Chef,
+Dinner in Motion Eindhoven, rdgKompagne (mobiele tafel- en vloerprojectie).
+
+**Tactiek:** de tekst noemde "Le Petit Chef" en "Dinner in Motion" al als
+generieke referentiepunten (geen concurrentvergelijking, maar herkenbare
+concepten) — dat dekt de zoekvraag al. Synoniem "3D-tafelprojectie"
+toegevoegd in de beschrijving voor de exacte zoekterm.
+
+### 11. Interactieve tafel & bar
+
+**Klanten zoeken op:** "touchtafel huren", "interactieve tafel beurs",
+"touchtafel showroom". De term "belevenistafel"/"Tovertafel" hoort bij een
+ander marktsegment (zorg/dementie, sensomotorische activering) waar
+Vision2Watch met dit product niet op mikt — dat onderscheid is bewust niet
+vervaagd.
+
+**Spelers (zorgsegment, ter vergelijking, niet relevant voor deze
+productpagina):** BelevenisTafel, Tovertafel/Active Cues.
+**Spelers (showroom/horeca-segment, wel relevant):** Prestop, Prowise
+(touchtafels).
+
+**Tactiek:** synoniem "touchtafel" toegevoegd; geen zorg-claim toegevoegd
+omdat daar geen bewijs voor is in de bestaande content (regel: geen
+wijziging zonder aantoonbaar nut, en zeker geen sector claimen die niet
+bevestigd is).
+
+### 12. Virtual Host (virtuele gastvrouw/gastheer)
+
+**Klanten zoeken op:** "digitale receptie", "virtuele receptie",
+"AI-avatar receptie", "onbemande receptie".
+
+**Spelers:** Teleportel (virtuele receptiesuite), Display4all, Lotje
+Digitale Receptie, AENC, Pixio Display.
+
+**Tactiek:** dit is de grootste vondst van deze ronde — de site sprak over
+"Virtual Host" maar niet over "digitale receptie" of "virtuele receptie",
+terwijl dat exact de termen zijn waarmee facilitair managers zoeken.
+Synoniemen toegevoegd in titel, intro en FAQ, plus een koppeling naar de
+sector showrooms-en-kantoren.
+
+### 13. Logo-animatie / gevelprojectie
+
+**Klanten zoeken op:** "logo op gevel projecteren", "gobo projectie",
+"gevelverlichting bedrijfspand", "bedrijfslogo projecteren".
+
+**Spelers:** Cleary, Livingprojects, Elenbaas Print (vooral statische
+lichtreclame, geen animatie — daar onderscheidt Vision2Watch zich al met
+"animatie" in de bestaande tekst).
+
+**Tactiek:** synoniem "gobo-projectie" en "logo op de gevel projecteren"
+toegevoegd; het onderscheid met statische lichtreclame (bewegend vs.
+statisch) is al impliciet aanwezig en nu explicieter in de FAQ.
+
+### 14. Lokale vindbaarheid (Den Haag / regio)
+
+**Bevinding:** concurrenten zoals ONYX AV, Heuvelman, IFS Audiovisueel en
+MEB-AV zijn generieke AV-bedrijven zonder de holografie/interactieve-
+projectie-specialisatie van Vision2Watch. De structuurdata (Organization +
+LocalBusiness met adres Tiber 10, Den Haag) stond al correct; geen
+wijziging nodig op dat vlak.
+
+---
+
 ## Wat bewust NIET is gedaan
 
 - Geen prijzen of specificaties verzonnen; prijsvragen worden beantwoord
@@ -144,3 +235,9 @@ kopen toegevoegd conform de bestaande leveringstekst.
 - https://www.easy2rent.nl/product/immersive-room-huren/ · https://fixvision.nl/immersive · https://qledx.nl/videowall-kopen-of-huren/
 - https://www.prestop.nl/producten/digitale-etalage/ · https://www.digital-signage.nl/interactieve-etalageruit · https://viewiemedia.nl/etalageschermen/
 - https://cialona.nl/beursstand-ideeen/ · https://247events.nl/unieke-beursstand-ideeen/
+- https://www.jeppasport.com/verhuur/lu-interactieve-muur · https://icatchmedia.nl/interactieve-vloer/ · https://fit4vit.nl/
+- https://www.promosound.nl/oplossingen/tafelprojecties · https://www.timmys.nl/restaurant/3d-diner/ · https://www.dinnerinmotion.nl/ · https://rdgkompagne.nl/mobiele-projectie-voor-tafel-en-vloer/
+- https://www.belevenistafel.nl/ · https://www.tover.care/us/tovertafel/seniors-dementia (zorgsegment, ter afbakening)
+- https://www.teleportel.com/virtuele-receptie/ · https://www.display4all.nl/virtuele-receptie/ · https://www.lotjedigitalereceptie.nl/ · https://www.aenc.nl/oplossingen/slimme-werkplek/digitale-receptie/
+- https://www.cleary.nl/het-aanlichten-van-een-gevel-of-bedrijfspand-ontdek-de-vele-mogelijkheden/ · https://livingprojects.nl/nieuws/gebouw-verlichten-zo-maak-je-van-elke-gevel-een-icoon/
+- https://www.onyxav.nl/ · https://www.heuvelman.nl/verkoop-projecten/bedrijven/ · https://www.ifsaudiovisueel.nl/ · https://www.meb-av.nl/ (lokale concurrentie Den Haag/regio)
