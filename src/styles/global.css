@@ -197,3 +197,39 @@ nav a {
     transform: scale(1.11);
   }
 }
+
+/* Volledig meescrollende achtergrond: een fijn puntraster achter de hele
+   site (zie Achtergrond.tsx). De punten zijn nét zichtbaar op de inkt-grond
+   en verdwijnen visueel onder secties met een eigen vlak, zodat het ritme
+   van de site blijft. */
+.achtergrond-raster {
+  background-image: radial-gradient(circle, rgb(255 255 255 / 0.055) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+/* Spotlight op kaarten: een zachte oranje lichtvlek die de muis volgt.
+   De positie komt als --mx/--my van één gedelegeerde listener
+   (Achtergrond.tsx); zonder JavaScript of met reduced motion is er geen
+   vlek en blijft de kaart zoals hij was. Alleen op apparaten met een
+   echte muisaanwijzer. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .js .kaart {
+    position: relative;
+  }
+  .js .kaart::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-uit);
+    background: radial-gradient(
+      340px circle at var(--mx, 50%) var(--my, 50%),
+      rgb(245 130 32 / 0.1),
+      transparent 65%
+    );
+  }
+  .js .kaart:hover::after {
+    opacity: 1;
+  }
+}

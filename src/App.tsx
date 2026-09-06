@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { Header } from "./components/site/Header";
 import { Footer } from "./components/site/Footer";
+import { Achtergrond } from "./components/site/Achtergrond";
 import { ROUTES } from "./routes";
 import { titelVoorPad } from "./seo/head";
 
@@ -23,6 +24,7 @@ export function App() {
 
   return (
     <div className="flex min-h-svh flex-col">
+      <Achtergrond />
       <Header />
       <main id="inhoud" className="flex-1">
         <Routes>
