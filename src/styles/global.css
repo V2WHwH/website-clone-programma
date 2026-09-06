@@ -273,3 +273,11 @@ nav a {
   from { opacity: 0; }
   to { opacity: 0.45; }
 }
+
+/* Variant van de sfeer-shaderlaag die alleen onderin een sectie licht
+   geeft: voor hero's waar het verloop naar beneden toe in een vlak donker
+   veld eindigt. */
+.sfeer-onderin {
+  -webkit-mask-image: linear-gradient(to top, black 30%, transparent 85%);
+  mask-image: linear-gradient(to top, black 30%, transparent 85%);
+}

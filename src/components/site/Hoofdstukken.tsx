@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Beeld } from "../ui/Beeld";
+import { SfeerShader } from "./SfeerShader";
 
 export type Hoofdstuk = {
   /** korte naam in de balk bovenin; dit is wat een bezoeker als eerste ziet */
@@ -120,6 +121,9 @@ export function Hoofdstukken({ hoofdstukken }: Props) {
         <div className="absolute inset-0 bg-gradient-to-t from-inkt via-inkt/75 via-55% to-inkt/25 md:hidden" aria-hidden="true" />
         <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-inkt/90 to-transparent" aria-hidden="true" />
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-inkt/90 to-transparent" aria-hidden="true" />
+        {/* mesh-gloed over het verdonkerde tekstvlak; boven het beeld valt
+            hij door de screen-blending vanzelf weg */}
+        <SfeerShader />
       </div>
 
       {/* de hoofdstukken die eroverheen schuiven */}

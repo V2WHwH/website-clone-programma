@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { ShaderBackground } from "../ui/MeshDriftShader";
+import { useShaderKlaar } from "./SfeerShader";
 
 // Eén vaste laag achter de hele site die met het scrollen meebeweegt:
 // een fijn puntraster en twee lichtgloeden die elk met een eigen snelheid
@@ -27,28 +28,10 @@ export function Achtergrond() {
   const gloedB = useRef<HTMLDivElement>(null);
   const balk = useRef<HTMLDivElement>(null);
   const spot = useRef<HTMLDivElement>(null);
-  // De mesh-shader komt pas na het monteren en alleen zonder reduced motion
-  // en zonder databesparing: de statische HTML (en dus de prerender) blijft
-  // identiek, en wie rust of zuinigheid vraagt krijgt geen WebGL-laag.
-  const [metShader, setMetShader] = useState(false);
-
-  useEffect(() => {
-    const rustig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const verbinding = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-    if (rustig || verbinding?.saveData === true) return;
-    // Pas ná het laden en in een rustmoment starten: de shader is sfeer,
-    // geen inhoud, en mag de eerste weergave geen milliseconde kosten.
-    let timer: number | undefined;
-    const start = () => {
-      timer = window.setTimeout(() => setMetShader(true), 300);
-    };
-    if (document.readyState === "complete") start();
-    else window.addEventListener("load", start, { once: true });
-    return () => {
-      window.removeEventListener("load", start);
-      if (timer) window.clearTimeout(timer);
-    };
-  }, []);
+  // De mesh-shader komt pas na window load en alleen zonder reduced motion
+  // en zonder databesparing (zie useShaderKlaar): de statische HTML — en dus
+  // de prerender — blijft identiek.
+  const metShader = useShaderKlaar();
 
   useEffect(() => {
     const rustig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

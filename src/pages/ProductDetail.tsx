@@ -10,6 +10,7 @@ import { Sectie } from "../components/ui/Sectie";
 import { CtaSectie } from "../components/site/CtaSectie";
 import { FaqLijst } from "../components/site/FaqLijst";
 import { Demovideo } from "../components/site/Demovideo";
+import { SfeerShader } from "../components/site/SfeerShader";
 import { HeroVideo } from "../components/site/HeroVideo";
 import { ProductKaart, ProjectKaart } from "../components/site/Kaarten";
 import { Kruimelpad } from "../components/site/Kruimelpad";
@@ -45,6 +46,9 @@ export function ProductDetail() {
           )}
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-inkt via-inkt/75 to-inkt/25" aria-hidden="true" />
+        {/* mesh-gloed onderin, precies waar het verloop het beeld tot een
+            vlak donker veld dooft en de knoppen staan */}
+        <SfeerShader className="sfeer-onderin" />
         <div className="relative mx-auto flex min-h-[70svh] w-full max-w-6xl flex-col justify-end px-5 pt-24 pb-14 md:px-8 md:pb-20">
           <Kruimelpad items={[{ naam: "Producten", pad: "/producten" }, { naam: product.naam }]} />
           {levering && (

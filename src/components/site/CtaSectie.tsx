@@ -2,6 +2,7 @@ import { Knop } from "../ui/Knop";
 import { Reveal } from "../ui/Reveal";
 import { SITE } from "../../data/site";
 import { Sfeerlaag } from "./Sfeerlaag";
+import { SfeerShader } from "./SfeerShader";
 
 type Props = {
   kop?: string;
@@ -21,6 +22,9 @@ export function CtaSectie({
   return (
     <section className="relative overflow-hidden border-t border-lijn bg-nacht">
       <Sfeerlaag src="/media/video/sfeer-lichtbundels.mp4" poster="/media/video/sfeer-lichtbundels-poster.webp" />
+      {/* mesh-gloed over het donkere vlak, vooral links waar kop en
+          knoppen staan en het verloop de lichtbundels dooft */}
+      <SfeerShader />
       <div className="relative mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
         <Reveal className="max-w-2xl">
           <h2 className="text-3xl md:text-4xl">{kop}</h2>
