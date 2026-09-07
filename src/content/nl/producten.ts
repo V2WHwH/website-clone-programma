@@ -472,6 +472,12 @@ export const PRODUCTEN: Product[] = [
     levering:
       "Holoboxen zijn te koop en te huur via Vision2Watch en HEREweHOLO, inclusief content, bezorging en installatie. Kijk voor het volledige holografische assortiment op hereweholo.nl.",
     galerij: [{ src: "/media/holobox-restaurant.webp", alt: "Holobox met virtuele presentator in een restaurant" }],
+    merk: {
+      naam: "HEREweHOLO",
+      url: "https://www.hereweholo.nl",
+      tekst:
+        "Vision2Watch is officieel verhuurpartner van HEREweHOLO voor de Holobox. Als zusterbedrijf verzorgt Vision2Watch de verhuur, levering en installatie van deze holografische displays in Nederland, terwijl HEREweHOLO zich volledig richt op de ontwikkeling van de techniek en content erachter. Het volledige holografische assortiment en de achtergrond van het bedrijf staan op hereweholo.nl.",
+    },
     faq: [
       {
         vraag: "Wat is het verschil tussen de holobox en hologram-projectie?",
@@ -479,9 +485,9 @@ export const PRODUCTEN: Product[] = [
           "De holobox is een kant-en-klaar, verplaatsbaar display; hologram-projectie is een maatwerkinstallatie met transparant scherm die we op locatie bouwen, tot podiumformaat aan toe.",
       },
       {
-        vraag: "Wat is HEREweHOLO?",
+        vraag: "Wat is HEREweHOLO en is Vision2Watch een officiële verhuurpartner?",
         antwoord:
-          "HEREweHOLO is het zusterbedrijf van Vision2Watch, volledig gespecialiseerd in holografische oplossingen zoals de holobox, de HEREweHOLO mini en hologramwanden. Beide teams werken nauw samen.",
+          "HEREweHOLO is het zusterbedrijf van Vision2Watch, volledig gespecialiseerd in holografische oplossingen zoals de holobox, de HEREweHOLO mini en hologramwanden. Vision2Watch is officieel verhuurpartner van HEREweHOLO: wij verzorgen de verhuur, levering en installatie van de Holobox in Nederland. Het volledige assortiment staat op hereweholo.nl.",
       },
       {
         vraag: "Kan er een echt product in de holobox?",
@@ -530,6 +536,12 @@ export const PRODUCTEN: Product[] = [
     ],
     levering:
       "De HEREweHOLO mini loopt via dezelfde lijn als de holobox: te koop en te huur via Vision2Watch en HEREweHOLO, inclusief content, bezorging en installatie. Vraag de prijslijst aan voor de actuele uitvoeringen.",
+    merk: {
+      naam: "HEREweHOLO",
+      url: "https://www.hereweholo.nl",
+      tekst:
+        "Vision2Watch is officieel verhuurpartner van HEREweHOLO voor de HEREweHOLO mini. Als zusterbedrijf verzorgt Vision2Watch de verhuur, levering en installatie in Nederland, terwijl HEREweHOLO zich volledig richt op de ontwikkeling van de techniek en content erachter. Het volledige holografische assortiment staat op hereweholo.nl.",
+    },
     faq: [
       {
         vraag: "Wat is het verschil met de gewone holobox?",

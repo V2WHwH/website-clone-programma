@@ -61,4 +61,8 @@ logo-animatie.
 
 - Prijzen: op aanvraag via https://www.vision2watch.nl/prijslijst (koop en huur)
 - Eigen interactieve software (iFloor, Augmented engine); partnership met Epson
-- Zusterbedrijf: HEREweHOLO (holografische oplossingen), https://www.hereweholo.nl
+- Zusterbedrijf: HEREweHOLO (holografische oplossingen), https://www.hereweholo.nl.
+  Vision2Watch is officieel verhuurpartner van HEREweHOLO voor de Holobox en
+  de HEREweHOLO mini: Vision2Watch verzorgt de verhuur, levering en
+  installatie in Nederland, HEREweHOLO de ontwikkeling van techniek en
+  content. Zie https://www.vision2watch.nl/producten/hereweholo.

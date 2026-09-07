@@ -119,8 +119,14 @@ export const productSchema = (p: Product) => {
     description: p.intro,
     image: abs(p.beeld.src),
     url: abs(`/producten/${p.slug}`),
-    brand: { "@type": "Brand", name: SITE.naam },
-    manufacturer: { "@id": `${SITE.domein}/#organisatie` },
+    // Standaard is Vision2Watch zelf het merk. Voor producten van een
+    // andere fabrikant (zoals de holobox van zusterbedrijf HEREweHOLO)
+    // wijst p.merk brand en manufacturer naar die partij; Vision2Watch
+    // blijft dan de verkopende partij (offers.seller hieronder).
+    brand: p.merk ? { "@type": "Brand", name: p.merk.naam, url: p.merk.url } : { "@type": "Brand", name: SITE.naam },
+    manufacturer: p.merk
+      ? { "@type": "Organization", name: p.merk.naam, url: p.merk.url }
+      : { "@id": `${SITE.domein}/#organisatie` },
     category: CATEGORIEEN.find((c) => c.slug === p.categorie)?.naam,
     ...(functies.length
       ? {

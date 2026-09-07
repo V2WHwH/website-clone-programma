@@ -31,6 +31,13 @@ export type Product = {
   faq: Faq[];
   projecten: string[];
   verwant: string[];
+  /**
+   * Alleen ingevuld als het merk/de fabrikant een andere partij is dan
+   * Vision2Watch zelf (zoals zusterbedrijf HEREweHOLO): stuurt de
+   * brand/manufacturer in de Product-structuurdata en toont een
+   * vendor-blok met een echte backlink op de productpagina.
+   */
+  merk?: { naam: string; url: string; tekst: string };
 };
 
 export type SectorSlug =

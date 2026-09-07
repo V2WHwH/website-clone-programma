@@ -75,6 +75,28 @@ export function ProductDetail() {
         </div>
       </section>
 
+      {/* Vendor-vermelding: alleen aanwezig als het merk een andere partij
+          is dan Vision2Watch zelf (zie product.merk). Een echte, in
+          leesbare tekst ingebedde backlink, geen los knopje in een lijst. */}
+      {product.merk && (
+        <section className="border-t border-lijn">
+          <div className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8 md:py-14">
+            <Reveal className="rounded-kaart border border-accent/30 bg-nacht/60 p-6 md:p-8">
+              <p className="kicker mb-3">Officieel verhuurpartner</p>
+              <p className="max-w-3xl text-lg leading-relaxed text-tekst/90">{product.merk.tekst}</p>
+              <a
+                href={product.merk.url}
+                rel="noopener"
+                className="navlink mt-5 inline-flex items-center gap-1.5 font-display text-[0.95rem] font-medium text-accent"
+              >
+                Bekijk het assortiment van {product.merk.naam} op {product.merk.url.replace("https://www.", "")}
+                <span aria-hidden="true">→</span>
+              </a>
+            </Reveal>
+          </div>
+        </section>
+      )}
+
       {/* Voordelen */}
       <Sectie kicker="Voordelen" kop={`Dit maakt de ${(product.kaartLabel ?? product.naam).toLowerCase()} sterk`}>
         <div className="mt-10 grid gap-x-10 gap-y-8 md:grid-cols-2">

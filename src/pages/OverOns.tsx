@@ -85,7 +85,7 @@ export function OverOns() {
           <Reveal className="rounded-kaart border border-lijn bg-nacht p-7">
             <h3 className="font-display text-xl">HEREweHOLO</h3>
             <p className="mt-3 leading-relaxed text-zacht">
-              Ons zusterbedrijf HEREweHOLO is volledig gespecialiseerd in holografische oplossingen: holoboxen, HEREweHOLO mini's en hologramwanden. Beide teams werken nauw samen; holografische projecten lopen vaak gezamenlijk.
+              Ons zusterbedrijf HEREweHOLO is volledig gespecialiseerd in holografische oplossingen: holoboxen, HEREweHOLO mini's en hologramwanden. Vision2Watch is officieel verhuurpartner van HEREweHOLO en verzorgt de verhuur, levering en installatie van deze producten in Nederland; beide teams werken nauw samen en holografische projecten lopen vaak gezamenlijk.
             </p>
             <div className="mt-5">
               <Knop naar="https://www.hereweholo.nl" variant="secundair">Naar hereweholo.nl</Knop>
