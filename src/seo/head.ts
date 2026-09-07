@@ -126,7 +126,10 @@ export function bouwHead(pad: string): string {
     `<meta property="og:image" content="${abs(d.og)}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`,
-    `<link rel="preload" as="font" type="font/woff2" href="/fonts/archivo.woff2" crossorigin />`,
+    // Alleen de Display-snit preloaden: die zit vrijwel altijd in de kop
+    // die het grootst op het scherm staat (meestal het LCP-element). De
+    // Text-snit voor lopende tekst laadt gewoon via @font-face met swap.
+    `<link rel="preload" as="font" type="font/woff2" href="/fonts/big-shoulders-display.woff2" crossorigin />`,
     // De homepage-hero toont eerst de poster van de video; die is daar het
     // grootste beeld en verdient dus voorrang. Alleen op de homepage.
     pad === "/"

@@ -17,13 +17,15 @@
   --color-accent-diep: #c2620a;
 
   /* typografie
-     Eén familie voor alles: Archivo, een grotesk met een breedte-as. Koppen
-     staan breed en zwaar (poster, bewegwijzering), lopende tekst staat op
-     normale breedte. Dat geeft een stevig, industrieel karakter dat past bij
-     een bedrijf dat installaties bouwt, en het scheelt een tweede lettertype.
+     Eén familie voor alles: Big Shoulders, een grotesk geënt op Chicago's
+     staal- en gevelbelettering — smal, hoekig en zwaar van opbouw. Koppen
+     gebruiken de Display-snit (nog krapper, voor posterformaat), lopende
+     tekst de Text-snit (iets ruimere x-hoogte, blijft leesbaar in alinea's).
+     Dat geeft een stevig, industrieel karakter dat past bij een bedrijf dat
+     installaties bouwt, zonder in de gangbare AI-sitelettertypes te vervallen.
      Voor korte technische labels staat er één monospace naast. */
-  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --font-sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Big Shoulders Display", "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Big Shoulders Text", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
 
   /* maat en ritme */
@@ -37,13 +39,25 @@
   --duur-lang: 700ms;
 }
 
-/* fonts: zelf gehost, variabel, swap */
+/* fonts: zelf gehost, variabel.
+   Big Shoulders wijkt qua verhoudingen sterk af van de systeem-fallback
+   (Helvetica/Arial): smaller en hoger. Met font-display: swap gaf dat een
+   meetbare CLS zodra het lettertype na de fallback inklapte. Preload zorgt
+   dat het bijna altijd op tijd binnen is; font-display: optional voorkomt
+   vervolgens dat de pagina alsnog verspringt op de zeldzame keer dat het
+   net te laat is — de browser kiest dan één lettertype voor de hele
+   weergave in plaats van te wisselen. */
 @font-face {
-  font-family: "Archivo";
-  src: url("/fonts/archivo.woff2") format("woff2-variations");
+  font-family: "Big Shoulders Display";
+  src: url("/fonts/big-shoulders-display.woff2") format("woff2-variations");
   font-weight: 100 900;
-  font-stretch: 62% 125%;
-  font-display: swap;
+  font-display: optional;
+}
+@font-face {
+  font-family: "Big Shoulders Text";
+  src: url("/fonts/big-shoulders-text.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-display: optional;
 }
 @font-face {
   font-family: "IBM Plex Mono";
@@ -81,14 +95,15 @@ body {
   color: #0b0b0e;
 }
 
-/* Koppen: zwaar en breed. De breedte-as van Archivo doet hier het werk;
-   samen met een strakke letterafstand levert dat een kop die staat als een
-   bord aan de gevel in plaats van als een regel tekst. */
+/* Koppen: zwaar en van nature al smal. Big Shoulders Display heeft geen
+   breedte-as zoals Archivo had; het gedrongen karakter zit al in het
+   lettertype zelf. Gewicht 900 (Black) samen met krappe letterafstand
+   levert een kop die staat als een bord aan de gevel in plaats van als een
+   regel tekst. */
 h1, h2, h3, h4 {
   font-family: var(--font-display);
-  font-weight: 800;
-  font-stretch: 116%;
-  letter-spacing: -0.025em;
+  font-weight: 900;
+  letter-spacing: -0.01em;
   text-wrap: balance;
   /* Nederlands zit vol lange samenstellingen ("productdemonstratie",
      "vloerprojectiesysteem"). Op een smal scherm past zo'n woord niet in de
@@ -100,9 +115,6 @@ h1, h2, h3, h4 {
 @media (max-width: 640px) {
   h1, h2, h3 {
     hyphens: auto;
-    /* Op een smal scherm kost extra breedte alleen maar regels. */
-    font-stretch: 100%;
-    letter-spacing: -0.02em;
   }
 }
 
@@ -132,7 +144,6 @@ p {
 .kicker {
   @apply text-accent font-display text-[0.78rem] uppercase;
   font-weight: 700;
-  font-stretch: 108%;
   letter-spacing: 0.16em;
 }
 

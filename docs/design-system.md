@@ -24,16 +24,19 @@ koppen); de fotografie en video's dragen de kleurbeleving.
 
 ## Typografie
 
-Eén familie draagt de hele site: **Archivo** (variabel, zelf gehost, 87 kB),
-een industriële grotesk met zowel een gewicht- als een breedte-as. Daarnaast
+Eén familie draagt de hele site: **Big Shoulders** (variabel, zelf gehost,
+twee optische snitten, samen 72 kB), geënt op de staal- en gevelbelettering
+van Chicago's industriële architectuur — smal, hoekig en van nature al
+gedrongen, zonder dat er een breedte-as aan te pas hoeft te komen. Daarnaast
 staat **IBM Plex Mono** (14 kB) voor korte technische labels.
 
-- **Koppen**: Archivo op gewicht 800 en breedte 116%, met strakke
-  letterspatiëring (-0.025em). Breed en zwaar, als bewegwijzering: dat past
-  bij een bedrijf dat installaties bouwt. Onder 640 px valt de breedte terug
-  naar 100%, want daar kost extra breedte alleen maar regels.
-- **Tekst**: dezelfde familie op normale breedte, gewicht 420. Op een donkere
-  grond oogt een gewone 400 dun en grijzig.
+- **Koppen**: Big Shoulders Display op gewicht 900 (Black), met krappe
+  letterspatiëring (-0.01em). Het gedrongen karakter zit al in het
+  lettertype; dat staat als een bord aan de gevel, precies wat past bij een
+  bedrijf dat installaties bouwt.
+- **Tekst**: Big Shoulders Text (iets ruimere x-hoogte dan Display, blijft
+  leesbaar in lopende alinea's), gewicht 420. Op een donkere grond oogt een
+  gewone 400 dun en grijzig.
 - **Knoppen, menu en labels**: gewicht 560, zodat ze meedragen in het stevige
   karakter in plaats van er dun naast te staan.
 - **Kickers**: klein, kapitaal, oranje, gewicht 700, ruime tracking.
@@ -43,6 +46,8 @@ staat **IBM Plex Mono** (14 kB) voor korte technische labels.
 Bewust níet gebruikt: Inter, Space Grotesk, Manrope, Plus Jakarta en
 soortgelijke. Die zijn het standaardduo van door AI gegenereerde sites en
 maken elke pagina meteen herkenbaar als zodanig — precies wat hier niet moet.
+Archivo (de eerdere keuze hier) is om diezelfde reden vervangen: dat
+lettertype is inmiddels zelf ook een herkenbare "AI-sitekeuze" geworden.
 
 ## Ritme en vormen
 
