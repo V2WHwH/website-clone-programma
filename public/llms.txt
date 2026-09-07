@@ -52,7 +52,8 @@ logo-animatie.
 - Interactieve etalage = digitale etalage, etalagescherm (met touch foil)
 - LED-display = videowall, LED-scherm
 - Sketchwall = interactieve tekenwand, tekenprojectie
-- Interactieve tafel = touchtafel; Virtual Chef = 3D-tafelprojectie
+- Interactieve tafel = touchtafel; ook geschikt als activeringstafel voor
+  de zorg (o.a. project Barry Emons); Virtual Chef = 3D-tafelprojectie
 - Virtual Host = digitale receptie, virtuele receptie, virtuele gastvrouw/gastheer
 - Logo-animatie = bewegende gobo-projectie (i.t.t. statische gobo-projectie)
 

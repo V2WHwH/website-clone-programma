@@ -154,7 +154,7 @@ export const PRODUCTEN: Product[] = [
     intro:
       "De interactieve tafel, ook wel touchtafel genoemd, of bar verandert elk oppervlak in een dynamisch communicatiemiddel. Het blad reageert op aanraking en beweging: bezoekers bladeren door content, spelen een spel of zien productinformatie verschijnen precies waar ze die verwachten.",
     waarom:
-      "Aan een tafel komen mensen vanzelf samen. Door dat moment interactief te maken, presenteert u producten en verhalen op het moment dat de aandacht er al is, in een showroom, op een stand of aan de bar.",
+      "Aan een tafel komen mensen vanzelf samen. Door dat moment interactief te maken, presenteert u producten en verhalen op het moment dat de aandacht er al is, in een showroom, op een stand of aan de bar. In de zorg werkt hetzelfde principe activerend: voor Barry Emons, specialist in belevingsgerichte zorg, leverden we interactieve tafels die ouderen en cliënten met een verstandelijke beperking uitnodigen tot bewegen en aanraken.",
     beeld: { src: "/media/interactieve-tafel-kaart.webp", alt: "Interactieve overzichtstafel waar bezoekers samen content bedienen" },
     video: {
       src: "/media/video/interactieve-bar-bloemen.mp4",
@@ -165,8 +165,9 @@ export const PRODUCTEN: Product[] = [
       { kop: "Fysiek en digitaal gecombineerd", tekst: "Echte producten op het blad en digitale content eromheen versterken elkaar, zoals bij de interactieve bar voor Clinique waar het oppakken van een flesje de projectie startte." },
       { kop: "Elk oppervlak", tekst: "Van ronde tafel tot lange bar; er kan zelfs op gebogen oppervlakken geprojecteerd worden." },
       { kop: "Content in uw stijl", tekst: "Menu's, productinfo, spellen of sfeeranimaties: onze studio maakt de content op maat en eenvoudig bedienbaar." },
+      { kop: "Ook activerend in de zorg", tekst: "Rustige, aanraakgevoelige projecties op tafelhoogte nodigen ouderen en cliënten met een verstandelijke beperking uit tot bewegen en samen spelen, zoals bij Barry Emons." },
     ],
-    toepassingen: ["Showrooms", "Beurzen en events", "Restaurants en clubs", "Productlanceringen", "Ontvangstruimtes"],
+    toepassingen: ["Showrooms", "Beurzen en events", "Restaurants en clubs", "Productlanceringen", "Ontvangstruimtes", "Zorg- en begeleidingsinstellingen"],
     technisch: [
       { kop: "Detectie", tekst: "Sensoren en infraroodcamera's registreren aanraking en beweging; de gevoeligheid is aan te passen aan het omgevingslicht." },
       { kop: "Objectinteractie", tekst: "Fysieke producten op het blad kunnen de content aansturen: oppakken of neerzetten start de bijbehorende projectie." },
@@ -194,6 +195,11 @@ export const PRODUCTEN: Product[] = [
         vraag: "Kan ik de tafel huren voor een productlancering?",
         antwoord:
           "Ja. We bouwen de opstelling op locatie op, richten de content in op uw campagne en breken na afloop weer af. Kopen kan uiteraard ook.",
+      },
+      {
+        vraag: "Leveren jullie ook activeringstafels voor de zorg, zoals bekend van de Tovertafel?",
+        antwoord:
+          "Ja. Vision2Watch bouwt al langer interactieve tafels voor de zorg, onder meer voor Barry Emons, specialist in belevingsgerichte zorg. De content wordt op maat gemaakt voor de doelgroep: rustige, aanraakgevoelige projecties die ouderen en cliënten met een verstandelijke beperking uitnodigen tot bewegen zonder overprikkeling.",
       },
     ],
     projecten: ["clinique", "sea-life"],

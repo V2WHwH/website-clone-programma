@@ -163,20 +163,24 @@ toegevoegd in de beschrijving voor de exacte zoekterm.
 ### 11. Interactieve tafel & bar
 
 **Klanten zoeken op:** "touchtafel huren", "interactieve tafel beurs",
-"touchtafel showroom". De term "belevenistafel"/"Tovertafel" hoort bij een
-ander marktsegment (zorg/dementie, sensomotorische activering) waar
-Vision2Watch met dit product niet op mikt — dat onderscheid is bewust niet
-vervaagd.
+"touchtafel showroom", en in het zorgsegment "activeringstafel",
+"belevenistafel", "Tovertafel-alternatief".
 
-**Spelers (zorgsegment, ter vergelijking, niet relevant voor deze
-productpagina):** BelevenisTafel, Tovertafel/Active Cues.
-**Spelers (showroom/horeca-segment, wel relevant):** Prestop, Prowise
-(touchtafels).
+**Correctie na terugkoppeling opdrachtgever (7 sep):** deze ronde
+concludeerde eerst dat het zorgsegment niet relevant was voor dit product
+bij gebrek aan bewijs. De opdrachtgever gaf aan dat Vision2Watch dit
+al langer levert — eerder dan de Tovertafel op de markt kwam — met Barry
+Emons (specialist in belevingsgerichte zorg) als concreet project. Dat
+feit staat nu verwerkt in de productpagina (voordelen, toepassingen en een
+FAQ); het is een door de opdrachtgever bevestigd feit, geen aanname.
 
-**Tactiek:** synoniem "touchtafel" toegevoegd; geen zorg-claim toegevoegd
-omdat daar geen bewijs voor is in de bestaande content (regel: geen
-wijziging zonder aantoonbaar nut, en zeker geen sector claimen die niet
-bevestigd is).
+**Spelers zorgsegment:** Tovertafel/Active Cues, BelevenisTafel, Barry
+Emons (eigen partij van Vision2Watch in dit segment).
+**Spelers showroom/horeca-segment:** Prestop, Prowise (touchtafels).
+
+**Tactiek:** synoniem "touchtafel" toegevoegd; het zorgsegment nu expliciet
+benoemd met Barry Emons als naamgenoemd project, zonder de Tovertafel als
+merk af te kraken — de FAQ benoemt wel dat Vision2Watch dit eerder deed.
 
 ### 12. Virtual Host (virtuele gastvrouw/gastheer)
 
