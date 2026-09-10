@@ -1,0 +1,39 @@
+HereWeHolo — Het bedieningsboek
+================================
+
+Open  index.html  in een browser. Verder is er niets nodig.
+
+Wat het is
+----------
+De volledige handleiding bij de HereWeHolo Experience Manager, versie 2.9.
+Eenentwintig hoofdstukken. Van elk onderdeel staat er:
+
+  WIE     gebruikt het
+  WAT     het doet
+  WAAR    het staat
+  WAAROM  het er zo uitziet
+
+Alle 24 afbeeldingen komen uit de draaiende software — echte opnames van een
+demoproject, geen ontwerpplaatjes. De genummerde speldjes op de afbeeldingen
+komen terug in de legenda eronder.
+
+Indeling
+--------
+  01 – 03   Begrijpen      het model, de twee kanten, de zeven zones
+  04 – 15   De tabbladen   elk tabblad, veld voor veld
+  16 – 21   In bedrijf     bezoekers, publiceren, opslag, rollen, storingen
+
+Printen
+-------
+Ctrl+P werkt. De inhoudsopgave valt weg, afbeeldingen en tabellen worden
+niet over twee pagina's gebroken.
+
+Lettertypen
+-----------
+De koppen gebruiken Archivo en IBM Plex, opgehaald bij Google Fonts. Zonder
+internet valt het boek terug op de systeemletters; alles blijft leesbaar.
+
+Bestanden
+---------
+  index.html    het boek
+  img/          de 24 afbeeldingen (webp)

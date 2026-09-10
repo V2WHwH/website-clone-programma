@@ -1,0 +1,1542 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Holobox Bedieningsboek</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Handleiding bij de HereWeHolo Experience Manager: wie bedient wat, waar het staat en waarom het er is.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* ============================================================ TOKENS
+   Licht is de basis: een handleiding wordt gelezen en geprint, en de
+   schermafbeeldingen zijn zelf al donker. Donkere modus spiegelt de
+   tokens naar de HEM-oppervlakken van het product zelf. */
+:root{
+  --paper:#F5F7F5;   --panel:#FFFFFF;  --sunk:#EDF0EE;
+  --ink:#111A1E;     --ink-2:#43535A;  --ink-3:#78888E;
+  --rule:#D7DEDB;    --rule-2:#E7ECEA;
+  --teal:#07877E;    --teal-soft:#E2F4F1;
+  --violet:#5E2FB8;  --violet-soft:#EEE8FB;
+  --amber:#9A5B00;   --amber-soft:#FBF0DD;
+  --shadow:0 1px 2px rgba(17,26,30,.05), 0 10px 28px -18px rgba(17,26,30,.32);
+  --f-disp:'Archivo','Helvetica Neue',Arial,sans-serif;
+  --f-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --measure:68ch;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0B1016; --panel:#111820; --sunk:#0D1218;
+    --ink:#EDF1F4;   --ink-2:#A7B2BC; --ink-3:#6C7A86;
+    --rule:rgba(255,255,255,.10); --rule-2:rgba(255,255,255,.06);
+    --teal:#3BE9DA;  --teal-soft:rgba(21,242,224,.10);
+    --violet:#B183FF;--violet-soft:rgba(157,75,255,.13);
+    --amber:#E2A140; --amber-soft:rgba(226,161,64,.12);
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px -20px rgba(0,0,0,.9);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0B1016; --panel:#111820; --sunk:#0D1218;
+  --ink:#EDF1F4;   --ink-2:#A7B2BC; --ink-3:#6C7A86;
+  --rule:rgba(255,255,255,.10); --rule-2:rgba(255,255,255,.06);
+  --teal:#3BE9DA;  --teal-soft:rgba(21,242,224,.10);
+  --violet:#B183FF;--violet-soft:rgba(157,75,255,.13);
+  --amber:#E2A140; --amber-soft:rgba(226,161,64,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px -20px rgba(0,0,0,.9);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:400 16.5px/1.62 var(--f-body);-webkit-font-smoothing:antialiased}
+img{max-width:100%}
+a{color:var(--teal);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--teal) 35%,transparent)}
+a:hover{border-bottom-color:var(--teal)}
+:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:3px}
+
+/* ============================================================ RAAMWERK */
+.shell{display:grid;grid-template-columns:250px minmax(0,1fr);gap:56px;
+  max-width:1360px;margin:0 auto;padding-inline:28px}
+nav.toc{position:sticky;top:0;align-self:start;max-height:100vh;overflow-y:auto;
+  padding-block:40px 56px;font-size:13.5px;line-height:1.45}
+nav.toc .brand{font:600 12px/1.2 var(--f-mono);letter-spacing:.15em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:20px}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+nav.toc a{display:flex;gap:10px;padding:5px 9px;border-radius:6px;border:0;color:var(--ink-2)}
+nav.toc a:hover{background:var(--sunk);color:var(--ink)}
+nav.toc a .n{font:500 11.5px/1.6 var(--f-mono);color:var(--ink-3);flex:none;min-width:20px}
+nav.toc .grp{font:600 10.5px/1 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);margin:20px 0 7px 9px}
+main{padding-block:40px 120px;min-width:0}
+
+/* ============================================================ TYPE */
+.measure{max-width:var(--measure)}
+h1{font:700 clamp(34px,5vw,52px)/1.04 var(--f-disp);letter-spacing:-.025em;
+  margin:0 0 14px;text-wrap:balance}
+h2{font:600 clamp(24px,3.2vw,32px)/1.15 var(--f-disp);letter-spacing:-.018em;
+  margin:0 0 6px;text-wrap:balance}
+h3{font:600 19px/1.3 var(--f-disp);letter-spacing:-.01em;margin:34px 0 8px}
+h4{font:600 15px/1.35 var(--f-disp);margin:26px 0 6px}
+p{margin:0 0 15px}
+.lead{font-size:19px;line-height:1.55;color:var(--ink-2)}
+.eyebrow{font:600 11px/1 var(--f-mono);letter-spacing:.19em;text-transform:uppercase;
+  color:var(--teal);margin-bottom:12px}
+code,kbd{font:500 .88em/1.4 var(--f-mono);background:var(--sunk);
+  padding:1.5px 5px;border-radius:4px;color:var(--ink)}
+kbd{border:1px solid var(--rule);box-shadow:0 1px 0 var(--rule)}
+ul,ol{margin:0 0 15px;padding-left:22px}
+li{margin-bottom:5px}
+strong{font-weight:600}
+
+/* ============================================================ HOOFDSTUK */
+section.ch{padding-block:64px 8px;border-top:1px solid var(--rule);scroll-margin-top:24px}
+section.ch:first-of-type{border-top:0}
+.ch-head{display:flex;gap:22px;align-items:baseline;margin-bottom:20px}
+.ch-num{font:600 13px/1 var(--f-mono);color:var(--ink-3);flex:none;padding-top:8px;
+  letter-spacing:.06em}
+
+/* de vier vragen — het skelet van dit boek */
+.wwww{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0;
+  border:1px solid var(--rule);border-radius:10px;overflow:hidden;
+  background:var(--panel);margin:22px 0 30px}
+.wwww>div{padding:14px 16px;border-right:1px solid var(--rule-2)}
+.wwww>div:last-child{border-right:0}
+.wwww dt{font:600 10.5px/1 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:7px}
+.wwww dd{margin:0;font-size:14.5px;line-height:1.5;color:var(--ink)}
+@media(max-width:720px){.wwww>div{border-right:0;border-bottom:1px solid var(--rule-2)}
+  .wwww>div:last-child{border-bottom:0}}
+
+/* ============================================================ FIGUREN
+   Genummerde schijfjes liggen op de schermafbeelding, zoals in een
+   opengewerkte tekening. De legenda eronder heeft dezelfde nummers. */
+figure{margin:26px 0 30px}
+.shot{position:relative;display:block;border-radius:10px;overflow:hidden;
+  border:1px solid var(--rule);background:var(--sunk);box-shadow:var(--shadow);
+  line-height:0}
+.shot.crop{max-height:460px}
+.shot.crop img{object-fit:cover;object-position:top;height:460px;width:100%}
+.shot img{display:block;width:100%}
+.pin{position:absolute;transform:translate(-50%,-50%);
+  width:26px;height:26px;border-radius:50%;
+  background:var(--teal);color:#04201E;
+  font:600 13px/26px var(--f-mono);text-align:center;
+  box-shadow:0 0 0 3px rgba(255,255,255,.92),0 3px 10px rgba(0,0,0,.45);
+  z-index:2}
+:root[data-theme="dark"] .pin,
+:root:not([data-theme="light"]) .pin{box-shadow:0 0 0 3px rgba(8,11,16,.85),0 3px 10px rgba(0,0,0,.7)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .pin{
+  box-shadow:0 0 0 3px rgba(255,255,255,.92),0 3px 10px rgba(0,0,0,.45)}}
+.pin.v{background:var(--violet);color:#fff}
+/* Een balk van 26 px hoog: een speldje midden op de knop dekt hem af.
+   Daarom hangen ze eronder, met een lijntje naar het onderdeel toe. */
+.shot.strip{border:0;background:transparent;box-shadow:none;overflow:visible;
+  padding-bottom:46px}
+.shot.strip .stripimg{border:1px solid var(--rule);border-radius:10px;overflow:hidden;
+  box-shadow:var(--shadow);line-height:0}
+.pin.below{top:auto;bottom:0;transform:translate(-50%,0)}
+.pin.below::before{content:"";position:absolute;left:50%;bottom:100%;
+  width:2px;height:20px;margin-left:-1px;background:var(--teal);border-radius:1px}
+figcaption{margin-top:11px;font-size:13.5px;line-height:1.5;color:var(--ink-3)}
+figcaption b{color:var(--ink-2);font-weight:600}
+.legend{list-style:none;margin:16px 0 0;padding:0;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2px 26px}
+.legend li{display:grid;grid-template-columns:24px 1fr;gap:11px;margin:0;
+  padding:7px 0;border-bottom:1px solid var(--rule-2);font-size:14.5px;line-height:1.5}
+.legend .n{font:600 11.5px/20px var(--f-mono);text-align:center;
+  background:var(--teal-soft);color:var(--teal);border-radius:50%;height:20px;margin-top:2px}
+.legend .n.v{background:var(--violet-soft);color:var(--violet)}
+.legend b{font-weight:600;color:var(--ink)}
+.legend span.q{color:var(--ink-2)}
+
+/* ============================================================ TABELLEN */
+.tw{overflow-x:auto;margin:18px 0 26px;border:1px solid var(--rule);
+  border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;min-width:580px;font-size:14.5px}
+th,td{text-align:left;vertical-align:top;padding:11px 15px;
+  border-bottom:1px solid var(--rule-2)}
+tr:last-child td{border-bottom:0}
+th{font:600 10.5px/1.3 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);background:var(--sunk);border-bottom:1px solid var(--rule)}
+td:first-child{font-weight:600;white-space:nowrap}
+td code{white-space:nowrap}
+.num{font-variant-numeric:tabular-nums}
+
+/* ============================================================ NOTITIES */
+.note{border-left:3px solid var(--teal);background:var(--teal-soft);
+  padding:13px 17px;border-radius:0 8px 8px 0;margin:20px 0;font-size:14.5px}
+.note.warn{border-left-color:var(--amber);background:var(--amber-soft)}
+.note.why{border-left-color:var(--violet);background:var(--violet-soft)}
+.note p:last-child{margin:0}
+.note .t{font:600 10.5px/1 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;
+  display:block;margin-bottom:7px;color:var(--ink-2)}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 4px}
+.chip{font:600 10.5px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;
+  padding:6px 10px;border-radius:999px;border:1px solid var(--rule);color:var(--ink-2);
+  background:var(--panel)}
+.chip.on{border-color:transparent;background:var(--teal-soft);color:var(--teal)}
+
+.steps{counter-reset:s;list-style:none;padding:0;margin:20px 0 26px;
+  display:flex;flex-direction:column;gap:2px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:14px;
+  padding:12px 0;border-bottom:1px solid var(--rule-2);margin:0}
+.steps li::before{content:counter(s);font:600 13px/24px var(--f-mono);text-align:center;
+  background:var(--ink);color:var(--paper);border-radius:6px;height:24px}
+
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:16px 0 24px;
+  font-size:14.5px}
+.kv dt{font:500 13px/1.6 var(--f-mono);color:var(--ink-3)}
+.kv dd{margin:0}
+
+hr.soft{border:0;border-top:1px solid var(--rule-2);margin:34px 0}
+pre.cmd{margin:16px 0 18px;padding:14px 16px;border:1px solid var(--rule);
+  border-radius:8px;background:var(--sunk);overflow-x:auto;
+  font:500 12.5px/1.7 var(--f-mono);color:var(--ink);white-space:pre-wrap;
+  word-break:break-word}
+
+/* ============================================================ COVER */
+header.cover{padding-block:88px 8px}
+.cover .meta{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:26px;
+  font:500 12.5px/1.6 var(--f-mono);color:var(--ink-3)}
+.map{margin:40px 0 8px;border:1px solid var(--rule);border-radius:12px;
+  background:var(--panel);padding:26px 22px;overflow-x:auto}
+.map svg{display:block;min-width:660px;width:100%;height:auto}
+
+@media(max-width:980px){
+  .shell{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;max-height:none;padding-block:28px 0;
+    border-bottom:1px solid var(--rule)}
+  nav.toc ol{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+  main{padding-block:24px 80px}
+}
+@media print{
+  nav.toc{display:none}
+  .shell{grid-template-columns:1fr;max-width:none;padding:0}
+  body{background:#fff;color:#000;font-size:11pt}
+  section.ch{page-break-inside:auto;padding-block:26px 0}
+  figure,.tw,.wwww,.note{page-break-inside:avoid}
+  .shot{box-shadow:none}
+}
+/* paneelopnames: smal en hoog, dus naast de veldentabel in plaats van eronder */
+.split{display:grid;grid-template-columns:330px minmax(0,1fr);gap:34px;align-items:start;
+  margin:24px 0 8px}
+.split figure{margin:0}
+.split .tw{margin-top:0}
+.panelshot{border:1px solid var(--rule);border-radius:10px;overflow:hidden;
+  background:var(--sunk);box-shadow:var(--shadow);position:relative;line-height:0}
+.panelshot img{display:block;width:100%}
+.panelshot.tall{max-height:720px}
+.panelshot.tall img{height:720px;object-fit:cover;object-position:top}
+.panelshot.tall::after{content:"paneel loopt door — scroll in de app";
+  position:absolute;left:0;right:0;bottom:0;padding:26px 12px 8px;
+  font:600 10.5px/1.4 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);text-align:center;
+  background:linear-gradient(to top,var(--paper) 42%,transparent)}
+@media(max-width:860px){.split{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav class="toc" aria-label="Inhoud">
+  <div class="brand">Bedieningsboek</div>
+  <div class="grp">Begrijpen</div>
+  <ol>
+    <li><a href="#h1"><span class="n">01</span><span>Het model in één plaat</span></a></li>
+    <li><a href="#h2"><span class="n">02</span><span>Twee kanten van dezelfde app</span></a></li>
+    <li><a href="#h3"><span class="n">03</span><span>De editor in zeven zones</span></a></li>
+  </ol>
+  <div class="grp">De tabbladen</div>
+  <ol>
+    <li><a href="#t-dashboard"><span class="n">04</span><span>Dashboard</span></a></li>
+    <li><a href="#t-buttons"><span class="n">05</span><span>Knoppen &amp; scènes</span></a></li>
+    <li><a href="#t-inspector"><span class="n">06</span><span>Inspector &amp; lagen</span></a></li>
+    <li><a href="#t-media"><span class="n">07</span><span>Media</span></a></li>
+    <li><a href="#t-look"><span class="n">08</span><span>Scherm &amp; scène</span></a></li>
+    <li><a href="#t-style"><span class="n">09</span><span>Vormgeving</span></a></li>
+    <li><a href="#t-3d"><span class="n">10</span><span>3D-objecten</span></a></li>
+    <li><a href="#t-fx"><span class="n">11</span><span>Motion</span></a></li>
+    <li><a href="#t-saver"><span class="n">12</span><span>Screensaver</span></a></li>
+    <li><a href="#t-cam"><span class="n">13</span><span>Camera</span></a></li>
+    <li><a href="#t-share"><span class="n">14</span><span>Beheer &amp; device</span></a></li>
+    <li><a href="#t-help"><span class="n">15</span><span>Help</span></a></li>
+  </ol>
+  <div class="grp">In bedrijf</div>
+  <ol>
+    <li><a href="#h16"><span class="n">16</span><span>De bezoekerskant</span></a></li>
+    <li><a href="#h17"><span class="n">17</span><span>Publiceren</span></a></li>
+    <li><a href="#h18"><span class="n">18</span><span>Waar staat alles?</span></a></li>
+    <li><a href="#h19"><span class="n">19</span><span>Wie doet wat</span></a></li>
+    <li><a href="#h20"><span class="n">20</span><span>Als er iets misgaat</span></a></li>
+    <li><a href="#h21"><span class="n">21</span><span>Sneltoetsen &amp; woordenlijst</span></a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="cover">
+  <div class="eyebrow">HereWeHolo · Experience Manager</div>
+  <h1>Het bedieningsboek</h1>
+  <p class="lead measure">Elk onderdeel van de touch-software: <b>wie</b> het gebruikt,
+  <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
+  Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
+  <div class="meta">
+    <span>Versie 2.9</span><span>21 hoofdstukken</span><span>37 schermafbeeldingen</span>
+    <span>Nederlands</span>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════ 01 ═══ -->
+<section class="ch" id="h1">
+  <div class="ch-head"><div class="ch-num">01</div><div>
+    <h2>Het model in één plaat</h2>
+    <p class="lead measure">Vier begrippen dragen de hele software. Snap je deze plaat,
+    dan snap je elk scherm dat hierna komt.</p>
+  </div></div>
+
+  <div class="map">
+    <svg viewBox="0 0 700 268" role="img" aria-label="Een project bevat scènes, een scène bevat knoppen, en een knop voert precies één actie uit; de actie Volgende scène wijst terug naar een scène">
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g font-family="IBM Plex Mono, monospace" font-size="9.5" font-weight="600"
+         letter-spacing="1.6" fill="currentColor" opacity=".45">
+        <text x="14" y="22">PROJECT</text>
+        <text x="196" y="22">SCÈNE</text>
+        <text x="378" y="22">KNOP</text>
+        <text x="560" y="22">ACTIE</text>
+      </g>
+      <g stroke="currentColor" stroke-opacity=".2" fill="none">
+        <rect x="10" y="32" width="150" height="86" rx="10"/>
+        <rect x="192" y="32" width="150" height="86" rx="10"/>
+        <rect x="374" y="32" width="150" height="86" rx="10"/>
+        <rect x="556" y="32" width="134" height="86" rx="10"/>
+      </g>
+      <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="currentColor">
+        <text x="26" y="60" font-weight="600">Showroom</text>
+        <text x="26" y="79" opacity=".65" font-size="12">één holobox,</text>
+        <text x="26" y="96" opacity=".65" font-size="12">één ontwerp</text>
+        <text x="208" y="60" font-weight="600">Home</text>
+        <text x="208" y="79" opacity=".65" font-size="12">één scherm vol</text>
+        <text x="208" y="96" opacity=".65" font-size="12">knoppen</text>
+        <text x="390" y="60" font-weight="600">Productfilm</text>
+        <text x="390" y="79" opacity=".65" font-size="12">wat de bezoeker</text>
+        <text x="390" y="96" opacity=".65" font-size="12">aanraakt</text>
+        <text x="572" y="60" font-weight="600">Media afspelen</text>
+        <text x="572" y="79" opacity=".65" font-size="12">precies één</text>
+        <text x="572" y="96" opacity=".65" font-size="12">per knop</text>
+      </g>
+      <g stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" opacity=".55">
+        <path d="M164 75 H186"/><path d="M346 75 H368"/><path d="M528 75 H550"/>
+      </g>
+      <g font-family="IBM Plex Mono, monospace" font-size="9" letter-spacing="1.2"
+         fill="currentColor" opacity=".45" text-anchor="middle">
+        <text x="175" y="66">1..n</text><text x="357" y="66">1..n</text><text x="539" y="66">1</text>
+      </g>
+
+      <g stroke="currentColor" stroke-width="1.4" stroke-dasharray="4 4" fill="none"
+         marker-end="url(#a)" opacity=".55">
+        <path d="M623 122 V172 H267 V126"/>
+      </g>
+      <text x="445" y="196" font-family="IBM Plex Sans, sans-serif" font-size="12"
+            fill="currentColor" opacity=".7" text-anchor="middle">
+        actie “Volgende scène” wijst terug naar een scène — zo ontstaan lagen
+      </text>
+
+      <g font-family="IBM Plex Sans, sans-serif" font-size="12" fill="currentColor" opacity=".7">
+        <text x="14" y="228" font-weight="600" opacity="1">De zes acties</text>
+        <text x="14" y="249">Media afspelen · Volgende scène · Terug · Home · Website openen · Taal wisselen</text>
+      </g>
+    </svg>
+  </div>
+  <figcaption class="measure"><b>Lees van links naar rechts.</b> Een project bevat scènes,
+  een scène bevat knoppen, en elke knop voert precies één actie uit. Wijst die actie naar
+  een andere scène, dan buigt de pijl terug — dat is de hele menustructuur.</figcaption>
+
+  <div class="wwww">
+    <div><dt>Project</dt><dd>Het complete ontwerp van één holobox. Eén bestand om te
+      exporteren, één ding om te publiceren.</dd></div>
+    <div><dt>Scène</dt><dd>Eén schermvulling. De <em>homescène</em> is het startpunt en is
+      waar de box na rust naar terugkeert.</dd></div>
+    <div><dt>Knop</dt><dd>Het enige dat de bezoeker aanraakt. Heeft een naam, een plek,
+      een vorm, een kleur — en één actie.</dd></div>
+    <div><dt>Actie</dt><dd>Wat er gebeurt bij aanraken. Zes mogelijkheden, niet meer,
+      zodat een menu nooit onvoorspelbaar wordt.</dd></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 02 ═══ -->
+<section class="ch" id="h2">
+  <div class="ch-head"><div class="ch-num">02</div><div>
+    <h2>Twee kanten van dezelfde app</h2>
+    <p class="lead measure">Er is één bestand, <code>studio/index.html</code>, en dat
+    bestand heeft twee gezichten. Welk gezicht je ziet hangt af van één klik.</p>
+  </div></div>
+
+  <figure>
+    <div class="shot">
+      <img src="img/podium.webp" alt="Het podium: de holobox zoals de bezoeker hem ziet, met vier tegels" width="1600" height="1000" loading="lazy">
+      <span class="pin" style="left:6.5%;top:47%">1</span>
+      <span class="pin" style="left:32.5%;top:38%">2</span>
+      <span class="pin" style="left:50%;top:9.5%">3</span>
+      <span class="pin" style="left:3.4%;top:91%">4</span>
+    </div>
+    <ul class="legend">
+      <li><span class="n">1</span><span><b>Het logo</b> <span class="q">— staat er alleen als
+        je er een instelt, en altijd op dezelfde hoek. Ingesteld bij Vormgeving.</span></span></li>
+      <li><span class="n">2</span><span><b>De knoppen</b> <span class="q">— de tegels. Een tegel
+        met een videovoorbeeld toont een ▶; een tegel die naar een scène gaat niet. Dat verschil
+        is opzettelijk: de bezoeker ziet vooraf wat er gaat gebeuren.</span></span></li>
+      <li><span class="n">3</span><span><b>De titel van de scène</b> <span class="q">— per
+        scène apart in te stellen bij Scherm &amp; scène.</span></span></li>
+      <li><span class="n">4</span><span><b>De vier bedieningsknoppen</b> <span class="q">—
+        oriëntatie, volledig scherm, het slot (verplaats-modus) en het tandwiel dat de editor
+        opent. In kioskmodus zijn ze vrijwel onzichtbaar.</span></span></li>
+    </ul>
+    <figcaption><b>Het podium.</b> Dit is wat er op de holobox staat. Verder niets: geen
+    menubalken, geen browser-chrome, geen muisaanwijzer.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="shot">
+      <img src="img/editor-overzicht.webp" alt="De editor met topbalk, zijbalk, instellingenpaneel, canvas, inspector, motion-dock en statusbalk" width="1600" height="1000" loading="lazy">
+      <span class="pin" style="left:33%;top:2.8%">1</span>
+      <span class="pin" style="left:6.6%;top:30%">2</span>
+      <span class="pin" style="left:24.8%;top:22%">3</span>
+      <span class="pin" style="left:57.6%;top:46%">4</span>
+      <span class="pin" style="left:89.4%;top:22%">5</span>
+      <span class="pin" style="left:44%;top:91.5%">6</span>
+      <span class="pin" style="left:33%;top:98.7%">7</span>
+    </div>
+    <figcaption><b>De editor.</b> Zelfde app, één klik op het tandwiel verder. De zeven zones
+    staan in het volgende hoofdstuk stuk voor stuk uitgelegd.</figcaption>
+  </figure>
+
+  <div class="note why"><span class="t">Waarom één bestand</span>
+    <p>De holobox staat vaak op een beursvloer of in een showroom zonder betrouwbaar internet.
+    Eén HTML-bestand dat je dubbelklikt heeft geen server, geen installatie en geen
+    netwerkverbinding nodig. Alles wat je toevoegt gaat de browseropslag van díe computer in
+    en blijft daar staan.</p></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 03 ═══ -->
+<section class="ch" id="h3">
+  <div class="ch-head"><div class="ch-num">03</div><div>
+    <h2>De editor in zeven zones</h2>
+    <p class="lead measure">De indeling is altijd hetzelfde, op elk tabblad. Links kies je
+    <em>waaraan</em> je werkt, midden zie je het resultaat, rechts staan de eigenschappen
+    van wat je hebt geselecteerd.</p>
+  </div></div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Zone</th><th>Wat je er doet</th><th>Waarom hij daar zit</th></tr></thead>
+    <tbody>
+      <tr><td>1 · Topbalk</td><td>Project- en scènekeuze, ongedaan maken, preview, opslaan,
+        publiceren, apparaatstatus.</td><td>Alles wat over het <em>geheel</em> gaat staat
+        bovenaan en verandert nooit van plek.</td></tr>
+      <tr><td>2 · Zijbalk</td><td>Elf tabbladen — de onderwerpen waarop je kunt werken.</td>
+        <td>Op volgorde van hoe je bouwt: eerst inhoud, dan uiterlijk, dan bedrijfsvoering.</td></tr>
+      <tr><td>3 · Instellingen</td><td>De instellingen van het gekozen tabblad.</td>
+        <td>Eén kolom, altijd op dezelfde plek, zodat je nooit hoeft te zoeken.</td></tr>
+      <tr><td>4 · Canvas</td><td>Live weergave van precies wat de holobox laat zien.</td>
+        <td>Geen aparte previewknop nodig: wat je verandert, zie je meteen.</td></tr>
+      <tr><td>5 · Inspector</td><td>Eigenschappen van de geselecteerde knop, of de lagenlijst.</td>
+        <td>Contextgevoelig — leeg als je niets hebt geselecteerd, in plaats van grijze velden.</td></tr>
+      <tr><td>6 · Motion-dock</td><td>De bewegingsstijl van de hele presentatie.</td>
+        <td>Beweging raakt álles, dus staat het los onderin en niet in één tabblad verstopt.</td></tr>
+      <tr><td>7 · Statusbalk</td><td>Opslagstatus, publicatiestatus, gekoppelde apparaten.</td>
+        <td>Feiten die je wilt kunnen controleren zonder ergens op te klikken.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>De topbalk, van links naar rechts</h3>
+  <figure>
+    <div class="shot strip">
+      <div class="stripimg"><img src="img/topbar.webp" alt="De topbalk van de editor" width="1600" height="56" loading="lazy"></div>
+      <span class="pin below" style="left:6%">1</span>
+      <span class="pin below" style="left:16.8%">2</span>
+      <span class="pin below" style="left:26.1%">3</span>
+      <span class="pin below" style="left:67%">4</span>
+      <span class="pin below" style="left:74.4%">5</span>
+      <span class="pin below" style="left:80.5%">6</span>
+      <span class="pin below" style="left:87.5%">7</span>
+      <span class="pin below" style="left:93.6%">8</span>
+      <span class="pin below" style="left:98.1%">9</span>
+    </div>
+    <ul class="legend">
+      <li><span class="n">1</span><span><b>Merk</b> <span class="q">— klik erop om terug naar
+        het Dashboard te gaan.</span></span></li>
+      <li><span class="n">2</span><span><b>Projectnaam</b> <span class="q">— komt terug in het
+        exportbestand en in het beheerpaneel.</span></span></li>
+      <li><span class="n">3</span><span><b>Scènekeuze</b> <span class="q">— bepaalt welke scène
+        je bewerkt. Het canvas volgt meteen.</span></span></li>
+      <li><span class="n">4</span><span><b>Ongedaan / opnieuw</b> <span class="q">—
+        <kbd>Ctrl</kbd>+<kbd>Z</kbd> en <kbd>Ctrl</kbd>+<kbd>Y</kbd>. Werkt over alle
+        tabbladen heen.</span></span></li>
+      <li><span class="n">5</span><span><b>Preview</b> <span class="q">— sluit de editor en
+        toont het podium, precies zoals de bezoeker het krijgt.</span></span></li>
+      <li><span class="n">6</span><span><b>Opslaan</b> <span class="q">— hoeft eigenlijk nooit:
+        de software bewaart elke wijziging direct. De knop is er voor de zekerheid.</span></span></li>
+      <li><span class="n">7</span><span><b>Publiceren</b> <span class="q">— controleert het
+        ontwerp en zet het klaar op de box. Zie hoofdstuk 17.</span></span></li>
+      <li><span class="n">8</span><span><b>Apparaatstatus</b> <span class="q">— “Lokaal” of de
+        naam van de gekoppelde box, met een stoplichtje.</span></span></li>
+      <li><span class="n">9</span><span><b>Sluiten</b> <span class="q">— terug naar het
+        podium.</span></span></li>
+    </ul>
+  </figure>
+
+  <h3>De statusbalk</h3>
+  <figure>
+    <div class="shot strip">
+      <div class="stripimg"><img src="img/statusbar.webp" alt="De statusbalk onderin de editor" width="1600" height="26" loading="lazy"></div>
+      <span class="pin below" style="left:5.7%">1</span>
+      <span class="pin below" style="left:15.3%">2</span>
+      <span class="pin below" style="left:96.2%">3</span>
+    </div>
+    <ul class="legend">
+      <li><span class="n">1</span><span><b>Opslag</b> <span class="q">— “Alle wijzigingen
+        opgeslagen”. Staat er iets anders, dan is de schijf vol of de browseropslag
+        geblokkeerd.</span></span></li>
+      <li><span class="n">2</span><span><b>Publicatie</b> <span class="q">— wanneer je voor het
+        laatst hebt gepubliceerd. “Nog niet gepubliceerd” betekent dat de box nog het vorige
+        ontwerp draait.</span></span></li>
+      <li><span class="n">3</span><span><b>Apparaten</b> <span class="q">— “Lokaal apparaat”, of
+        het aantal boxen dat zich bij je server meldt.</span></span></li>
+    </ul>
+  </figure>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 04 ═══ -->
+<section class="ch" id="t-dashboard">
+  <div class="ch-head"><div class="ch-num">04</div><div>
+    <h2>Dashboard</h2>
+    <p class="lead measure">De stand van zaken in één blik, plus drie knoppen om verder
+    te gaan. Je bewerkt hier niets.</p>
+  </div></div>
+
+  <div class="wwww">
+    <div><dt>Wie</dt><dd>Iedereen die de editor opent — vooral de beheerder die even wil
+      weten waar het project staat.</dd></div>
+    <div><dt>Wat</dt><dd>Vier tellers, drie statusregels en drie snelkoppelingen.</dd></div>
+    <div><dt>Waar</dt><dd>Eerste tabblad in de zijbalk. Ook bereikbaar via het logo
+      linksboven.</dd></div>
+    <div><dt>Waarom</dt><dd>Een showroom-pc wordt door meerdere mensen aangeraakt. Dit
+      scherm beantwoordt “is dit gepubliceerd, hangt hij aan de server, zit er een PIN op”
+      zonder ergens in te duiken.</dd></div>
+  </div>
+
+  <div class="split">
+    <figure><div class="panelshot">
+      <img src="img/paneel-dashboard.webp" alt="Het dashboardpaneel met tellers en status" width="371" height="775" loading="lazy">
+    </div></figure>
+    <div class="tw"><table>
+      <thead><tr><th>Onderdeel</th><th>Wat het zegt</th></tr></thead>
+      <tbody>
+        <tr><td>Scènes</td><td>Aantal schermen in dit project, met de actieve scène eronder.</td></tr>
+        <tr><td>Knoppen</td><td>Totaal over alle scènes, en hoeveel er in de huidige scène staan.</td></tr>
+        <tr><td>Media</td><td>Aantal bestanden en hoeveel opslag ze samen innemen.</td></tr>
+        <tr><td>Motion</td><td>De actieve preset, met daaronder of Galaxy Tiles aanstaat.</td></tr>
+        <tr><td>Publicatie</td><td>Datum en tijd van de laatste publicatie — of “Nog niet gepubliceerd”.</td></tr>
+        <tr><td>Beheer op afstand</td><td>Gekoppeld aan welke server. Het bolletje is groen bij contact, rood bij een fout.</td></tr>
+        <tr><td>Beveiliging</td><td>Of er een PIN op het menu zit.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 05 ═══ -->
+<section class="ch" id="t-buttons">
+  <div class="ch-head"><div class="ch-num">05</div><div>
+    <h2>Knoppen &amp; scènes</h2>
+    <p class="lead measure">Het tabblad waar de presentatie ontstaat. Hier maak je scènes,
+    voeg je knoppen toe en zet je ze op hun plek.</p>
+  </div></div>
+
+  <div class="wwww">
+    <div><dt>Wie</dt><dd>De bouwer van de presentatie.</dd></div>
+    <div><dt>Wat</dt><dd>Scènebeheer, knoppen toevoegen, uitlijnen en verdelen, raster en
+      veilige marge.</dd></div>
+    <div><dt>Waar</dt><dd>Tweede tabblad. Het canvas ernaast toont de scène die je
+      bewerkt.</dd></div>
+    <div><dt>Waarom</dt><dd>Op een touchscreen is <em>plek</em> alles. Daarom zit alles wat
+      met positie te maken heeft bij elkaar, en niet verspreid over de eigenschappen van
+      losse knoppen.</dd></div>
+  </div>
+
+  <h3>Een knop op zijn plek zetten</h3>
+  <ol class="steps">
+    <li>Kies bovenin de scène waarin je wilt werken.</li>
+    <li>Klik op <b>+ Knop toevoegen</b>. Er verschijnt een knop midden in het canvas.</li>
+    <li>Zet het canvas op <b>Bewerken</b> (het slotje in de canvasbalk). Pas dán kun je
+      knoppen aanklikken en verslepen — anders speelt een klik gewoon de video af.</li>
+    <li>Sleep de knop. Hij klikt vast op het raster als “Uitlijnen op raster” aanstaat.</li>
+    <li>Zet het canvas terug op vergrendeld, zodat je per ongeluk niets verschuift.</li>
+  </ol>
+
+  <figure>
+    <div class="shot">
+      <img src="img/canvas-bewerken.webp" alt="Het canvas in bewerkmodus met raster en hulplijnen" width="1600" height="1000" loading="lazy">
+      <span class="pin" style="left:46%;top:7.7%">1</span>
+      <span class="pin" style="left:62.2%;top:7.7%">2</span>
+      <span class="pin" style="left:72.9%;top:7.7%">3</span>
+      <span class="pin" style="left:77.1%;top:7.7%">4</span>
+    </div>
+    <ul class="legend">
+      <li><span class="n">1</span><span><b>Fit</b> <span class="q">— past het podium precies in
+        het canvasvenster.</span></span></li>
+      <li><span class="n">2</span><span><b>Zoom</b> <span class="q">— min, percentage, plus,
+        100 %. Handig om een knop op de pixel te zetten.</span></span></li>
+      <li><span class="n">3</span><span><b>Bewerken / vergrendeld</b> <span class="q">— de
+        belangrijkste schakelaar van dit tabblad. Vergrendeld = het canvas gedraagt zich als
+        de holobox; Bewerken = je kunt selecteren en slepen.</span></span></li>
+      <li><span class="n">4</span><span><b>Uitvouwen</b> <span class="q">— canvas
+        schermvullend, voor precisiewerk.</span></span></li>
+    </ul>
+    <figcaption><b>Let op het slotje.</b> Negen van de tien “ik kan mijn knop niet
+    verslepen”-vragen komen doordat het canvas nog vergrendeld staat.</figcaption>
+  </figure>
+
+  <div class="split">
+    <figure><div class="panelshot tall">
+      <img src="img/paneel-buttons.webp" alt="Het volledige paneel Knoppen en scènes" width="371" height="4763" loading="lazy">
+    </div></figure>
+    <div class="tw"><table>
+      <thead><tr><th>Onderdeel</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+      <tbody>
+        <tr><td>Scène</td><td>Kiest, hernoemt, maakt of verwijdert een scherm.</td>
+          <td>De eerste scène is de homescène — het startpunt en waar de box na rust
+          naar terugkeert.</td></tr>
+        <tr><td>+ Knop toevoegen</td><td>Zet een nieuwe knop midden in de scène, met de
+          eerste media eraan gekoppeld.</td><td>Sneller beginnen dan met een leeg vlak.</td></tr>
+        <tr><td>Uitlijnen op raster</td><td>Knoppen klikken vast tijdens het slepen.</td>
+          <td>Zonder raster staat niets ooit echt recht — op 4K zie je 2 px verschil.</td></tr>
+        <tr><td>Rastergrootte (%)</td><td>De maaswijdte, als percentage van het scherm.</td>
+          <td>Percentages in plaats van pixels, want de box kan 4K of Full HD zijn.</td></tr>
+        <tr><td>Veilige marge (%)</td><td>Tekent een rand waarbinnen alles moet blijven.</td>
+          <td>Holoboxen snijden aan de randen af; deze marge voorkomt afgesneden knoppen.</td></tr>
+        <tr><td>Uitlijnen &amp; verdelen</td><td>Links, midden, rechts, boven, midden, onder,
+          en gelijkmatig verdelen.</td><td>Met de hand slepen tot het “ongeveer goed” staat
+          is precies wat een scherm goedkoop laat lijken.</td></tr>
+        <tr><td>Groeperen</td><td>Bindt meerdere knoppen samen zodat ze als één blok
+          bewegen.</td><td>Een rij van vier hoef je zo maar één keer te plaatsen.</td></tr>
+        <tr><td>Layout-template</td><td>Raster 2, 3 of 4 kolommen · één rij · één kolom ·
+          cirkel.</td><td>Een startpunt in één klik; daarna sleep je zelf verder.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="note warn"><span class="t">Zonder selectie</span>
+    <p>Uitlijnen en verdelen werken op de <em>selectie</em>. Heb je niets geselecteerd, dan
+    gelden ze voor alle knoppen in de scène. Dat is bedoeld — maar het verschuift dus wel
+    alles tegelijk.</p></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 06 ═══ -->
+<section class="ch" id="t-inspector">
+  <div class="ch-head"><div class="ch-num">06</div><div>
+    <h2>Inspector &amp; lagen</h2>
+    <p class="lead measure">De rechterkolom. Hij toont de eigenschappen van precies dat wat
+    je hebt aangeklikt — en niets anders.</p>
+  </div></div>
+
+  <div class="wwww">
+    <div><dt>Wie</dt><dd>De bouwer, tijdens het fijnslijpen.</dd></div>
+    <div><dt>Wat</dt><dd>Zeven inklapbare secties met alle eigenschappen van één knop, plus
+      een tweede tabblad met de lagenlijst.</dd></div>
+    <div><dt>Waar</dt><dd>Rechts, altijd zichtbaar, op elk tabblad.</dd></div>
+    <div><dt>Waarom</dt><dd>Contextgevoelig in plaats van een eindeloze lijst grijze velden.
+      Selecteer je niets, dan staat er wat je moet doen om wél iets te selecteren.</dd></div>
+  </div>
+
+  <figure>
+    <div class="shot">
+      <img src="img/editor-selectie.webp" alt="De editor met een geselecteerde knop; de inspector rechts is gevuld" width="1600" height="1000" loading="lazy">
+      <span class="pin" style="left:28%;top:49%">1</span>
+      <span class="pin" style="left:89.4%;top:18%">2</span>
+    </div>
+    <ul class="legend">
+      <li><span class="n">1</span><span><b>De geselecteerde knop</b> <span class="q">— krijgt
+        een accentrand in het canvas. Shift ingedrukt houden selecteert er meer.</span></span></li>
+      <li><span class="n">2</span><span><b>De inspector vult zich</b> <span class="q">— met de
+        eigenschappen van precies deze knop. Selecteer je niets, dan staat er uitleg in plaats
+        van lege velden.</span></span></li>
+    </ul>
+    <figcaption>Selecteren kan alleen als het canvas op <b>Bewerken</b> staat — of via het
+    lagenpaneel, verderop in dit hoofdstuk.</figcaption>
+  </figure>
+
+  <div class="split">
+    <figure><div class="panelshot tall">
+      <img src="img/inspector-volledig.webp" alt="De inspector met alle secties uitgeklapt" width="340" height="1131" loading="lazy">
+    </div>
+    <figcaption>De secties <b>Interactie</b>, <b>Attentie</b>, <b>Motion</b> en
+    <b>Geavanceerd</b> staan standaard dicht — je hebt ze zelden nodig.</figcaption></figure>
+    <div class="tw"><table>
+      <thead><tr><th>Sectie</th><th>Velden</th><th>Waarvoor</th></tr></thead>
+      <tbody>
+        <tr><td>Content</td><td>Tekst op de knop · Actie · Media of Adres · Playlist</td>
+          <td>Wat de knop is en wat hij doet. De velden wisselen mee met de gekozen actie:
+          kies je “Website openen”, dan verschijnt een adresveld in plaats van een medialijst.</td></tr>
+        <tr><td>Positie</td><td>X (%) · Y (%) · Laag · Grootte</td>
+          <td>Exact typen wat je met slepen niet precies krijgt. “Laag” bepaalt wat er vóór ligt.</td></tr>
+        <tr><td>Uiterlijk</td><td>Vorm · Kleur · Dekking · Frame</td>
+          <td>Vorm bepaalt de omtrek van de knop én van het videovlak erin: rond, ovaal,
+          afgerond of vierkant.</td></tr>
+        <tr><td>Interactie</td><td>Videovoorbeeld in de knop · Zweven · Vrij bewegen</td>
+          <td>Een voorbeeld in de tegel maakt duidelijk wat er speelt; zweven en drift geven
+          leven zonder afleiding.</td></tr>
+        <tr><td>Attentie</td><td>Aandachtseffect per knop</td>
+          <td>Gloedpuls, lichtrand, flits of glans-veeg, om een voorbijganger te trekken.</td></tr>
+        <tr><td>Motion</td><td>Afwijkende entrance voor deze ene knop</td>
+          <td>Voor de held-tegel die eerder of anders mag landen dan de rest.</td></tr>
+        <tr><td>Geavanceerd</td><td>Dupliceren · Verwijderen · het interne ID</td>
+          <td>Het ID heb je nodig als je een geëxporteerd ontwerp met de hand naleest.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <h3>Het lagenpaneel</h3>
+  <div class="split">
+    <figure><div class="panelshot">
+      <img src="img/layers.webp" alt="Het lagenpaneel met vier knoppen" width="340" height="808" loading="lazy" style="height:230px;object-fit:cover;object-position:top">
+    </div></figure>
+    <div>
+      <p>Het tweede tabblad van de inspector toont alle knoppen van de scène, bovenste
+      laag eerst. Per regel: de kleur van de knop, zijn naam, en vier bedieningen —
+      omhoog, omlaag, zichtbaar en vergrendeld.</p>
+      <p>Dit is de enige plek waar je een knop kunt selecteren <em>zonder</em> het canvas op
+      Bewerken te zetten. Handig als knoppen elkaar overlappen: in de lijst kun je precies
+      die ene aanwijzen die eronder ligt.</p>
+      <div class="note"><span class="t">Volgorde is stapelvolgorde</span>
+        <p>Bovenaan in de lijst = vooraan op het scherm. Dezelfde waarde staat als
+        <em>Laag</em> in de inspector.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 07 ═══ -->
+<section class="ch" id="t-media">
+  <div class="ch-head"><div class="ch-num">07</div><div>
+    <h2>Media</h2>
+    <p class="lead measure">De bibliotheek. Alles wat de holobox afspeelt of toont staat
+    hier, en wordt in de browser zelf bewaard.</p>
+  </div></div>
+
+  <div class="wwww">
+    <div><dt>Wie</dt><dd>Degene die het beeldmateriaal aanlevert.</dd></div>
+    <div><dt>Wat</dt><dd>Bestanden toevoegen, per bestand instellingen openen, bestanden
+      verwijderen.</dd></div>
+    <div><dt>Waar</dt><dd>Derde tabblad.</dd></div>
+    <div><dt>Waarom</dt><dd>Media staan los van knoppen. Eén video kan aan meerdere knoppen
+      hangen, en een knop kan van video wisselen zonder opnieuw geplaatst te worden.</dd></div>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Soort</th><th>Formaat</th><th>Wat de software ermee doet</th></tr></thead>
+    <tbody>
+      <tr><td>Video</td><td><code>.mp4</code> H.264/H.265, tot 4K, liggend of staand</td>
+        <td>Speelt af op de videokaart. Twee spelers wisselen elkaar af zodat een playlist
+        naadloos doorloopt zonder zwart beeld.</td></tr>
+      <tr><td>Afbeelding</td><td><code>.png</code> (met transparantie), <code>.jpg</code>,
+        <code>.webp</code></td><td>Wordt het gezicht van de knop. Een PNG met transparantie
+        geeft een knop in de vorm van de afbeelding zelf.</td></tr>
+      <tr><td>3D — aanbevolen</td><td><code>.glb</code> / <code>.gltf</code></td>
+        <td>Eén licht bestand met textures én animaties erin. Dit is het formaat om naar
+        te vragen.</td></tr>
+      <tr><td>3D — klassiek</td><td><code>.obj</code> + <code>.mtl</code> + texturen</td>
+        <td>Voeg de drie bestanden samen toe, anders vindt de viewer de textuur niet.</td></tr>
+      <tr><td>3D — statisch</td><td><code>.fbx</code></td>
+        <td>Wordt getoond zonder animatie. Heb je beweging nodig, converteer dan naar
+        <code>.glb</code>.</td></tr>
+    </tbody>
+  </table></div>
+
+  <figure>
+    <div class="shot">
+      <img src="img/tab-media.webp" alt="Het tabblad Media met de bibliotheek" width="1600" height="1000" loading="lazy">
+      <span class="pin" style="left:24.8%;top:9.5%">1</span>
+      <span class="pin" style="left:35%;top:35%">2</span>
+      <span class="pin" style="left:34%;top:62.5%">3</span>
+      <span class="pin" style="left:41.5%;top:44%">4</span>
+    </div>
+    <ul class="legend">
+      <li><span class="n">1</span><span><b>Bestanden toevoegen</b> <span class="q">— meerdere
+        tegelijk mag. Bij een .obj neem je .mtl en de texturen in dezelfde selectie
+        mee.</span></span></li>
+      <li><span class="n">2</span><span><b>Instellingen</b> (bij video) <span class="q">—
+        opent begin- en eindtrim, volume, fade, herhalen en “laatste beeld
+        vasthouden”.</span></span></li>
+      <li><span class="n">3</span><span><b>3D-instellingen</b> (bij een model) <span class="q">—
+        schaal, hoogte, draai-as, kanteling en animatiesnelheid, per model apart.</span></span></li>
+      <li><span class="n">4</span><span><b>Verwijderen</b> <span class="q">— vraagt om
+        bevestiging. Knoppen die naar dit bestand wezen worden leeg, niet
+        verwijderd.</span></span></li>
+    </ul>
+    <figcaption>De instellingenknoppen verschijnen alleen bij het soort bestand waar ze
+    bij horen — bij een PNG staan ze er niet.</figcaption>
+  </figure>
+
+  <div class="note"><span class="t">Waar blijven de bestanden</span>
+    <p>In IndexedDB, de bestandsopslag van de browser, onder de naam <code>hwh_studio</code>.
+    Ze gaan dus <em>niet</em> mee in een geëxporteerd ontwerp — dat is een klein
+    JSON-bestand met alleen verwijzingen. Verhuis je naar een andere pc, neem dan de
+    mediabestanden apart mee en gebruik <b>Media opnieuw koppelen</b>.</p></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 08 ═══ -->
+<section class="ch" id="t-look">
+  <div class="ch-head"><div class="ch-num">08</div><div>
+    <h2>Scherm &amp; scène</h2>
+    <p class="lead measure">Wat er op het scherm staat: de titel van deze scène, de
+    achtergrond, het geluid en hoe bezoekers navigeren.</p>
+  </div></div>
+
+  <div class="wwww">
+    <div><dt>Wie</dt><dd>De bouwer, per scène.</dd></div>
+    <div><dt>Wat</dt><dd>Titel, achtergrondvideo, overlaag, volume, oriëntatie, kioskmodus,
+      taal en navigatiehulp.</dd></div>
+    <div><dt>Waar</dt><dd>Vierde tabblad. De bovenste blok geldt voor <em>deze</em> scène,
+      de onderste voor de hele experience.</dd></div>
+    <div><dt>Waarom</dt><dd>De verleiding is om alles globaal te maken. Titel en achtergrond
+      horen per scène, want een productmenu heeft een andere kop nodig dan het
+      welkomstscherm.</dd></div>
+  </div>
+
+  <div class="split">
+    <figure><div class="panelshot tall">
+      <img src="img/paneel-look.webp" alt="Het paneel Scherm en scène" width="371" height="1215" loading="lazy">
+    </div></figure>
+    <div class="tw"><table>
+      <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+      <tbody>
+        <tr><td>Titel op het scherm</td><td>De kop boven de knoppen, voor deze scène.</td>
+          <td>Leeg laten mag: dan is het scherm alleen tegels.</td></tr>
+        <tr><td>Achtergrondvideo</td><td>Speelt gedempt in een lus achter de knoppen.</td>
+          <td>Geeft een holobox diepte zonder dat er iets te lezen valt.</td></tr>
+        <tr><td>Video-overlaag</td><td>Een tweede video bovenop de achtergrond.</td>
+          <td>Voor deeltjes, licht of rook — het effect dat een hologram “levend” maakt.</td></tr>
+        <tr><td>Menglaag</td><td>Screen, Normaal, Lighten of Overlay.</td>
+          <td><b>Screen</b> telt licht op en is de holo-instelling: zwart wordt onzichtbaar.</td></tr>
+        <tr><td>Overlaag-dekking</td><td>Hoe sterk de overlaag meetelt.</td>
+          <td>Boven ongeveer 40 % gaat de overlaag de knoppen overstemmen.</td></tr>
+        <tr><td>Hoofdvolume</td><td>Het volume van alles, in procenten.</td>
+          <td>Ook op afstand te zetten vanuit het beheerpaneel — handig als de zaal vol is.</td></tr>
+        <tr><td>Oriëntatie</td><td>Automatisch, Portrait of Landscape.</td>
+          <td>Holoboxen hangen soms gekanteld. Deze instelling draait het beeld mee.</td></tr>
+        <tr><td>Knoppen verbergen tijdens afspelen</td><td>Tegels verdwijnen zodra een video start.</td>
+          <td>Zonder dit blijft de menulaag over de film heen liggen.</td></tr>
+        <tr><td>Kioskmodus</td><td>Maakt de vier bedieningsknoppen vrijwel onzichtbaar.</td>
+          <td>Publieke opstelling: bezoekers horen het tandwiel niet te zien.</td></tr>
+        <tr><td>Meertalig</td><td>Labels en titels per taal; bezoekers kiezen rechtsonder.</td>
+          <td>Eén ontwerp voor een internationale beurs, in plaats van twee projecten.</td></tr>
+        <tr><td>Taal automatisch herkennen</td><td>Volgt de systeemtaal van de pc.</td>
+          <td>Zet dit uit als de box altijd in één taal moet openen.</td></tr>
+        <tr><td>Kruimelpad</td><td>Toont Home › scène › scène bovenin.</td>
+          <td>Bij drie lagen of meer weet een bezoeker anders niet meer waar hij zit.</td></tr>
+        <tr><td>Vegen om terug te gaan</td><td>Naar rechts vegen opent de vorige scène.</td>
+          <td>Scheelt een terugknop in elke scène.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 09 ═══ -->
+<section class="ch" id="t-style">
+  <div class="ch-head"><div class="ch-num">09</div><div>
+    <h2>Vormgeving</h2>
+    <p class="lead measure">Hoe de experience eruitziet: huisstijl, typografie, logo en de
+    kaders om de videoknoppen.</p>
+  </div></div>
+
+  <div class="wwww">
+    <div><dt>Wie</dt><dd>Degene die de huisstijl bewaakt.</dd></div>
+    <div><dt>Wat</dt><dd>Lettertype, tekstgewicht, logo, themapreset en de complete
+      Video Frame Style.</dd></div>
+    <div><dt>Waar</dt><dd>Vijfde tabblad. Geldt voor de hele experience, niet per scène.</dd></div>
+    <div><dt>Waarom</dt><dd>Eén stijl over alle scènes. Zou dit per scène kunnen, dan kreeg
+      je onvermijdelijk vier verschillende presentaties in één box.</dd></div>
+  </div>
+
+  <div class="split">
+    <figure><div class="panelshot tall">
+      <img src="img/paneel-style.webp" alt="Het paneel Vormgeving" width="371" height="1075" loading="lazy">
+    </div></figure>
+    <div class="tw"><table>
+      <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+      <tbody>
+        <tr><td>Lettertype</td><td>Zes families: Systeem, Humanist, Grotesk, Geometrisch,
+          Serif, Mono.</td><td>Families in plaats van namen, zodat het ook werkt op een pc
+          zonder jouw huisstijl-font geïnstalleerd.</td></tr>
+        <tr><td>Tekstgewicht</td><td>Normaal tot extra vet.</td>
+          <td>Op een holobox lees je op afstand — vet is vaker goed dan je gewend bent.</td></tr>
+        <tr><td>Klantlogo</td><td>Een PNG uit de bibliotheek, met grootte en positie.</td>
+          <td>Vijf vaste posities in plaats van vrij slepen: zo staat het logo op elke scène
+          op dezelfde plek.</td></tr>
+        <tr><td>Themapreset</td><td>Zet kleuren, frame en motion in één klik.</td>
+          <td>Corporate blauw, Luxury zwart/goud, Technology cyaan, Retail warm, Healthcare
+          licht, Museum antraciet — een vertrekpunt, geen keurslijf.</td></tr>
+        <tr><td>Framekleur</td><td>Knopkleur, effen, verloop, of alleen omlijning.</td>
+          <td><b>Knopkleur</b> laat elke tegel zijn eigen kleur houden; de andere drie maken
+          alles gelijk.</td></tr>
+        <tr><td>Kleur 1 &amp; 2, richting</td><td>Het verloop van het frame.</td>
+          <td>Alleen zichtbaar als je “Kleurverloop” hebt gekozen.</td></tr>
+        <tr><td>Hoekafronding</td><td>0 = vierkant, hoger = ronder.</td>
+          <td>Deze waarde stuurt ook de vorm “Afgerond” van de knoppen zelf.</td></tr>
+        <tr><td>Framedikte</td><td>Hoe breed de rand om het videobeeld is.</td>
+          <td>Een dikker frame maakt de tegel fysieker; dunner maakt de video groter.</td></tr>
+        <tr><td>Diepte</td><td>Hoever het videobeeld in het frame ligt.</td>
+          <td>Dit is wat het “ingelegd” laat lijken in plaats van geplakt.</td></tr>
+        <tr><td>Gloss · Highlight · Schaduw</td><td>Mat tot glanzend, de reflectie, en de
+          schaduw tussen frame en beeld.</td><td>Samen bepalen ze of een tegel van kunststof
+          of van glas lijkt.</td></tr>
+        <tr><td>Gloed-intensiteit</td><td>De halo om de tegel.</td>
+          <td>Globaal ingesteld, per knop bij te stellen. Op een holobox is gloed wat de
+          tegel laat zweven.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 10 ═══ -->
+<section class="ch" id="t-3d">
+  <div class="ch-head"><div class="ch-num">10</div><div>
+    <h2>3D-objecten</h2>
+    <p class="lead measure">Instellingen die voor <em>alle</em> modellen gelden. Wat per
+    model verschilt — schaal, hoogte, draai-as — stel je in bij Media.</p>
+  </div></div>
+
+  <div class="wwww">
+    <div><dt>Wie</dt><dd>Wie 3D-materiaal toont; vaak samen met de leverancier van het
+      model.</dd></div>
+    <div><dt>Wat</dt><dd>Kleur, detail-limiet, draaisnelheid, licht, glans, studio-achtergrond
+      en automatisch sluiten.</dd></div>
+    <div><dt>Waar</dt><dd>Zesde tabblad. Zichtbaar of niet, maar pas nuttig zodra er een
+      model in de bibliotheek zit.</dd></div>
+    <div><dt>Waarom</dt><dd>Een 3D-model komt van buiten en is zelden geoptimaliseerd. Deze
+      instellingen zijn de rem die voorkomt dat één zwaar model de hele box laat
+      haperen.</dd></div>
+  </div>
+
+  <figure>
+    <div class="shot">
+      <img src="img/object3d.webp" alt="Een 3D-object schermvullend op een witte studio-achtergrond met zachte schaduw" width="1600" height="1000" loading="lazy">
+      <span class="pin" style="left:59%;top:64%">1</span>
+      <span class="pin" style="left:97%;top:5%">2</span>
+    </div>
+    <ul class="legend">
+      <li><span class="n">1</span><span><b>De zachte schaduw</b> <span class="q">— ligt achter
+        en onder het object en is met een schuif in te stellen. Zonder schaduw zweeft een
+        model op een witte achtergrond in het niets.</span></span></li>
+      <li><span class="n">2</span><span><b>Sluiten</b> <span class="q">— of automatisch na het
+        ingestelde aantal seconden rust.</span></span></li>
+    </ul>
+    <figcaption>De bezoeker kan het object slepen om te draaien en knijpen om te zoomen.
+    <b>Wat je hier ziet is de studio-achtergrond aan.</b></figcaption>
+  </figure>
+
+  <div class="split">
+    <figure><div class="panelshot">
+      <img src="img/paneel-3d.webp" alt="Het paneel 3D-objecten" width="371" height="788" loading="lazy">
+    </div></figure>
+    <div class="tw"><table>
+      <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+      <tbody>
+        <tr><td>Kleur</td><td>De basiskleur van modellen zonder eigen materiaal.</td>
+          <td>Een .obj zonder .mtl heeft geen kleur; zonder deze instelling zou hij zwart zijn.</td></tr>
+        <tr><td>Detail-limiet</td><td>50k · 150k · 500k driehoeken, of onbeperkt.</td>
+          <td>Grotere modellen worden automatisch vereenvoudigd tot deze grens.
+          <b>150k is de veilige standaard</b> voor een showroom-pc.</td></tr>
+        <tr><td>Draaisnelheid</td><td>Hoe snel het model uit zichzelf ronddraait.</td>
+          <td>Standaard voor alle modellen; per model te overschrijven bij Media.</td></tr>
+        <tr><td>Lichtsterkte · Glans</td><td>Hoe fel en hoe spiegelend het oppervlak is.</td>
+          <td>Metaal wil glans, mat kunststof niet.</td></tr>
+        <tr><td>Witte studio-achtergrond</td><td>Zet het object schermvullend op een licht
+          decor.</td><td>Productfoto-look. Uit betekent: op de donkere holo-achtergrond.</td></tr>
+        <tr><td>Schaduw</td><td>Sterkte van de schaduw achter en onder het object.</td>
+          <td>Te hard leest als een sticker, te zacht laat het object zweven.</td></tr>
+        <tr><td>Automatisch sluiten</td><td>Seconden rust waarna de viewer sluit; 0 = nooit.</td>
+          <td>Anders blijft de box na een bezoeker in het 3D-scherm hangen.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 11 ═══ -->
+<section class="ch" id="t-fx">
+  <div class="ch-head"><div class="ch-num">11</div><div>
+    <h2>Motion</h2>
+    <p class="lead measure">Hoe alles beweegt. Eén preset zet de hele presentatie in
+    dezelfde bewegingstaal; daaronder kun je alles tot op de milliseconde bijstellen.</p>
+  </div></div>
+
+  <div class="wwww">
+    <div><dt>Wie</dt><dd>De bouwer, meestal aan het eind — als de inhoud klopt.</dd></div>
+    <div><dt>Wat</dt><dd>Preset en intensiteit, losse entrance-instellingen, de fijnafstelling
+      van Galaxy Tiles, het selectie-effect, aandachtseffecten en het demo-handje.</dd></div>
+    <div><dt>Waar</dt><dd>Zevende tabblad. De presets staan óók altijd onderin beeld in het
+      motion-dock.</dd></div>
+    <div><dt>Waarom</dt><dd>Beweging is op een holobox geen versiering maar het verschil
+      tussen “duur” en “goedkoop”. Daarom heeft het een eigen tabblad én een eigen balk.</dd></div>
+  </div>
+
+  <figure>
+    <div class="shot strip">
+      <div class="stripimg"><img src="img/motiondock.webp" alt="Het motion-dock met presetkaarten" width="1600" height="118" loading="lazy"></div>
+      <span class="pin below" style="left:3.5%">1</span>
+      <span class="pin below" style="left:14%">2</span>
+      <span class="pin below" style="left:91%">3</span>
+    </div>
+    <ul class="legend">
+      <li><span class="n">1</span><span><b>Motion presets</b> <span class="q">— het label van
+        de balk.</span></span></li>
+      <li><span class="n">2</span><span><b>De presetkaarten</b> <span class="q">— Corporate
+        Smooth, Luxury, Technology, Cyber, Minimal, Dynamic Event, Museum, Automotive,
+        Healthcare. Klik = meteen actief.</span></span></li>
+      <li><span class="n">3</span><span><b>Uitleg + Preview</b> <span class="q">— wat de
+        gekozen preset doet, met een knop om het één keer af te spelen, en een link naar de
+        fijnafstelling.</span></span></li>
+    </ul>
+    <figcaption>Het dock staat op elk tabblad onderin. <b>Zo kun je motion kiezen terwijl je
+    naar je eigen scène kijkt</b> in plaats van naar een abstracte voorbeeldanimatie.</figcaption>
+  </figure>
+
+  <div class="split">
+    <figure><div class="panelshot tall">
+      <img src="img/paneel-fx.webp" alt="Het volledige Motion-paneel" width="371" height="1752" loading="lazy">
+    </div></figure>
+    <div class="tw"><table>
+      <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+      <tbody>
+        <tr><td>Preset</td><td>Kiest entrance, timing en het standaard selectie-effect.</td>
+          <td>Eén keuze in plaats van tien schuiven.</td></tr>
+        <tr><td>Intensiteit</td><td>Subtle · Immersive · Showcase.</td>
+          <td>Vermenigvuldigt alles: afstanden, duren en doorschot. Museum wil Subtle,
+          een beursstand Showcase.</td></tr>
+        <tr><td>Entrance-effect</td><td>Hoe de knoppen binnenkomen.</td>
+          <td>Overschrijft de preset. Leeg laten = de preset volgen.</td></tr>
+        <tr><td>Duur · Stagger</td><td>Hoe lang één knop erover doet, en hoeveel later de
+          volgende begint.</td><td>Stagger is wat een scherm ritme geeft: alles tegelijk
+          leest als een sprong.</td></tr>
+        <tr><td>Volgorde</td><td>In welke volgorde de knoppen landen.</td>
+          <td>De volgorde vertelt de bezoeker waar hij moet kijken, nog voor hij iets
+          gelezen heeft.</td></tr>
+        <tr><td>Exit-effect</td><td>Hoe de scène verdwijnt bij een scènewissel.</td>
+          <td>Weggaan hoort de omkering van komen te zijn.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <h4>Galaxy Tiles — fijnafstelling</h4>
+  <p class="measure">Het huiseffect: tegels komen van onderaf terug met eigen timing en lichte
+  rotatie, en landen gecontroleerd met een subtiele overshoot.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Veld</th><th>Bereik</th><th>Wat het verandert</th></tr></thead>
+    <tbody>
+      <tr><td>Duur</td><td class="num">1750 ms standaard</td><td>De volledige landing van één tegel.</td></tr>
+      <tr><td>Stagger</td><td class="num">110 ms</td><td>Het gat tussen twee opeenvolgende tegels.</td></tr>
+      <tr><td>Seed</td><td class="num">7</td><td>Vaste willekeur. Dezelfde seed geeft altijd exact dezelfde landing — nodig om een video op te nemen.</td></tr>
+      <tr><td>Chaos</td><td class="num">0 – 100 (25)</td><td>Hoeveel de tegels van elkaar afwijken. 0 = strak in de maat, 100 = wild.</td></tr>
+      <tr><td>Rotatie</td><td class="num">12°</td><td>Kanteling waarmee een tegel binnenkomt.</td></tr>
+      <tr><td>Verticale offset</td><td class="num">220 px</td><td>Hoever van onderen ze vertrekken.</td></tr>
+      <tr><td>Diepte</td><td class="num">30 px</td><td>Hoeveel ze naar achteren beginnen.</td></tr>
+      <tr><td>Overshoot</td><td class="num">2,5 %</td><td>Hoever ze voorbij hun plek schieten. <b>Eén keer voorbij, nooit twee</b> — dat is het hele verschil.</td></tr>
+      <tr><td>Easing</td><td>Out Expo</td><td>De snelheidscurve. Out Expo is de aanbevolen: snel weg, zacht aan.</td></tr>
+      <tr><td>Interactie tijdens entrance</td><td>Na 50 % · Pas na afloop · Direct</td><td>Wanneer een tegel al aangeraakt mag worden. <b>Na 50 %</b> voelt reactief zonder half-gelande tegels te laten indrukken.</td></tr>
+      <tr><td>Reduced motion</td><td>aan / uit</td><td>Toegankelijkheid: Galaxy wordt een rustige fade met subtiele scale.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Bij het kiezen van een knop</h4>
+  <div class="tw"><table>
+    <thead><tr><th>Selectie-effect</th><th>Wat er gebeurt</th></tr></thead>
+    <tbody>
+      <tr><td>Volgens preset</td><td>Volgt wat de motionpreset voorschrijft.</td></tr>
+      <tr><td>Tegel wordt videovlak</td><td>De aangeraakte tegel groeit door tot het beeld. Naadloos, geen zwart frame.</td></tr>
+      <tr><td>Filmisch zoomen</td><td>De gekozen knop komt naar voren, de rest vervaagt.</td></tr>
+      <tr><td>Opzij geschoven</td><td>De andere knoppen worden uit beeld getrokken.</td></tr>
+      <tr><td>De diepte in</td><td>De andere knoppen krimpen naar achteren.</td></tr>
+      <tr><td>Radiale burst</td><td>De andere knoppen vliegen alle kanten op.</td></tr>
+      <tr><td>Geen effect</td><td>Direct afspelen.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><span class="t">Volgorde is vast</span>
+    <p>De video of het 3D-object start pas wanneer alle knoppen uit beeld zijn. Anders
+    kijk je naar het begin van een film door een menu heen.</p></div>
+
+  <h4>Aandachtseffecten en het demo-handje</h4>
+  <div class="kv">
+    <dt>Gemiddeld interval</dt><dd>Hoe vaak een knop uit zichzelf een effect speelt om een
+      voorbijganger te trekken. Wélk effect, stel je per knop in bij de inspector.</dd>
+    <dt>Handje aan</dt><dd>Een demo-hand wijst de knoppen aan en maakt een drukkende
+      beweging.</dd>
+    <dt>Verschijnt na</dt><dd>Seconden rust voordat het handje begint. Het verdwijnt direct
+      zodra iemand het scherm aanraakt.</dd>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 12 ═══ -->
+<section class="ch" id="t-saver">
+  <div class="ch-head"><div class="ch-num">12</div><div>
+    <h2>Screensaver</h2>
+    <p class="lead measure">Wat de box doet als er niemand staat — en optioneel ook wat er
+    achter de knoppen door speelt als er wél iemand staat.</p>
+  </div></div>
+
+  <div class="wwww">
+    <div><dt>Wie</dt><dd>De bouwer; in een showroom is dit vaak het meest bekeken
+      onderdeel.</dd></div>
+    <div><dt>Wat</dt><dd>Aan/uit, wachttijd, playlist, overgang en achtergrondmodus.</dd></div>
+    <div><dt>Waar</dt><dd>Achtste tabblad.</dd></div>
+    <div><dt>Waarom</dt><dd>Een holobox staat het grootste deel van de dag alleen. Een zwart
+      scherm trekt niemand; een lus die doorloopt wel.</dd></div>
+  </div>
+
+  <div class="split">
+    <figure><div class="panelshot tall">
+      <img src="img/paneel-saver.webp" alt="Het paneel Screensaver" width="371" height="976" loading="lazy">
+    </div></figure>
+    <div class="tw"><table>
+      <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+      <tbody>
+        <tr><td>Screensaver aan</td><td>Start vanzelf na rust; aanraking brengt de knoppen
+          direct terug.</td><td>De terugweg moet onmiddellijk zijn, anders denkt de bezoeker
+          dat de box niet reageert.</td></tr>
+        <tr><td>Start na</td><td>Seconden zonder aanraking.</td>
+          <td>120 s is een goede showroomwaarde; op een drukke beurs mag het korter.</td></tr>
+        <tr><td>Ook op de achtergrond draaien</td><td>De playlist speelt — met dezelfde
+          overgangen — áchter de knoppen door.</td><td>Vervangt zolang hij aanstaat de losse
+          achtergrondvideo van de scène.</td></tr>
+        <tr><td>Playlist</td><td>De video's in volgorde; daarna opnieuw.</td>
+          <td>Eén video loopt naadloos in een lus, zonder zwart tussenbeeld.</td></tr>
+        <tr><td>Overgang</td><td>Crossfade, via zwart, zoom-crossfade (Ken Burns), schuiven
+          van rechts — of geen. Met een instelbare duur van 0,3 tot 3 s.</td>
+          <td>Een harde cut tussen twee sferen leest als een storing. De overgang start
+          zoveel seconden vóór het einde van de lopende video, zodat de wissel overlapt.</td></tr>
+        <tr><td>Nu testen</td><td>Start de screensaver meteen.</td>
+          <td>Zodat je niet twee minuten hoeft te wachten om je werk te zien.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 13 ═══ -->
+<section class="ch" id="t-cam">
+  <div class="ch-head"><div class="ch-num">13</div><div>
+    <h2>Camera</h2>
+    <p class="lead measure">Aanwezigheidsdetectie: de box wekt zichzelf wanneer iemand
+    ervoor blijft staan.</p>
+  </div></div>
+
+  <div class="wwww">
+    <div><dt>Wie</dt><dd>De installateur, samen met wie over privacy gaat.</dd></div>
+    <div><dt>Wat</dt><dd>Aan/uit, cameratest, camerakeuze, sta-tijd en gevoeligheid.</dd></div>
+    <div><dt>Waar</dt><dd>Negende tabblad.</dd></div>
+    <div><dt>Waarom</dt><dd>Een screensaver die pas op aanraking stopt, mist de bezoeker die
+      twijfelt. Met detectie komen de knoppen terug voordat hij iets hoeft te doen.</dd></div>
+  </div>
+
+  <div class="split">
+    <figure><div class="panelshot">
+      <img src="img/paneel-cam.webp" alt="Het paneel Camera" width="371" height="625" loading="lazy">
+    </div></figure>
+    <div class="tw"><table>
+      <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+      <tbody>
+        <tr><td>Detectie aan</td><td>Zet aanwezigheidsdetectie in.</td>
+          <td>De browser vraagt eenmalig toestemming voor de camera.</td></tr>
+        <tr><td>Camera inschakelen &amp; testen</td><td>Toont het live beeld met een
+          statusregel.</td><td>Om te controleren dat de juiste camera de juiste kant op
+          kijkt.</td></tr>
+        <tr><td>Camera</td><td>Welke camera, als er meerdere zijn.</td>
+          <td>Een all-in-one-pc heeft er vaak twee.</td></tr>
+        <tr><td>Minimale sta-tijd</td><td>Hoe lang iemand moet blijven staan.</td>
+          <td>Voorbijgangers tellen niet mee — anders wekt de box zichzelf de hele dag.</td></tr>
+        <tr><td>Gevoeligheid</td><td>1 tot 10.</td>
+          <td>Hoger in een donkere ruimte, lager bij veel loop erlangs.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="note"><span class="t">Privacy</span>
+    <p>Het camerabeeld wordt uitsluitend lokaal verwerkt: er wordt niets opgeslagen en
+    niets verstuurd. De software kijkt alleen of er beweging in beeld blijft — geen
+    gezichten, geen herkenning.</p></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 14 ═══ -->
+<section class="ch" id="t-share">
+  <div class="ch-head"><div class="ch-num">14</div><div>
+    <h2>Beheer &amp; device</h2>
+    <p class="lead measure">Het langste tabblad, en het enige dat over de holobox als
+    <em>apparaat</em> gaat in plaats van over de presentatie.</p>
+  </div></div>
+
+  <div class="wwww">
+    <div><dt>Wie</dt><dd>De installateur en de beheerder op afstand.</dd></div>
+    <div><dt>Wat</dt><dd>Zes blokken: opslag, verhuizen, beheer op afstand, continu bedrijf,
+      beveiliging en statistieken.</dd></div>
+    <div><dt>Waar</dt><dd>Tiende tabblad.</dd></div>
+    <div><dt>Waarom</dt><dd>Deze instellingen zet je één keer bij de oplevering en daarna
+      nooit meer. Ze staan achteraan zodat ze de dagelijkse workflow niet in de weg
+      zitten.</dd></div>
+  </div>
+
+  <div class="split">
+    <figure><div class="panelshot tall">
+      <img src="img/paneel-share.webp" alt="Het volledige paneel Beheer en device" width="371" height="2660" loading="lazy">
+    </div></figure>
+    <div>
+      <h4>Naar een andere computer</h4>
+      <ol class="steps">
+        <li><b>Ontwerp exporteren</b> — levert een klein <code>.json</code>-bestand met alle
+          scènes, knoppen en instellingen. Geen video's.</li>
+        <li><b>Neem de mediabestanden mee</b> in een map of op een USB-stick.</li>
+        <li><b>Importeer</b> op de andere pc en gebruik <b>Media opnieuw koppelen</b> om
+          dezelfde bestanden aan te wijzen.</li>
+      </ol>
+      <div class="note why"><span class="t">Waarom niet alles in één bestand</span>
+        <p>Een showroomproject is al snel enkele gigabytes aan 4K-video. Eén exportbestand
+        daarvan zou onwerkbaar zijn om te mailen, te versioneren of te herstellen. Het
+        ontwerp blijft daarom klein en de media apart.</p></div>
+    </div>
+  </div>
+
+  <h3>Beheer op afstand</h3>
+  <p class="measure">Zet je dit aan, dan meldt de box zich uit zichzelf bij je eigen
+  beheerserver (<code>server.js</code>). Daarna zie je hem in het beheerpaneel staan.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+    <tbody>
+      <tr><td>Serveradres</td><td>De URL van je beheerserver.</td>
+        <td>De box belt naar buiten; je hoeft geen poort naar de showroom open te zetten.</td></tr>
+      <tr><td>Device-key</td><td>De sleutel uit het beheerpaneel → Holoboxen.</td>
+        <td>Identificeert precies deze box. Zonder key geen koppeling.</td></tr>
+      <tr><td>Interval</td><td>Hoe vaak de box zich meldt, in seconden.</td>
+        <td>10 s geeft een live gevoel; hoger is zuiniger op een mobiele verbinding.</td></tr>
+      <tr><td>Gepubliceerde ontwerpen accepteren</td><td>De server mag een nieuw ontwerp
+        naar deze box sturen.</td><td>Uit zetten als deze box handmatig beheerd moet
+        blijven.</td></tr>
+      <tr><td>Verbinding testen</td><td>Eén keer contact maken en de uitslag tonen.</td>
+        <td>Zodat je bij de oplevering weet dat het werkt, en niet pas de dag erna.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="measure">Via het beheerpaneel kun je daarna per box: de live status zien, een
+  schermafdruk opvragen, het volume zetten, herstarten en een ontwerp publiceren.</p>
+
+  <h3>Continu bedrijf &amp; onderhoud</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+    <tbody>
+      <tr><td>Zelfonderhoud</td><td>Ruimt tijdens rust animaties, caches en videobuffers op.</td>
+        <td>Zodat de box weken achter elkaar vloeiend blijft draaien in plaats van langzaam
+        vol te lopen.</td></tr>
+      <tr><td>Geheugengrens</td><td>Vanaf hoeveel MB er wordt ingegrepen.</td>
+        <td>900 MB is de standaard; op een zwaardere pc mag hij hoger.</td></tr>
+      <tr><td>Nachtelijke verversing</td><td>Herstart de presentatie één keer per nacht.</td>
+        <td>Alleen als er niemand kijkt — een herstart tijdens een demo is erger dan de
+        kwaal.</td></tr>
+      <tr><td>Tijdstip</td><td>Het uur van die herstart.</td>
+        <td>Zet het ruim vóór openingstijd.</td></tr>
+      <tr><td>Watchdog</td><td>Grijpt in als het beeld zoveel seconden stilstaat.</td>
+        <td>Loopt de weergave alsnog vast, dan herstart de presentatie automatisch. In de
+        Windows-app wordt de app zelf opnieuw gestart als herladen niet helpt.</td></tr>
+      <tr><td>Nu opruimen · Nu herstarten</td><td>Handmatig, meteen.</td>
+        <td>Voor tijdens een servicebezoek.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Beveiliging en statistieken</h3>
+  <div class="kv">
+    <dt>PIN instellen</dt><dd>Vergrendelt het menu en de verplaats-modus voor bezoekers.
+      Zonder PIN kan iedereen die het tandwiel vindt het ontwerp aanpassen.</dd>
+    <dt>Verborgen gebaar</dt><dd>5× snel tikken in de hoek linksboven opent het menu ook wanneer de
+      bedieningsknoppen onzichtbaar zijn. Onthoud dit — anders kom je op een kioskbox niet
+      meer binnen.</dd>
+    <dt>Statistieken</dt><dd>Knopinteracties, starts en voltooiingen. Alleen op dit
+      apparaat, nooit verstuurd.</dd>
+    <dt>Alles wissen</dt><dd>Verwijdert ontwerp én media van deze computer. Er is geen
+      ongedaan maken.</dd>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 15 ═══ -->
+<section class="ch" id="t-help">
+  <div class="ch-head"><div class="ch-num">15</div><div>
+    <h2>Help</h2>
+    <p class="lead measure">Een korte kaart in de app zelf: vier stappen om te beginnen,
+    hoe je offline op een andere pc draait, en hoe je 4K soepel krijgt.</p>
+  </div></div>
+
+  <div class="split">
+    <figure><div class="panelshot">
+      <img src="img/paneel-help.webp" alt="Het Help-paneel" width="371" height="684" loading="lazy">
+    </div></figure>
+    <div>
+      <h4>Soepel 4K</h4>
+      <p>Video decodeert standaard op de videokaart. Hapert 4K op een trage pc, start
+      Chrome of Edge dan met deze vlaggen:</p>
+      <pre class="cmd">chrome --kiosk --autoplay-policy=no-user-gesture-required
+      --ignore-gpu-blocklist --enable-gpu-rasterization
+      --enable-zero-copy "pad\naar\index.html"</pre>
+      <p>Controleer via <code>chrome://gpu</code> of <b>Video Decode: Hardware
+      accelerated</b> groen is. Staat hij op software, dan trekt de processor de 4K niet
+      en gaat de presentatie schokken.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 16 ═══ -->
+<section class="ch" id="h16">
+  <div class="ch-head"><div class="ch-num">16</div><div>
+    <h2>De bezoekerskant</h2>
+    <p class="lead measure">Wat er gebeurt als iemand de holobox aanraakt. Drie
+    gebeurtenissen, meer zijn het er niet.</p>
+  </div></div>
+
+  <h3>1 · Een video afspelen</h3>
+  <figure>
+    <div class="shot">
+      <img src="img/afspelen.webp" alt="Een video speelt schermvullend af" width="1600" height="1000" loading="lazy">
+      <span class="pin" style="left:97%;top:4%">1</span>
+    </div>
+    <ul class="legend">
+      <li><span class="n">1</span><span><b>Stoppen</b> <span class="q">— of de video loopt af
+        en de knoppen komen vanzelf terug. Met “laatste beeld vasthouden” blijft het slotbeeld
+        staan in plaats van dat het scherm zwart flitst.</span></span></li>
+    </ul>
+    <figcaption>De knoppen zijn weg omdat <b>Knoppen verbergen tijdens afspelen</b> aanstaat.
+    Twee spelers wisselen elkaar af, zodat een playlist zonder zwart tussenbeeld
+    doorloopt.</figcaption>
+  </figure>
+
+  <h3>2 · Een 3D-object bekijken</h3>
+  <p class="measure">Slepen draait het object, knijpen zoomt. Het model draait ook uit
+  zichzelf, op de snelheid die je bij 3D-objecten hebt gezet. Na de ingestelde rusttijd
+  sluit de viewer vanzelf en staat de box weer klaar voor de volgende bezoeker.</p>
+
+  <h3>3 · Naar een andere scène</h3>
+  <figure>
+    <div class="shot">
+      <img src="img/podium-scene2.webp" alt="De tweede scène met twee producttegels en een terugknop" width="1600" height="1000" loading="lazy">
+      <span class="pin" style="left:50%;top:76%">1</span>
+    </div>
+    <ul class="legend">
+      <li><span class="n">1</span><span><b>Terug</b> <span class="q">— een knop met de actie
+        “Terug”. Staat “Vegen om terug te gaan” aan, dan kan de bezoeker ook gewoon naar
+        rechts vegen.</span></span></li>
+    </ul>
+    <figcaption>De tegels landen opnieuw, in dezelfde bewegingstaal.
+    <b>De volgorde waarin ze landen vertelt de bezoeker waar hij moet kijken.</b></figcaption>
+  </figure>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 17 ═══ -->
+<section class="ch" id="h17">
+  <div class="ch-head"><div class="ch-num">17</div><div>
+    <h2>Publiceren</h2>
+    <p class="lead measure">De laatste stap. De software controleert het ontwerp en zet het
+    klaar — op deze box, of op de boxen die aan je server hangen.</p>
+  </div></div>
+
+  <figure>
+    <div class="shot">
+      <img src="img/publiceren.webp" alt="Het publiceervenster met controles en doelapparaten" width="1600" height="1000" loading="lazy">
+    </div>
+    <figcaption>Slaagt een controle niet, dan zegt het venster wát er mis is — niet alleen
+    dát er iets mis is.</figcaption>
+  </figure>
+
+  <div class="tw"><table>
+    <thead><tr><th>Wat er wordt gecontroleerd</th><th>Wanneer het misgaat</th></tr></thead>
+    <tbody>
+      <tr><td>Media</td><td>Een knop verwijst naar een bestand dat niet meer in de
+        bibliotheek staat.</td></tr>
+      <tr><td>Scènes</td><td>Een knop wijst naar een scène die is verwijderd, of de
+        homescène ontbreekt.</td></tr>
+      <tr><td>Opslag</td><td>Er is te weinig ruimte op het apparaat voor wat je wilt
+        publiceren.</td></tr>
+      <tr><td>Doelapparaten</td><td>Je kiest zelf welke gekoppelde boxen dit ontwerp
+        krijgen. Zonder koppeling publiceer je alleen lokaal.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note"><span class="t">Publiceren is niet opslaan</span>
+    <p>Opslaan gebeurt continu, vanzelf. Publiceren is het moment waarop je zegt: <em>deze
+    versie mag naar buiten</em>. De statusbalk toont daarom twee losse dingen — of alles is
+    opgeslagen, en wanneer je voor het laatst hebt gepubliceerd.</p></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 18 ═══ -->
+<section class="ch" id="h18">
+  <div class="ch-head"><div class="ch-num">18</div><div>
+    <h2>Waar staat alles?</h2>
+    <p class="lead measure">Drie plekken, elk met een eigen rol. Weet je deze drie, dan weet
+    je ook wat je moet meenemen bij een verhuizing.</p>
+  </div></div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Plek</th><th>Wat erin zit</th><th>Wanneer het weg is</th></tr></thead>
+    <tbody>
+      <tr><td>localStorage<br><code>hwh_studio_config_v1</code></td>
+        <td>Het hele ontwerp: scènes, knoppen, kleuren, motion, alle instellingen. Een paar
+        honderd kilobyte.</td>
+        <td>Bij “Alles wissen”, bij het legen van de browsergegevens, of in een
+        privévenster.</td></tr>
+      <tr><td>IndexedDB<br><code>hwh_studio</code> → <code>media</code></td>
+        <td>De bestanden zelf: video's, afbeeldingen, 3D-modellen. Gigabytes.</td>
+        <td>Zelfde momenten. Media zijn het duurst om kwijt te raken — bewaar ze ook
+        ergens anders.</td></tr>
+      <tr><td>Het exportbestand<br><code>.json</code></td>
+        <td>Een kopie van het ontwerp, zonder media.</td>
+        <td>Nooit — dit is je back-up. Maak er een bij elke oplevering.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note warn"><span class="t">De ene regel die telt</span>
+    <p>Het ontwerp zit in de browser van <em>deze</em> computer, onder <em>dit</em>
+    browserprofiel. Een andere browser, een ander Windows-account of een privévenster ziet
+    een lege studio. Exporteer daarom na elke sessie.</p></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 19 ═══ -->
+<section class="ch" id="h19">
+  <div class="ch-head"><div class="ch-num">19</div><div>
+    <h2>Wie doet wat</h2>
+    <p class="lead measure">Vier rollen komen deze software tegen. Ze raken elk een ander
+    deel aan, en dat is precies waarom de tabbladen in deze volgorde staan.</p>
+  </div></div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Rol</th><th>Raakt aan</th><th>Wat die nooit hoeft te openen</th></tr></thead>
+    <tbody>
+      <tr><td>Bezoeker</td><td>Alleen het podium: tegels aanraken, 3D draaien, terugvegen.</td>
+        <td>Alles. Met een PIN komt hij de editor niet eens in.</td></tr>
+      <tr><td>Bouwer<br><span style="font-weight:400;color:var(--ink-3)">(marketing, standbouw)</span></td>
+        <td>Media, Knoppen &amp; scènes, Scherm &amp; scène, Vormgeving, Motion,
+        Screensaver.</td>
+        <td>Camera en Beheer &amp; device.</td></tr>
+      <tr><td>Installateur</td><td>Camera, Beheer &amp; device, Help, publiceren, PIN.</td>
+        <td>De vormgeving — die is al gemaakt.</td></tr>
+      <tr><td>Beheerder op afstand</td><td>Het beheerpaneel: status, schermafdruk, volume,
+        herstart, ontwerp publiceren.</td>
+        <td>De box zelf; die staat in een andere stad.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>De eerste keer opleveren, in volgorde</h3>
+  <ol class="steps">
+    <li><b>Media</b> — zet alle video's, afbeeldingen en modellen in de bibliotheek.</li>
+    <li><b>Knoppen &amp; scènes</b> — bouw de scènes en zet de tegels op hun plek.</li>
+    <li><b>Scherm &amp; scène</b> — titel, achtergrond, oriëntatie, kioskmodus.</li>
+    <li><b>Vormgeving</b> — logo, lettertype, frame. Eén keer, geldt voor alles.</li>
+    <li><b>Motion</b> — kies een preset, speel hem één keer af, klaar.</li>
+    <li><b>Screensaver</b> — playlist en wachttijd.</li>
+    <li><b>Camera</b> — alleen als er een camera hangt.</li>
+    <li><b>Beheer &amp; device</b> — koppelen aan de server, zelfonderhoud aan, PIN zetten.</li>
+    <li><b>Publiceren</b>, en daarna <b>exporteren</b> als back-up.</li>
+  </ol>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 20 ═══ -->
+<section class="ch" id="h20">
+  <div class="ch-head"><div class="ch-num">20</div><div>
+    <h2>Als er iets misgaat</h2>
+    <p class="lead measure">De klachten die in de praktijk voorkomen, met de oorzaak
+    erachter.</p>
+  </div></div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Wat je ziet</th><th>Waarschijnlijke oorzaak</th><th>Wat je doet</th></tr></thead>
+    <tbody>
+      <tr><td>Ik kan een knop niet verslepen</td><td>Het canvas staat vergrendeld.</td>
+        <td>Klik op <b>Bewerken</b> in de canvasbalk, of op het slotje linksonder op het
+        podium.</td></tr>
+      <tr><td>Een knop is leeg geworden</td><td>De media eronder is verwijderd of de
+        koppeling is verbroken.</td><td>Selecteer de knop en kies opnieuw een bestand bij
+        <b>Media</b> in de inspector.</td></tr>
+      <tr><td>Video hapert op 4K</td><td>De videokaart decodeert niet.</td>
+        <td>Controleer <code>chrome://gpu</code> en start met de vlaggen uit hoofdstuk 15.</td></tr>
+      <tr><td>3D-object is traag of verschijnt niet</td><td>Het model is zwaarder dan de
+        detail-limiet, of de textuur ontbreekt.</td><td>Zet de limiet lager, of vraag om een
+        <code>.glb</code> in plaats van <code>.obj</code>.</td></tr>
+      <tr><td>Website-tegel blijft leeg</td><td>De site weigert in een venster te worden
+        geladen.</td><td>De software toont dan een hint met de mogelijkheid de site in een
+        eigen venster te openen. Niet elke site staat inbedden toe.</td></tr>
+      <tr><td>“Nog niet gepubliceerd” blijft staan</td><td>Je hebt opgeslagen maar niet
+        gepubliceerd.</td><td>Dat zijn twee dingen — zie hoofdstuk 17.</td></tr>
+      <tr><td>Studio is leeg na verhuizen</td><td>Het ontwerp zat in de browseropslag van de
+        andere pc.</td><td>Importeer je <code>.json</code> en koppel de media opnieuw.</td></tr>
+      <tr><td>Ik kom niet in het menu op een kioskbox</td><td>Bedieningsknoppen verborgen,
+        of er zit een PIN op.</td><td>5× snel tikken linksboven. Daarna de PIN.</td></tr>
+      <tr><td>Het beeld staat stil</td><td>De weergave is vastgelopen.</td>
+        <td>De watchdog herstart automatisch na de ingestelde seconden. Gebeurt dat niet,
+        dan staat zelfonderhoud uit.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 21 ═══ -->
+<section class="ch" id="h21">
+  <div class="ch-head"><div class="ch-num">21</div><div>
+    <h2>Sneltoetsen &amp; woordenlijst</h2>
+  </div></div>
+
+  <h3>Sneltoetsen</h3>
+  <div class="kv">
+    <dt><kbd>Ctrl</kbd>+<kbd>Z</kbd></dt><dd>Ongedaan maken — werkt over alle tabbladen heen.</dd>
+    <dt><kbd>Ctrl</kbd>+<kbd>Y</kbd></dt><dd>Opnieuw.</dd>
+    <dt><kbd>Shift</kbd> + klik</dt><dd>Meerdere knoppen selecteren in de bewerkmodus.</dd>
+    <dt>5× tikken in de hoek linksboven</dt><dd>Opent het menu ook als de bedieningsknoppen verborgen zijn.</dd>
+    <dt>Naar rechts vegen</dt><dd>Vorige scène, als “Vegen om terug te gaan” aanstaat.</dd>
+  </div>
+
+  <h3>Woordenlijst</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Woord</th><th>Wat het betekent in deze software</th></tr></thead>
+    <tbody>
+      <tr><td>Podium</td><td>De bezoekerskant: het scherm dat op de holobox staat.</td></tr>
+      <tr><td>Canvas</td><td>De live weergave van het podium, midden in de editor.</td></tr>
+      <tr><td>Tegel / knop</td><td>Hetzelfde ding. “Tegel” gebruiken we voor hoe hij eruitziet,
+        “knop” voor wat hij doet.</td></tr>
+      <tr><td>Scène</td><td>Eén schermvulling met knoppen. De homescène is het startpunt.</td></tr>
+      <tr><td>Actie</td><td>Wat er gebeurt bij aanraken: media afspelen, volgende scène,
+        terug, home, website openen of taal wisselen.</td></tr>
+      <tr><td>Entrance</td><td>Hoe de knoppen het scherm binnenkomen.</td></tr>
+      <tr><td>Stagger</td><td>Het gat in tijd tussen twee opeenvolgende knoppen die landen.</td></tr>
+      <tr><td>Overshoot</td><td>Het stukje dat een tegel voorbij zijn eindplek schiet voordat
+        hij tot rust komt. Eén keer, nooit twee.</td></tr>
+      <tr><td>Galaxy Tiles</td><td>Het huiseffect: tegels komen van onderaf met eigen timing
+        en lichte rotatie.</td></tr>
+      <tr><td>Seed</td><td>Vast getal dat de willekeur stuurt. Dezelfde seed geeft altijd
+        exact dezelfde landing.</td></tr>
+      <tr><td>Video Frame Style</td><td>De stijl van het kader om een videoknop: kleur, dikte,
+        diepte, gloss, schaduw en gloed.</td></tr>
+      <tr><td>Kioskmodus</td><td>Bedieningsknoppen vrijwel onzichtbaar, voor publieke
+        opstelling.</td></tr>
+      <tr><td>Watchdog</td><td>De bewaker die de presentatie herstart als het beeld
+        stilstaat.</td></tr>
+      <tr><td>Device-key</td><td>De sleutel waarmee één box zich bij je beheerserver
+        identificeert.</td></tr>
+    </tbody>
+  </table></div>
+
+  <hr class="soft">
+  <p class="measure" style="color:var(--ink-3);font-size:14.5px">
+    Dit boek hoort bij versie 2.9 van de HereWeHolo Experience Manager. De bewegingswetten
+    achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
+    in werking zien in <code>motion/motion-system.html</code>.
+  </p>
+</section>
+
+</main>
+</div>
+</body>
+</html>

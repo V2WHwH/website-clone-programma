@@ -624,9 +624,13 @@
   #btnList > .card:nth-of-type(even) {
     background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 40%), #10161f; }
 
-  .media-item { display: flex; align-items: center; gap: 10px; }
+  .media-item { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .media-item .grow { flex: 1 1 130px; }
   .media-item video { width: 76px; height: 46px; object-fit: cover; border-radius: 7px; background: #000; flex: none; }
-  .media-item .nm { font-size: 13px; overflow-wrap: anywhere; color: var(--p-ink); }
+  /* Bestandsnaam op één regel met puntjes: afbreken midden in een woord las
+     onleesbaar zodra de knoppen ernaast de ruimte opeisen. */
+  .media-item .nm { font-size: 13px; color: var(--p-ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .media-item .sz { font-size: 11.5px; color: var(--p-ink-3); }
 
   .swatches { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
@@ -5115,7 +5119,7 @@ function renderMediaList() {
         : el('video', { src: m.url, preload: 'metadata', muted: '' });
     list.append(el('div', { class: 'card' }, el('div', { class: 'media-item' },
       thumb,
-      el('div', { class: 'grow' }, el('div', { class: 'nm' }, m.name), el('div', { class: 'sz' }, (m.kind === 'model' ? '3D-object · ' : '') + fmtSize(m.size))),
+      el('div', { class: 'grow' }, el('div', { class: 'nm', title: m.name }, m.name), el('div', { class: 'sz' }, (m.kind === 'model' ? '3D-object · ' : '') + fmtSize(m.size))),
       m.kind === 'video' ? el('button', { class: 'btn small', title: 'Afspeelinstellingen',
         onclick: (e) => {
           const card = e.target.closest('.card');
