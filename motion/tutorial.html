@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>HereWeHolo — de software legt zichzelf uit</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="hwh-motion.css">
+<style>
+  :root {
+    --bg: #05080d; --s1: #0D1218; --s2: #111820; --s3: #16202A;
+    --line: rgba(255,255,255,.09); --ink: #F5F7FA; --ink2: #AAB4C0; --ink3: #677482;
+    --teal: #15F2E0; --blue: #29B6F6; --purple: #9D4BFF; --magenta: #E34EFF;
+    --ui: 'Inter','Manrope','Segoe UI',system-ui,sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: #000; color: var(--ink); font-family: var(--ui);
+    display: flex; align-items: center; justify-content: center; }
+
+  /* 16:9 speelvlak dat meeschaalt — zo is een schermopname altijd goed gekaderd */
+  #film { position: relative; width: min(100vw, 177.78vh); height: min(56.25vw, 100vh);
+    background: radial-gradient(130% 110% at 50% 12%, #101c28 0%, #05080d 68%);
+    overflow: hidden; }
+  #stage { position: absolute; inset: 0; perspective: 1400px; }
+
+  /* ---------- herbruikbare filmelementen ---------- */
+  .tile { position: absolute; border-radius: 16px; overflow: hidden;
+    background: linear-gradient(135deg, var(--c1, #29B6F6), var(--c2, #9D4BFF));
+    box-shadow: 0 18px 46px rgba(0,0,0,.55), 0 0 30px var(--glow, rgba(41,182,246,.3));
+    display: flex; align-items: stretch; padding: 5px; }
+  .tile .face { flex: 1; border-radius: 11px; background:
+      linear-gradient(160deg, #1b2437, #090d16);
+    box-shadow: inset 0 4px 14px rgba(0,0,0,.55);
+    display: flex; flex-direction: column; justify-content: flex-end; padding: 12px 14px; }
+  .tile .ttl { font-size: 15px; font-weight: 600; }
+  .tile .sub { font-size: 11px; color: var(--ink2); margin-top: 2px; }
+  .tile .ico { position: absolute; top: 14px; left: 16px; font-size: 19px; opacity: .95; }
+
+  .center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    text-align: center; width: 90%; }
+  .kicker { font-size: clamp(9px, 1.1vw, 13px); letter-spacing: .26em; color: var(--teal);
+    font-weight: 650; }
+  .title { font-size: clamp(26px, 5.2vw, 68px); font-weight: 650; letter-spacing: -.025em;
+    line-height: 1.04; margin-top: 12px; }
+  .subtitle { font-size: clamp(12px, 1.6vw, 20px); color: var(--ink2); margin-top: 14px; }
+
+  /* chapter kaart linksboven */
+  #chapter { position: absolute; left: 4%; top: 7%; }
+  #chapNo { font-size: clamp(9px, 1vw, 12px); letter-spacing: .24em; color: var(--teal); font-weight: 650; }
+  #chapTitle { font-size: clamp(18px, 2.6vw, 34px); font-weight: 650; letter-spacing: -.015em;
+    margin-top: 6px; }
+  #chapBar { width: 3px; background: var(--teal); position: absolute; left: -14px; top: 3px; height: 0; }
+
+  /* de ontlede landing (hoofdstuk 4) */
+  .marker { position: absolute; width: 1px; background: rgba(21,242,224,.5); top: 0; bottom: 0; opacity: 0; }
+  .marker span { position: absolute; top: 8px; left: 8px; font: 650 11px ui-monospace, monospace;
+    color: var(--teal); white-space: nowrap; }
+  .ghost { position: absolute; border: 1px dashed rgba(255,255,255,.28); border-radius: 16px; opacity: 0; }
+  .compare { position: absolute; font: 600 12px var(--ui); color: var(--ink2); opacity: 0; }
+
+  /* editor-schil (hoofdstuk 5) */
+  .ed { position: absolute; background: var(--s1); border: 1px solid var(--line); opacity: 0; }
+  .ed .lbl { font-size: 9px; letter-spacing: .18em; color: var(--ink3); font-weight: 650;
+    padding: 9px 11px; }
+  .edRow { height: 9px; background: rgba(255,255,255,.06); border-radius: 3px; margin: 6px 11px; }
+  .edRow.hi { background: rgba(21,242,224,.28); }
+
+  /* publiceren (hoofdstuk 6) */
+  .check { display: flex; align-items: center; gap: 12px; font-size: clamp(11px,1.4vw,17px);
+    color: var(--ink2); opacity: 0; margin: 9px 0; }
+  .check .ok { color: #22c55e; font-weight: 700; width: 18px; }
+
+  /* ---------- ondertitels ---------- */
+  #subs { position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%);
+    max-width: 76%; text-align: center; font-size: clamp(13px, 1.9vw, 23px); font-weight: 500;
+    line-height: 1.4; text-shadow: 0 2px 18px rgba(0,0,0,.9); pointer-events: none; }
+  #subs .cue { display: inline-block; background: rgba(4,7,11,.62); padding: 6px 16px;
+    border-radius: 10px; backdrop-filter: blur(4px); }
+
+  /* ---------- bediening ---------- */
+  #hud { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 18px;
+    display: flex; align-items: center; gap: 14px;
+    background: linear-gradient(transparent, rgba(0,0,0,.82));
+    opacity: 0; transition: opacity .3s; }
+  #film:hover #hud, #hud.show { opacity: 1; }
+  #hud button { background: rgba(255,255,255,.08); border: 1px solid var(--line); color: var(--ink);
+    font: 500 12px var(--ui); padding: 8px 14px; border-radius: 9px; cursor: pointer; }
+  #hud button:hover { background: rgba(255,255,255,.16); }
+  #prog { flex: 1; height: 4px; background: rgba(255,255,255,.14); border-radius: 999px; overflow: hidden; }
+  #progFill { height: 100%; width: 0; background: linear-gradient(90deg, var(--teal), var(--purple)); }
+  #chapters { display: flex; gap: 6px; }
+  #chapters button { padding: 6px 9px; font-size: 11px; }
+  #chapters button.on { border-color: var(--teal); color: var(--teal); }
+  #time { font: 500 11px ui-monospace, monospace; color: var(--ink3); min-width: 74px; text-align: right; }
+
+  /* startscherm */
+  #gate { position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 26px; background: #04070b; z-index: 20;
+    text-align: center; padding: 6%; }
+  #gate .mark { width: 74px; height: 74px; border-radius: 22px;
+    background: linear-gradient(135deg, var(--teal), var(--purple));
+    box-shadow: 0 0 60px rgba(21,242,224,.35); }
+  #gate h1 { font-size: clamp(21px, 3.4vw, 40px); font-weight: 650; letter-spacing: -.02em; }
+  #gate p { color: var(--ink2); max-width: 42ch; font-size: clamp(12px,1.5vw,17px); }
+  #gate button { background: linear-gradient(120deg, var(--purple), var(--magenta)); border: 0;
+    color: #fff; font: 650 15px var(--ui); padding: 14px 30px; border-radius: 12px; cursor: pointer;
+    box-shadow: 0 10px 34px rgba(157,75,255,.4); }
+  #gate .hint { font-size: 12px; color: var(--ink3); }
+</style>
+</head>
+<body>
+<div id="film">
+  <div id="stage"></div>
+  <div id="subs"></div>
+
+  <div id="hud">
+    <button id="btnPlay">Pauze</button>
+    <button id="btnBack">&#8630;</button>
+    <div id="prog"><div id="progFill"></div></div>
+    <span id="time">0:00 / 0:00</span>
+    <div id="chapters"></div>
+    <button id="btnMute">Geluid aan</button>
+  </div>
+
+  <div id="gate">
+    <div class="mark"></div>
+    <h1>De software legt zichzelf uit</h1>
+    <p>Geen schermopname met een stem eroverheen. Wat je hier ziet bewegen ís de
+       touchsoftware — dezelfde tegels, dezelfde beweging, hetzelfde geluid.</p>
+    <button id="btnStart">Start de uitleg</button>
+    <div class="hint">4 minuten · Nederlands gesproken · met ondertiteling</div>
+  </div>
+</div>
+
+<script src="hwh-motion.js"></script>
+<script src="hwh-audio.js"></script>
+<script>
+const M = HWHMotion, A = HWHAudio;
+const stage = document.getElementById('stage');
+const subs = document.getElementById('subs');
+const $ = (s) => document.querySelector(s);
+
+/* ============================================================== SPRAAK
+   Twee bronnen, in deze volgorde:
+     1. motion/voice/ch1.mp3 … ch7.mp3  — de gegenereerde studiostem
+     2. de ingebouwde spraaksynthese van het apparaat (Nederlands)
+   Zo werkt de tutorial ook volledig offline op de holobox zelf, en wordt
+   hij automatisch beter zodra de mp3's ernaast staan. */
+const Voice = {
+  mode: 'none',
+  audio: null,
+  probe() {
+    // Met een audio-element proben in plaats van fetch: dat werkt ook
+    // rechtstreeks vanaf schijf (file://), waar fetch op CORS stuit.
+    return new Promise((resolve) => {
+      const a = new Audio('voice/ch1.mp3');
+      let settled = false;
+      const done = (mode) => {
+        if (settled) return;
+        settled = true;
+        this.mode = mode;
+        resolve(mode);
+      };
+      a.addEventListener('canplaythrough', () => done('file'), { once: true });
+      a.addEventListener('loadedmetadata', () => done('file'), { once: true });
+      a.addEventListener('error', () =>
+        done('speechSynthesis' in window ? 'tts' : 'none'), { once: true });
+      setTimeout(() => done('speechSynthesis' in window ? 'tts' : 'none'), 1200);
+      a.load();
+    });
+  },
+  speak(ch, text) {
+    this.stop();
+    if (this.mode === 'file') {
+      this.audio = new Audio('voice/ch' + ch + '.mp3');
+      this.audio.volume = 0.95;
+      this.audio.play().catch(() => { this.mode = 'tts'; this.speak(ch, text); });
+      return;
+    }
+    if (this.mode !== 'tts') return;
+    const u = new SpeechSynthesisUtterance(text);
+    const nl = speechSynthesis.getVoices().find((v) => /^nl/i.test(v.lang));
+    if (nl) u.voice = nl;
+    u.lang = 'nl-NL'; u.rate = 0.98; u.pitch = 1;
+    speechSynthesis.speak(u);
+  },
+  stop() {
+    if (this.audio) { this.audio.pause(); this.audio = null; }
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+  }
+};
+
+/* ============================================================ HULPJES */
+function make(cls, html, css) {
+  const el = document.createElement('div');
+  el.className = cls;
+  if (html) el.innerHTML = html;
+  if (css) el.style.cssText = css;
+  stage.appendChild(el);
+  return el;
+}
+function tile(x, y, w, h, opts) {
+  opts = opts || {};
+  const el = make('tile', `${opts.ico ? `<span class="ico">${opts.ico}</span>` : ''}
+    <div class="face">${opts.title ? `<div class="ttl">${opts.title}</div>` : ''}
+    ${opts.sub ? `<div class="sub">${opts.sub}</div>` : ''}</div>`,
+    `left:${x}%;top:${y}%;width:${w}%;height:${h}%;--c1:${opts.c1 || '#29B6F6'};
+     --c2:${opts.c2 || '#9D4BFF'};--glow:${opts.glow || 'rgba(41,182,246,.3)'};opacity:0`);
+  return el;
+}
+function chapterCard(no, title) {
+  const wrap = make('', '', 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none');
+  wrap.innerHTML = `<div id="chapter"><div id="chapBar"></div>
+    <div id="chapNo">${no}</div><div id="chapTitle">${title}</div></div>`;
+  const bar = wrap.querySelector('#chapBar');
+  const kick = wrap.querySelector('#chapNo');
+  const ttl = wrap.querySelector('#chapTitle');
+  bar.animate([{ height: '0px' }, { height: '52px' }],
+    { duration: M.TUTORIAL.lowerThird.bar, easing: M.EASE.enter, fill: 'both' });
+  M.textOn(kick, { role: 'label', delay: 150, silent: true });
+  M.textOn(ttl, { role: 'heading', delay: 200, silent: true });
+  A.text('display', { at: 180, count: 3 });
+  // aankondigen en dan wegwezen — de titel mag het beeld niet blijven bezetten
+  later(() => {
+    wrap.animate([{ opacity: 1 }, { opacity: 0 }],
+      { duration: 420, easing: M.EASE.exit, fill: 'both' });
+  }, 3600);
+  return wrap;
+}
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* Alles wat een hoofdstuk in de toekomst plant, hoort bij dát hoofdstuk.
+   Zonder deze registratie schrijven timers van een afgelopen scène nog in
+   het beeld van de volgende — zichtbaar als losse elementen die er niet
+   thuishoren, vooral bij het overslaan van hoofdstukken. */
+let sceneTimers = [];
+function later(fn, ms) {
+  const id = setTimeout(fn, ms);
+  sceneTimers.push(id);
+  return id;
+}
+function clear() {
+  sceneTimers.forEach(clearTimeout);
+  sceneTimers = [];
+  stage.innerHTML = '';
+}
+// Beeld leegmaken binnen één hoofdstuk, zonder de geplande vervolgfasen
+// van dat hoofdstuk te annuleren.
+function clearStage() { stage.innerHTML = ''; }
+
+/* ========================================================= ONDERTITELS
+   Cues met eigen timing; de tekst is identiek aan wat de stem zegt, zodat
+   de video ook zonder geluid volledig te volgen is. */
+let cueTimers = [];
+function runCues(cues) {
+  cueTimers.forEach(clearTimeout);
+  cueTimers = [];
+  subs.innerHTML = '';
+  cues.forEach((c) => {
+    cueTimers.push(setTimeout(() => {
+      subs.innerHTML = `<span class="cue">${c.t}</span>`;
+      const cue = subs.firstChild;
+      cue.animate([{ opacity: 0, transform: 'translateY(8px)' },
+                   { opacity: 1, transform: 'none' }],
+        { duration: 220, easing: M.EASE.settle, fill: 'both' });
+    }, c.at));
+  });
+  const last = cues[cues.length - 1];
+  cueTimers.push(setTimeout(() => { subs.innerHTML = ''; }, last.at + (last.dur || 2600)));
+}
+
+/* ============================================================ SCÈNES
+   Elk hoofdstuk: build() zet het beeld op, en de cues + geluiden lopen
+   op vaste tijden mee met de stem. */
+const CHAPTERS = [
+
+/* ---------------------------------------------------------------- 1 */
+{
+  no: 'HOOFDSTUK 1', title: 'Welkom', short: 'Intro', dur: 13000,
+  voice: 'Dit is de HereWeHolo Experience Manager. Hiermee maak je in een paar minuten een complete holobox-presentatie. Zonder programmeren. Kijk mee.',
+  cues: [
+    { at: 300,  t: 'Dit is de HereWeHolo Experience Manager.' },
+    { at: 3600, t: 'Hiermee maak je in een paar minuten een complete holobox-presentatie.' },
+    { at: 8200, t: 'Zonder programmeren. Kijk mee.' }
+  ],
+  build() {
+    const c = make('center', `<div class="kicker">HOLOBOX EXPERIENCE MANAGER</div>
+      <div class="title">De software legt<br>zichzelf uit</div>
+      <div class="subtitle">Alles wat je hier ziet bewegen, is de touchsoftware zelf.</div>`,
+      'top:34%');
+    const k = c.querySelector('.kicker'), t = c.querySelector('.title'), s = c.querySelector('.subtitle');
+    A.ambient(true);
+    M.textOn(k, { role: 'label', delay: 200, silent: true });
+    A.text('label', { at: 200, count: 3 });
+    M.textOn(t, { role: 'display', delay: 700, silent: true });
+    A.text('display', { at: 700, count: 5 });
+    M.textOn(s, { role: 'body', delay: 1800, silent: true });
+
+    // vier tegels landen als akkoord onder de titel
+    later(() => {
+      const xs = [12, 32.5, 53, 73.5];
+      const tiles = xs.map((x, i) => tile(x, 62, 14.5, 20, {
+        c1: ['#2b3f68', '#3d2b68', '#0f4c5c', '#4c2b5c'][i],
+        c2: ['#5b8dd6', '#9D4BFF', '#15F2E0', '#E34EFF'][i]
+      }));
+      M.choreograph(tiles, { sequence: 'leftRight', stagger: 'base', silent: true,
+        from: { y: 220, rotZ: -6, scale: .92 } });
+      A.sequence(4, { size: 'medium', stagger: 80, duration: 320 });
+    }, 8000);
+  }
+},
+
+/* ---------------------------------------------------------------- 2 */
+{
+  no: 'HOOFDSTUK 2', title: 'De tegel', short: 'Tegels', dur: 27000,
+  voice: 'Alles begint bij een tegel. Een tegel is wat de bezoeker aanraakt. Je kiest een video, geeft hem een naam, en zet hem waar je hem hebben wilt. Meer is het niet. En elke tegel kan iets anders doen: een video afspelen, een 3D-object tonen, een website openen, of doorgaan naar een volgende scène.',
+  cues: [
+    { at: 300,   t: 'Alles begint bij een tegel.' },
+    { at: 2600,  t: 'Een tegel is wat de bezoeker aanraakt.' },
+    { at: 5400,  t: 'Je kiest een video, geeft hem een naam,' },
+    { at: 8000,  t: 'en zet hem waar je hem hebben wilt. Meer is het niet.' },
+    { at: 12500, t: 'En elke tegel kan iets anders doen:' },
+    { at: 15200, t: 'een video afspelen · een 3D-object tonen' },
+    { at: 19000, t: 'een website openen · of naar een volgende scène gaan' }
+  ],
+  build() {
+    chapterCard('HOOFDSTUK 2', 'De tegel');
+    const t = tile(36, 26, 28, 44, { title: 'Oceans Deep', sub: 'ocean-wonders.mp4',
+      ico: '▶', c1: '#0f4c5c', c2: '#15F2E0', glow: 'rgba(21,242,224,.32)' });
+    later(() => {
+      M.land(t, { from: { y: 260, rotZ: -7, scale: .9, blur: 6 }, size: 'medium',
+        duration: 'surface', silent: true });
+      A.land('medium', { duration: 520 });
+    }, 500);
+
+    // vier rollen: de tegel toont wat hij allemaal kan zijn
+    const roles = [
+      { ico: '▶',  ttl: 'Video',     sub: 'speelt schermvullend af', c1: '#0f4c5c', c2: '#15F2E0' },
+      { ico: '◈',  ttl: '3D-object', sub: 'draaien met je vinger',   c1: '#3d2b68', c2: '#9D4BFF' },
+      { ico: '⊞',  ttl: 'Website',   sub: 'live in beeld',           c1: '#2b3f68', c2: '#29B6F6' },
+      { ico: '⇢',  ttl: 'Scène',     sub: 'naar het volgende menu',  c1: '#4c2b5c', c2: '#E34EFF' }
+    ];
+    later(() => {
+      M.leave(t, { to: { y: -40, scale: .9 }, duration: 260 });
+      const xs = [8, 29, 50, 71];
+      roles.forEach((r, i) => {
+        later(() => {
+          const el = tile(xs[i], 30, 19, 34, { title: r.ttl, sub: r.sub, ico: r.ico,
+            c1: r.c1, c2: r.c2 });
+          M.land(el, { from: { y: 190, rotZ: i % 2 ? 5 : -5, scale: .92 },
+            size: 'medium', silent: true });
+          A.land('medium', { duration: 320, degree: i });
+        }, i * 900);
+      });
+    }, 13000);
+  }
+},
+
+/* ---------------------------------------------------------------- 3 */
+{
+  no: 'HOOFDSTUK 3', title: 'Scènes', short: 'Scènes', dur: 25000,
+  voice: 'Een scène is één scherm vol tegels. Laat je een tegel naar een andere scène wijzen, dan bouw je een menu met lagen. De bezoeker tikt, gaat dieper, en komt met één veeg weer terug. De volgorde waarin de tegels landen vertelt hem waar hij moet kijken. Nog voordat hij iets gelezen heeft.',
+  cues: [
+    { at: 300,   t: 'Een scène is één scherm vol tegels.' },
+    { at: 3200,  t: 'Laat je een tegel naar een andere scène wijzen,' },
+    { at: 6000,  t: 'dan bouw je een menu met lagen.' },
+    { at: 8600,  t: 'De bezoeker tikt, gaat dieper,' },
+    { at: 11200, t: 'en komt met één veeg weer terug.' },
+    { at: 14200, t: 'De volgorde waarin de tegels landen' },
+    { at: 17000, t: 'vertelt hem waar hij moet kijken.' },
+    { at: 19800, t: 'Nog voordat hij iets gelezen heeft.' }
+  ],
+  build() {
+    chapterCard('HOOFDSTUK 3', 'Scènes');
+    const xs = [10, 31, 52, 73];
+    const tiles = xs.map((x, i) => tile(x, 32, 18, 30, {
+      title: ['Collectie', 'Ruimte', 'Oceaan', 'Lab'][i],
+      sub: i === 1 ? 'opent een scène' : '',
+      ico: i === 1 ? '⇢' : '▶',
+      c1: ['#2b3f68', '#4c2b5c', '#0f4c5c', '#3d2b68'][i],
+      c2: ['#5b8dd6', '#E34EFF', '#15F2E0', '#9D4BFF'][i]
+    }));
+    later(() => {
+      M.choreograph(tiles, { sequence: 'leftRight', stagger: 'base', silent: true,
+        from: { y: 200, rotZ: -5, scale: .93 } });
+      A.sequence(4, { stagger: 80, duration: 320 });
+    }, 400);
+
+    // tegel 2 opent een onderliggende scène
+    later(() => {
+      A.press();
+      tiles.forEach((el, i) => {
+        if (i === 1) return;
+        M.leave(el, { to: { y: 60, scale: .86, blur: 4 }, duration: 320, delay: i * 40 });
+      });
+      M.morphSilhouette(tiles[1], { width: '76%', height: '52%', radius: '18px' },
+        { from: { width: '18%', height: '30%', radius: '16px' }, duration: 620 });
+      tiles[1].style.left = '12%'; tiles[1].style.top = '26%';
+      tiles[1].animate([{ left: '31%', top: '32%' }, { left: '12%', top: '26%' }],
+        { duration: 620, easing: M.EASE.enter, fill: 'both' });
+      A.morph({ duration: 620 });
+    }, 9000);
+
+    // en de bezoeker veegt terug
+    later(() => {
+      A.back({ count: 3 });
+      M.leave(tiles[1], { to: { x: 220, scale: .9 }, duration: 380 });
+      later(() => {
+        tiles.forEach((el) => { el.style.cssText = el.style.cssText; });
+        const back = xs.map((x, i) => tile(x, 32, 18, 30, {
+          title: ['Collectie', 'Ruimte', 'Oceaan', 'Lab'][i], ico: '▶',
+          c1: ['#2b3f68', '#4c2b5c', '#0f4c5c', '#3d2b68'][i],
+          c2: ['#5b8dd6', '#E34EFF', '#15F2E0', '#9D4BFF'][i]
+        }));
+        M.choreograph(back, { sequence: 'centerOut', stagger: 'base', hero: back[1],
+          silent: true, from: { y: 180, rotZ: 4, scale: .93 } });
+        A.sequence(4, { stagger: 80, duration: 320 });
+      }, 420);
+    }, 13500);
+  }
+},
+
+/* ---------------------------------------------------------------- 4 */
+{
+  no: 'HOOFDSTUK 4', title: 'Beweging', short: 'Beweging', dur: 32000,
+  voice: 'En dan de beweging. Alles in deze software heeft massa. Niets verschijnt: alles arriveert. Een tegel komt van onderen, schiet één keer voorbij zijn plek, en komt dan tot rust. Eén keer. Nooit twee. Dat ene verschil is wat een scherm duur laat voelen in plaats van goedkoop. Kies een stijl, en je hele presentatie beweegt in één taal mee.',
+  cues: [
+    { at: 300,   t: 'En dan de beweging.' },
+    { at: 2200,  t: 'Alles in deze software heeft massa.' },
+    { at: 5000,  t: 'Niets verschijnt: alles arriveert.' },
+    { at: 8000,  t: 'Een tegel komt van onderen,' },
+    { at: 10200, t: 'schiet één keer voorbij zijn plek,' },
+    { at: 13000, t: 'en komt dan tot rust.' },
+    { at: 15400, t: 'Eén keer. Nooit twee.' },
+    { at: 18200, t: 'Dat ene verschil is wat een scherm duur laat voelen' },
+    { at: 22000, t: 'in plaats van goedkoop.' },
+    { at: 24600, t: 'Kies een stijl, en je hele presentatie beweegt mee.' }
+  ],
+  build() {
+    chapterCard('HOOFDSTUK 4', 'Beweging');
+
+    // Vier fasen die elkaar netjes opvolgen. Elke fase begint schoon:
+    // opgestapelde markeringen maken van een uitleg een rommeltje.
+    const phase = (fn) => { clearStage(); chapterCard('HOOFDSTUK 4', 'Beweging'); fn(); };
+
+    // A — de landing zoals hij hoort
+    later(() => phase(() => {
+      make('ghost', '', 'left:38%;top:28%;width:24%;height:40%;opacity:1');
+      const t = tile(38, 28, 24, 40, { title: 'Oceans Deep', ico: '▶',
+        c1: '#0f4c5c', c2: '#15F2E0', glow: 'rgba(21,242,224,.32)' });
+      M.land(t, { from: { y: 300, rotZ: -8, scale: .9, blur: 7 },
+        duration: 'surface', silent: true });
+      A.land('medium', { duration: 520 });
+    }), 7400);
+
+    // B — dezelfde landing, vertraagd, met de twee momenten erbij
+    later(() => phase(() => {
+      make('ghost', '', 'left:38%;top:28%;width:24%;height:40%;opacity:1');
+      const m55 = make('marker', '<span>55% — doorschot</span>',
+        'left:55%;top:14%;bottom:22%;opacity:1');
+      const m78 = make('marker', '<span>78% — tot rust</span>',
+        'left:78%;top:14%;bottom:22%;opacity:1;background:rgba(157,75,255,.5)');
+      m78.querySelector('span').style.color = '#9D4BFF';
+      const t = tile(38, 28, 24, 40, { title: 'Oceans Deep', ico: '▶',
+        c1: '#0f4c5c', c2: '#15F2E0', glow: 'rgba(21,242,224,.32)' });
+      M.land(t, { from: { y: 300, rotZ: -8, scale: .9, blur: 7 },
+        duration: 2600, autoDuration: false, silent: true });
+      A.land('medium', { duration: 2600 });
+    }), 10000);
+
+    // C — het verschil dat je moet HOREN: één doorschot tegenover twee
+    later(() => phase(() => {
+      const good = tile(11, 28, 24, 40, { title: 'Oceans Deep', ico: '▶',
+        c1: '#0f4c5c', c2: '#15F2E0', glow: 'rgba(21,242,224,.32)' });
+      const bad = tile(63, 28, 24, 40, { title: 'Oceans Deep', ico: '▶',
+        c1: '#4a3a20', c2: '#e5a44e', glow: 'rgba(229,164,78,.26)' });
+      const lblA = make('compare', '&#10003; één doorschot — massa',
+        'left:11%;top:71%;color:#22c55e;opacity:1');
+      const lblB = make('compare', '&#10007; twee stuiters — speelgoed',
+        'left:63%;top:71%;color:#e5605e;opacity:1');
+
+      M.land(good, { from: { y: 260, scale: .9 }, duration: 'surface', silent: true });
+      A.land('medium', { duration: 520 });
+
+      later(() => {
+        // bewust fout gedaan: twee stuiters, hoorbaar én zichtbaar goedkoper
+        bad.animate([
+          { opacity: 0, transform: 'translateY(260px) scale(.9)', easing: M.EASE.enter },
+          { opacity: 1, transform: 'translateY(-26px) scale(1.06)', offset: .45 },
+          { opacity: 1, transform: 'translateY(14px) scale(.97)', offset: .62 },
+          { opacity: 1, transform: 'translateY(-13px) scale(1.03)', offset: .78 },
+          { opacity: 1, transform: 'translateY(6px) scale(.99)', offset: .9 },
+          { opacity: 1, transform: 'none' }
+        ], { duration: 760, fill: 'both' });
+        A.land('small', { duration: 300, degree: 4 });
+        A.land('small', { at: 300, duration: 200, degree: 2, gain: .6 });
+        A.land('small', { at: 470, duration: 160, degree: 1, gain: .35 });
+      }, 1400);
+    }), 15000);
+
+    // D — één keuze, en de hele presentatie beweegt in dezelfde taal
+    later(() => phase(() => {
+      const names = ['Corporate', 'Luxury', 'Technology', 'Galaxy Tiles \u2726'];
+      const xs = [8, 29, 50, 71];
+      names.forEach((n, i) => {
+        const el = tile(xs[i], 34, 19, 28, { title: n, sub: i === 3 ? 'gekozen' : '',
+          c1: ['#20262e', '#241d12', '#0d2c34', '#141c3a'][i],
+          c2: ['#3a4654', '#7a5c26', '#155c66', '#5b3fa0'][i] });
+        if (i === 3) el.style.boxShadow = '0 0 0 2px #15F2E0, 0 18px 46px rgba(0,0,0,.5)';
+        M.land(el, { from: { y: 160, scale: .93 }, delay: i * 110, silent: true });
+      });
+      A.sequence(4, { stagger: 110, duration: 320 });
+    }), 24000);
+  }
+},
+
+/* ---------------------------------------------------------------- 5 */
+{
+  no: 'HOOFDSTUK 5', title: 'De editor', short: 'Editor', dur: 24000,
+  voice: 'Je werkt in één scherm. Links je onderdelen. In het midden een live weergave van precies wat de holobox laat zien. Rechts de eigenschappen van wat je hebt geselecteerd. Wat je verandert, zie je meteen gebeuren. En onderin kies je hoe alles beweegt.',
+  cues: [
+    { at: 300,   t: 'Je werkt in één scherm.' },
+    { at: 2400,  t: 'Links je onderdelen.' },
+    { at: 4600,  t: 'In het midden een live weergave' },
+    { at: 6800,  t: 'van precies wat de holobox laat zien.' },
+    { at: 9800,  t: 'Rechts de eigenschappen van je selectie.' },
+    { at: 13600, t: 'Wat je verandert, zie je meteen gebeuren.' },
+    { at: 17600, t: 'En onderin kies je hoe alles beweegt.' }
+  ],
+  build() {
+    chapterCard('HOOFDSTUK 5', 'De editor');
+    // de editor bouwt zichzelf op rond het canvas
+    const parts = [
+      { cls: 'ed', css: 'left:0;top:0;width:100%;height:9%', lbl: 'TOPBAR', at: 800, from: { y: -60 } },
+      { cls: 'ed', css: 'left:0;top:9%;width:16%;height:73%', lbl: 'ONDERDELEN', at: 2600, from: { x: -90 } },
+      { cls: 'ed', css: 'left:76%;top:9%;width:24%;height:73%', lbl: 'EIGENSCHAPPEN', at: 9600, from: { x: 90 } },
+      { cls: 'ed', css: 'left:0;top:82%;width:100%;height:18%', lbl: 'MOTION', at: 17400, from: { y: 70 } }
+    ];
+    parts.forEach((p) => {
+      const el = make(p.cls, `<div class="lbl">${p.lbl}</div>
+        <div class="edRow"></div><div class="edRow"></div><div class="edRow hi"></div>`, p.css);
+      later(() => {
+        el.style.opacity = 1;
+        M.land(el, { from: Object.assign({ scale: .98 }, p.from), size: 'large',
+          duration: 'surface', silent: true });
+        A.land('large', { duration: 520 });
+      }, p.at);
+    });
+
+    // het canvas met live tegels
+    later(() => {
+      const canvas = make('', '', `left:17%;top:10%;width:58%;height:71%;position:absolute;
+        border:1px solid var(--line);border-radius:12px;background:#05080d;opacity:0`);
+      canvas.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, fill: 'both' });
+      const xs = [21, 37, 53];
+      const tiles = xs.map((x, i) => tile(x, 30, 14, 24, {
+        title: ['Collectie', 'Ruimte', 'Oceaan'][i],
+        c1: ['#2b3f68', '#3d2b68', '#0f4c5c'][i],
+        c2: ['#5b8dd6', '#9D4BFF', '#15F2E0'][i]
+      }));
+      M.choreograph(tiles, { sequence: 'leftRight', stagger: 'base', silent: true,
+        from: { y: 130, scale: .94 } });
+      A.sequence(3, { stagger: 80, duration: 320 });
+
+      // "wat je verandert, zie je meteen": kleur verspringt live
+      later(() => {
+        A.press();
+        tiles[1].style.setProperty('--c1', '#0f4c5c');
+        tiles[1].style.setProperty('--c2', '#15F2E0');
+        tiles[1].animate([{ transform: 'scale(1)' }, { transform: 'scale(1.06)' },
+                          { transform: 'scale(1)' }],
+          { duration: 420, easing: M.EASE.settle });
+      }, 9200);
+    }, 5000);
+  }
+},
+
+/* ---------------------------------------------------------------- 6 */
+{
+  no: 'HOOFDSTUK 6', title: 'Publiceren', short: 'Publiceren', dur: 22000,
+  voice: 'Tevreden? Dan publiceer je. De software controleert je media, je scènes en de opslagruimte, en zet de presentatie klaar op de box. Vanaf dat moment draait hij zelfstandig. Dag en nacht. Ook als het internet even wegvalt.',
+  cues: [
+    { at: 300,   t: 'Tevreden? Dan publiceer je.' },
+    { at: 2800,  t: 'De software controleert je media, je scènes' },
+    { at: 6000,  t: 'en de opslagruimte,' },
+    { at: 7800,  t: 'en zet de presentatie klaar op de box.' },
+    { at: 11400, t: 'Vanaf dat moment draait hij zelfstandig.' },
+    { at: 14600, t: 'Dag en nacht.' },
+    { at: 16600, t: 'Ook als het internet even wegvalt.' }
+  ],
+  build() {
+    chapterCard('HOOFDSTUK 6', 'Publiceren');
+    const panel = make('', '', `left:26%;top:24%;width:48%;height:50%;position:absolute;
+      background:var(--s2);border:1px solid var(--line);border-radius:18px;padding:26px 30px;opacity:0`);
+    panel.innerHTML = `<div class="kicker">EXPERIENCE PUBLICEREN</div>
+      <div style="margin-top:18px" id="checks"></div>`;
+    later(() => {
+      panel.style.opacity = 1;
+      M.land(panel, { from: { y: 90, scale: .95 }, size: 'large', duration: 'surface', silent: true });
+      A.land('large', { duration: 520 });
+    }, 600);
+
+    const items = ['Media gecontroleerd — 12 bestanden',
+                   'Scènes geldig — 4 scènes, 11 tegels',
+                   'Motion — Galaxy Tiles',
+                   'Opslag — 2,1 GB vrij'];
+    items.forEach((txt, i) => {
+      later(() => {
+        const c = document.createElement('div');
+        c.className = 'check';
+        c.innerHTML = `<span class="ok">✓</span><span>${txt}</span>`;
+        panel.querySelector('#checks').appendChild(c);
+        M.land(c, { from: { x: -26 }, size: 'small', duration: 'micro', silent: true });
+        A.land('small', { duration: 200, degree: i });
+      }, 2800 + i * 1500);
+    });
+
+    later(() => {
+      A.morph({ duration: 620 });
+      M.leave(panel, { to: { scale: 1.08, blur: 6 }, duration: 420 });
+      later(() => {
+        const done = make('center', `<div class="kicker">GEPUBLICEERD</div>
+          <div class="title" style="font-size:clamp(20px,3.4vw,44px)">Draait op de holobox</div>
+          <div class="subtitle">Zelfstandig · dag en nacht · ook zonder internet</div>`);
+        M.textOn(done.querySelector('.kicker'), { role: 'label', silent: true });
+        M.textOn(done.querySelector('.title'), { role: 'display', delay: 200, silent: true });
+        M.textOn(done.querySelector('.subtitle'), { role: 'body', delay: 700, silent: true });
+        A.sequence(3, { size: 'large', stagger: 140, duration: 520 });
+      }, 440);
+    }, 10800);
+  }
+},
+
+/* ---------------------------------------------------------------- 7 */
+{
+  no: 'HOOFDSTUK 7', title: 'Klaar', short: 'Slot', dur: 13000,
+  voice: 'Dat is alles. Tegels, scènes, beweging, publiceren. De rest ontdek je vanzelf. Veel plezier met je holobox.',
+  cues: [
+    { at: 300,  t: 'Dat is alles.' },
+    { at: 2000, t: 'Tegels · scènes · beweging · publiceren' },
+    { at: 6000, t: 'De rest ontdek je vanzelf.' },
+    { at: 8600, t: 'Veel plezier met je holobox.' }
+  ],
+  build() {
+    const xs = [12, 32.5, 53, 73.5];
+    const labels = ['Tegels', 'Scènes', 'Beweging', 'Publiceren'];
+    const tiles = xs.map((x, i) => tile(x, 34, 14.5, 24, { title: labels[i],
+      c1: ['#2b3f68', '#3d2b68', '#0f4c5c', '#4c2b5c'][i],
+      c2: ['#5b8dd6', '#9D4BFF', '#15F2E0', '#E34EFF'][i] }));
+    later(() => {
+      M.choreograph(tiles, { sequence: 'centerOut', stagger: 'loose', silent: true,
+        from: { y: 200, rotZ: -5, scale: .92 } });
+      A.sequence(4, { stagger: 120, duration: 320 });
+    }, 1800);
+
+    // alles trekt samen naar het merk
+    later(() => {
+      tiles.forEach((el, i) => M.leave(el, { to: { y: -30, scale: .8, blur: 5 },
+        duration: 420, delay: i * 70 }));
+      A.back({ count: 4 });
+      later(() => {
+        const c = make('center', `<div class="kicker">HEREWEHOLO</div>
+          <div class="title" style="font-size:clamp(22px,4vw,52px)">Veel plezier<br>met je holobox</div>`);
+        M.textOn(c.querySelector('.kicker'), { role: 'label', silent: true });
+        M.textOn(c.querySelector('.title'), { role: 'display', delay: 250, silent: true });
+        A.sequence(3, { size: 'large', stagger: 160, duration: 520 });
+        later(() => A.ambient(false), 2000);
+      }, 700);
+    }, 8000);
+  }
+}
+];
+
+/* ============================================================ REGIE */
+const TOTAL = CHAPTERS.reduce((a, c) => a + c.dur, 0);
+let idx = -1, playing = false, chapterStart = 0, elapsedBefore = 0, timer = null;
+
+function fmt(ms) {
+  const s = Math.max(0, Math.round(ms / 1000));
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+
+function startChapter(i) {
+  if (i >= CHAPTERS.length) { stop(); return; }
+  idx = i;
+  elapsedBefore = CHAPTERS.slice(0, i).reduce((a, c) => a + c.dur, 0);
+  chapterStart = performance.now();
+  clear();
+  subs.innerHTML = '';
+  const ch = CHAPTERS[i];
+  ch.build();
+  runCues(ch.cues);
+  Voice.speak(i + 1, ch.voice);
+  syncChapterButtons();
+  clearTimeout(timer);
+  timer = setTimeout(() => { if (playing) startChapter(i + 1); }, ch.dur);
+}
+
+function tick() {
+  if (!playing) return;
+  const t = elapsedBefore + (performance.now() - chapterStart);
+  $('#progFill').style.width = Math.min(100, (t / TOTAL) * 100) + '%';
+  $('#time').textContent = fmt(t) + ' / ' + fmt(TOTAL);
+  requestAnimationFrame(tick);
+}
+
+function play() { playing = true; $('#btnPlay').textContent = 'Pauze'; tick(); }
+function pause() {
+  playing = false; $('#btnPlay').textContent = 'Verder';
+  clearTimeout(timer); Voice.stop();
+  cueTimers.forEach(clearTimeout);
+  stage.querySelectorAll('*').forEach((el) => el.getAnimations().forEach((a) => a.pause()));
+}
+function resume() {
+  playing = true; $('#btnPlay').textContent = 'Pauze';
+  stage.querySelectorAll('*').forEach((el) => el.getAnimations().forEach((a) => a.play()));
+  startChapter(idx);
+}
+function stop() {
+  playing = false; clearTimeout(timer); Voice.stop(); A.ambient(false);
+  $('#btnPlay').textContent = 'Opnieuw';
+  $('#progFill').style.width = '100%';
+}
+
+/* bediening */
+const chapWrap = $('#chapters');
+CHAPTERS.forEach((c, i) => {
+  const b = document.createElement('button');
+  b.textContent = i + 1;
+  b.title = c.title;
+  b.addEventListener('click', () => { play(); startChapter(i); });
+  chapWrap.appendChild(b);
+});
+function syncChapterButtons() {
+  [...chapWrap.children].forEach((b, i) => b.classList.toggle('on', i === idx));
+}
+$('#btnPlay').addEventListener('click', () => {
+  if (!playing && idx >= CHAPTERS.length - 1 && $('#btnPlay').textContent === 'Opnieuw') {
+    play(); startChapter(0); return;
+  }
+  playing ? pause() : resume();
+});
+$('#btnBack').addEventListener('click', () => { play(); startChapter(Math.max(0, idx - 1)); });
+$('#btnMute').addEventListener('click', (e) => {
+  const m = !A.muted;
+  A.mute(m);
+  if (m) Voice.stop();
+  e.target.textContent = m ? 'Geluid uit' : 'Geluid aan';
+});
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') { e.preventDefault(); playing ? pause() : resume(); }
+  if (e.code === 'ArrowRight') startChapter(Math.min(CHAPTERS.length - 1, idx + 1));
+  if (e.code === 'ArrowLeft') startChapter(Math.max(0, idx - 1));
+});
+
+$('#btnStart').addEventListener('click', async () => {
+  A.init();                       // audio mag pas na een gebaar
+  A.bind(M);                      // beeld en geluid onlosmakelijk koppelen
+  await Voice.probe();
+  const gate = $('#gate');
+  gate.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 420, fill: 'both' })
+      .finished.then(() => gate.remove());
+  $('#hud').classList.add('show');
+  setTimeout(() => $('#hud').classList.remove('show'), 2600);
+  play();
+  startChapter(0);
+});
+</script>
+</body>
+</html>

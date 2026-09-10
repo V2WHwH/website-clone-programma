@@ -1,0 +1,23 @@
+STEM VOOR DE TUTORIALVIDEO
+==========================
+
+De tutorial (motion/tutorial.html) werkt meteen: hij gebruikt de ingebouwde
+Nederlandse spraaksynthese van Windows. Wil je de studiokwaliteit-stem, zet
+dan de zeven bestanden hier neer:
+
+    ch1.mp3   Welkom
+    ch2.mp3   De tegel
+    ch3.mp3   Scenes
+    ch4.mp3   Beweging
+    ch5.mp3   De editor
+    ch6.mp3   Publiceren
+    ch7.mp3   Klaar
+
+De tutorial merkt vanzelf dat ze er staan en gebruikt ze dan in plaats van de
+computerstem. Er hoeft verder niets ingesteld te worden.
+
+De opnames zijn al gemaakt en staan klaar in het ElevenLabs-account:
+https://elevenlabs.io/app/flows/UASDX7yCLWVU77Xj3wSU
+
+Download ze daar per hoofdstuk (in volgorde van boven naar beneden) en
+hernoem ze naar ch1.mp3 t/m ch7.mp3.

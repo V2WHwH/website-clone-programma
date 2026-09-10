@@ -1,0 +1,56 @@
+/* ============================================================================
+   HWH MOTION — tokens
+   Dezelfde waarden als hwh-motion.js. Gebruik deze variabelen in plaats van
+   losse getallen; een curve of duur die niet in dit bestand staat, hoort niet
+   in de app of de video.
+   ========================================================================== */
+:root {
+  /* Curves — bewust geen bounce/veer: overshoot komt uit keyframes */
+  --e-enter:   cubic-bezier(0.16, 1, 0.30, 1);
+  --e-settle:  cubic-bezier(0.33, 1, 0.68, 1);
+  --e-exit:    cubic-bezier(0.55, 0, 1, 0.45);
+  --e-move:    cubic-bezier(0.65, 0, 0.35, 1);
+  --e-precise: cubic-bezier(0.40, 0, 0.20, 1);
+  --e-lux:     cubic-bezier(0.22, 0.80, 0.20, 1);
+
+  /* Duurladder (±1,6× per trede) */
+  --d-feedback: 120ms;
+  --d-micro:    200ms;
+  --d-element:  320ms;
+  --d-surface:  520ms;
+  --d-scene:    820ms;
+  --d-hero:    1750ms;
+
+  /* Stagger */
+  --s-tight:     40ms;
+  --s-base:      80ms;
+  --s-loose:    120ms;
+  --s-dramatic: 180ms;
+
+  /* Overshoot per elementgrootte — omgekeerd evenredig met massa */
+  --os-small:  0.030;
+  --os-medium: 0.020;
+  --os-large:  0.012;
+  --os-full:   0.006;
+
+  /* Vaste momenten in een landing */
+  --p-overshoot: 55%;
+  --p-counter:   78%;
+}
+
+/* Tekstdelen die door splitText() worden gemaakt. inline-block is nodig
+   voor transform; will-change alleen tijdens de animatie zetten we in JS. */
+.hwh-t { display: inline-block; }
+
+/* Een regel die met een masker onthuld wordt heeft overflow nodig op de
+   drager, anders klimt de tekst er tijdens het stijgen bovenuit. */
+.hwh-mask { overflow: hidden; display: block; }
+
+/* Toegankelijkheid: wie beperkte beweging vraagt, krijgt hetzelfde verhaal
+   in vervaging. Niet géén beweging — onbegrijpelijke sprongen zijn erger. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --d-element: 200ms; --d-surface: 240ms; --d-scene: 280ms; --d-hero: 320ms;
+    --os-small: 0; --os-medium: 0; --os-large: 0; --os-full: 0;
+  }
+}

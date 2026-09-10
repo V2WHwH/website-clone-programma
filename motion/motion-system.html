@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>HWH Motion — bewegingssysteem</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="hwh-motion.css">
+<style>
+  :root {
+    --bg: #080B10; --s1: #0D1218; --s2: #111820; --s3: #16202A;
+    --line: rgba(255,255,255,.08); --ink: #F5F7FA; --ink2: #AAB4C0; --ink3: #677482;
+    --teal: #15F2E0; --blue: #29B6F6; --purple: #9D4BFF; --magenta: #E34EFF;
+    --ui: 'Inter','Manrope','Segoe UI',system-ui,sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font: 14px/1.6 var(--ui);
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px 120px; }
+
+  header { padding: 72px 0 40px; border-bottom: 1px solid var(--line); }
+  .eyebrow { font-size: 10px; letter-spacing: .22em; color: var(--teal); font-weight: 650; }
+  h1 { font-size: clamp(30px, 5vw, 52px); font-weight: 650; letter-spacing: -.02em;
+    margin: 14px 0 10px; line-height: 1.08; }
+  .law { font-size: clamp(15px, 2vw, 19px); color: var(--ink2); max-width: 620px; }
+  .law b { color: var(--ink); font-weight: 600; }
+
+  section { padding: 56px 0; border-bottom: 1px solid var(--line); }
+  .num { font-size: 10px; letter-spacing: .18em; color: var(--ink3); font-weight: 650; }
+  h2 { font-size: 24px; font-weight: 650; letter-spacing: -.01em; margin: 8px 0 8px; }
+  .lede { color: var(--ink2); max-width: 640px; margin-bottom: 26px; }
+  .rule { border-left: 2px solid var(--teal); padding: 2px 0 2px 14px; margin: 18px 0;
+    color: var(--ink2); max-width: 640px; }
+  .rule b { color: var(--ink); font-weight: 600; }
+  .why { color: var(--ink3); font-size: 13px; max-width: 640px; margin-top: 8px; }
+
+  .card { background: var(--s1); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+  .grid { display: grid; gap: 14px; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 780px) { .g2, .g3 { grid-template-columns: 1fr; } }
+
+  button.play { background: var(--s2); border: 1px solid var(--line); color: var(--ink);
+    font: 500 12px var(--ui); padding: 7px 14px; border-radius: 8px; cursor: pointer; }
+  button.play:hover { border-color: rgba(255,255,255,.24); }
+  button.play.primary { background: linear-gradient(120deg, var(--purple), var(--magenta));
+    border: 0; font-weight: 650; }
+  .bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+
+  /* --- curves --- */
+  .curve { background: var(--s1); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .curve h3 { font-size: 13px; font-weight: 600; }
+  .curve code { font-size: 10.5px; color: var(--ink3); font-family: ui-monospace, monospace; }
+  .track { position: relative; height: 34px; margin-top: 12px; background: var(--s3);
+    border-radius: 999px; overflow: hidden; }
+  .dot { position: absolute; top: 50%; left: 6px; width: 22px; height: 22px; margin-top: -11px;
+    border-radius: 50%; background: var(--teal); box-shadow: 0 0 18px rgba(21,242,224,.5); }
+  .curve svg { display: block; width: 100%; height: 74px; margin-top: 10px; }
+
+  /* --- duurladder --- */
+  .ladder { display: flex; flex-direction: column; gap: 8px; }
+  .rung { display: grid; grid-template-columns: 92px 62px 1fr; align-items: center; gap: 12px;
+    font-size: 12.5px; }
+  .rung .nm { color: var(--ink); font-weight: 550; }
+  .rung .ms { color: var(--ink3); font-family: ui-monospace, monospace; font-size: 11px; }
+  .rung .vis { height: 8px; border-radius: 999px;
+    background: linear-gradient(90deg, var(--teal), var(--purple)); }
+
+  /* --- landing --- */
+  .stage { position: relative; height: 300px; background: var(--s1); border: 1px solid var(--line);
+    border-radius: 14px; overflow: hidden; perspective: 1200px; }
+  .tile { position: absolute; left: 50%; top: 50%; width: 168px; height: 108px; margin: -54px 0 0 -84px;
+    border-radius: 14px; background: linear-gradient(135deg, #29B6F6, #9D4BFF);
+    box-shadow: 0 18px 44px rgba(0,0,0,.5), 0 0 26px rgba(41,182,246,.28);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: #fff; }
+  .target { position: absolute; left: 50%; top: 50%; width: 168px; height: 108px;
+    margin: -54px 0 0 -84px; border: 1px dashed rgba(255,255,255,.18); border-radius: 14px; }
+  .phases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+  .phase { background: var(--s2); border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px; }
+  .phase .p { font-family: ui-monospace, monospace; font-size: 11px; color: var(--teal); }
+  .phase .t { font-size: 12.5px; font-weight: 600; margin: 3px 0 2px; }
+  .phase .d { font-size: 11.5px; color: var(--ink3); line-height: 1.45; }
+  #traceWrap svg { display: block; width: 100%; height: 190px; }
+
+  .scrub { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+  .scrub input { flex: 1; accent-color: var(--teal); }
+  .scrub .t { font-family: ui-monospace, monospace; font-size: 11px; color: var(--ink3);
+    min-width: 62px; text-align: right; }
+
+  /* --- tekst --- */
+  .textdemo { background: var(--s1); border: 1px solid var(--line); border-radius: 12px; padding: 24px; }
+  .t-display { font-size: clamp(24px, 4vw, 38px); font-weight: 650; letter-spacing: -.02em; line-height: 1.1; }
+  .t-heading { font-size: 19px; font-weight: 600; line-height: 1.3; }
+  .t-body { font-size: 14px; color: var(--ink2); max-width: 46ch; }
+  .t-label { font-size: 10px; letter-spacing: .18em; color: var(--teal); font-weight: 650; }
+  .roleTag { font-size: 10px; letter-spacing: .12em; color: var(--ink3); font-weight: 650;
+    display: block; margin-bottom: 8px; }
+
+  /* --- vorm --- */
+  .shape { width: 116px; height: 116px; background: linear-gradient(135deg, var(--teal), var(--blue));
+    border-radius: 50%; margin: 10px auto; }
+  .morphStage { position: relative; height: 190px; background: var(--s1);
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .mTile { position: absolute; left: 22px; top: 46px; width: 130px; height: 84px; border-radius: 14px;
+    background: linear-gradient(135deg, #9D4BFF, #E34EFF); display: flex; align-items: center;
+    justify-content: center; font-size: 11px; font-weight: 600; }
+  .mFill { position: absolute; inset: 0; background: #0a0f16; opacity: 0;
+    display: flex; align-items: center; justify-content: center; color: var(--ink2); font-size: 12px; }
+
+  /* --- choreografie --- */
+  .choreo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .ct { height: 84px; border-radius: 12px; background: linear-gradient(135deg, #1b2437, #2b3f68);
+    border: 1px solid rgba(255,255,255,.07); display: flex; align-items: center;
+    justify-content: center; font-size: 11px; color: var(--ink2); }
+  .ct.hero { background: linear-gradient(135deg, #0f4c5c, #15F2E0); color: #04231f; font-weight: 650; }
+
+  /* --- tutorial --- */
+  .uiMock { position: relative; height: 220px; background: var(--s1); border: 1px solid var(--line);
+    border-radius: 12px; overflow: hidden; }
+  .uiBtn { position: absolute; left: 60px; top: 84px; padding: 12px 20px; border-radius: 10px;
+    background: var(--s3); border: 1px solid var(--line); font-size: 12.5px; }
+  .ring { position: absolute; left: 46px; top: 70px; width: 168px; height: 62px;
+    border: 2px solid var(--teal); border-radius: 14px; opacity: 0;
+    box-shadow: 0 0 22px rgba(21,242,224,.35); pointer-events: none; }
+  .cursor { position: absolute; left: 300px; top: 160px; width: 26px; height: 26px;
+    border-radius: 50%; border: 2px solid #fff; background: rgba(255,255,255,.14); }
+  .lower { position: absolute; left: 24px; bottom: 22px; }
+  .lowerBar { width: 3px; height: 0; background: var(--teal); position: absolute; left: -12px; top: 2px; }
+
+  footer { padding: 40px 0; color: var(--ink3); font-size: 12.5px; }
+  code.k { font-family: ui-monospace, monospace; font-size: 12px; color: var(--teal);
+    background: rgba(21,242,224,.08); padding: 1px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">HOLOBOX EXPERIENCE MANAGER</div>
+  <h1>Het bewegingssysteem</h1>
+  <p class="law"><b>Alles heeft massa.</b> Niets verschijnt — alles arriveert.
+     Niets verdwijnt — alles vertrekt. Elke beweging in de touch-app én in de
+     tutorialvideo komt uit dit ene systeem, zodat product en uitleg dezelfde
+     hand hebben.</p>
+  <div class="bar" style="margin-top:26px">
+    <button class="play primary" id="playAll">Alles afspelen</button>
+    <span style="color:var(--ink3);font-size:12px">of speel elk onderdeel apart af</span>
+  </div>
+</header>
+
+<!-- 1 ------------------------------------------------------------------ -->
+<section>
+  <div class="num">01 — FUNDAMENT</div>
+  <h2>Curves</h2>
+  <p class="lede">Vier curves voor aankomen en vertrekken, twee voor gereedschap.
+     Meer curves maakt een systeem niet rijker, alleen inconsistent.</p>
+
+  <div class="rule"><b>Geen veer- of bounce-curve in de set.</b> Overshoot maken we
+     met keyframes, niet met een doorschietende bezier.
+     <span class="why">Een doorschietende bezier schiet op álle eigenschappen
+     tegelijk door — schaal, positie én rotatie — en is niet per elementgrootte
+     te doseren. Met keyframes bepaal je exact hoeveel elk ding doorschiet.</span></div>
+
+  <div class="bar"><button class="play" data-play="curves">Curves afspelen</button></div>
+  <div class="grid g3" id="curves"></div>
+</section>
+
+<!-- 2 ------------------------------------------------------------------ -->
+<section>
+  <div class="num">02 — FUNDAMENT</div>
+  <h2>Duurladder</h2>
+  <p class="lede">Zes treden, elk ongeveer 1,6× de vorige. Een duur die niet op de
+     ladder staat, bestaat niet.</p>
+  <div class="card">
+    <div class="ladder" id="ladder"></div>
+  </div>
+  <div class="rule"><b>Afstandswet:</b> hoe verder iets reist, hoe langer het onderweg is.
+     <code class="k">duur = basis × (1 + reis / 1200px)</code>
+     <span class="why">Zonder deze wet voelen lange slides gehaast en korte slides sloom.
+     Twee dingen die tegelijk landen maar verschillende afstanden afleggen, moeten
+     verschillende duren hebben — anders klopt hun schijnbare gewicht niet.</span></div>
+</section>
+
+<!-- 3 ------------------------------------------------------------------ -->
+<section>
+  <div class="num">03 — DE KERNBEWEGING</div>
+  <h2>Landen, doorschieten, tot rust komen</h2>
+  <p class="lede">Dit is de beweging waar het hele systeem op rust. Vier momenten,
+     vaste verhoudingen. De grafiek hieronder is uit de échte animatie gemeten,
+     niet nagetekend.</p>
+
+  <div class="stage" id="landStage">
+    <div class="target"></div>
+    <div class="tile" id="landTile">Tegel</div>
+  </div>
+
+  <div class="scrub">
+    <button class="play" data-play="land">Afspelen</button>
+    <input type="range" id="landScrub" min="0" max="1000" value="1000">
+    <span class="t" id="landTime">1000 ms</span>
+  </div>
+
+  <div class="phases">
+    <div class="phase"><div class="p">0%</div><div class="t">Startpose</div>
+      <div class="d">Buiten doel, transparant, licht gekanteld.</div></div>
+    <div class="phase"><div class="p">55%</div><div class="t">Doorschot</div>
+      <div class="d">Voorbij het doel. Filters zijn hier klaar.</div></div>
+    <div class="phase"><div class="p">78%</div><div class="t">Tegenslag</div>
+      <div class="d">Terug tot 25% van de doorschot, andere kant op.</div></div>
+    <div class="phase"><div class="p">100%</div><div class="t">Rust</div>
+      <div class="d">Exact op doel. Geen tweede stuiter.</div></div>
+  </div>
+
+  <div class="card" id="traceWrap" style="margin-top:14px">
+    <div class="roleTag">GEMETEN VERPLAATSING OVER TIJD</div>
+    <svg id="trace" viewBox="0 0 600 150" preserveAspectRatio="none"></svg>
+  </div>
+
+  <div class="rule"><b>Eén doorschot, nooit twee.</b>
+     <span class="why">Eén keer voorbij het doel leest als massa. Een tweede stuiter
+     leest als speelgoed. Dit is het enige verschil tussen een interface die duur
+     voelt en een die goedkoop voelt.</span></div>
+
+  <div class="rule"><b>De doorschot schaalt omgekeerd met de grootte.</b>
+     Klein 3,0% · middel 2,0% · groot 1,2% · schermvullend 0,6%.
+     <span class="why">Zware dingen schieten nauwelijks door. Als een schermvullend
+     paneel evenveel doorschiet als een knopje, ziet het er gewichtloos uit.</span></div>
+
+  <div class="rule"><b>Zichtbaarheid is klaar op 22%, filters op 55%, geometrie op 100%.</b>
+     <span class="why">Je wilt het ding zíen reizen. Als opacity pas op het eind klaar is,
+     zie je iets opdoemen dat al stilstaat — dan is de hele landing weggegooid.</span></div>
+
+  <div class="bar" style="margin-top:20px">
+    <span style="color:var(--ink3);font-size:12px">Doorschot per grootte:</span>
+    <button class="play" data-play="os-small">klein</button>
+    <button class="play" data-play="os-medium">middel</button>
+    <button class="play" data-play="os-large">groot</button>
+    <button class="play" data-play="os-none">uit</button>
+  </div>
+</section>
+
+<!-- 4 ------------------------------------------------------------------ -->
+<section>
+  <div class="num">04 — TEKST</div>
+  <h2>Hoe woorden aankomen</h2>
+  <p class="lede">Lezen kost tijd, dus tekst heeft eigen wetten. De animatie-eenheid
+     hangt af van de rol: een titel per woord, een alinea per regel, een label als blok.</p>
+
+  <div class="bar"><button class="play" data-play="text">Tekst afspelen</button></div>
+
+  <div class="textdemo">
+    <span class="roleTag">LABEL — als blok</span>
+    <div class="t-label" data-role="label">ONTDEK DE COLLECTIE</div>
+
+    <span class="roleTag" style="margin-top:22px">DISPLAY — per woord, 60ms</span>
+    <div class="t-display" data-role="display">Explore Beyond Imagination</div>
+
+    <span class="roleTag" style="margin-top:22px">HEADING — per regel, 45ms</span>
+    <div class="t-heading" data-role="heading">Raak een tegel aan om te beginnen</div>
+
+    <span class="roleTag" style="margin-top:22px">BODY — per regel, 40ms</span>
+    <div class="t-body" data-role="body">Elke scène bestaat uit tegels die je zelf
+      samenstelt. De volgorde waarin ze landen vertelt de bezoeker waar hij moet
+      kijken, nog voordat hij iets gelezen heeft.</div>
+  </div>
+
+  <div class="rule"><b>Tekst arriveert ná zijn drager, op 60% van diens landing.</b>
+     <span class="why">Het kader moet er eerst zijn. Tekst die tegelijk met zijn
+     achtergrond binnenkomt, leest als één ongedefinieerde vlek.</span></div>
+
+  <div class="rule"><b>Tekst stijgt in beeld, valt nooit.</b>
+     <span class="why">Vallende tekst leest als iets dat neerploft of misgaat.
+     Stijgende tekst leest als iets dat aangeboden wordt.</span></div>
+
+  <div class="rule"><b>Tekst heeft geen overshoot. Nooit.</b>
+     <span class="why">Doorschietende letters zijn onleesbaar tijdens de beweging en
+     ze ondermijnen precies het gezag dat een titel moet hebben. Tekst gaat
+     rechtstreeks op <code class="k">settle</code> naar zijn plek.</span></div>
+
+  <div class="rule"><b>Het masker loopt 20% dóór onder de regel.</b>
+     <code class="k">inset(0 0 -20% 0)</code>
+     <span class="why">Op precies 0% knipt het masker de staarten van de p, g en j af.
+     Dat zie je pas op groot formaat, en dan is het niet meer te negeren.</span></div>
+</section>
+
+<!-- 5 ------------------------------------------------------------------ -->
+<section>
+  <div class="num">05 — VORM</div>
+  <h2>Hoe de ene vorm de andere wordt</h2>
+  <p class="lede">Drie klassen. Voor alle drie geldt: minimaal 420 ms, want het oog
+     volgt de vorm en heeft tijd nodig — en een morph is altijd een solo-gebeurtenis,
+     nooit onderdeel van een stagger.</p>
+
+  <div class="grid g3">
+    <div class="card">
+      <div class="roleTag">A — CONTAINER</div>
+      <div class="morphStage" id="mStage">
+        <div class="mTile" id="mTile">Tegel<div class="mFill" id="mFill">Videovlak</div></div>
+      </div>
+      <p class="why" style="margin-top:10px">Hetzelfde element groeit door naar
+         schermvullend. De inhoud kruisvervaagt pas in de laatste 40%, zodat er
+         geen zwart frame tussen valt.</p>
+      <div class="bar" style="margin-top:10px"><button class="play" data-play="morphA">Afspelen</button></div>
+    </div>
+
+    <div class="card">
+      <div class="roleTag">B — SILHOUET</div>
+      <div style="height:190px;display:flex;align-items:center;justify-content:center">
+        <div class="shape" id="mShape"></div>
+      </div>
+      <p class="why" style="margin-top:10px">Rond ↔ pil ↔ rechthoek. Maat en straal
+         lopen op verschillende curves, met 60 ms verschil: de vorm "beslist" zich
+         net ná de landing.</p>
+      <div class="bar" style="margin-top:10px"><button class="play" data-play="morphB">Afspelen</button></div>
+    </div>
+
+    <div class="card">
+      <div class="roleTag">C — SYMBOOL</div>
+      <div style="height:190px;display:flex;align-items:center;justify-content:center">
+        <svg width="112" height="112" viewBox="0 0 100 100">
+          <path id="mPath" fill="none" stroke="#15F2E0" stroke-width="4" stroke-linejoin="round"
+                d="M50 12 L88 50 L50 88 L12 50 Z"/>
+        </svg>
+      </div>
+      <p class="why" style="margin-top:10px">SVG-pad naar SVG-pad met gelijk aantal
+         punten, 260 ms op <code class="k">move</code>. Voor icoonwissels in de
+         bediening.</p>
+      <div class="bar" style="margin-top:10px"><button class="play" data-play="morphC">Afspelen</button></div>
+    </div>
+  </div>
+
+  <div class="rule"><b>De eindtoestand moet statisch bereikbaar zijn.</b>
+     <span class="why">Als een vorm alleen bestaat tijdens de animatie, breekt het
+     beeld zodra iemand de animatie onderbreekt — en op een touchscreen onderbreekt
+     iemand altijd.</span></div>
+</section>
+
+<!-- 6 ------------------------------------------------------------------ -->
+<section>
+  <div class="num">06 — CHOREOGRAFIE</div>
+  <h2>Hoe meerdere dingen zich verhouden</h2>
+  <p class="lede">Zodra er meer dan één element landt, wordt volgorde betekenis.</p>
+
+  <div class="bar">
+    <button class="play" data-play="ch-bottomUp">van onderen</button>
+    <button class="play" data-play="ch-centerOut">vanuit het midden</button>
+    <button class="play" data-play="ch-leftRight">links → rechts</button>
+    <button class="play" data-play="ch-hero">met held</button>
+  </div>
+
+  <div class="choreo" id="choreo">
+    <div class="ct hero">Held</div><div class="ct">2</div><div class="ct">3</div><div class="ct">4</div>
+  </div>
+
+  <div class="rule"><b>Eén held.</b> Die krijgt de volle landing; volgers krijgen
+     70% doorschot en 85% duur.
+     <span class="why">Twee helden in één beeld is geen held. Het subtiele verschil
+     in doorschot is genoeg om de blik te sturen zonder dat iemand ziet waaróm.</span></div>
+
+  <div class="rule"><b>Maximaal 5 stagger-groepen.</b>
+     <span class="why">Daarboven leest volgorde niet meer als volgorde, maar als ruis.
+     Gebruik dan golf of ruis-met-vaste-seed.</span></div>
+
+  <div class="rule"><b>Richting draagt betekenis.</b> Menu van onderen · detail uit
+     de aangeraakte tegel · terug is de omkering van heen.</div>
+</section>
+
+<!-- 7 ------------------------------------------------------------------ -->
+<section>
+  <div class="num">07 — TUTORIALLAAG</div>
+  <h2>Dezelfde taal, nu voor de video</h2>
+  <p class="lede">De tutorial leent dezelfde curves en dezelfde landingswet, met drie
+     extra regels die alleen voor bewegend beeld gelden.</p>
+
+  <div class="bar"><button class="play" data-play="tut">Scène afspelen</button></div>
+
+  <div class="uiMock" id="uiMock">
+    <div class="uiBtn">Knop toevoegen</div>
+    <div class="ring" id="ring"></div>
+    <div class="cursor" id="cursor"></div>
+    <div class="lower">
+      <div class="lowerBar" id="lowerBar"></div>
+      <div class="t-label" id="lowerKicker">STAP 1</div>
+      <div style="font-size:17px;font-weight:600" id="lowerTitle">Een videoknop toevoegen</div>
+    </div>
+  </div>
+
+  <div class="rule"><b>Nooit een harde cut in een UI-tutorial.</b> Een dip of veeg
+     van 320 ms.
+     <span class="why">Bij een harde cut moet de kijker opnieuw zoeken waar hij is.
+     De dip geeft het brein een moment om de nieuwe layout te accepteren.</span></div>
+
+  <div class="rule"><b>De cursor vertraagt het doel in en pauzeert 200 ms vóór de druk.</b>
+     <span class="why">Die pauze is wat de handeling leesbaar maakt. Zonder pauze
+     ziet de kijker dat er geklikt is, maar niet wáárop.</span></div>
+
+  <div class="rule"><b>Zoom op UI: maximaal 1,4× over 1200 ms.</b>
+     <span class="why">Sneller of dieper wordt misselijkmakend op een schermopname,
+     omdat er geen bewegingsonscherpte is om de beweging te verzachten.</span></div>
+</section>
+
+<footer>
+  HWH Motion · onderdeel van de Holobox Experience Manager ·
+  <code class="k">motion/hwh-motion.js</code> · <code class="k">motion/hwh-motion.css</code><br>
+  Elke waarde op deze pagina komt rechtstreeks uit die twee bestanden — de pagina
+  leest ze uit, dus spec en implementatie kunnen niet uit elkaar lopen.
+</footer>
+
+</div>
+
+<script src="hwh-motion.js"></script>
+<script>
+const M = HWHMotion;
+const $ = (s) => document.querySelector(s);
+
+/* ---------- 01 curves: dot + gemeten grafiek ---------- */
+const CURVE_INFO = [
+  ['enter',   'Arriveren — het werkpaard'],
+  ['settle',  'De laatste 22% van een landing'],
+  ['exit',    'Vertrekken, versnelt weg'],
+  ['move',    'A → B in beeld'],
+  ['precise', 'Chrome, panelen, schakelaars'],
+  ['lux',     'Trage, dure onthulling']
+];
+const curvesEl = $('#curves');
+CURVE_INFO.forEach(([name, desc]) => {
+  const el = document.createElement('div');
+  el.className = 'curve';
+  el.innerHTML = `<h3>${name}</h3><code>${M.EASE[name]}</code>
+    <div class="why" style="font-size:11.5px;margin-top:4px">${desc}</div>
+    <div class="track"><div class="dot" data-curve="${name}"></div></div>
+    <svg viewBox="0 0 100 60" preserveAspectRatio="none">
+      <path d="${bezierPath(M.EASE[name])}" fill="none" stroke="#15F2E0" stroke-width="1.6"/>
+      <line x1="0" y1="55" x2="100" y2="55" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+      <line x1="0" y1="5" x2="100" y2="5" stroke="rgba(255,255,255,.12)" stroke-width="1"
+            stroke-dasharray="3 3"/>
+    </svg>`;
+  curvesEl.appendChild(el);
+});
+
+function bezierPath(css) {
+  const m = /cubic-bezier\(([^)]+)\)/.exec(css);
+  const [x1, y1, x2, y2] = m[1].split(',').map(Number);
+  const pts = [];
+  for (let i = 0; i <= 60; i++) {
+    const t = i / 60;
+    const x = 3 * (1 - t) ** 2 * t * x1 + 3 * (1 - t) * t * t * x2 + t ** 3;
+    const y = 3 * (1 - t) ** 2 * t * y1 + 3 * (1 - t) * t * t * y2 + t ** 3;
+    pts.push(`${(x * 100).toFixed(2)},${(55 - y * 50).toFixed(2)}`);
+  }
+  return 'M' + pts.join(' L');
+}
+
+function playCurves() {
+  document.querySelectorAll('.dot').forEach((d) => {
+    const w = d.parentElement.clientWidth - 34;
+    d.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${w}px)` }],
+      { duration: 1100, easing: M.EASE[d.dataset.curve], fill: 'both' });
+  });
+}
+
+/* ---------- 02 duurladder ---------- */
+const ladder = $('#ladder');
+Object.entries(M.DUR).forEach(([name, ms]) => {
+  const row = document.createElement('div');
+  row.className = 'rung';
+  row.innerHTML = `<span class="nm">${name}</span><span class="ms">${ms} ms</span>
+                   <span class="vis" style="width:${(ms / M.DUR.hero) * 100}%"></span>`;
+  ladder.appendChild(row);
+});
+
+/* ---------- 03 landen ---------- */
+const LAND_FROM = { y: 240, rotZ: -7, rotX: 5, scale: 0.92, blur: 6 };
+const LAND_DUR = 1000;
+let landTl = null;
+
+function buildLandTimeline(size) {
+  const tile = $('#landTile');
+  tile.getAnimations().forEach((a) => a.cancel());
+  const tl = M.timeline();
+  tl.add(0, () => tile.animate(
+    M.landKeyframes({ from: LAND_FROM, size: size || 'medium' }),
+    { duration: LAND_DUR, easing: 'linear', fill: 'both' }));
+  tl.build();
+  return tl;
+}
+landTl = buildLandTimeline('medium');
+
+$('#landScrub').addEventListener('input', (e) => {
+  const t = Number(e.target.value);
+  landTl.seek(t);
+  $('#landTime').textContent = t + ' ms';
+});
+
+function playLand(size) {
+  landTl = buildLandTimeline(size || 'medium');
+  const t0 = performance.now();
+  (function tick() {
+    const t = performance.now() - t0;
+    landTl.seek(Math.min(t, LAND_DUR));
+    $('#landScrub').value = Math.min(t, LAND_DUR);
+    $('#landTime').textContent = Math.round(Math.min(t, LAND_DUR)) + ' ms';
+    if (t < LAND_DUR) requestAnimationFrame(tick);
+  })();
+  drawTrace(size || 'medium');
+}
+
+/* De grafiek meten uit de echte animatie: seek, lees de matrix uit, plot.
+   Zo kan de spec niet afwijken van wat de browser werkelijk doet. */
+function drawTrace(size) {
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:absolute;width:10px;height:10px;opacity:0;pointer-events:none';
+  $('#landStage').appendChild(probe);
+  const anim = probe.animate(M.landKeyframes({ from: LAND_FROM, size: size }),
+    { duration: LAND_DUR, easing: 'linear', fill: 'both' });
+  anim.pause();
+  const N = 120, ys = [];
+  for (let i = 0; i <= N; i++) {
+    anim.currentTime = (i / N) * LAND_DUR;
+    const m = new DOMMatrixReadOnly(getComputedStyle(probe).transform);
+    ys.push(m.m42);
+  }
+  anim.cancel(); probe.remove();
+
+  // Bovenste band: de hele reis op ware schaal.
+  const min = Math.min(...ys), max = Math.max(...ys);
+  const span = (max - min) || 1;
+  const TOP_H = 96, MAG = 18;
+  const pts = ys.map((y, i) =>
+    `${((i / N) * 600).toFixed(1)},${(10 + ((y - min) / span) * (TOP_H - 16)).toFixed(1)}`);
+  const zeroY = 10 + ((0 - min) / span) * (TOP_H - 16);
+
+  // Onderste band: de laatste 45% met de verticale as 18× uitvergroot.
+  // Zonder die uitvergroting is een doorschot van 6px op 240px reis
+  // letterlijk onzichtbaar — en dan leert de grafiek je niets.
+  const startI = Math.floor(N * 0.45);
+  const baseY = 128;
+  const magPts = [];
+  for (let i = startI; i <= N; i++) {
+    const x = ((i - startI) / (N - startI)) * 600;
+    const yy = baseY + ys[i] * MAG;
+    magPts.push(`${x.toFixed(1)},${Math.max(104, Math.min(148, yy)).toFixed(1)}`);
+  }
+  const magX = (frac) => ((frac - 0.45) / 0.55) * 600;
+
+  $('#trace').innerHTML = `
+    <line x1="0" y1="${zeroY}" x2="600" y2="${zeroY}" stroke="rgba(255,255,255,.22)"
+          stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="6" y="${zeroY - 5}" fill="#677482" font-size="9" font-family="monospace">doel</text>
+    <line x1="${600 * M.PHASE.overshoot}" y1="0" x2="${600 * M.PHASE.overshoot}" y2="${TOP_H}"
+          stroke="rgba(21,242,224,.35)" stroke-width="1"/>
+    <text x="${600 * M.PHASE.overshoot + 5}" y="14" fill="#15F2E0" font-size="9"
+          font-family="monospace">55%</text>
+    <line x1="${600 * M.PHASE.counter}" y1="0" x2="${600 * M.PHASE.counter}" y2="${TOP_H}"
+          stroke="rgba(157,75,255,.45)" stroke-width="1"/>
+    <text x="${600 * M.PHASE.counter + 5}" y="14" fill="#9D4BFF" font-size="9"
+          font-family="monospace">78%</text>
+    <path d="M${pts.join(' L')}" fill="none" stroke="#29B6F6" stroke-width="2.2"
+          vector-effect="non-scaling-stroke"/>
+
+    <line x1="0" y1="${TOP_H + 6}" x2="600" y2="${TOP_H + 6}" stroke="rgba(255,255,255,.10)"/>
+    <text x="0" y="${TOP_H + 19}" fill="#677482" font-size="9" font-family="monospace">
+      laatste 45% — verticaal ${MAG}× uitvergroot</text>
+    <line x1="0" y1="${baseY}" x2="600" y2="${baseY}" stroke="rgba(255,255,255,.22)"
+          stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="${magX(M.PHASE.overshoot)}" y1="102" x2="${magX(M.PHASE.overshoot)}" y2="150"
+          stroke="rgba(21,242,224,.45)" stroke-width="1"/>
+    <text x="${magX(M.PHASE.overshoot) + 5}" y="112" fill="#15F2E0" font-size="9"
+          font-family="monospace">doorschot</text>
+    <line x1="${magX(M.PHASE.counter)}" y1="102" x2="${magX(M.PHASE.counter)}" y2="150"
+          stroke="rgba(157,75,255,.5)" stroke-width="1"/>
+    <text x="${magX(M.PHASE.counter) + 5}" y="112" fill="#9D4BFF" font-size="9"
+          font-family="monospace">tegenslag</text>
+    <path d="M${magPts.join(' L')}" fill="none" stroke="#15F2E0" stroke-width="2.2"
+          vector-effect="non-scaling-stroke"/>`;
+}
+drawTrace('medium');
+
+/* ---------- 04 tekst ---------- */
+function playText() {
+  const order = ['label', 'display', 'heading', 'body'];
+  let t = 0;
+  order.forEach((role) => {
+    const el = document.querySelector(`[data-role="${role}"]`);
+    el.getAnimations().forEach((a) => a.cancel());
+    el.querySelectorAll('.hwh-t').forEach((s) => s.getAnimations().forEach((a) => a.cancel()));
+    M.textOn(el, { role, delay: t });
+    t += 420;
+  });
+}
+
+/* ---------- 05 vorm ---------- */
+function playMorphA() {
+  const tile = $('#mTile'), fill = $('#mFill'), stage = $('#mStage');
+  tile.getAnimations().forEach((a) => a.cancel());
+  fill.getAnimations().forEach((a) => a.cancel());
+  tile.style.cssText = 'position:absolute;left:22px;top:46px;width:130px;height:84px;border-radius:14px';
+  M.morphContainer({ left: 22, top: 46, width: 130, height: 84 },
+    { left: 0, top: 0, width: stage.clientWidth, height: stage.clientHeight },
+    { node: tile, fromRadius: 14, toRadius: 0, incoming: fill, duration: 620 });
+}
+let shapeState = 0;
+function playMorphB() {
+  const el = $('#mShape');
+  const states = [
+    { width: '116px', height: '116px', radius: '50%' },
+    { width: '176px', height: '72px', radius: '999px' },
+    { width: '150px', height: '110px', radius: '14px' }
+  ];
+  const from = states[shapeState];
+  shapeState = (shapeState + 1) % states.length;
+  M.morphSilhouette(el, states[shapeState], { from, duration: 520 });
+}
+let pathState = 0;
+const PATHS = [
+  'M50 12 L88 50 L50 88 L12 50 Z',
+  'M50 14 L86 34 L86 66 L50 86 L14 66 L14 34 Z',
+  'M16 16 L84 16 L84 84 L16 84 Z'
+];
+function playMorphC() {
+  const p = $('#mPath');
+  const next = (pathState + 1) % PATHS.length;
+  M.morphPath(p, PATHS[next], { duration: 420 });
+  p.setAttribute('d', PATHS[next]);
+  pathState = next;
+}
+
+/* ---------- 06 choreografie ---------- */
+function playChoreo(sequence, withHero) {
+  const tiles = [...document.querySelectorAll('#choreo .ct')];
+  tiles.forEach((t) => t.getAnimations().forEach((a) => a.cancel()));
+  M.choreograph(tiles, {
+    sequence, stagger: 'base', seed: 7,
+    hero: withHero ? tiles[0] : null,
+    from: { y: 180, rotZ: -5, scale: 0.93 }
+  });
+}
+
+/* ---------- 07 tutorial ---------- */
+function playTutorial() {
+  const ring = $('#ring'), cursor = $('#cursor'), btn = document.querySelector('.uiBtn');
+  const bar = $('#lowerBar'), kicker = $('#lowerKicker'), title = $('#lowerTitle');
+  [ring, cursor, bar, kicker, title].forEach((el) =>
+    el.getAnimations().forEach((a) => a.cancel()));
+  cursor.style.transform = 'none';
+
+  // lower third: balk tekent eerst, tekst volgt op 60%
+  const L = M.TUTORIAL.lowerThird;
+  bar.animate([{ height: '0px' }, { height: '44px' }],
+    { duration: L.bar, easing: M.EASE.enter, fill: 'both' });
+  [kicker, title].forEach((el, i) => {
+    el.querySelectorAll('.hwh-t').forEach((s) => s.getAnimations().forEach((a) => a.cancel()));
+    M.textOn(el, { role: i ? 'heading' : 'label', delay: L.bar * L.textAt + i * L.stagger });
+  });
+
+  // cursor reist, pauzeert, drukt — daarna landt de aandachtsring
+  const c = M.cursorTo(cursor, btn, { delay: 400 });
+  setTimeout(() => M.callout(ring), 400 + c.totalMs - 120);
+}
+
+/* ---------- knoppen ---------- */
+const ACTIONS = {
+  curves: playCurves,
+  land: () => playLand('medium'),
+  'os-small': () => playLand('small'),
+  'os-medium': () => playLand('medium'),
+  'os-large': () => playLand('large'),
+  'os-none': () => playLand('none'),
+  text: playText,
+  morphA: playMorphA, morphB: playMorphB, morphC: playMorphC,
+  'ch-bottomUp': () => playChoreo('bottomUp', false),
+  'ch-centerOut': () => playChoreo('centerOut', false),
+  'ch-leftRight': () => playChoreo('leftRight', false),
+  'ch-hero': () => playChoreo('bottomUp', true),
+  tut: playTutorial
+};
+document.querySelectorAll('[data-play]').forEach((b) =>
+  b.addEventListener('click', () => ACTIONS[b.dataset.play]()));
+
+$('#playAll').addEventListener('click', () => {
+  playCurves();
+  setTimeout(() => playLand('medium'), 300);
+  setTimeout(playText, 1400);
+  setTimeout(playMorphA, 3200);
+  setTimeout(() => playChoreo('bottomUp', true), 4200);
+  setTimeout(playTutorial, 5400);
+});
+
+// eerste indruk: laat de kernbeweging meteen zien
+window.addEventListener('load', () => {
+  setTimeout(() => { playCurves(); playLand('medium'); }, 350);
+  setTimeout(playText, 1200);
+});
+</script>
+</body>
+</html>
