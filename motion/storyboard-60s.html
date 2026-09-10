@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="nl"><head><meta charset="utf-8">
+<title>HWH — Storyboard 60 seconden</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{
+  --bg:#080B10;--s1:#0D1218;--s2:#111820;--s3:#16202A;
+  --bd:rgba(255,255,255,.08);--bda:rgba(21,242,224,.55);
+  --t1:#F5F7FA;--t2:#AAB4C0;--t3:#677482;
+  --teal:#15F2E0;--blue:#29B6F6;--purple:#9D4BFF;--magenta:#E34EFF;
+  --grad:linear-gradient(135deg,#15F2E0 0%,#9D4BFF 100%);
+  --ui:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif;
+  --scale:.5;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#05070A;color:var(--t1);font-family:var(--ui);
+  -webkit-font-smoothing:antialiased}
+header{padding:48px 56px 24px;max-width:1100px}
+h1{font:700 34px/1.1 var(--ui);letter-spacing:-.02em;margin:0 0 10px}
+header p{color:var(--t2);font-size:15px;line-height:1.6;margin:0 0 4px;max-width:70ch}
+header .meta{color:var(--t3);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  font-weight:600;margin-bottom:14px}
+
+/* tijdbalk */
+.ruler{margin:28px 56px 40px;max-width:1856px}
+.ruler .bar{display:flex;height:44px;border-radius:10px;overflow:hidden;border:1px solid var(--bd)}
+.ruler .seg{position:relative;display:flex;align-items:center;justify-content:center;
+  font-size:11.5px;font-weight:600;color:var(--t1);border-right:1px solid rgba(0,0,0,.4)}
+.ruler .seg:last-child{border-right:0}
+.ruler .seg small{display:block;font-size:9px;letter-spacing:.1em;color:rgba(255,255,255,.65);
+  font-weight:600;text-align:center}
+.ruler .ticks{display:flex;margin-top:6px;color:var(--t3);font-size:10px;
+  letter-spacing:.1em;font-weight:600}
+
+.shots{display:flex;flex-direction:column;gap:56px;padding:0 56px 96px}
+.shot{display:grid;grid-template-columns:calc(1920px * var(--scale)) 1fr;gap:32px;
+  align-items:start}
+@media(max-width:1560px){.shot{grid-template-columns:1fr}}
+
+/* het frame zelf: echte 1920x1080, geschaald */
+.frameWrap{width:calc(1920px * var(--scale));height:calc(1080px * var(--scale));
+  border-radius:12px;overflow:hidden;border:1px solid var(--bd);
+  box-shadow:0 24px 60px rgba(0,0,0,.55);position:relative;flex:none}
+.frame{width:1920px;height:1080px;transform:scale(var(--scale));transform-origin:0 0;
+  background:var(--bg);position:relative;overflow:hidden}
+.safe{position:absolute;left:96px;top:54px;right:96px;bottom:54px;
+  border:1px dashed rgba(21,242,224,.16);pointer-events:none;border-radius:4px}
+.safe::after{content:'title-safe 1728 × 972';position:absolute;left:0;top:-30px;
+  font-size:15px;letter-spacing:.14em;color:rgba(21,242,224,.35);font-weight:600}
+.tc{position:absolute;left:96px;top:900px;font-size:20px;letter-spacing:.22em;
+  color:var(--t3);font-weight:700}
+.sub{position:absolute;left:50%;top:972px;transform:translate(-50%,-100%);
+  max-width:1200px;background:rgba(8,11,16,.72);border-radius:10px;padding:12px 24px;
+  font-size:34px;font-weight:500;color:var(--t1);text-align:center;line-height:1.3;
+  backdrop-filter:blur(8px);white-space:nowrap}
+.prog{position:absolute;left:0;bottom:0;height:3px;background:var(--grad)}
+
+/* bouwstenen */
+.tile{background:var(--s2);border:1px solid var(--bd);border-radius:14px;position:absolute;
+  display:flex;align-items:flex-end;overflow:hidden}
+.tile.sel{border-color:var(--bda);box-shadow:0 0 0 1px var(--bda)}
+.tile .face{position:absolute;inset:0;opacity:.5}
+.tile .cap{position:relative;padding:14px 16px;font-size:17px;font-weight:600;color:var(--t1);
+  text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.tile.ghost{background:transparent;border-style:dashed;border-color:rgba(255,255,255,.14)}
+.lbl{position:absolute;font-size:20px;font-weight:600;letter-spacing:.04em;color:var(--teal)}
+.ring{position:absolute;border:2px solid var(--teal);border-radius:999px;
+  width:64px;height:64px;opacity:.9}
+.callout{position:absolute;font-size:20px;font-weight:600;letter-spacing:.04em;
+  color:var(--t1);background:rgba(21,242,224,.10);border:1px solid rgba(21,242,224,.35);
+  border-radius:999px;padding:8px 18px}
+.h1f{position:absolute;font-family:'Manrope',var(--ui);font-size:96px;font-weight:700;
+  letter-spacing:-.02em;line-height:1.05;color:var(--t1)}
+.h2f{position:absolute;font-size:56px;font-weight:650;letter-spacing:-.015em;color:var(--t1)}
+.h3f{position:absolute;font-size:30px;font-weight:500;color:var(--t2)}
+.rule{position:absolute;height:2px;background:var(--grad);border-radius:2px}
+.cursor{position:absolute;width:28px;height:28px;border-radius:50%;background:#fff;
+  border:2px solid #05070A;box-shadow:0 4px 14px rgba(0,0,0,.6)}
+.box3{position:absolute;border:2px solid var(--bd);border-radius:20px;background:var(--s1)}
+.chip{position:absolute;font-size:17px;font-weight:600;color:var(--t2);
+  background:var(--s2);border:1px solid var(--bd);border-radius:999px;padding:7px 16px}
+
+/* editor-shell schets */
+.shell{position:absolute;background:var(--s1);border:1px solid var(--bd);border-radius:16px;
+  overflow:hidden;display:grid;grid-template-rows:64px 1fr 28px}
+.shell .top{background:var(--s1);border-bottom:1px solid var(--bd);display:flex;
+  align-items:center;gap:16px;padding:0 20px}
+.shell .mid{display:grid;grid-template-columns:240px 1fr 340px}
+.shell .side{background:var(--s1);border-right:1px solid var(--bd)}
+.shell .cvs{background:var(--s2);position:relative;display:grid;
+  grid-template-rows:1fr 220px}
+.shell .mo{background:var(--s1);border-top:1px solid var(--bd)}
+.shell .insp{background:var(--s1);border-left:1px solid var(--bd)}
+.shell .stat{background:var(--s1);border-top:1px solid var(--bd)}
+.shell .hot{background:var(--s3);box-shadow:inset 0 0 0 1px var(--bda)}
+.shell .dim{opacity:.55}
+.shell .row{height:34px;margin:10px 14px;background:var(--s2);border-radius:8px;
+  border:1px solid var(--bd)}
+.shell .mark{width:32px;height:32px;border-radius:9px;background:var(--grad)}
+
+/* grafiek shot 4 */
+.plot{position:absolute;border-left:2px solid rgba(255,255,255,.14);
+  border-bottom:2px solid rgba(255,255,255,.14)}
+.phaseCard{position:absolute;background:var(--s2);border:1px solid var(--bd);
+  border-radius:12px;padding:14px 18px;font-size:19px;color:var(--t2);line-height:1.35}
+.phaseCard b{color:var(--teal);display:block;font-size:15px;letter-spacing:.16em;
+  margin-bottom:6px}
+
+/* notities naast het frame */
+.notes{padding-top:4px;min-width:0}
+.notes h2{font:650 22px/1.2 var(--ui);margin:0 0 4px;letter-spacing:-.01em}
+.notes .t{color:var(--t3);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  font-weight:700;margin-bottom:12px}
+.notes h3{font:700 10.5px/1 var(--ui);letter-spacing:.2em;text-transform:uppercase;
+  color:var(--teal);margin:20px 0 8px}
+.notes ul{margin:0;padding-left:18px;color:var(--t2);font-size:13.5px;line-height:1.65}
+.notes code{background:var(--s2);border:1px solid var(--bd);border-radius:5px;
+  padding:1px 6px;font-size:12px;color:var(--t1);font-family:ui-monospace,Menlo,monospace}
+.vo{background:var(--s1);border:1px solid var(--bd);border-left:3px solid var(--teal);
+  border-radius:0 10px 10px 0;padding:12px 16px;margin-top:8px}
+.vo p{margin:0 0 6px;color:var(--t1);font-size:14px;line-height:1.5}
+.vo p:last-child{margin:0}
+.vo span{color:var(--t3);font-size:11px;font-weight:700;letter-spacing:.12em;
+  margin-right:8px;font-variant-numeric:tabular-nums}
+footer{padding:0 56px 90px;color:var(--t3);font-size:13px;line-height:1.7;max-width:80ch}
+footer b{color:var(--t2)}
+</style></head><body>
+
+<header>
+  <div class="meta">HereWeHolo · Experience Manager</div>
+  <h1>Storyboard — video-tutorial van 60 seconden</h1>
+  <p>Zeven shots, 1920 × 1080, 60 fps. Elk frame hieronder is een echt frame van
+  1920 × 1080 op halve schaal, met de title-safe zone erin. De tekst, de tijdcodes
+  en de bewegings- en geluidsaanwijzingen komen letterlijk uit
+  <code>docs/CLAUDE-DESIGN-BRIEF.md</code>.</p>
+</header>
+
+<div class="ruler">
+  <div class="bar" id="bar"></div>
+  <div class="ticks" id="ticks"></div>
+</div>
+
+<div class="shots" id="shots"></div>
+
+<footer>
+  <b>Bewegingswet:</b> alles landt volgens 0 → 22 → 55 → 78 → 100 %. Eén doorschot,
+  nooit twee. De doorschot schaalt omgekeerd met de massa. Tekst stijgt en schiet nooit door.<br>
+  <b>Geluidswet:</b> de klap valt op 55 % van de beweging, toonhoogte schaalt omgekeerd
+  met massa, alles staat in A-mineur pentatonisch — daardoor wordt een stagger een akkoord.<br>
+  <b>Bronnen:</b> <code>docs/MOTION.md</code> · <code>motion/hwh-motion.js</code> ·
+  <code>motion/hwh-audio.js</code> · <code>motion/motion-system.html</code> ·
+  <code>motion/tutorial.html</code> (lange versie, 2:36).
+</footer>
+
+<script>
+var SHOTS = [
+{ n:'S1', from:0, to:6, title:'Opening', color:'#15F2E0',
+  build:function(f){
+    f.innerHTML +=
+      '<div class="h1f" style="left:96px;top:34%;">HereWeHolo<br>Experience Manager</div>'+
+      '<div class="rule" style="left:96px;top:48%;width:240px;"></div>'+
+      tile(96,660,320,180,'',null,'ghost')+
+      tile(448,660,320,180,'',null,'ghost')+
+      tile(800,660,320,180,'',null,'ghost');
+  },
+  motion:['Titel: <code>textOn(el, {role:\'display\'})</code> — per woord, 60 ms stagger, 32 % stijging, met masker',
+          'Lijn: schaal-x 0→1, <code>enter</code>, 520 ms, start op 0,9 s',
+          'Tegels: <code>choreograph(tiles,{sequence:\'bottomUp\',stagger:\'base\',from:{y:240,rotZ:-7,scale:.92,blur:6}})</code>'],
+  audio:['<code>HWHAudio.land(\'medium\')</code> per tegel → drie tonen op 80 ms = één akkoord'],
+  vo:[['0.00','Dit is de HereWeHolo Experience Manager.']] },
+
+{ n:'S2', from:6, to:18, title:'De tegel', color:'#29B6F6',
+  build:function(f){
+    f.innerHTML +=
+      '<div class="lbl" style="left:640px;top:200px;">TEGEL</div>'+
+      tile(640,250,640,360,'Productvideo','linear-gradient(135deg,#15F2E0,#9D4BFF)','sel')+
+      '<div class="callout" style="left:1360px;top:300px;">video</div>'+
+      '<div class="callout" style="left:1360px;top:370px;">3D-object</div>'+
+      '<div class="callout" style="left:1360px;top:440px;">website</div>'+
+      '<div class="callout" style="left:1360px;top:510px;">volgende scène</div>'+
+      '<div class="chip" style="left:640px;top:640px;">fase 2a → 2b → 2c in één shot, geen cut</div>';
+  },
+  motion:['2a: <code>land(tile,{from:{y:240,scale:.92,blur:6}})</code> — <code>large</code> doorschot (1,2 %)',
+          '2b: morph-klasse <b>container</b> — <code>morphContainer()</code>, 520 ms, inhoud kruisvervaagt in de laatste 40 %',
+          '2c: <code>leave()</code> + <code>choreograph(four,{sequence:\'centerOut\',stagger:\'tight\'})</code>',
+          'Callouts: <code>HWHMotion.callout(el)</code> — 1,6 → 1,0 in 420 ms, dan ademen ±4 % om 2600 ms'],
+  audio:['<code>land(\'large\')</code> op de grote tegel',
+         '<code>morph({duration:520})</code> bij het doorgroeien naar video',
+         '<code>sequence(4,{size:\'small\',stagger:40})</code> op de vier types'],
+  vo:[['0.06','Alles begint bij een tegel.'],
+      ['0.09','Kies een video, geef hem een naam, zet hem waar je hem hebben wilt.'],
+      ['0.13','Elke tegel doet iets: video, 3D-object, website, of een volgende scène.']] },
+
+{ n:'S3', from:18, to:29, title:'Scènes en lagen', color:'#9D4BFF',
+  build:function(f){
+    var g='', x0=717, y0=108, w=150, h=266, gap=12;
+    for(var r=0;r<3;r++)for(var c=0;c<3;c++){
+      var sel = (r===1&&c===1);
+      g += tile(x0+c*(w+gap), y0+r*(h+gap), w, h, '', null, sel?'sel':'');
+    }
+    f.innerHTML +=
+      '<div class="box3" style="left:693px;top:84px;width:534px;height:912px;"></div>'+ g +
+      '<div class="chip" style="left:96px;top:480px;">● Hoofdmenu &nbsp;→&nbsp; ○ Producten</div>'+
+      '<div class="callout" style="left:1300px;top:400px;">push naar links</div>'+
+      '<div class="callout" style="left:1300px;top:470px;">terugveeg = omkering</div>';
+  },
+  motion:['Uitzoomen: scale 1 → 0,46, <code>move</code>, 820 ms',
+          'Schermwissel: push, beide schermen <code>move</code>, 520 ms; inkomend scherm <code>fullscreen</code> doorschot (0,6 %)',
+          'Tegels: <code>choreograph(tiles,{sequence:\'wave\',stagger:\'tight\',seed:7})</code> — 9 stuks is meer dan 5 groepen, dus golf met vaste seed',
+          'Terugveeg: dezelfde transitie gespiegeld, 20 % korter'],
+  audio:['<code>morph({duration:520})</code> bij elke schermwissel — de ruis-veeg',
+         '<code>sequence(9,{size:\'small\',stagger:40})</code> per raster, zacht → textuur, geen melodie',
+         '<code>HWHAudio.back()</code> bij de terugveeg — dezelfde tonen, omgekeerd'],
+  vo:[['0.18','Een scène is één scherm vol tegels.'],
+      ['0.21','Wijst een tegel naar een andere scène, dan bouw je een menu met lagen.'],
+      ['0.26','Tikken, dieper gaan, terugvegen.']] },
+
+{ n:'S4', from:29, to:41, title:'Beweging — het hart van de video', color:'#E34EFF',
+  build:function(f){
+    f.innerHTML +=
+      tile(200,300,420,236,'','linear-gradient(135deg,#15F2E0,#9D4BFF)','sel')+
+      '<div class="lbl" style="left:200px;top:250px;">LANDT HIER · 0,25× SNELHEID</div>'+
+      '<div class="plot" style="left:1000px;top:200px;width:760px;height:360px;"></div>'+
+      '<svg style="position:absolute;left:1000px;top:200px;" width="760" height="360">'+
+        '<path d="M0,352 C240,352 300,40 430,26 C500,18 520,66 560,58 C620,46 680,52 760,52" '+
+        'fill="none" stroke="#15F2E0" stroke-width="3"/>'+
+        '<circle cx="430" cy="26" r="7" fill="#E34EFF"/>'+
+        '<circle cx="560" cy="58" r="6" fill="#29B6F6"/>'+
+        '<circle cx="760" cy="52" r="6" fill="#F5F7FA"/>'+
+        '<line x1="0" y1="52" x2="760" y2="52" stroke="rgba(255,255,255,.18)" stroke-dasharray="6 8"/>'+
+      '</svg>'+
+      '<div class="lbl" style="left:1000px;top:150px;">POSITIE</div>'+
+      '<div class="lbl" style="left:1380px;top:170px;color:#E34EFF;">55 % — DE DOORSCHOT</div>'+
+      phase(1000,600,'0 %','start — buiten beeld, transparant, gekanteld')+
+      phase(1000,700,'22 %','zichtbaar — je ziet hem reizen')+
+      phase(1390,600,'55 %','voorbij het doel — één doorschot')+
+      phase(1390,700,'78 %','25 % terug, andere kant op')+
+      '<div class="h2f" style="left:200px;top:620px;">Eén keer.<br>Nooit twee.</div>';
+  },
+  motion:['De tegel: <code>timeline()</code> + <code>seek()</code> — de vertraging is een echte seek, geen <code>playbackRate</code>',
+          'De curve: <code>stroke-dashoffset</code> 1 → 0, gekoppeld aan dezelfde tijdlijn',
+          'Kaartjes: <code>land(card,{from:{y:24},size:\'small\'})</code> precies op het moment zelf',
+          'Slotzin: <code>textOn(el,{role:\'display\'})</code> · intensiteit <b>showcase</b> (×1,28)'],
+  audio:['Vertraagd: de transient op 55 % uitgerekt meegespeeld, toonhoogte blijft staan',
+         'Vol tempo: één schone <code>land(\'medium\')</code>',
+         'Daarna <b>400 ms stilte</b> vóór S5 — de enige stilte in de video'],
+  vo:[['0.29','Alles heeft massa. Niets verschijnt — alles arriveert.'],
+      ['0.33','Een tegel schiet één keer voorbij zijn plek en komt tot rust.'],
+      ['0.37','Eén keer. Nooit twee. Dat maakt het duur.']] },
+
+{ n:'S5', from:41, to:50, title:'De editor', color:'#15F2E0',
+  build:function(f){
+    f.innerHTML +=
+      '<div class="shell" style="left:192px;top:108px;width:1536px;height:864px;">'+
+        '<div class="top"><div class="mark"></div>'+
+          '<div style="width:180px;height:30px;border-radius:8px;background:#111820;border:1px solid rgba(255,255,255,.08)"></div>'+
+          '<div style="width:140px;height:30px;border-radius:8px;background:#111820;border:1px solid rgba(255,255,255,.08)"></div>'+
+          '<div style="margin-left:auto;width:130px;height:32px;border-radius:9px;background:linear-gradient(135deg,#15F2E0,#9D4BFF)"></div>'+
+        '</div>'+
+        '<div class="mid">'+
+          '<div class="side hot"><div class="row"></div><div class="row"></div><div class="row"></div><div class="row"></div></div>'+
+          '<div class="cvs dim"><div style="position:relative;padding:28px;display:grid;'+
+            'grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:18px;">'+
+            cell(1)+cell(0)+cell(0)+cell(0)+cell(0)+cell(0)+
+          '</div><div class="mo" style="padding:16px 18px;display:flex;gap:14px;align-items:flex-start;">'+
+            slider()+slider()+slider()+'</div></div>'+
+          '<div class="insp dim"><div class="row"></div><div class="row"></div><div class="row"></div></div>'+
+        '</div>'+
+        '<div class="stat"></div>'+
+      '</div>'+
+      '<div class="callout" style="left:210px;top:840px;">je onderdelen</div>'+
+      '<div class="callout" style="left:800px;top:840px;">live weergave</div>'+
+      '<div class="callout" style="left:1400px;top:840px;">eigenschappen</div>'+
+      '<div class="ring" style="left:1430px;top:250px;"></div>'+
+      '<div class="cursor" style="left:1452px;top:272px;"></div>';
+  },
+  motion:['Shell: <code>land(shell,{from:{y:60,scale:.985},size:\'fullscreen\'})</code> — 0,6 % doorschot',
+          'Zone-highlight: naar <code>surface-3</code> + <code>border-active</code>, 200 ms <code>precise</code>; de rest zakt naar 55 % opacity',
+          'Cursor: <code>cursorTo(cursor,target)</code> — 620 ms reis, <b>200 ms pauze vóór de druk</b>, 120 ms indruk',
+          'Kleurwissel in canvas: kruisvervaging 200 ms <code>precise</code> — geen morph, de vorm blijft'],
+  audio:['<code>land(\'small\',{degree:6})</code> per zone (klein, hoog)',
+         '<code>HWHAudio.press()</code> bij de klik',
+         '<code>land(\'small\')</code> bij de kleurwissel'],
+  vo:[['0.41','Je werkt in één scherm.'],
+      ['0.43','Links je onderdelen, midden een live weergave, rechts de eigenschappen.'],
+      ['0.47','Wat je verandert, zie je meteen.']] },
+
+{ n:'S6', from:50, to:57, title:'Publiceren', color:'#29B6F6',
+  build:function(f){
+    f.innerHTML +=
+      '<div style="position:absolute;left:760px;top:220px;width:400px;height:76px;border-radius:14px;'+
+        'background:linear-gradient(135deg,#15F2E0,#9D4BFF);display:flex;align-items:center;'+
+        'justify-content:center;font-size:30px;font-weight:650;color:#05070A;">Publiceren</div>'+
+      check(700,380,'media','12 bestanden')+
+      check(700,470,'scènes','4')+
+      check(700,560,'opslag','2,1 GB vrij')+
+      '<div class="box3" style="left:1320px;top:340px;width:220px;height:392px;'+
+        'border-color:rgba(21,242,224,.55);box-shadow:0 0 90px rgba(21,242,224,.25);"></div>'+
+      '<div class="h3f" style="left:1320px;top:760px;">draait zelfstandig<br>ook zonder internet</div>';
+  },
+  motion:['Krimp: scale 1 → 0,08 naar het knop-midden, <code>move</code>, 520 ms',
+          'Vinkjes: <code>choreograph(checks,{sequence:\'topDown\',stagger:\'loose\',size:\'small\'})</code>',
+          'Samenvouwen: <code>morphSilhouette(box,{width:\'220px\',height:\'392px\'})</code> — solo-gebeurtenis, geen stagger',
+          'Oplichten: glow-opacity 0 → 1 over 820 ms, blijft staan'],
+  audio:['<code>sequence(3,{size:\'small\',stagger:120})</code> — drie stijgende tonen',
+         '<code>land(\'fullscreen\')</code> bij het samenvouwen — de zwaarste klank in de video'],
+  vo:[['0.50','Publiceren. De software controleert media, scènes en opslag.'],
+      ['0.54','Daarna draait de box zelfstandig. Ook zonder internet.']] },
+
+{ n:'S7', from:57, to:60, title:'Slot', color:'#677482',
+  build:function(f){
+    f.innerHTML +=
+      '<div class="h2f" style="left:0;top:440px;width:1920px;text-align:center;">'+
+        'Tegels · Scènes · Beweging · Publiceren</div>'+
+      '<div class="h3f" style="left:0;top:540px;width:1920px;text-align:center;">'+
+        'HereWeHolo Experience Manager</div>'+
+      '<div style="position:absolute;left:912px;top:340px;width:96px;height:96px;'+
+        'border-radius:26px;background:linear-gradient(135deg,#15F2E0,#9D4BFF)"></div>';
+  },
+  motion:['<code>textOn(el,{role:\'display\'})</code> op de vier woorden — 60 ms stagger. Verder niets',
+          'Laatste 400 ms: fade naar <code>#080B10</code>'],
+  audio:['<code>HWHAudio.text(\'display\',{count:4})</code>, dan uitsterven met <code>ambient(false)</code>',
+         'Geen slotakkoord — de video eindigt zoals hij begon: rustig'],
+  vo:[['0.57','Tegels, scènes, beweging, publiceren. Dat is alles.']] }
+];
+
+function tile(x,y,w,h,cap,face,cls){
+  return '<div class="tile '+(cls||'')+'" style="left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+h+'px;">'+
+    (face?'<div class="face" style="background:'+face+'"></div>':'')+
+    (cap?'<div class="cap">'+cap+'</div>':'')+'</div>';
+}
+function phase(x,y,pct,txt){
+  return '<div class="phaseCard" style="left:'+x+'px;top:'+y+'px;width:360px;">'+
+    '<b>'+pct+'</b>'+txt+'</div>';
+}
+function cell(sel){
+  return '<div style="border-radius:12px;border:1px solid '+(sel?'rgba(21,242,224,.55)':'rgba(255,255,255,.08)')+
+    ';background:'+(sel?'linear-gradient(135deg,#15F2E0,#9D4BFF)':'#16202A')+';opacity:'+(sel?'.85':'1')+'"></div>';
+}
+function slider(){
+  return '<div style="flex:1"><div style="height:8px;border-radius:4px;background:#16202A;'+
+    'border:1px solid rgba(255,255,255,.08);position:relative;">'+
+    '<div style="position:absolute;left:0;top:-1px;bottom:-1px;width:58%;border-radius:4px;'+
+    'background:linear-gradient(135deg,#15F2E0,#9D4BFF)"></div></div>'+
+    '<div style="margin-top:10px;height:6px;width:40%;border-radius:3px;background:#16202A"></div></div>';
+}
+function check(x,y,k,v){
+  return '<div style="position:absolute;left:'+x+'px;top:'+y+'px;display:flex;align-items:center;gap:20px;">'+
+    '<div style="width:44px;height:44px;border-radius:50%;border:2px solid #15F2E0;color:#15F2E0;'+
+      'display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">✓</div>'+
+    '<div style="font-size:30px;font-weight:600;color:#F5F7FA;width:180px;">'+k+'</div>'+
+    '<div style="font-size:26px;color:#AAB4C0;">'+v+'</div></div>';
+}
+function fmt(t){
+  var m=Math.floor(t/60), s=t-m*60;
+  return m+'.'+(s<10?'0':'')+s.toFixed(s%1?1:0);
+}
+
+/* tijdbalk */
+(function(){
+  var bar=document.getElementById('bar'), ticks=document.getElementById('ticks');
+  SHOTS.forEach(function(s){
+    var d=s.to-s.from;
+    bar.insertAdjacentHTML('beforeend',
+      '<div class="seg" style="flex:'+d+';background:'+s.color+'22;'+
+      'box-shadow:inset 0 -3px 0 '+s.color+';"><small>'+s.n+'<br>'+d.toFixed(0)+'s</small></div>');
+    ticks.insertAdjacentHTML('beforeend','<div style="flex:'+d+';">'+fmt(s.from)+'</div>');
+  });
+  ticks.insertAdjacentHTML('beforeend','<div style="width:34px;text-align:right;">1.00</div>');
+})();
+
+/* shots */
+(function(){
+  var root=document.getElementById('shots');
+  SHOTS.forEach(function(s){
+    var el=document.createElement('div'); el.className='shot';
+    var wrap=document.createElement('div'); wrap.className='frameWrap';
+    var f=document.createElement('div'); f.className='frame';
+    wrap.appendChild(f); el.appendChild(wrap);
+
+    s.build(f);
+    var pct=(s.to/60*100).toFixed(1);
+    f.insertAdjacentHTML('beforeend',
+      '<div class="safe"></div>'+
+      '<div class="tc">'+s.n+' · '+fmt(s.from)+' – '+fmt(s.to)+'</div>'+
+      '<div class="sub">'+s.vo[s.vo.length-1][1]+'</div>'+
+      '<div class="prog" style="width:'+pct+'%"></div>');
+
+    var n=document.createElement('div'); n.className='notes';
+    n.innerHTML =
+      '<div class="t">'+s.n+' · '+fmt(s.from)+' – '+fmt(s.to)+' · '+(s.to-s.from).toFixed(1)+' s</div>'+
+      '<h2>'+s.title+'</h2>'+
+      '<h3>Voice-over &amp; ondertitel</h3><div class="vo">'+
+        s.vo.map(function(v){return '<p><span>'+v[0]+'</span>'+v[1]+'</p>';}).join('')+'</div>'+
+      '<h3>Beweging</h3><ul>'+s.motion.map(function(m){return '<li>'+m+'</li>';}).join('')+'</ul>'+
+      '<h3>Geluid</h3><ul>'+s.audio.map(function(a){return '<li>'+a+'</li>';}).join('')+'</ul>';
+    el.appendChild(n);
+    root.appendChild(el);
+  });
+})();
+</script>
+</body></html>
