@@ -150,6 +150,7 @@ figcaption b{color:var(--ink-2);font-weight:600}
 .legend .n{font:600 11.5px/20px var(--f-mono);text-align:center;
   background:var(--teal-soft);color:var(--teal);border-radius:50%;height:20px;margin-top:2px}
 .legend .n.v{background:var(--violet-soft);color:var(--violet)}
+.legend .n.warn{background:var(--amber-soft);color:var(--amber)}
 .legend b{font-weight:600;color:var(--ink)}
 .legend span.q{color:var(--ink-2)}
 
@@ -286,7 +287,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.9</span><span>21 hoofdstukken</span><span>37 schermafbeeldingen</span>
+    <span>Versie 2.9.1</span><span>21 hoofdstukken</span><span>24 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -1137,15 +1138,17 @@ header.cover{padding-block:88px 8px}
 
   <div class="wwww">
     <div><dt>Wie</dt><dd>De installateur, samen met wie over privacy gaat.</dd></div>
-    <div><dt>Wat</dt><dd>Aan/uit, cameratest, camerakeuze, sta-tijd en gevoeligheid.</dd></div>
+    <div><dt>Wat</dt><dd>Aan/uit, cameratest, camerakeuze, sta-tijd, gevoeligheid,
+      opnieuw ijken — en het handgebaar.</dd></div>
     <div><dt>Waar</dt><dd>Negende tabblad.</dd></div>
     <div><dt>Waarom</dt><dd>Een screensaver die pas op aanraking stopt, mist de bezoeker die
-      twijfelt. Met detectie komen de knoppen terug voordat hij iets hoeft te doen.</dd></div>
+      twijfelt. Met detectie komen de knoppen terug voordat hij iets hoeft te doen — en met
+      het handgebaar komt hij er ook weer uit zonder iets aan te raken.</dd></div>
   </div>
 
   <div class="split">
-    <figure><div class="panelshot">
-      <img src="img/paneel-cam.webp" alt="Het paneel Camera" width="371" height="625" loading="lazy">
+    <figure><div class="panelshot tall">
+      <img src="img/paneel-cam.webp" alt="Het paneel Camera met detectie, instellingen en handgebaar" width="371" height="1508" loading="lazy">
     </div></figure>
     <div class="tw"><table>
       <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
@@ -1159,16 +1162,120 @@ header.cover{padding-block:88px 8px}
           <td>Een all-in-one-pc heeft er vaak twee.</td></tr>
         <tr><td>Minimale sta-tijd</td><td>Hoe lang iemand moet blijven staan.</td>
           <td>Voorbijgangers tellen niet mee — anders wekt de box zichzelf de hele dag.</td></tr>
-        <tr><td>Gevoeligheid</td><td>1 tot 10.</td>
-          <td>Hoger in een donkere ruimte, lager bij veel loop erlangs.</td></tr>
+        <tr><td>Gevoeligheid</td><td>1 tot 10. De regel eronder rekent voor wat je instelt:
+          bij stand 5 telt een bezoeker mee zodra hij <b>12 % van het beeld</b> vult, bij
+          stand 2 pas vanaf 28 %.</td>
+          <td>Laag = alleen wie dichtbij komt, hoog = ook wie verderop staat. Kies laag bij
+          veel loop langs de box, hoog in een rustige hoek.</td></tr>
+        <tr><td>Opnieuw ijken na</td><td>Seconden volstrekt stilstaand beeld waarna de box
+          zijn achtergrond opnieuw vastlegt. Standaard 45; 0 = nooit.</td>
+          <td>Gaat de verlichting aan of wordt er een kast verschoven, dan wijkt het beeld
+          voorgoed af van de achtergrond. Zonder deze grens blijft de box de rest van de dag
+          denken dat er iemand staat. Een mens beweegt altijd een beetje, een kast niet.</td></tr>
       </tbody>
     </table></div>
   </div>
 
+  <div class="note"><span class="t">Camera niet gevonden?</span>
+    <p>De box blijft het zelf proberen — na 5, 10, 20, 30 en daarna elke 60 seconden — en
+    springt meteen aan zodra je een webcam inplugt. Een USB-camera die op Windows een paar
+    seconden ná de kioskapp opkomt, werkt daardoor alsnog. Op het podium ziet de bezoeker
+    hier niets van; de melding staat alleen in de editor.</p></div>
+
+  <h3>Handgebaar — hand omhoog toont het menu</h3>
+  <p class="measure">Steekt een bezoeker zijn hand op, dan gaat de box terug naar het menu.
+  Speelt er een video, dan stopt die. Staat de screensaver aan, dan gaat die uit. Staat hij
+  al op het menu, dan landen de tegels opnieuw. Zonder het scherm aan te raken — handig bij
+  een box achter glas, in een museum, of tijdens een demonstratie op afstand.</p>
+
+  <div class="map">
+    <svg viewBox="0 0 700 262" role="img" aria-label="Links een silhouet met een opgestoken hand naast het hoofd, die duidelijk boven de schouderlijn uitkomt; rechts een hand recht boven het hoofd, die niet meetelt.">
+      <g font-family="IBM Plex Mono, monospace" font-size="9.5" font-weight="600"
+         letter-spacing="1.6" fill="currentColor" opacity=".45">
+        <text x="14" y="20">TELT WEL</text><text x="364" y="20">TELT NIET</text>
+      </g>
+      <g stroke="currentColor" stroke-opacity=".16" fill="none">
+        <rect x="10" y="30" width="330" height="222" rx="10"/>
+        <rect x="360" y="30" width="330" height="222" rx="10"/>
+      </g>
+
+      <!-- schouderlijnen -->
+      <g stroke="currentColor" stroke-dasharray="5 5" stroke-opacity=".45">
+        <line x1="26" y1="118" x2="324" y2="118"/>
+        <line x1="376" y1="118" x2="674" y2="118"/>
+      </g>
+      <g font-family="IBM Plex Sans, sans-serif" font-size="10.5" fill="currentColor" opacity=".5">
+        <text x="26" y="112">schouderlijn</text><text x="376" y="112">schouderlijn</text>
+      </g>
+
+      <!-- LINKS: hand naast het hoofd -->
+      <g fill="currentColor" opacity=".5">
+        <rect x="143" y="118" width="66" height="86" rx="6"/>
+        <circle cx="176" cy="103" r="16"/>
+        <rect x="112" y="70" width="15" height="54" rx="7"/>
+      </g>
+      <g stroke="#0B9E92" stroke-width="1.7" fill="none">
+        <line x1="119" y1="70" x2="119" y2="118"/>
+        <line x1="112" y1="70" x2="126" y2="70"/>
+        <path d="M119 224 V232 H176 V224"/>
+      </g>
+      <circle cx="119" cy="56" r="10" fill="#0B9E92"/>
+      <text x="119" y="60" text-anchor="middle" font-family="IBM Plex Mono, monospace"
+            font-size="11" font-weight="600" fill="#fff">1</text>
+      <circle cx="148" cy="246" r="10" fill="#0B9E92"/>
+      <text x="148" y="250" text-anchor="middle" font-family="IBM Plex Mono, monospace"
+            font-size="11" font-weight="600" fill="#fff">2</text>
+
+      <!-- RECHTS: hand recht boven het hoofd -->
+      <g fill="currentColor" opacity=".5">
+        <rect x="493" y="118" width="66" height="86" rx="6"/>
+        <circle cx="526" cy="103" r="16"/>
+        <rect x="519" y="62" width="15" height="46" rx="7"/>
+      </g>
+      <circle cx="568" cy="72" r="10" fill="#9A5B00"/>
+      <text x="568" y="76" text-anchor="middle" font-family="IBM Plex Mono, monospace"
+            font-size="11" font-weight="600" fill="#fff">3</text>
+    </svg>
+  </div>
+  <ul class="legend">
+    <li><span class="n">1</span><span><b>Hoog genoeg</b> <span class="q">— de hand komt
+      minstens 14 % van de beeldhoogte boven de schouderlijn uit. De schouderlijn is de
+      mediaan van alle bovenranden, dus schuift mee met hoe ver de bezoeker weg
+      staat.</span></span></li>
+    <li><span class="n">2</span><span><b>Naast de romp</b> <span class="q">— de hand staat
+      duidelijk links of rechts van het midden. Dat bepaalt ook wélke hand het is: het
+      camerabeeld is niet gespiegeld, dus de rechterhand staat links in beeld.</span></span></li>
+    <li><span class="n warn">3</span><span><b>Telt niet</b> <span class="q">— recht boven het
+      hoofd. Zonder die regel zou elk hoofd al als opgestoken hand tellen, en opende het
+      menu zich bij iedere voorbijganger.</span></span></li>
+  </ul>
+
+  <div class="tw"><table>
+    <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+    <tbody>
+      <tr><td>Hand omhoog toont het menu</td><td>Zet het gebaar aan. Zet meteen ook de
+        aanwezigheidsdetectie aan als die nog uit stond.</td>
+        <td>Het gebaar leest hetzelfde camerabeeld; zonder camera kan het niet.</td></tr>
+      <tr><td>Welke hand</td><td>Rechterhand, linkerhand, of maakt niet uit.</td>
+        <td>Eén vaste hand voorkomt dat een zwaaiende voorbijganger het menu opent.
+        <b>Let op:</b> het camerabeeld is niet gespiegeld — de rechterhand van de bezoeker
+        staat links in beeld. Daar houdt de software rekening mee.</td></tr>
+      <tr><td>Vasthouden</td><td>Hoe lang de hand omhoog moet blijven. Standaard 1,2 s.</td>
+        <td>Kort genoeg om natuurlijk te voelen, lang genoeg om een toevallige beweging
+        niet mee te tellen.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="measure">In het camerapaneel loopt de teller mee terwijl je het gebaar maakt —
+  <code>rechterhand omhoog (0.7s van 1.2s)</code> — zodat je bij het opleveren kunt
+  controleren of de camera hoog genoeg hangt. Na een gebaar wacht de box 6 seconden voordat
+  hij er opnieuw op reageert, anders klapt het menu heen en weer.</p>
+
   <div class="note"><span class="t">Privacy</span>
     <p>Het camerabeeld wordt uitsluitend lokaal verwerkt: er wordt niets opgeslagen en
-    niets verstuurd. De software kijkt alleen of er beweging in beeld blijft — geen
-    gezichten, geen herkenning.</p></div>
+    niets verstuurd. De software werkt op een raster van 96 × 72 grijswaarden — te grof voor
+    een gezicht, precies genoeg voor een silhouet. Geen herkenning, geen opslag, geen
+    netwerkverkeer.</p></div>
 </section>
 
 <!-- ═══════════════════════════════════════════════ 14 ═══ -->
@@ -1476,6 +1583,22 @@ header.cover{padding-block:88px 8px}
         andere pc.</td><td>Importeer je <code>.json</code> en koppel de media opnieuw.</td></tr>
       <tr><td>Ik kom niet in het menu op een kioskbox</td><td>Bedieningsknoppen verborgen,
         of er zit een PIN op.</td><td>5× snel tikken linksboven. Daarna de PIN.</td></tr>
+      <tr><td>De box denkt de hele dag dat er iemand staat</td><td>Het beeld is blijvend
+        veranderd: de verlichting ging aan, of er is iets verschoven.</td>
+        <td>De box ijkt zichzelf na 45 s stilstaand beeld opnieuw. Gebeurt dat niet, dan
+        staat <b>Opnieuw ijken na</b> op 0 of beweegt er iets in beeld (een scherm, een
+        ventilator) — richt de camera anders.</td></tr>
+      <tr><td>Aanwezigheidsdetectie doet niets</td><td>De camera was er bij het opstarten
+        nog niet.</td><td>De box probeert het vanzelf opnieuw en springt aan bij het
+        inpluggen. Blijft het staan op “Geen camera gevonden”, kijk dan in Windows onder
+        Privacy → Camera.</td></tr>
+      <tr><td>Het handgebaar werkt niet</td><td>De hand komt niet ver genoeg boven de
+        schouders, of staat recht boven het hoofd.</td><td>Hand duidelijk naast het hoofd
+        opsteken. Open het camerapaneel: de teller loopt mee zodra het gebaar herkend
+        wordt.</td></tr>
+      <tr><td>Iemand wordt niet gezien</td><td>De gevoeligheid staat te laag voor de
+        afstand.</td><td>De regel onder de schuif zegt hoeveel procent van het beeld
+        iemand moet vullen. Zet hem hoger, of hang de camera dichterbij.</td></tr>
       <tr><td>Het beeld staat stil</td><td>De weergave is vastgelopen.</td>
         <td>De watchdog herstart automatisch na de ingestelde seconden. Gebeurt dat niet,
         dan staat zelfonderhoud uit.</td></tr>
@@ -1496,6 +1619,7 @@ header.cover{padding-block:88px 8px}
     <dt><kbd>Shift</kbd> + klik</dt><dd>Meerdere knoppen selecteren in de bewerkmodus.</dd>
     <dt>5× tikken in de hoek linksboven</dt><dd>Opent het menu ook als de bedieningsknoppen verborgen zijn.</dd>
     <dt>Naar rechts vegen</dt><dd>Vorige scène, als “Vegen om terug te gaan” aanstaat.</dd>
+    <dt>Hand omhoog</dt><dd>Terug naar het menu, als het handgebaar aanstaat (hoofdstuk 13).</dd>
   </div>
 
   <h3>Woordenlijst</h3>
@@ -1523,6 +1647,10 @@ header.cover{padding-block:88px 8px}
         opstelling.</td></tr>
       <tr><td>Watchdog</td><td>De bewaker die de presentatie herstart als het beeld
         stilstaat.</td></tr>
+      <tr><td>Opnieuw ijken</td><td>De box legt zijn achtergrondbeeld opnieuw vast, zodat
+        een blijvende verandering in de ruimte niet als bezoeker blijft tellen.</td></tr>
+      <tr><td>Handgebaar</td><td>Hand omhoog voor de camera: de box gaat terug naar het menu,
+        zonder aanraken.</td></tr>
       <tr><td>Device-key</td><td>De sleutel waarmee één box zich bij je beheerserver
         identificeert.</td></tr>
     </tbody>
@@ -1530,7 +1658,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.9 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.9.1 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>

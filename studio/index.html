@@ -1337,7 +1337,34 @@
           <input type="range" id="camSens" min="1" max="10" step="1">
         </label>
       </div>
+      <p class="note" id="camSensNote"></p>
+      <label class="field">Opnieuw ijken na (seconden stilstaand beeld; 0 = nooit)
+        <input type="number" id="camStuck" min="0" max="600" step="5">
+      </label>
+      <p class="note">Gaat de verlichting aan of wordt er een kast verschoven, dan verschilt het beeld voorgoed van de achtergrond. Staat het beeld daarna zolang volstrekt stil, dan is dat geen bezoeker en ijkt de box zichzelf opnieuw. Een mens beweegt altijd een beetje.</p>
       <p class="note">Alleen wie langer dan de sta-tijd in beeld blijft telt als bezoeker; voorbijgangers worden genegeerd. Beelden worden uitsluitend lokaal verwerkt en nooit opgeslagen of verstuurd.</p>
+    </div>
+
+    <h2>Handgebaar</h2>
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Hand omhoog toont het menu</div>
+          <div class="t-sub">Bezoeker steekt zijn hand op &mdash; de box gaat terug naar de knoppen, zonder aanraken</div></div>
+        <label class="switch"><input type="checkbox" id="gestEnabled"><i></i></label>
+      </div>
+      <div class="row">
+        <label class="field">Welke hand
+          <select id="gestHand">
+            <option value="right">Rechterhand</option>
+            <option value="left">Linkerhand</option>
+            <option value="any">Maakt niet uit</option>
+          </select>
+        </label>
+        <label class="field">Vasthouden (seconden)
+          <input type="number" id="gestHold" min="0.3" max="5" step="0.1">
+        </label>
+      </div>
+      <p class="note">De hand moet naast het hoofd staan en er duidelijk bovenuit komen &mdash; een hand recht boven het hoofd telt niet, anders zou het hoofd zelf al genoeg zijn. Werkt tijdens het afspelen van een video, in de 3D-weergave en tijdens de screensaver. Na een gebaar wacht de box 6 seconden voordat hij er opnieuw op reageert.</p>
     </div>
   </div>
 
@@ -1562,7 +1589,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 6,
+  version: 7,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -1596,7 +1623,11 @@ const defaultConfig = () => ({
   orientationMode: 'auto', // 'auto' | 'portrait' | 'landscape'
   screensaver: { enabled: false, delaySec: 120, mediaIds: [],
     transition: 'crossfade', transitionSec: 1.2, background: false },
-  camera: { enabled: false, dwellSec: 3, sensitivity: 5, deviceId: null },
+  // stuckSec: na zoveel seconden bewegingloze 'aanwezigheid' ijkt de achtergrond
+  // opnieuw — anders houdt een lichtsprong of verschoven meubel de box voor
+  // altijd 'bezet'. 0 = nooit opnieuw ijken.
+  camera: { enabled: false, dwellSec: 3, sensitivity: 5, deviceId: null, stuckSec: 45,
+    gesture: { enabled: false, hand: 'right', holdSec: 1.2 } },
   object3d: { color: '#8fa3bd', rotSpeed: 0.8, light: 1.0, shininess: 0.35, maxTriangles: 150000, autoCloseSec: 60,
     lightBg: true, shadow: 0.35 },
   theme: { font: 'system', weight: 700, logoMediaId: null, logoSize: 12, logoPos: 'top-left' },
@@ -1612,7 +1643,8 @@ function migrateConfig(stored) {
   const d = defaultConfig();
   const c = { ...d, ...stored,
     screensaver: { ...d.screensaver, ...stored.screensaver },
-    camera: { ...d.camera, ...stored.camera },
+    camera: { ...d.camera, ...stored.camera,
+      gesture: { ...d.camera.gesture, ...(stored.camera?.gesture || {}) } },
     object3d: { ...d.object3d, ...stored.object3d },
     hand: { ...d.hand, ...stored.hand },
     motion: { ...d.motion, ...stored.motion, overrides: { ...(stored.motion?.overrides || {}) } },
@@ -1641,7 +1673,7 @@ function migrateConfig(stored) {
   for (const sc of c.scenes) {
     (sc.buttons || []).forEach((b, i) => { if (typeof b.z !== 'number') b.z = i; });
   }
-  c.version = 6;
+  c.version = 7;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -5855,6 +5887,12 @@ function renderSaver() {
   $('#camEnabled').checked = cam.enabled;
   $('#camDwell').value = cam.dwellSec;
   $('#camSens').value = cam.sensitivity;
+  $('#camStuck').value = cam.stuckSec ?? 45;
+  const g = cam.gesture || {};
+  $('#gestEnabled').checked = !!g.enabled;
+  $('#gestHand').value = g.hand || 'right';
+  $('#gestHold').value = g.holdSec ?? 1.2;
+  renderCamSensNote();
   renderCamDevices();
   updateCamLive();
 }
@@ -5888,8 +5926,34 @@ $('#camEnabled').addEventListener('change', (e) => {
   save();
   config.camera.enabled ? startCamera() : stopCamera();
 });
+// De schuif is abstract; deze regel maakt zichtbaar wat je instelt.
+function renderCamSensNote() {
+  const note = $('#camSensNote'); if (!note) return;
+  const t = camThresholds();
+  note.textContent = `Stand ${config.camera.sensitivity}: een bezoeker telt mee zodra hij ` +
+    `minstens ${Math.round(t.area * 100)}% van het beeld vult en ` +
+    `${Math.round(t.pixel)} grijswaarden van de achtergrond afwijkt. ` +
+    `Laag = alleen wie dichtbij komt, hoog = ook wie verderop staat.`;
+}
 $('#camDwell').addEventListener('change', (e) => { config.camera.dwellSec = Math.max(1, Number(e.target.value) || 3); save(); });
-$('#camSens').addEventListener('change', (e) => { config.camera.sensitivity = Number(e.target.value); save(); });
+$('#camSens').addEventListener('input', (e) => {
+  config.camera.sensitivity = Number(e.target.value); renderCamSensNote();
+});
+$('#camSens').addEventListener('change', () => save());
+$('#camStuck').addEventListener('change', (e) => {
+  config.camera.stuckSec = Math.max(0, Number(e.target.value) || 0); save();
+});
+$('#gestEnabled').addEventListener('change', (e) => {
+  config.camera.gesture.enabled = e.target.checked; save();
+  if (e.target.checked && !config.camera.enabled) {
+    config.camera.enabled = true; save(); renderSaver(); startCamera();
+    toast('Aanwezigheidsdetectie aangezet — het gebaar heeft de camera nodig');
+  }
+});
+$('#gestHand').addEventListener('change', (e) => { config.camera.gesture.hand = e.target.value; save(); });
+$('#gestHold').addEventListener('change', (e) => {
+  config.camera.gesture.holdSec = Math.min(5, Math.max(0.3, Number(e.target.value) || 1.2)); save();
+});
 $('#camDevice').addEventListener('change', (e) => {
   config.camera.deviceId = e.target.value || null;
   save();
@@ -6403,9 +6467,32 @@ setInterval(() => {
    - pas wanneer iemand langer dan dwellSec aanwezig blijft, telt het als
      bezoeker en stopt de screensaver — voorbijlopers halen dat niet. */
 
-let camStream = null, camVideoEl = null, camTimer = null;
+let camStream = null, camVideoEl = null, camTimer = null, camStarting = false;
 let camBg = null, camPrev = null, camQuiet = 0, camPresenceSince = 0, camLastPresent = 0;
-let camLastFrame = 0;
+let camLastFrame = 0, camStillSince = 0;
+let camHandSince = 0, camHandLast = 0, camGestureUntil = 0;
+// Opnieuw proberen met oplopende tussenpozen: een USB-webcam komt op Windows
+// vaak pas een paar seconden ná de kioskapp online.
+let camRetryTimer = null, camRetryStep = 0;
+const CAM_RETRY_SEC = [5, 10, 20, 30, 60];
+
+function scheduleCameraRetry() {
+  clearTimeout(camRetryTimer); camRetryTimer = null;
+  if (!config.camera.enabled) return 0;
+  const wait = CAM_RETRY_SEC[Math.min(camRetryStep, CAM_RETRY_SEC.length - 1)];
+  camRetryStep++;
+  camRetryTimer = setTimeout(() => { camRetryTimer = null; startCamera(); }, wait * 1000);
+  return wait;
+}
+
+// De gevoeligheidsschuif moet echt iets doen: stand 1 reageert alleen op een
+// grote, dichtbije bezoeker, stand 10 op de kleinste verandering.
+function camThresholds() {
+  const sens = Math.min(10, Math.max(1, Number(config.camera.sensitivity) || 5));
+  const k = (10 - sens) / 9;                 // 0 = gevoeligst, 1 = ongevoeligst
+  return { pixel: 10 + k * 27,               // 10 .. 37 grijswaarden verschil
+           area: 0.02 + k * k * 0.33 };      // 2% .. 35% van het beeld
+}
 
 // Statuslampje: groen zodra er écht camerabeeld binnenkomt van de juiste camera.
 function setCamLive(state, text) {
@@ -6479,15 +6566,28 @@ async function renderCamDevices() {
   });
 }
 
-// Lijst automatisch verversen wanneer een camera wordt aangesloten of losgekoppeld.
-navigator.mediaDevices?.addEventListener?.('devicechange', () => renderCamDevices());
+// Lijst verversen wanneer een camera wordt aangesloten of losgekoppeld — en is
+// de detectie aan terwijl er nog geen beeld is, dan meteen opnieuw proberen.
+navigator.mediaDevices?.addEventListener?.('devicechange', () => {
+  renderCamDevices();
+  if (config.camera.enabled && !camStream) { camRetryStep = 0; startCamera(); }
+});
+
+// Een camerafout is een beheerdersprobleem, geen bezoekersmelding: op het
+// podium blijft het scherm schoon, in de editor krijg je de melding wél.
+function camToast(msg) { if (panel.classList.contains('open')) toast(msg); }
 
 async function startCamera() {
-  if (camStream) return;
+  if (camStream || camStarting) return;
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     $('#camStatusText').textContent = 'Camera-API niet beschikbaar: open de site via https:// of gebruik de Windows-app.';
-    return toast('Camera-API niet beschikbaar in deze omgeving');
+    return camToast('Camera-API niet beschikbaar in deze omgeving');
   }
+  camStarting = true;
+  try { await startCameraInner(); } finally { camStarting = false; }
+}
+
+async function startCameraInner() {
   $('#camStatusText').textContent = 'Camera wordt gestart…';
   const video = { width: 320, height: 240 };
   if (config.camera.deviceId) video.deviceId = { exact: config.camera.deviceId };
@@ -6502,24 +6602,32 @@ async function startCamera() {
       } catch (e2) { e = e2; }
     }
     if (!camStream) {
-      $('#camStatusText').textContent = camErrorText(e);
+      const wait = scheduleCameraRetry();
+      $('#camStatusText').textContent = camErrorText(e) +
+        (wait ? ` Automatisch opnieuw proberen over ${wait}s.` : '');
       setCamLive('err', 'fout — zie melding hierboven');
-      toast('Webcam: ' + (e.name || e));
+      camToast('Webcam: ' + (e.name || e));
       renderCamDevices();
       return;
     }
   }
+  clearTimeout(camRetryTimer); camRetryTimer = null; camRetryStep = 0;
   camVideoEl = el('video', { muted: '', playsinline: '', autoplay: '' });
   camVideoEl.srcObject = camStream;
   camVideoEl.muted = true;
   camVideoEl.play().catch(() => {});
   camStream.getVideoTracks()[0]?.addEventListener('ended', () => {
     stopCamera();
-    $('#camStatusText').textContent = 'Camera losgekoppeld — sluit hem aan en klik op "Camera testen".';
+    camRetryStep = 0;
+    const wait = scheduleCameraRetry();
+    $('#camStatusText').textContent = 'Camera losgekoppeld' +
+      (wait ? ` — automatisch opnieuw proberen over ${wait}s.` : ' — sluit hem aan en klik op "Camera testen".');
   });
   $('#camPreviewBox').innerHTML = '';
   $('#camPreviewBox').append(camVideoEl);
   camBg = camPrev = null; camQuiet = 0; camPresenceSince = 0;
+  camHandSince = camHandLast = camGestureUntil = 0;
+  camStillSince = Date.now();
   camTimer = setInterval(sampleCamera, 350);
   $('#camStatusText').textContent = 'Camera actief — nog niemand gedetecteerd';
   renderCamDevices(); // na toestemming zijn de cameranamen zichtbaar
@@ -6527,24 +6635,83 @@ async function startCamera() {
 
 function stopCamera() {
   clearInterval(camTimer); camTimer = null;
+  clearTimeout(camRetryTimer); camRetryTimer = null;
   if (camStream) for (const t of camStream.getTracks()) t.stop();
   camStream = null; camBg = null; camLastFrame = 0;
+  camHandSince = camHandLast = 0;
   $('#camPreviewBox').innerHTML = '';
   $('#camDot').classList.remove('present');
   $('#camStatusText').textContent = 'Camera uit';
   setCamLive('off', 'uit');
 }
 
+/* Analyseraster. 96x72 is fijn genoeg om een opgestoken hand van een hoofd te
+   onderscheiden en nog altijd verwaarloosbaar qua rekenwerk (7k pixels). */
+const CAM_W = 96, CAM_H = 72;
 const camCanvas = document.createElement('canvas');
-camCanvas.width = 48; camCanvas.height = 36;
+camCanvas.width = CAM_W; camCanvas.height = CAM_H;
 const camCtx = camCanvas.getContext('2d', { willReadFrequently: true });
 
 function grayFrame() {
-  camCtx.drawImage(camVideoEl, 0, 0, 48, 36);
-  const d = camCtx.getImageData(0, 0, 48, 36).data;
-  const g = new Float32Array(48 * 36);
+  camCtx.drawImage(camVideoEl, 0, 0, CAM_W, CAM_H);
+  const d = camCtx.getImageData(0, 0, CAM_W, CAM_H).data;
+  const g = new Float32Array(CAM_W * CAM_H);
   for (let i = 0; i < g.length; i++) g[i] = (d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 3;
   return g;
+}
+
+/* Handgebaar. Een opgestoken hand is een smalle uitstulping die duidelijk boven
+   de schouderlijn uitkomt en naast het midden van de romp staat — een hoofd
+   staat er middenboven en telt dus niet mee.
+   Het camerabeeld is niet gespiegeld: de rechterhand van de bezoeker staat
+   links in beeld. Geeft 'right', 'left' of null. */
+function detectRaisedHand(cur, bg, pixelTh) {
+  const top = new Int16Array(CAM_W).fill(-1);
+  let fg = 0, sumX = 0;
+  for (let c = 0; c < CAM_W; c++) {
+    for (let r = 0; r < CAM_H; r++) {
+      if (Math.abs(cur[r * CAM_W + c] - bg[r * CAM_W + c]) > pixelTh) {
+        if (top[c] < 0) top[c] = r;
+        fg++; sumX += c;
+      }
+    }
+  }
+  if (fg < CAM_W * CAM_H * 0.02) return null;          // te weinig voorgrond
+  const bodyX = sumX / fg;
+  const tops = Array.from(top).filter((v) => v >= 0).sort((a, b) => a - b);
+  if (tops.length < 6) return null;
+  const shoulder = tops[Math.floor(tops.length / 2)];   // mediaan = schouderlijn
+  const rise = Math.max(6, Math.round(CAM_H * 0.14));   // minstens 14% hoger
+  let best = null, run = null;
+  for (let c = 0; c <= CAM_W; c++) {
+    const hit = c < CAM_W && top[c] >= 0 && top[c] <= shoulder - rise;
+    if (hit) {
+      if (!run) run = { from: c, to: c, minTop: top[c] };
+      else { run.to = c; run.minTop = Math.min(run.minTop, top[c]); }
+    } else if (run) {
+      const w = run.to - run.from + 1;
+      if (w >= 2 && w <= CAM_W * 0.22 && (!best || run.minTop < best.minTop)) best = run;
+      run = null;
+    }
+  }
+  if (!best) return null;
+  const handX = (best.from + best.to) / 2;
+  if (Math.abs(handX - bodyX) < CAM_W * 0.05) return null;   // recht boven het hoofd
+  return handX < bodyX ? 'right' : 'left';
+}
+
+const HAND_LABEL = { right: 'rechterhand', left: 'linkerhand', any: 'hand' };
+
+/* Wat het gebaar doet: terug naar het menu. Speelt er iets, dan stopt dat;
+   staat de screensaver aan, dan gaat die uit; anders landen de knoppen opnieuw. */
+function menuByGesture() {
+  lastInteraction = Date.now();
+  track('gesture', 'hand-omhoog');
+  if (saverActive) return exitSaver();
+  if (playOverlay.classList.contains('show')) return stopPlaying();
+  if (currentSceneId !== config.homeSceneId) return gotoScene(config.homeSceneId, { reset: true });
+  AppState.set('IDLE');
+  runEntrance();
 }
 
 function fracDiff(a, b, threshold) {
@@ -6560,12 +6727,30 @@ function sampleCamera() {
   const cur = grayFrame();
   if (!camBg) { camBg = cur.slice(); camPrev = cur; return; }
 
-  const sens = config.camera.sensitivity || 5;          // 1 (ongevoelig) .. 10 (gevoelig)
-  const pixelTh = 14 + (10 - sens) * 2.5;               // hoeveel een pixel moet verschillen
-  const presenceTh = 0.03 + (10 - sens) * 0.012;        // hoeveel % pixels anders moet zijn
+  const { pixel: pixelTh, area: presenceTh } = camThresholds();
   const motion = fracDiff(cur, camPrev, pixelTh);
   const presence = fracDiff(cur, camBg, pixelTh);
   camPrev = cur;
+  const now = Date.now();
+  if (motion >= 0.004) camStillSince = now;
+
+  /* Blijvende verandering opnieuw ijken. Gaat het licht aan of wordt er een
+     kast verschoven, dan verschilt het beeld voorgoed van de achtergrond —
+     en omdat de achtergrond alleen bij "niemand aanwezig" werd ververst, bleef
+     de box daarna eeuwig op "bezoeker aanwezig" staan. Een mens beweegt; een
+     verschoven kast niet. Staat het beeld dus stuckSec lang volstrekt stil
+     terwijl er "aanwezigheid" is, dan is dat geen bezoeker. */
+  const stuckSec = Number(config.camera.stuckSec ?? 45);
+  if (stuckSec > 0 && presence >= presenceTh && camStillSince &&
+      now - camStillSince > stuckSec * 1000) {
+    camBg = cur.slice(); camQuiet = 0;
+    camPresenceSince = 0; camHandSince = camHandLast = 0;
+    camStillSince = now;
+    $('#camDot').classList.remove('present');
+    $('#camStatusText').textContent =
+      'Beeld opnieuw geijkt — blijvende verandering (licht of decor), geen bezoeker';
+    return;
+  }
 
   // Achtergrondmodel alleen verversen als de scène echt rustig is (±5s),
   // zodat een stilstaande bezoeker niet in de achtergrond "opgaat".
@@ -6575,7 +6760,32 @@ function sampleCamera() {
     camQuiet = 0;
   }
 
-  const now = Date.now();
+  /* Handgebaar: hand omhoog = terug naar het menu. */
+  const gest = config.camera.gesture || {};
+  let handMsg = '';
+  if (gest.enabled && presence >= presenceTh && now >= camGestureUntil) {
+    const seen = detectRaisedHand(cur, camBg, pixelTh);
+    const wanted = gest.hand || 'right';
+    if (seen && (wanted === 'any' || seen === wanted)) {
+      if (!camHandSince) camHandSince = now;
+      camHandLast = now;
+      const held = (now - camHandSince) / 1000;
+      const need = Math.max(0.3, Number(gest.holdSec) || 1.2);
+      if (held >= need) {
+        camHandSince = camHandLast = 0;
+        camGestureUntil = now + 6000;   // even rust, anders klapt het menu heen en weer
+        $('#camStatusText').textContent = `Menu geopend met ${HAND_LABEL[wanted] || 'hand'} omhoog`;
+        menuByGesture();
+        return;
+      }
+      handMsg = ` · ${HAND_LABEL[wanted] || 'hand'} omhoog (${held.toFixed(1)}s van ${need.toFixed(1)}s)`;
+    } else if (camHandSince && now - camHandLast > 700) {
+      camHandSince = camHandLast = 0;
+    }
+  } else if (!gest.enabled) {
+    camHandSince = camHandLast = 0;
+  }
+
   if (presence >= presenceTh) {
     camLastPresent = now;
     if (!camPresenceSince) camPresenceSince = now;
@@ -6583,9 +6793,10 @@ function sampleCamera() {
     if (standingSec >= config.camera.dwellSec) {
       lastInteraction = now;               // houdt de screensaver ook wég zolang iemand blijft staan
       if (saverActive) exitSaver();
-      $('#camStatusText').textContent = `Bezoeker aanwezig (${standingSec.toFixed(1)}s)`;
+      $('#camStatusText').textContent = `Bezoeker aanwezig (${standingSec.toFixed(1)}s)` + handMsg;
     } else {
-      $('#camStatusText').textContent = `Beweging gezien… (${standingSec.toFixed(1)}s van ${config.camera.dwellSec}s)`;
+      $('#camStatusText').textContent =
+        `Beweging gezien… (${standingSec.toFixed(1)}s van ${config.camera.dwellSec}s)` + handMsg;
     }
     $('#camDot').classList.add('present');
   } else {
