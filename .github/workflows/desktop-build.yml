@@ -53,6 +53,56 @@ jobs:
           if (-not (Test-Path smoke-result.json)) { throw 'smoke-result.json ontbreekt' }
           Get-Content smoke-result.json
 
+      - name: Complete applicatie bundelen (broncode + installer in één zip)
+        shell: pwsh
+        run: |
+          $ver   = (Get-Content package.json | ConvertFrom-Json).version
+          $repo  = (Resolve-Path ..).Path
+          $stage = "release\bundle\hereweholo-$ver"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          # het hele project, zonder afhankelijkheden, geschiedenis en buildmap
+          robocopy $repo $stage /E /NFL /NDL /NJH /NJS /XD node_modules .git release bundle
+          if ($LASTEXITCODE -ge 8) { throw "Kopieren mislukt (robocopy $LASTEXITCODE)" }
+          $global:LASTEXITCODE = 0
+          # schone startdatabase: geen device-sleutels in een gedeelde download
+          $dbPath = Join-Path $stage 'data\db.json'
+          if (Test-Path $dbPath) {
+            $db = Get-Content $dbPath -Raw | ConvertFrom-Json
+            $db.devices = @(); $db.playlists = @(); $db.liveSources = @()
+            $db | ConvertTo-Json -Depth 16 | Set-Content (Join-Path $stage 'data\db.example.json') -Encoding utf8
+            Remove-Item $dbPath
+          }
+          # de zojuist gebouwde installer erbij, met controlegetal en uitleg
+          $win = Join-Path $stage 'windows-app'
+          New-Item -ItemType Directory -Force -Path $win | Out-Null
+          $exe = Get-ChildItem release -Filter 'HereWeHolo-Player-Setup-*.exe' | Select-Object -First 1
+          Copy-Item $exe.FullName $win
+          $hash = (Get-FileHash $exe.FullName -Algorithm SHA256).Hash.ToLower()
+          @(
+            'De Windows-app — HereWeHolo Player ' + $ver
+            ''
+            '  ' + $exe.Name + '   dubbelklikken om te installeren'
+            ''
+            'Kioskmodus, GPU-versnelling, logging, diagnostiek (Ctrl+Shift+D),'
+            'zelfonderhoud en crash-herstel. Dit is wat je op de holobox zet.'
+            ''
+            'Waarom niet gewoon studio/index.html in de browser? De app start'
+            'schermvullend op, herstelt zichzelf na een vastloper, en speelt'
+            'geluid meteen af — browsers dempen tot iemand het scherm aanraakt.'
+            ''
+            'WINDOWS WAARSCHUWT'
+            'Zonder code-signing-certificaat meldt Defender een onbekende'
+            'uitgever. Kies "Meer informatie" > "Toch uitvoeren".'
+            ''
+            'Controleren:'
+            '  Get-FileHash .\' + $exe.Name + ' -Algorithm SHA256'
+            'Verwacht:'
+            '  ' + $hash
+          ) | Set-Content (Join-Path $win 'LEES-MIJ.txt') -Encoding utf8
+          Compress-Archive -Path $stage -DestinationPath "release\HereWeHolo-Compleet-$ver.zip" -Force
+          Remove-Item -Recurse -Force release\bundle
+          Write-Host ("Gebundeld: HereWeHolo-Compleet-$ver.zip ({0:N0} MB)" -f ((Get-Item "release\HereWeHolo-Compleet-$ver.zip").Length / 1MB))
+
       - name: Exe-loze Studio-versie bundelen (geen virusmeldingen)
         shell: pwsh
         run: |
@@ -88,7 +138,11 @@ jobs:
           $notes = @(
             'WINDOWS-APPLICATIE (aanbevolen)'
             ''
-            'HereWeHolo-Player-Setup-*.exe   installer met snelkoppelingen'
+            'HereWeHolo-Compleet-*.zip       ALLES IN EEN: de installer plus de'
+            '                                complete applicatie, handleiding en'
+            '                                broncode. Begin hier.'
+            ''
+            'HereWeHolo-Player-Setup-*.exe   alleen de installer'
             'HereWeHolo-Player-*-x64.zip     portable, uitpakken en starten'
             ''
             'Volwaardige desktop-app: kioskmodus, GPU-versnelling, logging,'
@@ -104,10 +158,20 @@ jobs:
             'HereWeHolo-Studio-Offline-*.zip  geen .exe, start via Chrome/Edge'
           )
           $notes | Set-Content -Path release\RELEASE-NOTES.txt -Encoding utf8
-          gh release create $env:RELEASE_TAG `
-            --target $env:GITHUB_SHA `
-            (Get-ChildItem release\*.exe).FullName `
-            (Get-ChildItem release\*.zip).FullName `
-            release\SHA256SUMS.txt `
-            --title "HereWeHolo Player $env:RELEASE_TAG" `
-            --notes-file release\RELEASE-NOTES.txt
+          $files = @()
+          $files += (Get-ChildItem release\*.exe).FullName
+          $files += (Get-ChildItem release\*.zip).FullName
+          $files += (Resolve-Path release\SHA256SUMS.txt).Path
+          gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            # Tag bestaat al: bestanden vervangen in plaats van de stap laten falen.
+            $global:LASTEXITCODE = 0
+            gh release upload $env:RELEASE_TAG $files --clobber
+          } else {
+            $global:LASTEXITCODE = 0
+            gh release create $env:RELEASE_TAG `
+              --target $env:GITHUB_SHA `
+              $files `
+              --title "HereWeHolo Player $env:RELEASE_TAG" `
+              --notes-file release\RELEASE-NOTES.txt
+          }
