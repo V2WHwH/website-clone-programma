@@ -62,8 +62,10 @@ Alleen nodig als je meer dan één holobox centraal wilt beheren.
 
     npm install
     cp .env.example .env        en vul ADMIN_PASSWORD in
-    cp data/db.example.json data/db.json
     npm start                   → http://localhost:8080/admin
+
+De database maakt hij zelf aan in data/ bij de eerste start; die map
+zit dus bewust niet in de download.
 
 Wat het je geeft: mappen en uploads, playlists, live streams, een
 device-dashboard met online-status en "speelt nu", en commando's op
@@ -90,8 +92,7 @@ serveradres + device-key uit het beheerpaneel.
   public/admin/      het CMS in de browser
   public/player/     de 4K-player voor losse boxen
   tools/             windows-kiosk-setup.ps1
-  data/              db.example.json — hernoem naar db.json om te starten
-  media/             leeg; hier komen je uploads van het platform
+  data/ media/       worden bij de eerste start van het platform aangemaakt
 
   docs/handleiding/bedieningsboek-1-bestand.html
       Hetzelfde boek met alle afbeeldingen erin gebakken. Eén bestand
@@ -106,8 +107,8 @@ serveradres + device-key uit het beheerpaneel.
   ene profiel. Exporteer na elke sessie via Beheer & device →
   "Ontwerp exporteren (.json)". Media neem je apart mee.
 
-- data/db.example.json bevat geen devices: je voegt je eigen boxen toe
-  in het beheerpaneel. De sleutel van de testbox is er bewust uit.
+- Er zitten geen device-sleutels in deze download. Je voegt je eigen
+  holoboxen toe in het beheerpaneel.
 
 - Zonder code-signing-certificaat waarschuwt Windows Defender bij de
   .exe voor een onbekende uitgever. Kies "Meer informatie" → "Toch
