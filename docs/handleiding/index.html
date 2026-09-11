@@ -287,7 +287,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.9.1</span><span>21 hoofdstukken</span><span>24 schermafbeeldingen</span>
+    <span>Versie 2.9.2</span><span>21 hoofdstukken</span><span>24 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -813,15 +813,22 @@ header.cover{padding-block:88px 8px}
 
   <div class="split">
     <figure><div class="panelshot tall">
-      <img src="img/paneel-look.webp" alt="Het paneel Scherm en scène" width="371" height="1215" loading="lazy">
+      <img src="img/paneel-look.webp" alt="Het paneel Scherm en scène" width="371" height="1405" loading="lazy">
     </div></figure>
     <div class="tw"><table>
       <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
       <tbody>
         <tr><td>Titel op het scherm</td><td>De kop boven de knoppen, voor deze scène.</td>
           <td>Leeg laten mag: dan is het scherm alleen tegels.</td></tr>
-        <tr><td>Achtergrondvideo</td><td>Speelt gedempt in een lus achter de knoppen.</td>
+        <tr><td>Achtergrondvideo</td><td>Speelt in een lus achter de knoppen.</td>
           <td>Geeft een holobox diepte zonder dat er iets te lezen valt.</td></tr>
+        <tr><td>Geluid bij de achtergrondvideo</td><td>Aan of uit, per scène, met een eigen
+          volumeschuif.</td><td>Standaard uit: een lus die de hele dag geluid maakt is in de
+          meeste ruimtes te veel. Aanzetten kan voor een sfeergeluid of een gesproken
+          welkom.</td></tr>
+        <tr><td>Volume van de achtergrondvideo</td><td>0 tot 100 %, wordt vermenigvuldigd met
+          het hoofdvolume.</td><td>Zet je het hoofdvolume op 50 % en deze schuif op 40 %, dan
+          klinkt de achtergrond op 20 %. De regel eronder rekent het voor.</td></tr>
         <tr><td>Video-overlaag</td><td>Een tweede video bovenop de achtergrond.</td>
           <td>Voor deeltjes, licht of rook — het effect dat een hologram “levend” maakt.</td></tr>
         <tr><td>Menglaag</td><td>Screen, Normaal, Lighten of Overlay.</td>
@@ -1094,7 +1101,8 @@ header.cover{padding-block:88px 8px}
   <div class="wwww">
     <div><dt>Wie</dt><dd>De bouwer; in een showroom is dit vaak het meest bekeken
       onderdeel.</dd></div>
-    <div><dt>Wat</dt><dd>Aan/uit, wachttijd, playlist, overgang en achtergrondmodus.</dd></div>
+    <div><dt>Wat</dt><dd>Aan/uit, wachttijd, playlist, overgang, achtergrondmodus en
+      geluid.</dd></div>
     <div><dt>Waar</dt><dd>Achtste tabblad.</dd></div>
     <div><dt>Waarom</dt><dd>Een holobox staat het grootste deel van de dag alleen. Een zwart
       scherm trekt niemand; een lus die doorloopt wel.</dd></div>
@@ -1102,7 +1110,7 @@ header.cover{padding-block:88px 8px}
 
   <div class="split">
     <figure><div class="panelshot tall">
-      <img src="img/paneel-saver.webp" alt="Het paneel Screensaver" width="371" height="976" loading="lazy">
+      <img src="img/paneel-saver.webp" alt="Het paneel Screensaver" width="371" height="1185" loading="lazy">
     </div></figure>
     <div class="tw"><table>
       <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
@@ -1121,11 +1129,51 @@ header.cover{padding-block:88px 8px}
           van rechts — of geen. Met een instelbare duur van 0,3 tot 3 s.</td>
           <td>Een harde cut tussen twee sferen leest als een storing. De overgang start
           zoveel seconden vóór het einde van de lopende video, zodat de wissel overlapt.</td></tr>
+        <tr><td>Geluid bij de screensaver</td><td>Aan of uit, met een eigen volumeschuif.
+          Geldt voor de playlist — schermvullend én in de achtergrondmodus.</td>
+          <td>Tot versie 2.9.1 speelde de playlist altijd stil. Nu kan een sfeerfilm of een
+          bedrijfsvideo gewoon geluid geven.</td></tr>
+        <tr><td>Volume van de screensaver</td><td>0 tot 100 %, maal het hoofdvolume.</td>
+          <td>Zelfde rekensom als bij de achtergrondvideo; de regel eronder laat zien wat er
+          werkelijk uit komt.</td></tr>
         <tr><td>Nu testen</td><td>Start de screensaver meteen.</td>
           <td>Zodat je niet twee minuten hoeft te wachten om je werk te zien.</td></tr>
       </tbody>
     </table></div>
   </div>
+  <h3>Geluid op de achtergrond</h3>
+  <p class="measure">Er zijn twee lagen die geluid kunnen geven, en ze gebruiken hetzelfde
+  scherm. Welke van de twee je hoort, hangt af van de achtergrondmodus.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Situatie</th><th>Wat je hoort</th><th>Waar je het instelt</th></tr></thead>
+    <tbody>
+      <tr><td>Achtergrondmodus <b>uit</b></td><td>De achtergrondvideo van de scène.</td>
+        <td>Scherm &amp; scène — per scène.</td></tr>
+      <tr><td>Achtergrondmodus <b>aan</b></td><td>De screensaver-playlist, ook terwijl de
+        knoppen in beeld staan.</td><td>Screensaver — geldt voor alle scènes.</td></tr>
+      <tr><td>Screensaver schermvullend</td><td>De playlist.</td>
+        <td>Screensaver.</td></tr>
+      <tr><td>Bezoeker speelt een knopvideo</td><td>Alleen die video. De achtergrond zwijgt
+        vanzelf en komt terug zodra de video stopt.</td><td>Gaat automatisch.</td></tr>
+      <tr><td>Bezoeker raakt het scherm aan tijdens de screensaver</td><td>Stilte — de
+        screensaver is meteen stil, ook tijdens het uitvloeien van het beeld.</td>
+        <td>Gaat automatisch.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note warn"><span class="t">De eerste aanraking</span>
+    <p>Browsers weigeren geluid af te spelen voordat iemand de pagina heeft aangeraakt. Start
+    de box op met geluid aan, dan begint de achtergrond <em>stil</em> en gaat het geluid aan
+    bij de eerste aanraking. De regel onder de schakelaar meldt dat ook. In de
+    <b>Windows-app</b> speelt hij meteen met geluid — daar geldt die beperking niet. Zet je
+    de box in een publieke opstelling waar geluid direct hoorbaar moet zijn, gebruik dan de
+    Windows-app.</p></div>
+
+  <div class="note"><span class="t">Eén rekensom</span>
+    <p>Beide schuiven worden vermenigvuldigd met het <b>hoofdvolume</b> uit Scherm &amp;
+    scène. Zo zet je met één schuif — ook op afstand vanuit het beheerpaneel — de hele box
+    zachter zonder je verhoudingen kwijt te raken.</p></div>
 </section>
 
 <!-- ═══════════════════════════════════════════════ 13 ═══ -->
@@ -1583,6 +1631,13 @@ header.cover{padding-block:88px 8px}
         andere pc.</td><td>Importeer je <code>.json</code> en koppel de media opnieuw.</td></tr>
       <tr><td>Ik kom niet in het menu op een kioskbox</td><td>Bedieningsknoppen verborgen,
         of er zit een PIN op.</td><td>5× snel tikken linksboven. Daarna de PIN.</td></tr>
+      <tr><td>De achtergrondvideo blijft stil</td><td>Geluid staat uit, of de browser wacht
+        op de eerste aanraking.</td><td>Zet het aan bij Scherm &amp; scène (of bij
+        Screensaver als de achtergrondmodus aanstaat). Blijft hij stil tot iemand het scherm
+        aanraakt, gebruik dan de Windows-app.</td></tr>
+      <tr><td>Ik hoor twee dingen tegelijk</td><td>Zou niet moeten kunnen.</td>
+        <td>De achtergrond zwijgt automatisch zodra een knopvideo speelt. Hoor je het toch,
+        controleer dan of er een tweede tabblad van de software openstaat.</td></tr>
       <tr><td>De box denkt de hele dag dat er iemand staat</td><td>Het beeld is blijvend
         veranderd: de verlichting ging aan, of er is iets verschoven.</td>
         <td>De box ijkt zichzelf na 45 s stilstaand beeld opnieuw. Gebeurt dat niet, dan
@@ -1649,6 +1704,8 @@ header.cover{padding-block:88px 8px}
         stilstaat.</td></tr>
       <tr><td>Opnieuw ijken</td><td>De box legt zijn achtergrondbeeld opnieuw vast, zodat
         een blijvende verandering in de ruimte niet als bezoeker blijft tellen.</td></tr>
+      <tr><td>Hoofdvolume</td><td>De schuif in Scherm &amp; scène waar alle andere
+        volumes onder vallen: knopvideo's, achtergrond en screensaver.</td></tr>
       <tr><td>Handgebaar</td><td>Hand omhoog voor de camera: de box gaat terug naar het menu,
         zonder aanraken.</td></tr>
       <tr><td>Device-key</td><td>De sleutel waarmee één box zich bij je beheerserver
@@ -1658,7 +1715,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.9.1 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.9.2 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>

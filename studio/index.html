@@ -925,9 +925,19 @@
       <label class="field">Hoofdvolume (%)
         <input type="range" id="cfgMasterVol" min="0" max="100" step="5">
       </label>
-      <label class="field">Achtergrondvideo (gedempt, in een lus)
+      <label class="field">Achtergrondvideo (in een lus)
         <select id="cfgIdle"></select>
       </label>
+      <div class="toggle-row">
+        <div><div class="t-label">Geluid bij de achtergrondvideo</div>
+          <div class="t-sub">Per sc&egrave;ne. Staat de screensaver in achtergrondmodus, dan
+          geldt het volume van de screensaver</div></div>
+        <label class="switch"><input type="checkbox" id="cfgIdleSound"><i></i></label>
+      </div>
+      <label class="field">Volume van de achtergrondvideo (%)
+        <input type="range" id="cfgIdleVolume" min="0" max="100" step="5">
+      </label>
+      <p class="note" id="cfgIdleSoundNote"></p>
       <label class="field">Ori&euml;ntatie
         <select id="cfgOrientation">
           <option value="auto">Automatisch (volgt het scherm)</option>
@@ -1291,6 +1301,16 @@
       </div>
       <p class="note">De achtergrondmodus vervangt de losse achtergrondvideo van de sc&egrave;ne
       zolang hij aanstaat.</p>
+      <div class="toggle-row">
+        <div><div class="t-label">Geluid bij de screensaver</div>
+          <div class="t-sub">Geldt voor de playlist, zowel schermvullend als in de
+          achtergrondmodus</div></div>
+        <label class="switch"><input type="checkbox" id="svSound"><i></i></label>
+      </div>
+      <label class="field">Volume van de screensaver (%)
+        <input type="range" id="svVolume" min="0" max="100" step="5">
+      </label>
+      <p class="note" id="svSoundNote"></p>
     </div>
     <h2>Playlist</h2>
     <div class="card">
@@ -1589,7 +1609,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 7,
+  version: 8,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -1621,8 +1641,10 @@ const defaultConfig = () => ({
   hideButtonsDuringPlay: true,
   cleanMode: false,
   orientationMode: 'auto', // 'auto' | 'portrait' | 'landscape'
+  // sound/volume: de playlist speelde altijd gedempt, ook in achtergrondmodus.
   screensaver: { enabled: false, delaySec: 120, mediaIds: [],
-    transition: 'crossfade', transitionSec: 1.2, background: false },
+    transition: 'crossfade', transitionSec: 1.2, background: false,
+    sound: false, volume: 60 },
   // stuckSec: na zoveel seconden bewegingloze 'aanwezigheid' ijkt de achtergrond
   // opnieuw — anders houdt een lichtsprong of verschoven meubel de box voor
   // altijd 'bezet'. 0 = nooit opnieuw ijken.
@@ -1664,6 +1686,7 @@ function migrateConfig(stored) {
     c.scenes = [{
       id: 'scn_home', name: 'Home',
       title: c.title || '', idleMediaId: c.idleMediaId || null,
+      idleSound: false, idleVolume: 60,
       buttons: Array.isArray(c.buttons) ? c.buttons : []
     }];
   }
@@ -1672,8 +1695,11 @@ function migrateConfig(stored) {
   // v5: z-volgorde vastleggen op de bestaande tekenvolgorde zodat lagen stabiel zijn.
   for (const sc of c.scenes) {
     (sc.buttons || []).forEach((b, i) => { if (typeof b.z !== 'number') b.z = i; });
+    // v8: de achtergrondvideo kan geluid hebben; oude scènes blijven stil.
+    if (typeof sc.idleSound !== 'boolean') sc.idleSound = false;
+    if (typeof sc.idleVolume !== 'number') sc.idleVolume = 60;
   }
-  c.version = 7;
+  c.version = 8;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -2810,7 +2836,8 @@ function renderStage() {
     if (m) {
       if (idle.dataset.mid !== m.id) { idle.src = m.url; idle.dataset.mid = m.id; }
       idle.classList.remove('hidden');
-      idle.play().catch(() => {});
+      const sn = sceneSound();
+      playBg(idle, sn.on, sn.vol);
     } else {
       idle.classList.add('hidden'); idle.removeAttribute('src'); idle.dataset.mid = '';
     }
@@ -5345,6 +5372,9 @@ function renderLook() {
   $('#cfgOverlayBlend').value = curScene().overlayBlend || 'screen';
   $('#cfgOverlayOpacity').value = curScene().overlayOpacity ?? 50;
   $('#cfgMasterVol').value = config.masterVolume ?? 100;
+  $('#cfgIdleSound').checked = !!curScene().idleSound;
+  $('#cfgIdleVolume').value = curScene().idleVolume ?? 60;
+  updateSoundNotes();
   $('#cfgHideBtns').checked = config.hideButtonsDuringPlay;
   $('#cfgClean').checked = config.cleanMode;
   $('#cfgOrientation').value = config.orientationMode || 'auto';
@@ -5555,6 +5585,20 @@ $('#o3MaxTris').addEventListener('change', (e) => {
 });
 $('#cfgTitle').addEventListener('input', (e) => { curScene().title = e.target.value; save(); renderStage(); });
 $('#cfgIdle').addEventListener('change', (e) => { curScene().idleMediaId = e.target.value || null; save(); renderStage(); });
+$('#cfgIdleSound').addEventListener('change', (e) => {
+  curScene().idleSound = e.target.checked; save(); refreshAllBgSound();
+});
+$('#cfgIdleVolume').addEventListener('input', (e) => {
+  curScene().idleVolume = Number(e.target.value); refreshAllBgSound();
+});
+$('#cfgIdleVolume').addEventListener('change', () => save());
+$('#svSound').addEventListener('change', (e) => {
+  config.screensaver.sound = e.target.checked; save(); refreshAllBgSound();
+});
+$('#svVolume').addEventListener('input', (e) => {
+  config.screensaver.volume = Number(e.target.value); refreshAllBgSound();
+});
+$('#svVolume').addEventListener('change', () => save());
 $('#cfgOverlay').addEventListener('change', (e) => { curScene().overlayMediaId = e.target.value || null; save(); renderStage(); });
 $('#cfgOverlayBlend').addEventListener('change', (e) => { curScene().overlayBlend = e.target.value; save(); renderStage(); });
 $('#cfgOverlayOpacity').addEventListener('input', (e) => { curScene().overlayOpacity = Number(e.target.value); save(); renderStage(); });
@@ -5566,6 +5610,7 @@ $('#cfgMasterVol').addEventListener('input', (e) => {
     const id = [...mediaCache.values()].find((m) => m.url === playVideo.src)?.id;
     if (id) { const v = effVolume(playSettings(id)); playVideo.volume = v; playVideo.muted = v <= 0; }
   }
+  refreshAllBgSound();   // achtergrond en screensaver vallen ook onder het hoofdvolume
 });
 $('#cfgHideBtns').addEventListener('change', (e) => { config.hideButtonsDuringPlay = e.target.checked; save(); });
 $('#cfgClean').addEventListener('change', (e) => { config.cleanMode = e.target.checked; save(); renderStage(); });
@@ -5594,7 +5639,8 @@ for (const selId of ['#sceneSelect', '#tbScene']) $(selId).addEventListener('cha
 $('#sceneAdd').addEventListener('click', () => {
   const name = prompt('Naam van de nieuwe scène:', 'Scène ' + (config.scenes.length + 1));
   if (!name) return;
-  const sc = { id: uid(), name, title: '', idleMediaId: null, buttons: [] };
+  const sc = { id: uid(), name, title: '', idleMediaId: null,
+    idleSound: false, idleVolume: 60, buttons: [] };
   config.scenes.push(sc);
   currentSceneId = sc.id;
   save(); renderStage(); refreshPanel();
@@ -5884,6 +5930,8 @@ function renderSaver() {
   }
   $('#svTransitionSec').value = sv.transitionSec ?? 1.2;
   $('#svTransNote').textContent = `De overgang start ${(sv.transitionSec ?? 1.2).toFixed(1)}s voor het einde van de lopende video, zodat de wissel vloeiend overlapt.`;
+  $('#svSound').checked = !!sv.sound;
+  $('#svVolume').value = sv.volume ?? 60;
   $('#camEnabled').checked = cam.enabled;
   $('#camDwell').value = cam.dwellSec;
   $('#camSens').value = cam.sensitivity;
@@ -6113,6 +6161,7 @@ async function runRemoteCommand(cmd) {
   switch (cmd && cmd.type) {
     case 'setVolume': {
       config.masterVolume = Math.max(0, Math.min(100, Number(cmd.value) || 0));
+      refreshAllBgSound();
       save();
       if (playOverlay.classList.contains('show') && playVideo.src) {
         const id = [...mediaCache.values()].find((m) => m.url === playVideo.src)?.id;
@@ -6257,7 +6306,45 @@ const SAVER_TRANSITIONS = {
   slide:     { label: 'Schuiven van rechts' }
 };
 
-function createRotator(elA, elB) {
+/* ================= Geluid op de achtergrondlagen =================
+   De screensaver-playlist en de scène-achtergrondvideo speelden altijd
+   gedempt. Beide kunnen nu geluid geven, elk met een eigen schuif die
+   onder het hoofdvolume valt. Browsers weigeren geluid vóór de eerste
+   aanraking; dat vangen we op door stil te starten en te ontdempen zodra
+   iemand het scherm aanraakt. */
+let bgAudioBlocked = false;
+
+function bgVolume(on, vol) {
+  if (!on) return 0;
+  const v = (Number(vol) ?? 60) / 100 * ((config.masterVolume ?? 100) / 100);
+  return Math.max(0, Math.min(1, v));
+}
+
+function applyBgAudio(el, on, vol) {
+  const v = bgVolume(on, vol);
+  el.volume = v;
+  el.muted = v <= 0;
+}
+
+// Speelt af met geluid; weigert de browser dat, dan stil verder en onthouden.
+async function playBg(el, on, vol) {
+  applyBgAudio(el, on, vol);
+  try { await el.play(); return true; }
+  catch {
+    if (!el.muted) {
+      el.muted = true; bgAudioBlocked = true;
+      updateSoundNotes();
+      try { await el.play(); } catch {}
+    }
+    return false;
+  }
+}
+
+const saverSound = () => ({ on: !!config.screensaver.sound, vol: config.screensaver.volume });
+const sceneSound = () => ({ on: !!curScene().idleSound, vol: curScene().idleVolume });
+
+function createRotator(elA, elB, getSound) {
+  const sound = () => (getSound && getSound()) || { on: false, vol: 0 };
   const st = { list: [], idx: 0, active: elA, running: false, transitioning: false, anims: [] };
   const standby = () => (st.active === elA ? elB : elA);
 
@@ -6304,7 +6391,9 @@ function createRotator(elA, elB) {
     const inEl = standby(), outEl = st.active;
     const next = st.list[st.idx];
     if (inEl.src !== next.url) { inEl.src = next.url; }
-    try { await inEl.play(); } catch {}
+    const sn = sound();
+    await playBg(inEl, sn.on, sn.vol);
+    applyBgAudio(outEl, false, 0);   // de vertrekkende speler zwijgt meteen
     st.active = inEl;
     if (effect === 'none') {
       settle(inEl, outEl);
@@ -6353,9 +6442,9 @@ function createRotator(elA, elB) {
       st.active = elA;
       elA.classList.add('front'); elB.classList.remove('front');
       elA.loop = list.length === 1;
-      elA.muted = true;
       elA.src = list[0].url;
-      elA.play().catch(() => {});
+      const sn = sound();
+      playBg(elA, sn.on, sn.vol);
     },
     stop() {
       st.running = false;
@@ -6372,7 +6461,15 @@ function createRotator(elA, elB) {
     setPaused(p) {
       if (!st.running) return;
       if (p) { elA.pause(); elB.pause(); }
-      else st.active.play().catch(() => {});
+      else { const sn = sound(); playBg(st.active, sn.on, sn.vol); }
+    },
+    // Aanroepen zodra de schuif, het hoofdvolume of de scène verandert.
+    refreshSound() {
+      const sn = sound();
+      applyBgAudio(elB, false, 0);
+      if (!st.running) return applyBgAudio(elA, false, 0);
+      applyBgAudio(st.active, sn.on, sn.vol);
+      if (!st.active.paused && st.active.muted && sn.on) playBg(st.active, sn.on, sn.vol);
     },
     get running() { return st.running; },
     get index() { return st.idx; },
@@ -6380,15 +6477,62 @@ function createRotator(elA, elB) {
   };
 }
 
-const saverRotator = createRotator(saverVideo, $('#saverVideoB'));
-const bgRotator = createRotator($('#idleVideo'), $('#idleVideoB'));
+const saverRotator = createRotator(saverVideo, $('#saverVideoB'), saverSound);
+// In achtergrondmodus draait de saver-playlist op deze lagen en volgt hij
+// dus de screensaver-schuif; anders is het de achtergrondvideo van de scène.
+const bgRotator = createRotator($('#idleVideo'), $('#idleVideoB'),
+  () => (bgRotator.running ? saverSound() : sceneSound()));
 
 // Elke aanraking telt als activiteit; tijdens de screensaver wekt hij het menu.
 for (const evt of ['pointerdown', 'keydown']) {
   window.addEventListener(evt, () => {
     lastInteraction = Date.now();
+    // De browser stond geluid pas toe ná een aanraking: nu alsnog ontdempen.
+    if (bgAudioBlocked) {
+      bgAudioBlocked = false;
+      saverRotator.refreshSound(); bgRotator.refreshSound();
+      const idle = $('#idleVideo');
+      if (!bgRotator.running && !idle.classList.contains('hidden')) {
+        const sn = sceneSound(); applyBgAudio(idle, sn.on, sn.vol);
+      }
+      updateSoundNotes();
+    }
     if (saverActive) exitSaver();
   }, { capture: true });
+}
+
+// Eén plek die alle geluidslagen bijwerkt na een wijziging in de instellingen.
+function refreshAllBgSound() {
+  saverRotator.refreshSound();
+  bgRotator.refreshSound();
+  const idle = $('#idleVideo');
+  if (!bgRotator.running && !idle.classList.contains('hidden')) {
+    const sn = sceneSound();
+    if (idle.paused) playBg(idle, sn.on, sn.vol); else applyBgAudio(idle, sn.on, sn.vol);
+  }
+  updateSoundNotes();
+}
+
+// Uitleg onder de schakelaars: wat er nu werkelijk hoorbaar is.
+function updateSoundNotes() {
+  const sv = config.screensaver;
+  const a = document.getElementById('svSoundNote');
+  if (a) {
+    a.textContent = !sv.sound
+      ? 'De playlist speelt zonder geluid — ook in de achtergrondmodus.'
+      : bgAudioBlocked
+        ? 'Geluid staat aan, maar de browser dempt tot iemand het scherm aanraakt. In de Windows-app speelt hij meteen met geluid.'
+        : `Geluid staat aan op ${Math.round(bgVolume(true, sv.volume) * 100)}% (schuif ${sv.volume}% × hoofdvolume ${config.masterVolume ?? 100}%). Tijdens het afspelen van een knopvideo zwijgt de achtergrond vanzelf.`;
+  }
+  const b = document.getElementById('cfgIdleSoundNote');
+  if (b) {
+    const sc = curScene();
+    b.textContent = !sc.idleSound
+      ? 'De achtergrondvideo van deze scène speelt zonder geluid.'
+      : bgAudioBlocked
+        ? 'Geluid staat aan, maar de browser dempt tot iemand het scherm aanraakt.'
+        : `Geluid staat aan op ${Math.round(bgVolume(true, sc.idleVolume) * 100)}% (schuif ${sc.idleVolume}% × hoofdvolume ${config.masterVolume ?? 100}%). Per scène in te stellen.`;
+  }
 }
 
 function saverPlaylist() {
@@ -6415,12 +6559,18 @@ function exitSaver() {
   AppState.set('IDLE');
   runEntrance();
   saverEl.classList.remove('show');
+  // Direct stil: het beeld vervaagt in 850 ms, maar geluid over het
+  // terugkerende menu heen klinkt als een fout.
+  for (const v of [saverVideo, $('#saverVideoB')]) applyBgAudio(v, false, 0);
   clearTimeout(saverStopTimer);
   saverStopTimer = setTimeout(() => { if (!saverActive) saverRotator.stop(); }, 850);
   setPreviewsPaused(false);
   bgRotator.setPaused(false);
   const idle = $('#idleVideo');
-  if (!idle.classList.contains('hidden')) idle.play().catch(() => {});
+  if (!idle.classList.contains('hidden') && !bgRotator.running) {
+    const sn = sceneSound();
+    playBg(idle, sn.on, sn.vol);
+  }
   const ov = $('#overlayVideo');
   if (!ov.classList.contains('hidden')) ov.play().catch(() => {});
   lastInteraction = Date.now();
