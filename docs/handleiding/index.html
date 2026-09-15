@@ -287,7 +287,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.9.2</span><span>21 hoofdstukken</span><span>24 schermafbeeldingen</span>
+    <span>Versie 2.9.3</span><span>21 hoofdstukken</span><span>24 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -988,7 +988,8 @@ header.cover{padding-block:88px 8px}
   <div class="wwww">
     <div><dt>Wie</dt><dd>De bouwer, meestal aan het eind — als de inhoud klopt.</dd></div>
     <div><dt>Wat</dt><dd>Preset en intensiteit, losse entrance-instellingen, de fijnafstelling
-      van Galaxy Tiles, het selectie-effect, aandachtseffecten en het demo-handje.</dd></div>
+      van Galaxy Tiles, het selectie-effect, de geluidsreactie, aandachtseffecten en het
+      demo-handje.</dd></div>
     <div><dt>Waar</dt><dd>Zevende tabblad. De presets staan óók altijd onderin beeld in het
       motion-dock.</dd></div>
     <div><dt>Waarom</dt><dd>Beweging is op een holobox geen versiering maar het verschil
@@ -1018,7 +1019,7 @@ header.cover{padding-block:88px 8px}
 
   <div class="split">
     <figure><div class="panelshot tall">
-      <img src="img/paneel-fx.webp" alt="Het volledige Motion-paneel" width="371" height="1752" loading="lazy">
+      <img src="img/paneel-fx.webp" alt="Het volledige Motion-paneel" width="371" height="2992" loading="lazy">
     </div></figure>
     <div class="tw"><table>
       <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
@@ -1078,6 +1079,78 @@ header.cover{padding-block:88px 8px}
   <div class="note"><span class="t">Volgorde is vast</span>
     <p>De video of het 3D-object start pas wanneer alle knoppen uit beeld zijn. Anders
     kijk je naar het begin van een film door een menu heen.</p></div>
+
+  <h3>Geluidsreactie — de knoppen ademen met de muziek</h3>
+  <p class="measure">De knoppen luisteren mee met wat er op dat moment speelt: de
+  achtergrondvideo, de screensaver of een knopvideo. Dat kan alleen als daar geluid op staat
+  (hoofdstuk 8 of 12) — zonder hoorbaar geluid valt er niets te analyseren.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Effect</th><th>Wat je ziet</th></tr></thead>
+    <tbody>
+      <tr><td>Uit</td><td>De knoppen reageren niet op geluid.</td></tr>
+      <tr><td>Beat</td><td>Bij elke klap zwelt de <b>buitenring</b> licht op en komt het
+        <b>videovlak</b> duidelijk verder naar voren, met een gloedpuls en een diepere
+        zweefschaduw.</td></tr>
+      <tr><td>Equalizer</td><td>Staven in het videovlak tonen laag, midden en hoog —
+        logaritmisch verdeeld, zoals het oor hoort: links de bas, rechts de hoge tonen.</td></tr>
+      <tr><td>Beat én equalizer</td><td>Allebei tegelijk.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note why"><span class="t">Waarom de binnenring harder reageert</span>
+    <p>Twee ringen die even hard meebewegen lezen als één plat vlak dat schaalt. Laat je de
+    binnenring drie keer zo ver gaan als de buitenring, dan ziet het oog diepte: het kader
+    blijft staan en het beeld komt eruit. Vandaar dat de standaard 55 % tegen 18 % is, en dat
+    de regel onder de schuiven voorrekent hoeveel keer sterker de binnenring op dat moment
+    staat. Zet je hem lager dan de buitenring, dan zegt de app dat ook.</p></div>
+
+  <h4>Beat — de parameters</h4>
+  <div class="tw"><table>
+    <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+    <tbody>
+      <tr><td>Buitenring</td><td>Hoe ver het kader opzwelt. Standaard 18 %.</td>
+        <td>Houd hem laag: het kader is de rustige referentie waartegen het beeld naar voren
+        komt.</td></tr>
+      <tr><td>Binnenring</td><td>Hoe ver het videovlak naar voren komt. Standaard 55 %.</td>
+        <td>Dit is de beweging die je eigenlijk ziet. Hoger dan de buitenring, altijd.</td></tr>
+      <tr><td>Gloedpuls</td><td>Hoeveel de halo om de knop oplicht. 0–200 %.</td>
+        <td>Op een holobox is gloed wat een tegel laat zweven; op de beat maakt het de
+        tegel levend.</td></tr>
+      <tr><td>Zweefschaduw</td><td>Hoeveel de slagschaduw meegroeit.</td>
+        <td>Een schaduw die groter en zachter wordt, betekent voor het oog: dit ding komt
+        dichterbij.</td></tr>
+      <tr><td>Gevoeligheid</td><td>1 tot 10. De regel eronder rekent voor hoeveel de band
+        minstens moet halen.</td><td>De drempel loopt mee met het gemiddelde volume, dus
+        zacht gemasterde muziek geeft evengoed een klap. Laag = alleen de harde klappen en
+        een rustiger uitslag.</td></tr>
+      <tr><td>Luistert naar</td><td>Alleen de bas, bas plus onderkant midden, of het hele
+        spectrum.</td><td><b>Alleen de bas</b> volgt de kickdrum en is voor de meeste muziek
+        de juiste keuze. Het hele spectrum reageert ook op stemmen en effecten.</td></tr>
+      <tr><td>Aanslag · Uitdemping</td><td>Hoe snel hij opkomt en hoe lang hij nadeint, in
+        milliseconden.</td><td>Kort en kort geeft een strakke tik; een lange uitdemping laat
+        de knoppen nadeinen. Standaard 45 en 260 ms.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Equalizer — de parameters</h4>
+  <div class="kv">
+    <dt>Aantal staven</dt><dd>3 tot 16. Meer staven = fijner spectrum, maar op een kleine
+      tegel worden ze dun.</dd>
+    <dt>Hoogte</dt><dd>Hoe hoog de staven mogen worden, als percentage van de tegel.</dd>
+    <dt>Dekking</dt><dd>Hoe sterk ze over het videobeeld liggen. Ze liggen boven het beeld
+      maar onder het label.</dd>
+    <dt>Vloeiendheid</dt><dd>0 is rauw en schokkerig, 95 is traag en vloeiend. Rond 55 volgt
+      hij de muziek zonder te trillen.</dd>
+    <dt>Laag · Midden · Hoog</dt><dd>De drie kleuren. Ze lopen over de staven in elkaar over,
+      zodat je de toonhoogte ook aan de kleur ziet en niet alleen aan de hoogte.</dd>
+  </div>
+
+  <div class="note warn"><span class="t">Eén ding om te weten</span>
+    <p>Zodra dit effect aanstaat, loopt alle geluid van de box door de analyse heen. Dat is
+    getest en het geluid blijft gewoon hoorbaar, maar het is de reden dat het effect zichzelf
+    pas inschakelt ná de eerste aanraking: eerder staat de audio-analyse van de browser nog
+    stil. In de Windows-app begint hij meteen.</p></div>
 
   <h4>Aandachtseffecten en het demo-handje</h4>
   <div class="kv">
@@ -1704,6 +1777,8 @@ header.cover{padding-block:88px 8px}
         stilstaat.</td></tr>
       <tr><td>Opnieuw ijken</td><td>De box legt zijn achtergrondbeeld opnieuw vast, zodat
         een blijvende verandering in de ruimte niet als bezoeker blijft tellen.</td></tr>
+      <tr><td>Geluidsreactie</td><td>De knoppen bewegen mee met de muziek: de beat laat ze
+        ademen, de equalizer toont laag, midden en hoog.</td></tr>
       <tr><td>Hoofdvolume</td><td>De schuif in Scherm &amp; scène waar alle andere
         volumes onder vallen: knopvideo's, achtergrond en screensaver.</td></tr>
       <tr><td>Handgebaar</td><td>Hand omhoog voor de camera: de box gaat terug naar het menu,
@@ -1715,7 +1790,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.9.2 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.9.3 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>
