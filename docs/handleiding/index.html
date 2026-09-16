@@ -288,7 +288,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.10.0</span><span>22 hoofdstukken</span><span>25 schermafbeeldingen</span>
+    <span>Versie 2.10.1</span><span>22 hoofdstukken</span><span>25 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -1463,29 +1463,53 @@ header.cover{padding-block:88px 8px}
   <ol class="steps">
     <li>De box vraagt je eigen server om een sessie, met zijn <b>device-key</b>.</li>
     <li>De server roept de aanbieder aan met de geheime sleutel uit <code>.env</code>.</li>
-    <li>De server geeft alleen het adres en het toegangsbewijs terug.</li>
-    <li>De box maakt daarmee zelf verbinding en toont het beeld.</li>
+    <li>De server geeft alleen het kamer-adres terug.</li>
+    <li>De box stapt die kamer binnen en toont het beeld.</li>
   </ol>
 
-  <p class="measure">Op de server zet je in <code>.env</code>:</p>
-  <pre class="cmd">LEMONSLICE_API_KEY=de sleutel uit je account
-LEMONSLICE_SESSION_URL=het endpoint uit de documentatie van de aanbieder</pre>
-  <p class="measure">Geeft de aanbieder andere veldnamen terug dan verwacht, dan zegt de
-  server precies welke velden hij wél kreeg. Die zet je dan in
-  <code>LEMONSLICE_URL_FIELD</code> en <code>LEMONSLICE_TOKEN_FIELD</code>.</p>
+  <p class="measure">Op de server zet je in <code>.env</code> één regel:</p>
+  <pre class="cmd">LEMONSLICE_API_KEY=de sleutel uit je LemonSlice-account</pre>
+  <p class="measure">Meer is niet nodig. De server belt zelf
+  <code>https://lemonslice.com/api/liveai/sessions</code> aan, met de sleutel in de header
+  <code>x-api-key</code>, en krijgt daar <code>session_id</code>, <code>room_url</code> en
+  <code>control_url</code> terug. Geeft LemonSlice je een ánder endpoint, dan zet je dat in
+  <code>LEMONSLICE_SESSION_URL</code>; geeft hun antwoord andere veldnamen dan verwacht, dan
+  zegt de server precies welke velden hij wél kreeg en vul je
+  <code>LEMONSLICE_URL_FIELD</code> in.</p>
 
   <div class="note warn"><span class="t">Wat een avatar nodig heeft</span>
     <p>Anders dan de rest van de software werkt dit <b>niet offline</b>: er is internet
     nodig, een bereikbare eigen server, en een account bij de aanbieder. Een sessie kost
     geld per minuut, dus zet "sessie sluiten na" niet te hoog. Valt het internet weg, dan
     blijft de rest van de presentatie gewoon draaien — alleen de avatartegel toont een
-    melding.</p></div>
+    melding. Komt de verbinding binnen twintig seconden niet op gang, dan zegt het scherm
+    dat, in plaats van eindeloos te blijven laden.</p></div>
+
+  <div class="note"><span class="t">Wat er door de firewall moet</span>
+    <p>Staat de holobox achter een streng netwerk, zet dan drie dingen open. Vanaf je
+    <b>server</b>: <code>lemonslice.com</code>, voor het aanvragen van de sessie. Vanaf de
+    <b>holobox</b>: het kamer-adres zelf (<code>*.daily.co</code>) én
+    <code>c.dailywebrtc.net</code> — die tweede levert het stuk programmatuur dat de
+    verbinding werkelijk opzet. Ontbreekt die, dan meldt het scherm "Verbinden mislukt" met
+    precies dat adres erbij.</p></div>
 
   <div class="note"><span class="t">De videobibliotheek</span>
-    <p>De verbinding loopt over WebRTC via LiveKit. Die bibliotheek staat in
-    <code>studio/vendor/livekit-client.umd.js</code> en wordt <em>pas</em> geladen op het
-    moment dat een bezoeker werkelijk een avatar opent. Gebruik je geen avatars, dan mag de
-    hele map weg en verandert er niets.</p></div>
+    <p>De verbinding loopt over WebRTC, en er zijn twee smaken. Geeft de sessie een
+    <code>room_url</code> op <b>daily.co</b> terug — wat LemonSlice vandaag doet, zonder
+    toegangsbewijs — dan gebruikt de box <code>studio/vendor/daily-js.umd.js</code>. Komt er
+    een <code>wss://</code>-adres mét toegangsbewijs, dan gebruikt hij
+    <code>studio/vendor/livekit-client.umd.js</code>. De box kiest zelf aan de vorm van het
+    adres; je hoeft niets in te stellen. Beide worden <em>pas</em> geladen op het moment dat
+    een bezoeker werkelijk een avatar opent. Gebruik je geen avatars, dan mag de hele map weg
+    en verandert er niets.</p></div>
+
+  <div class="note"><span class="t">Wat de testknop je vertelt</span>
+    <p>De knop <b>Verbinding testen</b> op dit tabblad doet de hele ketting één keer: box →
+    eigen server → LemonSlice → terug. Slaagt het, dan noemt hij het kamer-adres, de gekozen
+    techniek (<code>daily</code> of <code>livekit</code>) en het sessienummer. Mislukt het,
+    dan staat er waar het strandde — bij de box zelf (serveradres of device-key niet
+    ingevuld), bij je eigen server (geen sleutel in <code>.env</code>), of bij LemonSlice
+    (die geeft dan zijn eigen foutcode mee).</p></div>
 </section>
 
 <!-- ═══════════════════════════════════════════════ 15 ═══ -->
@@ -1879,7 +1903,7 @@ LEMONSLICE_SESSION_URL=het endpoint uit de documentatie van de aanbieder</pre>
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.10.0 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.10.1 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>

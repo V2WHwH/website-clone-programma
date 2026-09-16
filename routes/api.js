@@ -333,16 +333,31 @@ router.post('/api/v1/studio/:key/heartbeat', (req, res) => {
    Optioneel, als hun antwoord andere veldnamen gebruikt:
      LEMONSLICE_URL_FIELD=livekit_url
      LEMONSLICE_TOKEN_FIELD=livekit_token  */
+// Het adres van de aanbieder staat vast; alleen de sleutel is per klant.
+// Zo hoeft er in .env maar één regel ingevuld te worden.
+const LEMONSLICE_DEFAULT_URL = 'https://lemonslice.com/api/liveai/sessions';
+
+// Aan de vorm van het adres is te zien welke techniek de box moet gebruiken.
+// Een ws:// of wss:// adres is LiveKit (dat heeft altijd een toegangsbewijs
+// nodig); een https-adres op daily.co is een Daily-kamer (die opent op het
+// adres alleen). Zo hoeft de box niet te raden.
+function avatarTransport(url) {
+  const u = String(url || '');
+  if (/^wss?:\/\//i.test(u)) return 'livekit';
+  if (/(^|\.)daily\.co\//i.test(u)) return 'daily';
+  return 'daily';
+}
+
 router.post('/api/v1/avatar/session', async (req, res) => {
   const dev = findDeviceByKey((req.body && req.body.key) || '');
   if (!dev) return res.status(404).json({ error: 'Onbekende device-key' });
 
   const apiKey = process.env.LEMONSLICE_API_KEY;
-  const url = process.env.LEMONSLICE_SESSION_URL;
-  if (!apiKey || !url) {
+  const url = process.env.LEMONSLICE_SESSION_URL || LEMONSLICE_DEFAULT_URL;
+  if (!apiKey) {
     return res.status(503).json({
-      error: 'De server heeft nog geen avatar-koppeling: zet LEMONSLICE_API_KEY en ' +
-             'LEMONSLICE_SESSION_URL in .env en herstart het platform.'
+      error: 'De server heeft nog geen avatar-koppeling: zet LEMONSLICE_API_KEY ' +
+             'in .env en herstart het platform.'
     });
   }
 
@@ -352,7 +367,7 @@ router.post('/api/v1/avatar/session', async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + apiKey
+        'x-api-key': apiKey
       },
       body: JSON.stringify({
         avatar_id: av.providerAvatarId || undefined,
@@ -371,7 +386,8 @@ router.post('/api/v1/avatar/session', async (req, res) => {
       });
     }
     // De veldnamen verschillen per aanbieder en per versie van hun API.
-    // Vandaar instelbaar, met de gangbare namen als vangnet.
+    // Vandaar instelbaar, met de gangbare namen als vangnet. LemonSlice zelf
+    // antwoordt met session_id, room_url en control_url.
     const pick = (obj, names) => {
       for (const n of names) {
         if (obj && obj[n]) return obj[n];
@@ -380,22 +396,37 @@ router.post('/api/v1/avatar/session', async (req, res) => {
       }
       return null;
     };
-    const roomUrl = pick(data, [process.env.LEMONSLICE_URL_FIELD, 'livekit_url', 'url',
-      'serverUrl', 'server_url', 'wsUrl', 'ws_url'].filter(Boolean));
-    const token = pick(data, [process.env.LEMONSLICE_TOKEN_FIELD, 'livekit_token', 'token',
-      'accessToken', 'access_token', 'participant_token'].filter(Boolean));
-    if (!roomUrl || !token) {
+    const roomUrl = pick(data, [process.env.LEMONSLICE_URL_FIELD, 'room_url', 'roomUrl',
+      'livekit_url', 'url', 'serverUrl', 'server_url', 'wsUrl', 'ws_url'].filter(Boolean));
+    if (!roomUrl) {
       // Niet raden: laat zien wat er wél terugkwam, dan is het in één keer op
-      // te lossen met LEMONSLICE_URL_FIELD en LEMONSLICE_TOKEN_FIELD.
+      // te lossen met LEMONSLICE_URL_FIELD.
       return res.status(502).json({
-        error: 'De aanbieder gaf geen herkenbaar adres en toegangsbewijs terug',
+        error: 'De aanbieder gaf geen herkenbaar kamer-adres terug',
         received: Object.keys(data || {})
       });
     }
-    if (req.body && req.body.probe) {
-      return res.json({ ok: true, url: roomUrl, token, probe: true });
+    // Een toegangsbewijs is optioneel: een Daily-kamer heeft er geen.
+    const token = pick(data, [process.env.LEMONSLICE_TOKEN_FIELD, 'livekit_token', 'token',
+      'accessToken', 'access_token', 'participant_token'].filter(Boolean));
+    const transport = avatarTransport(roomUrl);
+    if (transport === 'livekit' && !token) {
+      return res.status(502).json({
+        error: 'De aanbieder gaf een LiveKit-adres zonder toegangsbewijs; ' +
+               'zet LEMONSLICE_TOKEN_FIELD op de juiste veldnaam',
+        received: Object.keys(data || {})
+      });
     }
-    res.json({ ok: true, url: roomUrl, token });
+    const out = {
+      ok: true,
+      url: roomUrl,
+      token: token || null,
+      transport,
+      sessionId: pick(data, ['session_id', 'sessionId', 'id']) || null,
+      controlUrl: pick(data, ['control_url', 'controlUrl']) || null
+    };
+    if (req.body && req.body.probe) out.probe = true;
+    res.json(out);
   } catch (e) {
     res.status(502).json({ error: 'Aanbieder niet bereikbaar: ' + (e.message || e) });
   }

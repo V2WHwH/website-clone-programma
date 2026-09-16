@@ -1813,7 +1813,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.9.0';
+const APP_VERSION = '2.10.1';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -4817,7 +4817,8 @@ $('#avTest').addEventListener('click', async () => {
   out.textContent = 'Bezig…';
   const r = await requestAvatarSession(config.avatars[0], { probe: true });
   out.textContent = r.ok
-    ? `Werkt: de server gaf een sessie terug (${r.url}).`
+    ? `Werkt: de server gaf een sessie terug (${r.url}) — techniek: ${r.transport}`
+      + (r.sessionId ? `, sessie ${r.sessionId}.` : '.')
     : 'Mislukt: ' + r.error;
 });
 
@@ -7472,10 +7473,11 @@ function sampleCamera() {
    De geheime API-sleutel staat op je eigen server, niet hier: alles wat in de
    box staat is leesbaar voor wie het scherm openmaakt. De box vraagt met zijn
    device-key een sessie aan, de server praat met de aanbieder en geeft alleen
-   het adres en het toegangsbewijs terug. */
+   het kamer-adres terug (en een toegangsbewijs als de techniek dat vraagt). */
 
 const AVATAR_AGENT = 'lemonslice-avatar-agent';   // identiteit die het beeld uitzendt
-let avatarRoom = null, avatarTimer = null, avatarMicOn = false, avatarBusy = false;
+let avatarConn = null;            // {kind, disconnect(), setMic(on)} — LiveKit of Daily
+let avatarTimer = null, avatarMicOn = false, avatarBusy = false;
 let avatarConnected = false;   // pas ná een geslaagde verbinding telt 'verbroken' als einde
 
 const avatarOverlay = () => $('#avatarOverlay');
@@ -7489,7 +7491,20 @@ function avatarStatus(text, help) {
   $('#avatarStatus').querySelector('.spin').style.display = help ? 'none' : '';
 }
 
-// Vraagt de eigen server om een sessie. Geeft {ok, url, token} of {ok:false, error}.
+// Aan de vorm van het kamer-adres is te zien welke techniek nodig is.
+// wss:// of ws:// is LiveKit; die vraagt altijd een toegangsbewijs. Een
+// https-adres op daily.co is een Daily-kamer, en die opent op het adres
+// alleen. LemonSlice geeft vandaag het tweede terug: session_id, room_url
+// en control_url, zonder token.
+function avatarTransport(url, hint) {
+  if (hint === 'livekit' || hint === 'daily') return hint;
+  const u = String(url || '');
+  if (/^wss?:\/\//i.test(u)) return 'livekit';
+  return 'daily';
+}
+
+// Vraagt de eigen server om een sessie.
+// Geeft {ok, url, token, transport, sessionId, controlUrl} of {ok:false, error}.
 async function requestAvatarSession(avatar, opts = {}) {
   const base = (config.remote.url || '').trim().replace(/\/+$/, '');
   if (!base) return { ok: false, error: 'geen serveradres ingesteld (Beheer & device)' };
@@ -7512,37 +7527,139 @@ async function requestAvatarSession(avatar, opts = {}) {
     });
     const data = await r.json().catch(() => ({}));
     if (!r.ok) return { ok: false, error: data.error || `server gaf ${r.status}` };
-    if (!data.url || !data.token) {
-      return { ok: false, error: 'server gaf geen url en token terug' +
+    // Het toegangsbewijs is niet verplicht: een Daily-kamer heeft er geen.
+    // Alleen zonder kamer-adres valt er niets te openen.
+    if (!data.url) {
+      return { ok: false, error: 'server gaf geen kamer-adres terug' +
         (data.received ? ' — ontvangen velden: ' + data.received.join(', ') : '') };
     }
-    return { ok: true, url: data.url, token: data.token };
+    return {
+      ok: true, url: data.url, token: data.token || null,
+      transport: avatarTransport(data.url, data.transport),
+      sessionId: data.sessionId || null, controlUrl: data.controlUrl || null
+    };
   } catch (e) {
     return { ok: false, error: 'server niet bereikbaar (' + (e.message || e) + ')' };
   }
 }
 
-// LiveKit wordt pas geladen wanneer er werkelijk een avatar wordt geopend:
-// boxen zonder avatars dragen de 580 kB niet mee.
-let liveKitLoading = null;
-function loadLiveKit() {
-  if (window.LivekitClient) return Promise.resolve(window.LivekitClient);
-  if (liveKitLoading) return liveKitLoading;
-  liveKitLoading = new Promise((res, rej) => {
+// De videobibliotheken worden pas geladen wanneer er werkelijk een avatar
+// wordt geopend, en dan nog alleen die van de juiste techniek: boxen zonder
+// avatars dragen die megabyte niet mee.
+const vendorLoading = {};
+function loadVendor(file, globalName) {
+  if (window[globalName]) return Promise.resolve(window[globalName]);
+  if (vendorLoading[file]) return vendorLoading[file];
+  vendorLoading[file] = new Promise((res, rej) => {
     const sc = document.createElement('script');
-    sc.src = 'vendor/livekit-client.umd.js';
-    sc.onload = () => window.LivekitClient ? res(window.LivekitClient) : rej(new Error('geladen maar leeg'));
-    sc.onerror = () => rej(new Error('vendor/livekit-client.umd.js niet gevonden'));
+    sc.src = 'vendor/' + file;
+    sc.onload = () => window[globalName] ? res(window[globalName]) : rej(new Error('geladen maar leeg'));
+    sc.onerror = () => rej(new Error('vendor/' + file + ' niet gevonden'));
     document.head.append(sc);
   });
-  return liveKitLoading;
+  return vendorLoading[file];
 }
+const loadLiveKit = () => loadVendor('livekit-client.umd.js', 'LivekitClient');
+const loadDaily = () => loadVendor('daily-js.umd.js', 'Daily');
 
 function avatarTouch() {
   clearTimeout(avatarTimer);
   const sec = Math.max(15, config.avatarLink.autoCloseSec || 90);
   avatarTimer = setTimeout(closeAvatar, sec * 1000);
   lastInteraction = Date.now();
+}
+
+// Het beeld en het geluid van de avatar komen als losse sporen binnen; hier
+// worden ze in het scherm gehangen. Het geluid krijgt een eigen element,
+// anders zou het aan het videobeeld vastzitten dat er nog niet is.
+function avatarAudioEl() {
+  let a = document.getElementById('avatarAudio');
+  if (!a) {
+    a = document.createElement('audio');
+    a.id = 'avatarAudio';
+    a.autoplay = true;
+    document.body.append(a);
+  }
+  return a;
+}
+
+function avatarShowTrack(track) {
+  if (!track) return;
+  if (track.kind === 'video') {
+    const v = $('#avatarVideo');
+    v.srcObject = new MediaStream([track]);
+    v.play().catch(() => {});
+    v.classList.remove('hidden');
+    $('#avatarPortrait').classList.add('hidden');
+    $('#avatarStatus').classList.add('hidden');
+  } else if (track.kind === 'audio') {
+    const a = avatarAudioEl();
+    a.srcObject = new MediaStream([track]);
+    a.play().catch(() => {});
+  }
+}
+
+// --- LiveKit: wss-adres met toegangsbewijs ---
+async function avatarConnectLiveKit(ses) {
+  const LK = await loadLiveKit();
+  const room = new LK.Room({ adaptiveStream: true, dynacast: true });
+  room.on(LK.RoomEvent.TrackSubscribed, (track, pub, participant) => {
+    if (participant.identity && participant.identity !== AVATAR_AGENT) return;
+    if (track.kind === 'video') {
+      const v = $('#avatarVideo');
+      track.attach(v);
+      v.classList.remove('hidden');
+      $('#avatarPortrait').classList.add('hidden');
+      $('#avatarStatus').classList.add('hidden');
+    } else if (track.kind === 'audio') {
+      track.attach();   // eigen element: de avatar moet hoorbaar zijn
+    }
+  });
+  // Alleen sluiten als er ooit verbinding wás. Anders klapt het scherm dicht
+  // op een mislukte poging en ziet niemand meer waaróm het misging.
+  room.on(LK.RoomEvent.Disconnected, () => { if (avatarConnected) closeAvatar(); });
+  // Het handvat staat er vóór het verbinden, zodat een poging die blijft
+  // hangen alsnog netjes afgebroken kan worden.
+  avatarConn = {
+    kind: 'livekit',
+    disconnect: () => { try { room.disconnect(); } catch {} },
+    setMic: (on) => room.localParticipant.setMicrophoneEnabled(on)
+  };
+  await room.connect(ses.url, ses.token);
+  return avatarConn;
+}
+
+// --- Daily: https-kamer zonder toegangsbewijs (wat LemonSlice teruggeeft) ---
+async function avatarConnectDaily(ses) {
+  const D = await loadDaily();
+  const call = D.createCallObject({
+    subscribeToTracksAutomatically: true,
+    videoSource: false,          // de holobox zendt geen beeld uit
+    audioSource: false           // de microfoon gaat pas aan als hij mag
+  });
+  call.on('track-started', (ev) => {
+    if (!ev || !ev.track || (ev.participant && ev.participant.local)) return;
+    avatarShowTrack(ev.track);
+  });
+  call.on('left-meeting', () => { if (avatarConnected) closeAvatar(); });
+  // Let op: het veld 'token' mag er niet léég in staan. Daily keurt een
+  // token dat geen tekst is af, ook als het niets is; de sleutel moet dan
+  // helemaal ontbreken.
+  const mee = { url: ses.url };
+  if (ses.token) mee.token = ses.token;
+  avatarConn = {
+    kind: 'daily',
+    disconnect: () => {
+      try { call.leave(); } catch {}
+      try { call.destroy(); } catch {}
+    },
+    setMic: async (on) => {
+      if (on) await call.setInputDevicesAsync({ audioSource: true });
+      call.setLocalAudio(on);
+    }
+  };
+  await call.join(mee);
+  return avatarConn;
 }
 
 async function openAvatar(avatarId) {
@@ -7579,58 +7696,46 @@ async function openAvatar(avatarId) {
     const lokaal = /device-key|serveradres/.test(ses.error);
     return avatarStatus('Kan geen sessie starten.', ses.error + '<br><br>' + (lokaal
       ? 'Vul het serveradres en de device-key in bij <b>Beheer &amp; device</b>.'
-      : 'Controleer op de server <code>LEMONSLICE_API_KEY</code> en ' +
-        '<code>LEMONSLICE_SESSION_URL</code> in <code>.env</code>.'));
-  }
-
-  let LK;
-  try { LK = await loadLiveKit(); }
-  catch (e) {
-    avatarBusy = false;
-    return avatarStatus('De videobibliotheek ontbreekt.',
-      e.message + '<br><br>Zet <code>livekit-client.umd.js</code> in de map ' +
-      '<code>studio/vendor/</code> naast dit bestand.');
+      : 'Controleer op de server <code>LEMONSLICE_API_KEY</code> in <code>.env</code>.'));
   }
 
   try {
-    avatarRoom = new LK.Room({ adaptiveStream: true, dynacast: true });
-    avatarRoom.on(LK.RoomEvent.TrackSubscribed, (track, pub, participant) => {
-      if (participant.identity && participant.identity !== AVATAR_AGENT) return;
-      if (track.kind === 'video') {
-        const v = $('#avatarVideo');
-        track.attach(v);
-        v.classList.remove('hidden');
-        $('#avatarPortrait').classList.add('hidden');
-        $('#avatarStatus').classList.add('hidden');
-      } else if (track.kind === 'audio') {
-        track.attach();   // eigen element: de avatar moet hoorbaar zijn
-      }
-    });
-    // Alleen sluiten als er ooit verbinding wás. Anders klapt het scherm dicht
-    // op een mislukte poging en ziet niemand meer waaróm het misging.
-    avatarRoom.on(LK.RoomEvent.Disconnected, () => { if (avatarConnected) closeAvatar(); });
-    await avatarRoom.connect(ses.url, ses.token);
+    // Blijft de verbinding hangen — geen internet, een kamer die al voorbij
+    // is — dan moet de bezoeker dat binnen twintig seconden lezen in plaats
+    // van naar een draaiend wieltje te blijven kijken.
+    const opgeven = new Promise((_, stop) => setTimeout(
+      () => stop(new Error('de verbinding kwam niet op gang binnen 20 seconden')), 20000));
+    await Promise.race([
+      ses.transport === 'livekit' ? avatarConnectLiveKit(ses) : avatarConnectDaily(ses),
+      opgeven
+    ]);
     avatarConnected = true;
-    if (config.avatarLink.mic !== false) {
-      try { await avatarRoom.localParticipant.setMicrophoneEnabled(true); avatarMicOn = true; }
-      catch { avatarStatus('Geen toegang tot de microfoon — je kunt wel luisteren.', ' '); }
-    }
-    syncAvatarMicButton();
-    // Komt er binnen vijftien seconden geen beeld, dan is er iets mis en moet
-    // de bezoeker dat zien in plaats van naar een spinner te blijven kijken.
-    setTimeout(() => {
-      if (avatarRoom && $('#avatarVideo').classList.contains('hidden')) {
-        avatarStatus('De avatar reageert niet.',
-          'De verbinding staat, maar er komt geen beeld. Controleer het avatar-ID bij de aanbieder.');
-      }
-    }, 15000);
   } catch (e) {
-    avatarStatus('Verbinden mislukt.', (e.message || e) +
-      '<br><br>Het adres en het toegangsbewijs zijn ontvangen, maar de verbinding ' +
-      'kwam niet tot stand. Controleer of de holobox bij het internet kan.');
-    try { avatarRoom?.disconnect(); } catch {}
-    avatarRoom = null;
+    avatarBusy = false;
+    const mist = /niet gevonden|geladen maar leeg/.test(e.message || '');
+    try { avatarConn?.disconnect(); } catch {}
+    avatarConn = null;
+    return avatarStatus(mist ? 'De videobibliotheek ontbreekt.' : 'Verbinden mislukt.',
+      (e.message || e) + '<br><br>' + (mist
+        ? 'Zet <code>livekit-client.umd.js</code> en <code>daily-js.umd.js</code> in de map ' +
+          '<code>studio/vendor/</code> naast dit bestand.'
+        : 'Het kamer-adres is ontvangen, maar de verbinding kwam niet tot stand. ' +
+          'Controleer of de holobox bij het internet kan.'));
   }
+
+  if (config.avatarLink.mic !== false) {
+    try { await avatarConn.setMic(true); avatarMicOn = true; }
+    catch { avatarStatus('Geen toegang tot de microfoon — je kunt wel luisteren.', ' '); }
+  }
+  syncAvatarMicButton();
+  // Komt er binnen vijftien seconden geen beeld, dan is er iets mis en moet
+  // de bezoeker dat zien in plaats van naar een spinner te blijven kijken.
+  setTimeout(() => {
+    if (avatarConn && $('#avatarVideo').classList.contains('hidden')) {
+      avatarStatus('De avatar reageert niet.',
+        'De verbinding staat, maar er komt geen beeld. Controleer het avatar-ID bij de aanbieder.');
+    }
+  }, 15000);
   avatarBusy = false;
 }
 
@@ -7642,10 +7747,12 @@ function syncAvatarMicButton() {
 
 function closeAvatar() {
   clearTimeout(avatarTimer);
-  if (avatarRoom) { try { avatarRoom.disconnect(); } catch {} }
-  avatarRoom = null; avatarMicOn = false; avatarConnected = false;
+  if (avatarConn) { try { avatarConn.disconnect(); } catch {} }
+  avatarConn = null; avatarMicOn = false; avatarConnected = false;
   const v = $('#avatarVideo');
   v.classList.add('hidden'); v.srcObject = null;
+  const a = document.getElementById('avatarAudio');
+  if (a) { try { a.pause(); } catch {} a.srcObject = null; }
   avatarOverlay().classList.add('hidden');
   $('#avatarStatus').classList.remove('hidden');
   bgRotator.setPaused(false);
@@ -7659,9 +7766,9 @@ function closeAvatar() {
 
 $('#avatarClose').addEventListener('click', closeAvatar);
 $('#avatarMic').addEventListener('click', async () => {
-  if (!avatarRoom) return;
+  if (!avatarConn) return;
   avatarMicOn = !avatarMicOn;
-  try { await avatarRoom.localParticipant.setMicrophoneEnabled(avatarMicOn); }
+  try { await avatarConn.setMic(avatarMicOn); }
   catch { avatarMicOn = false; }
   syncAvatarMicButton();
 });

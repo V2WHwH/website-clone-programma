@@ -13,3 +13,22 @@ kun je de hele map weglaten — de rest van de software werkt gewoon offline.
 
 Vervangen door een nieuwere versie kan: haal livekit-client op van npm en
 kopieer dist/livekit-client.umd.js hierheen onder dezelfde naam.
+
+
+daily-js.umd.js
+===============
+
+WebRTC-bibliotheek van Daily, versie 0.92.2, BSD-2-Clause-licentie.
+Bron: https://www.npmjs.com/package/@daily-co/daily-js
+
+Waarvoor: ook de AI-avatars. LemonSlice geeft bij het starten van een sessie
+een kamer-adres terug zonder toegangsbewijs; dat is een Daily-kamer. Deze
+bibliotheek stapt die kamer binnen en levert het beeld en geluid van de
+avatar. Krijgt de box juist wél een toegangsbewijs bij een wss-adres, dan
+gebruikt hij LiveKit hierboven. De software kiest zelf aan de hand van het
+adres, je hoeft niets in te stellen.
+
+Ook deze wordt pas ingeladen zodra een bezoeker werkelijk een avatar opent.
+
+Vervangen door een nieuwere versie kan: haal @daily-co/daily-js op van npm en
+kopieer dist/daily.js hierheen onder de naam daily-js.umd.js.
