@@ -1884,7 +1884,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.11.0';
+const APP_VERSION = '2.11.1';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -4830,6 +4830,13 @@ const AV_ENERGY = [
   ['loom', 'loom en laag bij de grond'], ['kalm', 'kalm'],
   ['gemiddeld', 'gemiddeld'], ['levendig', 'levendig'], ['uitbundig', 'uitbundig']
 ];
+// Bewust géén keuzes voor bewegen, gebaren of dichter naar de camera komen.
+// Die stonden er even in, maar een opdracht in tekst stuurt wat de avatar
+// zégt; of zijn handen meebewegen bepaalt het avatarmodel van de aanbieder,
+// dat zijn gebaren uit de stem afleidt. Een vinkje dat niets doet is erger
+// dan geen vinkje: het belooft iets. Zodra met een werkende sleutel is
+// aangetoond dat de aanbieder zulke aanwijzingen wél opvolgt, horen ze hier
+// terug. Het veld a.motion blijft bestaan zodat dat zonder migratie kan.
 const AV_EMO = ['warm', 'vriendelijk', 'enthousiast', 'empathisch', 'speels',
   'nuchter', 'trots', 'nieuwsgierig', 'geruststellend', 'humoristisch'];
 const AV_STANCE = ['behulpzaam', 'proactief', 'geduldig', 'deskundig', 'bescheiden',
