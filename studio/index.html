@@ -1658,6 +1658,10 @@
     &rarr; Actie &rarr; <b>AI-avatar openen</b>.</p>
 
     <button id="avAdd" class="btn primary block">+ Avatar toevoegen</button>
+    <button id="avAddTry" class="btn block">+ Proefavatar van LemonSlice</button>
+    <p class="note">De proefavatar opent de kant-en-klare proefpagina van de aanbieder.
+    Handig om iets te laten zien voordat de koppeling met je eigen server staat: er is
+    geen API-sleutel voor nodig.</p>
     <div id="avList"></div>
 
     <h2>Koppeling</h2>
@@ -1917,7 +1921,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.11.2';
+const APP_VERSION = '2.12.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -1949,7 +1953,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 11,
+  version: 12,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -2094,8 +2098,14 @@ function migrateConfig(stored) {
     if (!Array.isArray(a.faq)) a.faq = [];
     if (typeof a.fallback !== 'string') a.fallback = '';
     if (typeof a.handoff !== 'string') a.handoff = '';
+    // v12: proefmodus. Een avatar kan ook een kant-en-klare proefpagina van
+    // de aanbieder openen in plaats van een sessie via de eigen server. Dat
+    // werkt zonder API-sleutel en is bedoeld om iets te laten zien voordat
+    // de koppeling staat.
+    if (typeof a.tryUrl !== 'string') a.tryUrl = '';
+    if (typeof a.tryMode !== 'boolean') a.tryMode = false;
   }
-  c.version = 11;
+  c.version = 12;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -3476,6 +3486,10 @@ function openWebContent(url) {
   f.id = 'webFrame';
   f.title = 'Webinhoud';
   f.referrerPolicy = 'no-referrer';
+  // Zonder deze regel krijgt een ingebedde pagina geen microfoon of camera,
+  // en kan een pratende proefavatar de bezoeker niet horen. De Windows-app
+  // gebruikt een webview en regelt dat in het hoofdproces.
+  f.setAttribute('allow', 'microphone; camera; autoplay; fullscreen; display-capture');
   const external = /^https?:/i.test(url);
   let unreachable = false;
   if (external) {
@@ -5068,6 +5082,30 @@ function renderAvatarEditor() {
   if (avEdTab === 'karakter') {
     body.append(
       el('div', { class: 'card' },
+        el('div', { class: 'toggle-row' },
+          el('div', {},
+            el('div', { class: 't-label' }, 'Proefmodus — proefpagina van de aanbieder'),
+            el('div', { class: 't-sub' },
+              'Aan: een knop met deze avatar opent de proefpagina rechtstreeks, zonder ' +
+              'sessie via je eigen server en dus zonder API-sleutel. Alles op het ' +
+              'karakterblad hieronder telt dan niet mee — die pagina heeft zijn eigen ' +
+              'karakter, ingesteld bij de aanbieder.')),
+          (() => {
+            const sw = el('label', { class: 'switch' },
+              el('input', { type: 'checkbox',
+                onchange: (e) => { a.tryMode = e.target.checked; save(); renderAvatarEditor(); } }),
+              el('i', {}));
+            sw.querySelector('input').checked = !!a.tryMode;
+            return sw;
+          })()),
+        avVeld('Adres van de proefpagina', el('input', { type: 'text',
+          value: a.tryUrl || '', placeholder: 'https://lemonslice.com/try/agent_…',
+          oninput: (e) => { a.tryUrl = e.target.value.trim(); save(); } }),
+          a.tryMode
+            ? 'Deze pagina wordt geopend zodra een bezoeker de knop aanraakt.'
+            : 'Alleen in gebruik als de proefmodus hierboven aan staat.')),
+
+      el('div', { class: 'card' },
         el('div', { class: 'row' },
           avVeld('Naam', el('input', { type: 'text', value: a.name || '',
             oninput: (e) => { a.name = e.target.value; $('#avEdTitle').textContent = e.target.value || 'Naamloze avatar'; save(); } })),
@@ -5229,6 +5267,25 @@ function renderAvatars() {
   }
   for (const a of avs) {
     const img = mediaCache.get(a.imageId);
+    if (a.tryMode) {
+      list.append(el('div', { class: 'card' },
+        el('div', { class: 'media-item' },
+          el('div', { style: 'width:56px;height:56px;border-radius:50%;background:#0a0f16;display:flex;align-items:center;justify-content:center;font-size:24px;flex:none' }, '▶'),
+          el('div', { class: 'grow' },
+            el('div', { class: 'nm', title: a.name }, a.name || 'Naamloze avatar'),
+            el('div', { class: 'sz' }, 'Proefmodus — opent ' + (a.tryUrl || 'geen adres'))),
+          el('button', { class: 'btn small primary', onclick: () => openAvatarEditor(a.id) }, 'Openen'),
+          el('button', { class: 'btn small danger', title: 'Verwijderen', onclick: () => {
+            if (!confirm(`Avatar "${a.name}" verwijderen?`)) return;
+            pushUndo();
+            config.avatars = config.avatars.filter((x) => x !== a);
+            for (const sc of config.scenes) for (const b of sc.buttons) {
+              if (b.action?.type === 'OpenAvatar' && b.action.avatarId === a.id) delete b.action;
+            }
+            save(); renderAvatars(); renderStage(); renderBtnList();
+          } }, '🗑'))));
+      continue;
+    }
     const ingevuld = [
       a.role?.trim() && 'rol',
       (a.emotions?.length || a.stance?.length || a.age || a.tempo || a.energy) && 'karakter',
@@ -5286,6 +5343,24 @@ $('#avEdDone').addEventListener('click', closeAvatarEditor);
 $('#avEditor').addEventListener('click', (e) => { if (e.target.id === 'avEditor') closeAvatarEditor(); });
 addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && $('#avEditor').classList.contains('open')) closeAvatarEditor();
+});
+
+// De proefavatar die Desmond aanleverde. Bewust een knop en geen vast
+// onderdeel van een nieuw project: het is een tijdelijke demo, geen standaard.
+const PROEF_AVATAR_URL = 'https://lemonslice.com/try/agent_d0dcb7fe64c6d460';
+
+$('#avAddTry').addEventListener('click', () => {
+  pushUndo();
+  const a = { id: uid(), name: 'Proefavatar (LemonSlice)', imageId: null,
+    providerAvatarId: 'agent_d0dcb7fe64c6d460', greeting: '', persona: '', role: '',
+    emotions: [], stance: [], motion: [], age: '', tempo: '', energy: '',
+    language: 'nl', address: 'je', brevity: 'kort', style: '', boundaries: '',
+    knowledge: '', faq: [], fallback: '', handoff: '',
+    tryUrl: PROEF_AVATAR_URL, tryMode: true };
+  config.avatars.push(a);
+  save(); renderAvatars();
+  toast('Proefavatar toegevoegd — koppel hem aan een knop');
+  openAvatarEditor(a.id);
 });
 
 $('#avAdd').addEventListener('click', () => {
@@ -8184,6 +8259,13 @@ async function openAvatar(avatarId) {
 
   if (!a) return avatarStatus('Deze avatar bestaat niet meer.',
     'Kies in de editor een andere avatar voor deze knop.');
+  // Proefmodus gaat vóór alles: dan is er geen server en geen sleutel nodig.
+  if (a.tryMode && (a.tryUrl || '').trim()) {
+    ov.classList.add('hidden');
+    bgRotator.setPaused(false);
+    openWebContent(a.tryUrl.trim());
+    return;
+  }
   if (!config.avatarLink.enabled) {
     return avatarStatus('De avatarkoppeling staat uit.',
       'Zet hem aan op het tabblad <b>AI-avatars</b> en vul bij <b>Beheer &amp; device</b> ' +
