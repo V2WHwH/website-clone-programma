@@ -107,7 +107,8 @@ jobs:
         shell: pwsh
         run: |
           $out = "release\HereWeHolo-Studio-Offline-$((Get-Content package.json | ConvertFrom-Json).version).zip"
-          Compress-Archive -Path ..\studio\index.html, "..\studio\Start Holobox.bat", "..\studio\Start Holobox (venster).bat", "..\studio\LEES MIJ.txt" -DestinationPath $out -Force
+          # vendor mee: zonder die map kan deze versie geen AI-avatar openen
+          Compress-Archive -Path ..\studio\index.html, ..\studio\vendor, "..\studio\Start Holobox.bat", "..\studio\Start Holobox (venster).bat", "..\studio\LEES MIJ.txt" -DestinationPath $out -Force
           Write-Host "Gebundeld: $out"
 
       - name: Checksums genereren
