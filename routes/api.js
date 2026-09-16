@@ -320,6 +320,87 @@ router.post('/api/v1/studio/:key/heartbeat', (req, res) => {
   });
 });
 
+/* Studio-box: een AI-avatarsessie aanvragen.
+
+   De box mag de geheime sleutel van de aanbieder nooit kennen — alles wat op
+   de holobox staat is leesbaar voor wie het scherm openmaakt. Daarom vraagt de
+   box hier een sessie aan met zijn device-key, praat deze server met de
+   aanbieder, en gaat alleen het adres en het toegangsbewijs terug.
+
+   Zet in .env:
+     LEMONSLICE_API_KEY=...            de sleutel uit je LemonSlice-account
+     LEMONSLICE_SESSION_URL=https://... het endpoint uit hun documentatie
+   Optioneel, als hun antwoord andere veldnamen gebruikt:
+     LEMONSLICE_URL_FIELD=livekit_url
+     LEMONSLICE_TOKEN_FIELD=livekit_token  */
+router.post('/api/v1/avatar/session', async (req, res) => {
+  const dev = findDeviceByKey((req.body && req.body.key) || '');
+  if (!dev) return res.status(404).json({ error: 'Onbekende device-key' });
+
+  const apiKey = process.env.LEMONSLICE_API_KEY;
+  const url = process.env.LEMONSLICE_SESSION_URL;
+  if (!apiKey || !url) {
+    return res.status(503).json({
+      error: 'De server heeft nog geen avatar-koppeling: zet LEMONSLICE_API_KEY en ' +
+             'LEMONSLICE_SESSION_URL in .env en herstart het platform.'
+    });
+  }
+
+  const av = (req.body && req.body.avatar) || {};
+  try {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + apiKey
+      },
+      body: JSON.stringify({
+        avatar_id: av.providerAvatarId || undefined,
+        greeting: av.greeting || undefined,
+        system_prompt: av.persona || undefined,
+        metadata: { device: dev.id, deviceName: dev.name, avatar: av.name }
+      })
+    });
+    const text = await r.text();
+    let data = {};
+    try { data = JSON.parse(text); } catch { /* geen JSON */ }
+    if (!r.ok) {
+      return res.status(502).json({
+        error: `De aanbieder gaf ${r.status}`,
+        detail: text.slice(0, 400)
+      });
+    }
+    // De veldnamen verschillen per aanbieder en per versie van hun API.
+    // Vandaar instelbaar, met de gangbare namen als vangnet.
+    const pick = (obj, names) => {
+      for (const n of names) {
+        if (obj && obj[n]) return obj[n];
+        if (obj && obj.session && obj.session[n]) return obj.session[n];
+        if (obj && obj.data && obj.data[n]) return obj.data[n];
+      }
+      return null;
+    };
+    const roomUrl = pick(data, [process.env.LEMONSLICE_URL_FIELD, 'livekit_url', 'url',
+      'serverUrl', 'server_url', 'wsUrl', 'ws_url'].filter(Boolean));
+    const token = pick(data, [process.env.LEMONSLICE_TOKEN_FIELD, 'livekit_token', 'token',
+      'accessToken', 'access_token', 'participant_token'].filter(Boolean));
+    if (!roomUrl || !token) {
+      // Niet raden: laat zien wat er wél terugkwam, dan is het in één keer op
+      // te lossen met LEMONSLICE_URL_FIELD en LEMONSLICE_TOKEN_FIELD.
+      return res.status(502).json({
+        error: 'De aanbieder gaf geen herkenbaar adres en toegangsbewijs terug',
+        received: Object.keys(data || {})
+      });
+    }
+    if (req.body && req.body.probe) {
+      return res.json({ ok: true, url: roomUrl, token, probe: true });
+    }
+    res.json({ ok: true, url: roomUrl, token });
+  } catch (e) {
+    res.status(502).json({ error: 'Aanbieder niet bereikbaar: ' + (e.message || e) });
+  }
+});
+
 // Studio-box: gepubliceerd ontwerp ophalen.
 router.get('/api/v1/studio/:key/config', (req, res) => {
   const dev = findDeviceByKey(req.params.key);

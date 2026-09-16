@@ -265,17 +265,18 @@ header.cover{padding-block:88px 8px}
     <li><a href="#t-fx"><span class="n">11</span><span>Motion</span></a></li>
     <li><a href="#t-saver"><span class="n">12</span><span>Screensaver</span></a></li>
     <li><a href="#t-cam"><span class="n">13</span><span>Camera</span></a></li>
-    <li><a href="#t-share"><span class="n">14</span><span>Beheer &amp; device</span></a></li>
-    <li><a href="#t-help"><span class="n">15</span><span>Help</span></a></li>
+    <li><a href="#t-avatar"><span class="n">14</span><span>AI-avatars</span></a></li>
+    <li><a href="#t-share"><span class="n">15</span><span>Beheer &amp; device</span></a></li>
+    <li><a href="#t-help"><span class="n">16</span><span>Help</span></a></li>
   </ol>
   <div class="grp">In bedrijf</div>
   <ol>
-    <li><a href="#h16"><span class="n">16</span><span>De bezoekerskant</span></a></li>
-    <li><a href="#h17"><span class="n">17</span><span>Publiceren</span></a></li>
-    <li><a href="#h18"><span class="n">18</span><span>Waar staat alles?</span></a></li>
-    <li><a href="#h19"><span class="n">19</span><span>Wie doet wat</span></a></li>
-    <li><a href="#h20"><span class="n">20</span><span>Als er iets misgaat</span></a></li>
-    <li><a href="#h21"><span class="n">21</span><span>Sneltoetsen &amp; woordenlijst</span></a></li>
+    <li><a href="#h16"><span class="n">17</span><span>De bezoekerskant</span></a></li>
+    <li><a href="#h17"><span class="n">18</span><span>Publiceren</span></a></li>
+    <li><a href="#h18"><span class="n">19</span><span>Waar staat alles?</span></a></li>
+    <li><a href="#h19"><span class="n">20</span><span>Wie doet wat</span></a></li>
+    <li><a href="#h20"><span class="n">21</span><span>Als er iets misgaat</span></a></li>
+    <li><a href="#h21"><span class="n">22</span><span>Sneltoetsen &amp; woordenlijst</span></a></li>
   </ol>
 </nav>
 
@@ -287,7 +288,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.9.3</span><span>21 hoofdstukken</span><span>24 schermafbeeldingen</span>
+    <span>Versie 2.10.0</span><span>22 hoofdstukken</span><span>25 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -486,7 +487,7 @@ header.cover{padding-block:88px 8px}
       <li><span class="n">6</span><span><b>Opslaan</b> <span class="q">— hoeft eigenlijk nooit:
         de software bewaart elke wijziging direct. De knop is er voor de zekerheid.</span></span></li>
       <li><span class="n">7</span><span><b>Publiceren</b> <span class="q">— controleert het
-        ontwerp en zet het klaar op de box. Zie hoofdstuk 17.</span></span></li>
+        ontwerp en zet het klaar op de box. Zie hoofdstuk 18.</span></span></li>
       <li><span class="n">8</span><span><b>Apparaatstatus</b> <span class="q">— “Lokaal” of de
         naam van de gekoppelde box, met een stoplichtje.</span></span></li>
       <li><span class="n">9</span><span><b>Sluiten</b> <span class="q">— terug naar het
@@ -1400,8 +1401,96 @@ header.cover{padding-block:88px 8px}
 </section>
 
 <!-- ═══════════════════════════════════════════════ 14 ═══ -->
-<section class="ch" id="t-share">
+<section class="ch" id="t-avatar">
   <div class="ch-head"><div class="ch-num">14</div><div>
+    <h2>AI-avatars</h2>
+    <p class="lead measure">Een avatar is een pratende gesprekspartner in de holobox. De
+    bezoeker tikt een tegel aan, de box zet een live sessie op bij de aanbieder, en het beeld
+    komt als videostroom binnen.</p>
+  </div></div>
+
+  <div class="wwww">
+    <div><dt>Wie</dt><dd>De bouwer maakt de avatars; de installateur legt de koppeling met
+      de server.</dd></div>
+    <div><dt>Wat</dt><dd>Avatars beheren (naam, portret, begroeting, karakter) en de
+      koppeling met de aanbieder instellen.</dd></div>
+    <div><dt>Waar</dt><dd>Tiende tabblad. Een avatar komt in beeld via een knop met de actie
+      <b>AI-avatar openen</b>.</dd></div>
+    <div><dt>Waarom</dt><dd>Een tegel speelt een film af; een avatar beantwoordt een vraag.
+      Voor een showroom waar bezoekers iets willen wéten in plaats van zien, is dat het
+      verschil.</dd></div>
+  </div>
+
+  <div class="split">
+    <figure><div class="panelshot tall">
+      <img src="img/paneel-avatar.webp" alt="Het paneel AI-avatars met twee avatars en de koppeling" width="371" height="2078" loading="lazy">
+    </div></figure>
+    <div class="tw"><table>
+      <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+      <tbody>
+        <tr><td>Naam</td><td>Hoe de avatar in de editor en op het scherm heet.</td>
+          <td>Komt tijdens het gesprek onderin beeld te staan.</td></tr>
+        <tr><td>Avatar-ID bij de aanbieder</td><td>De sleutel van het gezicht dat je bij
+          LemonSlice hebt aangemaakt.</td><td>Zonder dit ID weet de aanbieder niet wie hij
+          moet laten praten.</td></tr>
+        <tr><td>Portret</td><td>Een PNG of JPG uit de mediabibliotheek.</td>
+          <td>Staat in beeld zolang de verbinding wordt opgezet. Een zwart gat laat een
+          bezoeker denken dat de box stuk is.</td></tr>
+        <tr><td>Begroeting</td><td>Wat hij als eerste zegt.</td>
+          <td>Een avatar die wacht tot jíj iets zegt, blijft stil staan.</td></tr>
+        <tr><td>Karakter en kennis</td><td>Wie hij is en wat hij weet.</td>
+          <td>Hier zet je dat hij de gastheer van jóuw showroom is en naar de juiste tegel
+          verwijst.</td></tr>
+        <tr><td>Avatars inschakelen</td><td>Zet de koppeling aan.</td>
+          <td>Uit betekent: een avatartegel toont een nette melding in plaats van een leeg
+          scherm.</td></tr>
+        <tr><td>Sessie sluiten na</td><td>Seconden zonder aanraking waarna de sessie stopt.</td>
+          <td><b>Dit kost geld per minuut.</b> Een sessie die na een bezoeker blijft
+          openstaan, loopt de hele dag door.</td></tr>
+        <tr><td>Microfoon van de bezoeker</td><td>Aan om te kunnen praten, uit om alleen te
+          luisteren.</td><td>De browser vraagt eenmalig toestemming.</td></tr>
+        <tr><td>Verbinding testen</td><td>Vraagt één sessie aan en toont de uitslag.</td>
+          <td>Zodat je bij de oplevering weet dat het werkt.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <h3>Hoe de koppeling loopt</h3>
+  <p class="measure">De geheime API-sleutel hoort <b>nooit</b> in de box: alles wat op de
+  holobox staat is leesbaar voor wie het scherm openmaakt. Daarom loopt het in vier stappen,
+  via je eigen server.</p>
+
+  <ol class="steps">
+    <li>De box vraagt je eigen server om een sessie, met zijn <b>device-key</b>.</li>
+    <li>De server roept de aanbieder aan met de geheime sleutel uit <code>.env</code>.</li>
+    <li>De server geeft alleen het adres en het toegangsbewijs terug.</li>
+    <li>De box maakt daarmee zelf verbinding en toont het beeld.</li>
+  </ol>
+
+  <p class="measure">Op de server zet je in <code>.env</code>:</p>
+  <pre class="cmd">LEMONSLICE_API_KEY=de sleutel uit je account
+LEMONSLICE_SESSION_URL=het endpoint uit de documentatie van de aanbieder</pre>
+  <p class="measure">Geeft de aanbieder andere veldnamen terug dan verwacht, dan zegt de
+  server precies welke velden hij wél kreeg. Die zet je dan in
+  <code>LEMONSLICE_URL_FIELD</code> en <code>LEMONSLICE_TOKEN_FIELD</code>.</p>
+
+  <div class="note warn"><span class="t">Wat een avatar nodig heeft</span>
+    <p>Anders dan de rest van de software werkt dit <b>niet offline</b>: er is internet
+    nodig, een bereikbare eigen server, en een account bij de aanbieder. Een sessie kost
+    geld per minuut, dus zet "sessie sluiten na" niet te hoog. Valt het internet weg, dan
+    blijft de rest van de presentatie gewoon draaien — alleen de avatartegel toont een
+    melding.</p></div>
+
+  <div class="note"><span class="t">De videobibliotheek</span>
+    <p>De verbinding loopt over WebRTC via LiveKit. Die bibliotheek staat in
+    <code>studio/vendor/livekit-client.umd.js</code> en wordt <em>pas</em> geladen op het
+    moment dat een bezoeker werkelijk een avatar opent. Gebruik je geen avatars, dan mag de
+    hele map weg en verandert er niets.</p></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ 15 ═══ -->
+<section class="ch" id="t-share">
+  <div class="ch-head"><div class="ch-num">15</div><div>
     <h2>Beheer &amp; device</h2>
     <p class="lead measure">Het langste tabblad, en het enige dat over de holobox als
     <em>apparaat</em> gaat in plaats van over de presentatie.</p>
@@ -1495,9 +1584,9 @@ header.cover{padding-block:88px 8px}
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════ 15 ═══ -->
+<!-- ═══════════════════════════════════════════════ 16 ═══ -->
 <section class="ch" id="t-help">
-  <div class="ch-head"><div class="ch-num">15</div><div>
+  <div class="ch-head"><div class="ch-num">16</div><div>
     <h2>Help</h2>
     <p class="lead measure">Een korte kaart in de app zelf: vier stappen om te beginnen,
     hoe je offline op een andere pc draait, en hoe je 4K soepel krijgt.</p>
@@ -1521,9 +1610,9 @@ header.cover{padding-block:88px 8px}
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════ 16 ═══ -->
+<!-- ═══════════════════════════════════════════════ 17 ═══ -->
 <section class="ch" id="h16">
-  <div class="ch-head"><div class="ch-num">16</div><div>
+  <div class="ch-head"><div class="ch-num">17</div><div>
     <h2>De bezoekerskant</h2>
     <p class="lead measure">Wat er gebeurt als iemand de holobox aanraakt. Drie
     gebeurtenissen, meer zijn het er niet.</p>
@@ -1566,9 +1655,9 @@ header.cover{padding-block:88px 8px}
   </figure>
 </section>
 
-<!-- ═══════════════════════════════════════════════ 17 ═══ -->
+<!-- ═══════════════════════════════════════════════ 18 ═══ -->
 <section class="ch" id="h17">
-  <div class="ch-head"><div class="ch-num">17</div><div>
+  <div class="ch-head"><div class="ch-num">18</div><div>
     <h2>Publiceren</h2>
     <p class="lead measure">De laatste stap. De software controleert het ontwerp en zet het
     klaar — op deze box, of op de boxen die aan je server hangen.</p>
@@ -1602,9 +1691,9 @@ header.cover{padding-block:88px 8px}
     opgeslagen, en wanneer je voor het laatst hebt gepubliceerd.</p></div>
 </section>
 
-<!-- ═══════════════════════════════════════════════ 18 ═══ -->
+<!-- ═══════════════════════════════════════════════ 19 ═══ -->
 <section class="ch" id="h18">
-  <div class="ch-head"><div class="ch-num">18</div><div>
+  <div class="ch-head"><div class="ch-num">19</div><div>
     <h2>Waar staat alles?</h2>
     <p class="lead measure">Drie plekken, elk met een eigen rol. Weet je deze drie, dan weet
     je ook wat je moet meenemen bij een verhuizing.</p>
@@ -1634,9 +1723,9 @@ header.cover{padding-block:88px 8px}
     een lege studio. Exporteer daarom na elke sessie.</p></div>
 </section>
 
-<!-- ═══════════════════════════════════════════════ 19 ═══ -->
+<!-- ═══════════════════════════════════════════════ 20 ═══ -->
 <section class="ch" id="h19">
-  <div class="ch-head"><div class="ch-num">19</div><div>
+  <div class="ch-head"><div class="ch-num">20</div><div>
     <h2>Wie doet wat</h2>
     <p class="lead measure">Vier rollen komen deze software tegen. Ze raken elk een ander
     deel aan, en dat is precies waarom de tabbladen in deze volgorde staan.</p>
@@ -1673,9 +1762,9 @@ header.cover{padding-block:88px 8px}
   </ol>
 </section>
 
-<!-- ═══════════════════════════════════════════════ 20 ═══ -->
+<!-- ═══════════════════════════════════════════════ 21 ═══ -->
 <section class="ch" id="h20">
-  <div class="ch-head"><div class="ch-num">20</div><div>
+  <div class="ch-head"><div class="ch-num">21</div><div>
     <h2>Als er iets misgaat</h2>
     <p class="lead measure">De klachten die in de praktijk voorkomen, met de oorzaak
     erachter.</p>
@@ -1691,7 +1780,7 @@ header.cover{padding-block:88px 8px}
         koppeling is verbroken.</td><td>Selecteer de knop en kies opnieuw een bestand bij
         <b>Media</b> in de inspector.</td></tr>
       <tr><td>Video hapert op 4K</td><td>De videokaart decodeert niet.</td>
-        <td>Controleer <code>chrome://gpu</code> en start met de vlaggen uit hoofdstuk 15.</td></tr>
+        <td>Controleer <code>chrome://gpu</code> en start met de vlaggen uit hoofdstuk 16.</td></tr>
       <tr><td>3D-object is traag of verschijnt niet</td><td>Het model is zwaarder dan de
         detail-limiet, of de textuur ontbreekt.</td><td>Zet de limiet lager, of vraag om een
         <code>.glb</code> in plaats van <code>.obj</code>.</td></tr>
@@ -1699,7 +1788,7 @@ header.cover{padding-block:88px 8px}
         geladen.</td><td>De software toont dan een hint met de mogelijkheid de site in een
         eigen venster te openen. Niet elke site staat inbedden toe.</td></tr>
       <tr><td>“Nog niet gepubliceerd” blijft staan</td><td>Je hebt opgeslagen maar niet
-        gepubliceerd.</td><td>Dat zijn twee dingen — zie hoofdstuk 17.</td></tr>
+        gepubliceerd.</td><td>Dat zijn twee dingen — zie hoofdstuk 18.</td></tr>
       <tr><td>Studio is leeg na verhuizen</td><td>Het ontwerp zat in de browseropslag van de
         andere pc.</td><td>Importeer je <code>.json</code> en koppel de media opnieuw.</td></tr>
       <tr><td>Ik kom niet in het menu op een kioskbox</td><td>Bedieningsknoppen verborgen,
@@ -1734,9 +1823,9 @@ header.cover{padding-block:88px 8px}
   </table></div>
 </section>
 
-<!-- ═══════════════════════════════════════════════ 21 ═══ -->
+<!-- ═══════════════════════════════════════════════ 22 ═══ -->
 <section class="ch" id="h21">
-  <div class="ch-head"><div class="ch-num">21</div><div>
+  <div class="ch-head"><div class="ch-num">22</div><div>
     <h2>Sneltoetsen &amp; woordenlijst</h2>
   </div></div>
 
@@ -1790,7 +1879,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.9.3 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.10.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>

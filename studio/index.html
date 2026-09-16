@@ -324,6 +324,34 @@
   #langBar button.sel { background: var(--accent); color: #05201c; border-color: transparent; font-weight: 700; }
   body.clean #breadcrumb { display: none; }
   /* Webcontent-overlay */
+  /* ---- AI-avatar ---- */
+  #avatarOverlay { position: absolute; inset: 0; z-index: 41; background: #05080d;
+    display: flex; align-items: center; justify-content: center; }
+  #avatarVideo { width: 100%; height: 100%; object-fit: cover; background: #05080d; }
+  #avatarVideo.hidden { display: none; }
+  /* Portret als rustpunt zolang het beeld nog niet binnen is — een zwart gat
+     laat een bezoeker denken dat de box stuk is. */
+  #avatarPortrait { position: absolute; width: 28vmin; height: 28vmin; border-radius: 50%;
+    background-size: cover; background-position: center; opacity: 0.85;
+    box-shadow: 0 0 12vmin rgba(53,208,186,0.35); top: 30%; transform: translateY(-50%); }
+  #avatarPortrait.hidden { display: none; }
+  #avatarStatus { position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2.4vmin; padding: 8vmin;
+    text-align: center; color: var(--color-text-secondary, #AAB4C0);
+    font-size: clamp(13px, 1.9vmin, 20px); background: rgba(5,8,13,0.72); }
+  #avatarStatus.hidden { display: none; }
+  #avatarStatus > div:not(.spin) { max-width: 60ch; line-height: 1.6; }
+  #avatarHelp { font-size: 0.86em; color: var(--color-text-muted, #677482); }
+  #avatarHelp.hidden { display: none; }
+  #avatarHelp code { background: rgba(255,255,255,.07); padding: 1px 5px; border-radius: 4px; }
+  #avatarBar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+    display: flex; align-items: center; gap: 1.5vmin; padding: 2vmin 2.5vmin;
+    background: linear-gradient(to top, rgba(5,8,13,.85), transparent); }
+  #avatarName { flex: 1; font-weight: 650; color: #fff; font-size: clamp(14px, 2.2vmin, 26px);
+    text-shadow: 0 2px 10px rgba(0,0,0,.7); }
+  body.clean #avatarBar .btn { opacity: 0.25; }
+  body.clean #avatarBar:hover .btn { opacity: 1; }
+
   #webOverlay { position: absolute; inset: 0; z-index: 40; background: #05080d; display: flex;
     flex-direction: column; }
   #webOverlay #webClose { position: absolute; top: 2vmin; right: 2vmin; z-index: 3; }
@@ -529,7 +557,7 @@
   body.editor-open #stage { z-index: 60; }
   body.editor-open #saver { z-index: 61; }
   body.editor-open #playOverlay { z-index: 62; }
-  body.editor-open #webOverlay { z-index: 63; }
+  body.editor-open #webOverlay, body.editor-open #avatarOverlay { z-index: 63; }
   body.editor-open .fab, body.editor-open #editHint { display: none; }
 
   /* -- Inspector -- */
@@ -718,6 +746,23 @@
   <div id="alignGuideV"></div>
   <div id="alignGuideH"></div>
   <div id="buttonLayer"></div>
+  <!-- AI-avatar: live gesprekspartner. Het beeld komt als WebRTC-stroom
+       binnen; de sessie wordt door je eigen server aangemaakt. -->
+  <div id="avatarOverlay" class="hidden">
+    <video id="avatarVideo" playsinline autoplay></video>
+    <div id="avatarPortrait"></div>
+    <div id="avatarStatus">
+      <div class="spin"></div>
+      <div id="avatarStatusText">Verbinden&hellip;</div>
+      <div id="avatarHelp" class="hidden"></div>
+    </div>
+    <div id="avatarBar">
+      <span id="avatarName"></span>
+      <button id="avatarMic" class="btn small" type="button">&#127908; Microfoon aan</button>
+      <button id="avatarClose" class="btn small" type="button">&times; Sluiten</button>
+    </div>
+  </div>
+
   <!-- HTML5/web-contentmodule (spec 30): toont een webpagina of lokaal
        HTML-bestand in de presentatie, zonder de app te verlaten. -->
   <div id="webOverlay" class="hidden">
@@ -850,6 +895,7 @@
     <button data-tab="fx"><span class="nav-ic">&#12316;</span><span class="nav-txt">Motion</span></button>
     <button data-tab="saver"><span class="nav-ic">&#10033;</span><span class="nav-txt">Screensaver</span></button>
     <button data-tab="cam"><span class="nav-ic">&#9737;</span><span class="nav-txt">Camera</span></button>
+    <button data-tab="avatar"><span class="nav-ic">&#9786;</span><span class="nav-txt">AI-avatars</span></button>
     <button data-tab="share"><span class="nav-ic">&#8644;</span><span class="nav-txt">Beheer &amp; device</span></button>
     <button data-tab="help"><span class="nav-ic">?</span><span class="nav-txt">Help</span></button>
     <div id="navFoot">
@@ -1524,6 +1570,60 @@
     </div>
   </div>
 
+  <!-- ================= AI-AVATARS ================= -->
+  <div class="tabpage hidden" id="page-avatar">
+    <p class="note">Een avatar is een pratende gesprekspartner in de holobox. De bezoeker
+    tikt een tegel aan, de box zet een live sessie op bij de aanbieder en het beeld komt
+    als videostroom binnen. Koppel een avatar aan een knop via <b>Knoppen &amp; sc&egrave;nes</b>
+    &rarr; Actie &rarr; <b>AI-avatar openen</b>.</p>
+
+    <button id="avAdd" class="btn primary block">+ Avatar toevoegen</button>
+    <div id="avList"></div>
+
+    <h2>Koppeling</h2>
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Avatars inschakelen</div>
+          <div class="t-sub">Zonder koppeling tonen avatartegels een nette melding in plaats
+          van een leeg scherm</div></div>
+        <label class="switch"><input type="checkbox" id="avEnabled"><i></i></label>
+      </div>
+      <label class="field">Aanbieder
+        <select id="avProvider">
+          <option value="lemonslice">LemonSlice</option>
+        </select>
+      </label>
+      <p class="note" id="avLinkNote"></p>
+      <div class="row">
+        <label class="field">Sessie sluiten na (sec zonder aanraking)
+          <input type="number" id="avAutoClose" min="15" max="900" step="5">
+        </label>
+      </div>
+      <div class="toggle-row">
+        <div><div class="t-label">Microfoon van de bezoeker</div>
+          <div class="t-sub">Nodig om te kunnen praten; uit betekent alleen luisteren</div></div>
+        <label class="switch"><input type="checkbox" id="avMic"><i></i></label>
+      </div>
+      <button id="avTest" class="btn block">Verbinding testen</button>
+      <p class="note" id="avTestOut">Nog niet getest.</p>
+    </div>
+
+    <h2>Hoe de koppeling loopt</h2>
+    <div class="card">
+      <p class="note">De geheime API-sleutel hoort <b>nooit</b> in de box: iedereen die het
+      scherm openmaakt zou hem kunnen lezen. Daarom loopt het zo:</p>
+      <ol class="note" style="padding-left:18px;line-height:1.7">
+        <li>De box vraagt je eigen server om een sessie, met zijn device-key.</li>
+        <li>De server roept de aanbieder aan met de geheime sleutel uit <code>.env</code>.</li>
+        <li>De server geeft alleen het adres en het toegangsbewijs terug.</li>
+        <li>De box maakt daarmee zelf verbinding en toont het beeld.</li>
+      </ol>
+      <p class="note">Stel het serveradres en de device-key in bij <b>Beheer &amp; device</b>.
+      Op de server zet je <code>LEMONSLICE_API_KEY</code> en <code>LEMONSLICE_SESSION_URL</code>
+      in <code>.env</code>.</p>
+    </div>
+  </div>
+
   <!-- ================= OPSLAAN ================= -->
   <div class="tabpage hidden" id="page-share">
     <h2>Op deze computer</h2>
@@ -1745,7 +1845,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 9,
+  version: 10,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -1790,6 +1890,19 @@ const defaultConfig = () => ({
     lightBg: true, shadow: 0.35 },
   theme: { font: 'system', weight: 700, logoMediaId: null, logoSize: 12, logoPos: 'top-left' },
   editor: { snap: true, gridPercent: 5, safeZone: 0 },  // raster, snap en veilige marge (%)
+  /* AI-avatars. Een avatar is een levende gesprekspartner in de holobox: de
+     bezoeker tikt een tegel aan, er wordt een sessie opgezet bij de aanbieder
+     en het beeld komt als WebRTC-stroom binnen.
+     De geheime API-sleutel hoort nooit in de box: die staat op je eigen server,
+     die de sessie aanmaakt en alleen het adres en het toegangsbewijs teruggeeft. */
+  avatars: [],           // {id, name, imageId, providerAvatarId, greeting, persona, voice}
+  avatarLink: {
+    enabled: false,
+    provider: 'lemonslice',
+    autoCloseSec: 90,    // sessie sluiten na zoveel seconden zonder aanraking
+    mic: true,           // microfoon van de bezoeker meesturen
+    greetOnOpen: true
+  },
   /* Geluidsreactie: de knoppen ademen mee met de muziek die op dat moment
      speelt. De binnenring (het videovlak) reageert heftiger naar voren dan
      de buitenring, en de equalizer laat laag/midden/hoog zien. */
@@ -1836,6 +1949,8 @@ function migrateConfig(stored) {
     remote: { ...d.remote, ...stored.remote },
     galaxy: { ...d.galaxy, ...stored.galaxy },
     maintenance: { ...d.maintenance, ...stored.maintenance },
+    avatars: Array.isArray(stored.avatars) ? stored.avatars : [],
+    avatarLink: { ...d.avatarLink, ...stored.avatarLink },
     audioFx: { ...d.audioFx, ...stored.audioFx },
     analytics: { ...d.analytics, ...stored.analytics } };
   if (!Array.isArray(c.scenes) || !c.scenes.length) {
@@ -1855,7 +1970,7 @@ function migrateConfig(stored) {
     if (typeof sc.idleSound !== 'boolean') sc.idleSound = false;
     if (typeof sc.idleVolume !== 'number') sc.idleVolume = 60;
   }
-  c.version = 9;
+  c.version = 10;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -4284,6 +4399,7 @@ function runAction(b, btnEl) {
     case 'Back': return goBack();
     case 'Home': return gotoScene(config.homeSceneId, { reset: true });
     case 'OpenURL': lastChosenId = b.id; return openWebContent(a.url);
+    case 'OpenAvatar': lastChosenId = b.id; return openAvatar(a.avatarId);
     case 'SetLanguage': return setLanguage(a.langCode || 'nl');
     case 'PlayMedia':
     default: {
@@ -4599,7 +4715,111 @@ document.querySelectorAll('#tabs button').forEach((t) => t.addEventListener('cli
   document.querySelectorAll('#tabs button').forEach((x) => x.classList.toggle('active', x === t));
   document.querySelectorAll('.tabpage').forEach((p) => p.classList.toggle('hidden', p.id !== 'page-' + t.dataset.tab));
   if (t.dataset.tab === 'dashboard') renderDashboard();
+  if (t.dataset.tab === 'avatar') renderAvatars();
 }));
+
+/* ================= Tabblad: AI-avatars ================= */
+function avatarById(id) { return (config.avatars || []).find((a) => a.id === id) || null; }
+
+function renderAvatars() {
+  const list = $('#avList');
+  if (!list) return;
+  list.innerHTML = '';
+  const avs = config.avatars || [];
+  if (!avs.length) {
+    list.append(el('p', { class: 'note' },
+      'Nog geen avatars. Voeg er een toe en geef hem een portret uit de mediabibliotheek.'));
+  }
+  for (const a of avs) {
+    const img = mediaCache.get(a.imageId);
+    const card = el('div', { class: 'card' },
+      el('div', { class: 'media-item' },
+        img && img.kind === 'image'
+          ? el('img', { src: img.url, alt: a.name,
+              style: 'width:64px;height:64px;object-fit:cover;border-radius:50%;background:#0a0f16;flex:none' })
+          : el('div', { style: 'width:64px;height:64px;border-radius:50%;background:#0a0f16;display:flex;align-items:center;justify-content:center;font-size:26px;flex:none' }, '☺'),
+        el('div', { class: 'grow' },
+          el('div', { class: 'nm', title: a.name }, a.name || 'Naamloze avatar'),
+          el('div', { class: 'sz' }, a.providerAvatarId
+            ? 'Avatar-ID: ' + a.providerAvatarId : 'Nog geen avatar-ID van de aanbieder')),
+        el('button', { class: 'btn small danger', title: 'Verwijderen', onclick: () => {
+          if (!confirm(`Avatar "${a.name}" verwijderen?`)) return;
+          pushUndo();
+          config.avatars = config.avatars.filter((x) => x !== a);
+          // knoppen die naar deze avatar wezen worden weer gewone knoppen
+          for (const sc of config.scenes) for (const b of sc.buttons) {
+            if (b.action?.type === 'OpenAvatar' && b.action.avatarId === a.id) delete b.action;
+          }
+          save(); renderAvatars(); renderStage(); renderBtnList();
+        } }, '🗑')),
+      el('div', { class: 'row' },
+        el('label', { class: 'field' }, 'Naam',
+          el('input', { type: 'text', value: a.name || '',
+            oninput: (e) => { a.name = e.target.value; save(); renderStage(); } })),
+        el('label', { class: 'field' }, 'Avatar-ID bij de aanbieder',
+          el('input', { type: 'text', value: a.providerAvatarId || '', placeholder: 'uit je LemonSlice-account',
+            oninput: (e) => { a.providerAvatarId = e.target.value.trim(); save(); } }))),
+      el('label', { class: 'field' }, 'Portret (PNG of JPG uit de mediabibliotheek)', (() => {
+        const sel = el('select', { onchange: (e) => { a.imageId = e.target.value || null; save(); renderAvatars(); } });
+        sel.append(el('option', { value: '' }, '— geen —'));
+        for (const m of mediaCache.values()) {
+          if (m.kind !== 'image') continue;
+          const o = el('option', { value: m.id }, m.name);
+          if (m.id === a.imageId) o.selected = true;
+          sel.append(o);
+        }
+        return sel;
+      })()),
+      el('label', { class: 'field' }, 'Begroeting (wat hij als eerste zegt)',
+        el('input', { type: 'text', value: a.greeting || '', placeholder: 'Hallo! Waar kan ik je mee helpen?',
+          oninput: (e) => { a.greeting = e.target.value; save(); } })),
+      el('label', { class: 'field' }, 'Karakter en kennis',
+        el('textarea', { rows: '3', style: 'width:100%',
+          placeholder: 'Je bent de gastheer van onze showroom. Je kent onze producten en verwijst bezoekers naar de juiste tegel.',
+          oninput: (e) => { a.persona = e.target.value; save(); } }, a.persona || '')),
+      el('div', { class: 'note' }, 'ID: ' + a.id));
+    list.append(card);
+  }
+
+  const lk = config.avatarLink || {};
+  $('#avEnabled').checked = !!lk.enabled;
+  $('#avProvider').value = lk.provider || 'lemonslice';
+  $('#avAutoClose').value = lk.autoCloseSec ?? 90;
+  $('#avMic').checked = lk.mic !== false;
+  const note = $('#avLinkNote');
+  if (note) {
+    const url = (config.remote.url || '').trim();
+    note.textContent = !lk.enabled
+      ? 'Uit: een avatartegel toont een melding dat de koppeling nog niet is ingesteld.'
+      : url
+        ? `De box vraagt sessies aan bij ${url} met zijn device-key. De geheime sleutel van de aanbieder blijft op die server.`
+        : 'Er is nog geen serveradres ingesteld. Ga naar Beheer & device en vul het serveradres en de device-key in — zonder server kan de box geen sessie aanvragen.';
+  }
+}
+
+$('#avAdd').addEventListener('click', () => {
+  pushUndo();
+  const n = (config.avatars || []).length + 1;
+  config.avatars.push({ id: uid(), name: 'Avatar ' + n, imageId: null,
+    providerAvatarId: '', greeting: '', persona: '' });
+  save(); renderAvatars();
+});
+$('#avEnabled').addEventListener('change', (e) => {
+  config.avatarLink.enabled = e.target.checked; save(); renderAvatars(); renderStage();
+});
+$('#avProvider').addEventListener('change', (e) => { config.avatarLink.provider = e.target.value; save(); });
+$('#avAutoClose').addEventListener('change', (e) => {
+  config.avatarLink.autoCloseSec = Math.min(900, Math.max(15, Number(e.target.value) || 90)); save();
+});
+$('#avMic').addEventListener('change', (e) => { config.avatarLink.mic = e.target.checked; save(); });
+$('#avTest').addEventListener('click', async () => {
+  const out = $('#avTestOut');
+  out.textContent = 'Bezig…';
+  const r = await requestAvatarSession(config.avatars[0], { probe: true });
+  out.textContent = r.ok
+    ? `Werkt: de server gaf een sessie terug (${r.url}).`
+    : 'Mislukt: ' + r.error;
+});
 
 /* ================= Editor-canvas: podium in het canvasgat =================
    Het podium (en de afspeel-lagen) blijven viewport-groot, maar worden met
@@ -4795,6 +5015,7 @@ function renderInspector() {
         else if (t === 'OpenScene') b.action = { type: 'OpenScene', sceneId: (config.scenes.find((sc) => sc.id !== currentSceneId) || config.scenes[0]).id };
         else if (t === 'OpenURL') b.action = { type: 'OpenURL', url: '' };
         else if (t === 'SetLanguage') b.action = { type: 'SetLanguage', langCode: (config.lang.available || ['nl'])[0] };
+        else if (t === 'OpenAvatar') b.action = { type: 'OpenAvatar', avatarId: (config.avatars[0] || {}).id || '' };
         else b.action = { type: t };
         save(); renderStage(); renderInspector();
       } },
@@ -4802,12 +5023,23 @@ function renderInspector() {
         el('option', { value: 'OpenScene' }, 'Ga naar scène'),
         el('option', { value: 'Back' }, 'Terug'), el('option', { value: 'Home' }, 'Home'),
         el('option', { value: 'OpenURL' }, 'Webpagina tonen'),
+        el('option', { value: 'OpenAvatar' }, 'AI-avatar openen'),
         el('option', { value: 'SetLanguage' }, 'Taal omschakelen'));
       sel.value = act.type;
       return sel;
     })()),
     act.type === 'OpenURL' ? el('label', { class: 'field' }, 'Adres',
       el('input', { type: 'text', value: b.action.url || '', oninput: (e) => { b.action.url = e.target.value.trim(); save(); } })) : null,
+    act.type === 'OpenAvatar' ? el('label', { class: 'field' }, 'Welke avatar', (() => {
+      const sel = el('select', { onchange: (e) => { b.action.avatarId = e.target.value; save(); } });
+      if (!(config.avatars || []).length) sel.append(el('option', { value: '' }, '— maak er eerst een aan bij AI-avatars —'));
+      for (const a of config.avatars || []) {
+        const o = el('option', { value: a.id }, a.name || a.id);
+        if (a.id === b.action.avatarId) o.selected = true;
+        sel.append(o);
+      }
+      return sel;
+    })()) : null,
     el('label', { class: 'field' }, 'Media',
       (() => { const sel = mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); if (v) ensurePreviewRendition(v); renderStage(); });
                return sel; })()),
@@ -5179,6 +5411,7 @@ function renderBtnList() {
             else if (t === 'OpenScene') b.action = { type: 'OpenScene', sceneId: (config.scenes.find((sc) => sc.id !== currentSceneId) || config.scenes[0]).id };
             else if (t === 'OpenURL') b.action = { type: 'OpenURL', url: '' };
             else if (t === 'SetLanguage') b.action = { type: 'SetLanguage', langCode: (config.lang.available || ['nl'])[0] };
+            else if (t === 'OpenAvatar') b.action = { type: 'OpenAvatar', avatarId: (config.avatars[0] || {}).id || '' };
             else b.action = { type: t };
             save(); renderStage(); renderBtnList();
           } },
@@ -5187,6 +5420,7 @@ function renderBtnList() {
             el('option', { value: 'Back' }, 'Terug (vorige sc\u00e8ne)'),
             el('option', { value: 'Home' }, 'Naar de homesc\u00e8ne'),
             el('option', { value: 'OpenURL' }, 'Webpagina / HTML tonen'),
+            el('option', { value: 'OpenAvatar' }, 'AI-avatar openen'),
             el('option', { value: 'SetLanguage' }, 'Taal omschakelen'));
           sel.value = act.type;
           return sel;
@@ -5196,6 +5430,18 @@ function renderBtnList() {
               el('input', { type: 'text', 'data-role': 'url', value: b.action.url || '',
                 placeholder: 'https://… of ./map/pagina.html',
                 oninput: (e) => { b.action.url = e.target.value.trim(); save(); } }))
+          : null,
+        buttonAction(b).type === 'OpenAvatar'
+          ? el('label', { class: 'field' }, 'Welke avatar', (() => {
+              const sel = el('select', { 'data-role': 'avatarid', onchange: (e) => { b.action.avatarId = e.target.value; save(); } });
+              if (!(config.avatars || []).length) sel.append(el('option', { value: '' }, '\u2014 maak er eerst een aan bij AI-avatars \u2014'));
+              for (const a of config.avatars || []) {
+                const o = el('option', { value: a.id }, a.name || a.id);
+                if (a.id === b.action.avatarId) o.selected = true;
+                sel.append(o);
+              }
+              return sel;
+            })())
           : null,
         buttonAction(b).type === 'SetLanguage'
           ? el('label', { class: 'field' }, 'Taal', (() => {
@@ -7217,6 +7463,209 @@ function sampleCamera() {
     }
   }
 }
+
+/* ================= AI-avatar =================
+   Een avatar is een live gesprekspartner. Het beeld komt als WebRTC-stroom
+   binnen via LiveKit; de aanbieder (LemonSlice) publiceert daar een deelnemer
+   die video en audio uitzendt.
+
+   De geheime API-sleutel staat op je eigen server, niet hier: alles wat in de
+   box staat is leesbaar voor wie het scherm openmaakt. De box vraagt met zijn
+   device-key een sessie aan, de server praat met de aanbieder en geeft alleen
+   het adres en het toegangsbewijs terug. */
+
+const AVATAR_AGENT = 'lemonslice-avatar-agent';   // identiteit die het beeld uitzendt
+let avatarRoom = null, avatarTimer = null, avatarMicOn = false, avatarBusy = false;
+let avatarConnected = false;   // pas ná een geslaagde verbinding telt 'verbroken' als einde
+
+const avatarOverlay = () => $('#avatarOverlay');
+
+function avatarStatus(text, help) {
+  $('#avatarStatusText').innerHTML = text;
+  const h = $('#avatarHelp');
+  h.innerHTML = help || '';
+  h.classList.toggle('hidden', !help);
+  $('#avatarStatus').classList.remove('hidden');
+  $('#avatarStatus').querySelector('.spin').style.display = help ? 'none' : '';
+}
+
+// Vraagt de eigen server om een sessie. Geeft {ok, url, token} of {ok:false, error}.
+async function requestAvatarSession(avatar, opts = {}) {
+  const base = (config.remote.url || '').trim().replace(/\/+$/, '');
+  if (!base) return { ok: false, error: 'geen serveradres ingesteld (Beheer & device)' };
+  if (!config.remote.key) return { ok: false, error: 'geen device-key ingesteld (Beheer & device)' };
+  try {
+    const r = await fetch(base + '/api/v1/avatar/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        key: config.remote.key,
+        provider: config.avatarLink.provider || 'lemonslice',
+        probe: !!opts.probe,
+        avatar: avatar ? {
+          id: avatar.id, name: avatar.name,
+          providerAvatarId: avatar.providerAvatarId || '',
+          greeting: config.avatarLink.greetOnOpen ? (avatar.greeting || '') : '',
+          persona: avatar.persona || ''
+        } : null
+      })
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) return { ok: false, error: data.error || `server gaf ${r.status}` };
+    if (!data.url || !data.token) {
+      return { ok: false, error: 'server gaf geen url en token terug' +
+        (data.received ? ' — ontvangen velden: ' + data.received.join(', ') : '') };
+    }
+    return { ok: true, url: data.url, token: data.token };
+  } catch (e) {
+    return { ok: false, error: 'server niet bereikbaar (' + (e.message || e) + ')' };
+  }
+}
+
+// LiveKit wordt pas geladen wanneer er werkelijk een avatar wordt geopend:
+// boxen zonder avatars dragen de 580 kB niet mee.
+let liveKitLoading = null;
+function loadLiveKit() {
+  if (window.LivekitClient) return Promise.resolve(window.LivekitClient);
+  if (liveKitLoading) return liveKitLoading;
+  liveKitLoading = new Promise((res, rej) => {
+    const sc = document.createElement('script');
+    sc.src = 'vendor/livekit-client.umd.js';
+    sc.onload = () => window.LivekitClient ? res(window.LivekitClient) : rej(new Error('geladen maar leeg'));
+    sc.onerror = () => rej(new Error('vendor/livekit-client.umd.js niet gevonden'));
+    document.head.append(sc);
+  });
+  return liveKitLoading;
+}
+
+function avatarTouch() {
+  clearTimeout(avatarTimer);
+  const sec = Math.max(15, config.avatarLink.autoCloseSec || 90);
+  avatarTimer = setTimeout(closeAvatar, sec * 1000);
+  lastInteraction = Date.now();
+}
+
+async function openAvatar(avatarId) {
+  if (avatarBusy) return;
+  const a = avatarById(avatarId);
+  const ov = avatarOverlay();
+  ov.classList.remove('hidden');
+  $('#avatarVideo').classList.add('hidden');
+  $('#avatarName').textContent = a ? (a.name || 'Avatar') : 'Avatar';
+  const img = a && mediaCache.get(a.imageId);
+  const port = $('#avatarPortrait');
+  port.classList.toggle('hidden', !img);
+  if (img) port.style.backgroundImage = `url("${img.url}")`;
+  AppState.set('USER_INTERACTION');
+  bgRotator.setPaused(true);
+  $('#idleVideo').pause();
+  avatarTouch();
+
+  if (!a) return avatarStatus('Deze avatar bestaat niet meer.',
+    'Kies in de editor een andere avatar voor deze knop.');
+  if (!config.avatarLink.enabled) {
+    return avatarStatus('De avatarkoppeling staat uit.',
+      'Zet hem aan op het tabblad <b>AI-avatars</b> en vul bij <b>Beheer &amp; device</b> ' +
+      'het serveradres en de device-key in.');
+  }
+
+  avatarBusy = true;
+  avatarStatus('Verbinden met ' + (a.name || 'de avatar') + '…');
+  const ses = await requestAvatarSession(a);
+  if (!ses.ok) {
+    avatarBusy = false;
+    // De juiste hint hoort bij de juiste fout: naar de server wijzen terwijl de
+    // box zelf nog niet is ingesteld stuurt iemand de verkeerde kant op.
+    const lokaal = /device-key|serveradres/.test(ses.error);
+    return avatarStatus('Kan geen sessie starten.', ses.error + '<br><br>' + (lokaal
+      ? 'Vul het serveradres en de device-key in bij <b>Beheer &amp; device</b>.'
+      : 'Controleer op de server <code>LEMONSLICE_API_KEY</code> en ' +
+        '<code>LEMONSLICE_SESSION_URL</code> in <code>.env</code>.'));
+  }
+
+  let LK;
+  try { LK = await loadLiveKit(); }
+  catch (e) {
+    avatarBusy = false;
+    return avatarStatus('De videobibliotheek ontbreekt.',
+      e.message + '<br><br>Zet <code>livekit-client.umd.js</code> in de map ' +
+      '<code>studio/vendor/</code> naast dit bestand.');
+  }
+
+  try {
+    avatarRoom = new LK.Room({ adaptiveStream: true, dynacast: true });
+    avatarRoom.on(LK.RoomEvent.TrackSubscribed, (track, pub, participant) => {
+      if (participant.identity && participant.identity !== AVATAR_AGENT) return;
+      if (track.kind === 'video') {
+        const v = $('#avatarVideo');
+        track.attach(v);
+        v.classList.remove('hidden');
+        $('#avatarPortrait').classList.add('hidden');
+        $('#avatarStatus').classList.add('hidden');
+      } else if (track.kind === 'audio') {
+        track.attach();   // eigen element: de avatar moet hoorbaar zijn
+      }
+    });
+    // Alleen sluiten als er ooit verbinding wás. Anders klapt het scherm dicht
+    // op een mislukte poging en ziet niemand meer waaróm het misging.
+    avatarRoom.on(LK.RoomEvent.Disconnected, () => { if (avatarConnected) closeAvatar(); });
+    await avatarRoom.connect(ses.url, ses.token);
+    avatarConnected = true;
+    if (config.avatarLink.mic !== false) {
+      try { await avatarRoom.localParticipant.setMicrophoneEnabled(true); avatarMicOn = true; }
+      catch { avatarStatus('Geen toegang tot de microfoon — je kunt wel luisteren.', ' '); }
+    }
+    syncAvatarMicButton();
+    // Komt er binnen vijftien seconden geen beeld, dan is er iets mis en moet
+    // de bezoeker dat zien in plaats van naar een spinner te blijven kijken.
+    setTimeout(() => {
+      if (avatarRoom && $('#avatarVideo').classList.contains('hidden')) {
+        avatarStatus('De avatar reageert niet.',
+          'De verbinding staat, maar er komt geen beeld. Controleer het avatar-ID bij de aanbieder.');
+      }
+    }, 15000);
+  } catch (e) {
+    avatarStatus('Verbinden mislukt.', (e.message || e) +
+      '<br><br>Het adres en het toegangsbewijs zijn ontvangen, maar de verbinding ' +
+      'kwam niet tot stand. Controleer of de holobox bij het internet kan.');
+    try { avatarRoom?.disconnect(); } catch {}
+    avatarRoom = null;
+  }
+  avatarBusy = false;
+}
+
+function syncAvatarMicButton() {
+  const b = $('#avatarMic');
+  b.textContent = avatarMicOn ? '🎤 Microfoon aan' : '🔇 Microfoon uit';
+  b.classList.toggle('hidden', config.avatarLink.mic === false);
+}
+
+function closeAvatar() {
+  clearTimeout(avatarTimer);
+  if (avatarRoom) { try { avatarRoom.disconnect(); } catch {} }
+  avatarRoom = null; avatarMicOn = false; avatarConnected = false;
+  const v = $('#avatarVideo');
+  v.classList.add('hidden'); v.srcObject = null;
+  avatarOverlay().classList.add('hidden');
+  $('#avatarStatus').classList.remove('hidden');
+  bgRotator.setPaused(false);
+  const idle = $('#idleVideo');
+  if (!idle.classList.contains('hidden') && !bgRotator.running) {
+    const sn = sceneSound(); playBg(idle, sn.on, sn.vol);
+  }
+  lastInteraction = Date.now();
+  AppState.set('IDLE');
+}
+
+$('#avatarClose').addEventListener('click', closeAvatar);
+$('#avatarMic').addEventListener('click', async () => {
+  if (!avatarRoom) return;
+  avatarMicOn = !avatarMicOn;
+  try { await avatarRoom.localParticipant.setMicrophoneEnabled(avatarMicOn); }
+  catch { avatarMicOn = false; }
+  syncAvatarMicButton();
+});
+$('#avatarOverlay').addEventListener('pointerdown', avatarTouch, { capture: true });
 
 /* ================= Geluidsreactie op de knoppen =================
    Eén AnalyserNode luistert mee op alles wat geluid kan geven: de

@@ -1,0 +1,15 @@
+livekit-client.umd.js
+=====================
+
+WebRTC-bibliotheek van LiveKit, versie 2.22.3, MIT-licentie.
+Bron: https://www.npmjs.com/package/livekit-client
+
+Waarvoor: de AI-avatars. Het beeld van een avatar komt als WebRTC-stroom
+binnen; deze bibliotheek maakt die verbinding en levert de videosporen.
+
+Hij wordt pas ingeladen op het moment dat een bezoeker werkelijk een avatar
+opent. Gebruik je geen avatars, dan wordt dit bestand nooit aangeraakt en
+kun je de hele map weglaten — de rest van de software werkt gewoon offline.
+
+Vervangen door een nieuwere versie kan: haal livekit-client op van npm en
+kopieer dist/livekit-client.umd.js hierheen onder dezelfde naam.
