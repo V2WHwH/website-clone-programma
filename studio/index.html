@@ -640,12 +640,44 @@
     flex-direction: column; gap: 14px; scrollbar-width: thin; scrollbar-color: var(--p-line) transparent; }
   .tabpage h2 { font-size: 11px; color: var(--p-ink-3); text-transform: uppercase;
     letter-spacing: 0.1em; font-weight: 650; margin: 6px 2px 0; }
+
+  /* -- Inklapbare onderdelen. Een tabblad als Beheer & device is bijna drie
+     schermen lang; wie de bovenste twee onderdelen dichtklapt, ziet de rest
+     in één oogopslag. De kop is zelf de knop: klikken op het nummer, de
+     titel of het pijltje doet hetzelfde. -- */
+  .sec { display: flex; flex-direction: column; gap: 12px; }
+  .sec-head { display: flex; align-items: center; gap: 10px; width: 100%;
+    background: none; border: 0; padding: 7px 2px 6px; margin-top: 4px;
+    border-bottom: 1px solid var(--p-line); text-align: left; cursor: pointer; }
+  .sec-head:hover .sec-ttl { color: var(--p-ink); }
+  .sec-num { flex: none; width: 19px; height: 19px; border-radius: 6px;
+    background: var(--p-card-2); border: 1px solid var(--p-line);
+    color: var(--p-ink-3); font: 650 10.5px/17px var(--ui-font); text-align: center; }
+  .sec-head:hover .sec-num { border-color: #33455c; color: var(--p-ink-2); }
+  .sec-ttl { flex: 1; min-width: 0; font-size: 11px; color: var(--p-ink-3);
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 650;
+    transition: color .15s; }
+  .sec-arrow { flex: none; color: var(--p-ink-3); font-size: 11px; line-height: 1;
+    transition: transform .2s ease; }
+  .sec.closed .sec-arrow { transform: rotate(180deg); }
+  .sec-body { display: flex; flex-direction: column; gap: 12px; }
+  .sec.closed .sec-body { display: none; }
+  .sec.closed .sec-head { border-bottom-color: transparent; }
+  .sec-tools { display: flex; gap: 8px; align-items: center; margin: 2px 2px 0; }
+  .sec-tools button { background: none; border: 0; color: var(--p-ink-3);
+    font: 550 11.5px var(--ui-font); padding: 3px 6px; border-radius: 6px; }
+  .sec-tools button:hover { color: var(--p-ink); background: var(--p-card-2); }
   .note { color: var(--p-ink-3); font-size: 12.5px; line-height: 1.55; }
   .card { background: linear-gradient(180deg, rgba(255,255,255,0.022), transparent 42%), var(--p-card);
     border: 1px solid var(--p-line); border-radius: 12px; padding: 14px 15px;
     display: flex; flex-direction: column; gap: 12px;
     box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 8px 22px rgba(0,0,0,0.22); }
-  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  /* Onderlangs uitlijnen: een label van drie regels naast een label van één
+     zette de invoervakken anders op verschillende hoogte. */
+  .row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .row > label.field, .row > .field { flex: 1 1 130px; }
+  /* Rijen met een schakelaar of knop blijven wél op het midden uitgelijnd. */
+  .row.mid { align-items: center; }
   .grow { flex: 1; min-width: 0; }
   label.field, .field { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px;
     color: var(--p-ink-2); flex: 1; font-weight: 500; }
@@ -1700,13 +1732,14 @@
         <input type="text" id="rmUrl" placeholder="http://192.168.1.10:8080">
       </label>
       <div class="row">
-        <label class="field">Device-key (uit het beheerpaneel &rarr; Holoboxen)
+        <label class="field">Device-key
           <input type="text" id="rmKey" placeholder="bijv. hwh_ab12cd34">
         </label>
         <label class="field" style="max-width:130px">Interval (sec)
           <input type="number" id="rmInterval" min="5" max="120" step="5">
         </label>
       </div>
+      <p class="note">De device-key staat in het beheerpaneel bij <b>Holoboxen</b>.</p>
       <div class="toggle-row">
         <div><div class="t-label">Gepubliceerde ontwerpen accepteren</div>
           <div class="t-sub">De server mag een nieuw ontwerp naar deze box sturen</div></div>
@@ -1884,7 +1917,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.11.1';
+const APP_VERSION = '2.11.2';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -4810,6 +4843,85 @@ document.querySelectorAll('#tabs button').forEach((t) => t.addEventListener('cli
   if (t.dataset.tab === 'avatar') renderAvatars();
 }));
 
+/* ================= Inklapbare onderdelen in de tabbladen =================
+   De tabbladen zijn met de jaren gegroeid; Beheer & device is bijna drie
+   schermen lang. Elke <h2> wordt hier een kop met een nummer en een pijltje,
+   en alles eronder tot de volgende kop vouwt weg als je erop klikt.
+
+   Het gebeurt achteraf op de bestaande opmaak, niet in de HTML zelf: de
+   elementen worden verplaatst, niet opnieuw gemaakt, dus alle bestaande
+   bediening blijft eraan hangen. Wat dicht staat onthouden we per tabblad,
+   los van het ontwerp — het is een voorkeur van deze computer, geen
+   eigenschap van het project. */
+const SEC_KEY = 'hwh_studio_secties_v1';
+
+function secState() {
+  try { return JSON.parse(localStorage.getItem(SEC_KEY)) || {}; }
+  catch { return {}; }
+}
+function secSave(state) {
+  try { localStorage.setItem(SEC_KEY, JSON.stringify(state)); } catch { /* geen opslag */ }
+}
+
+// Zonder argument: alle tabbladen. Met een tabblad: alleen dat ene, nodig
+// voor het dashboard dat zichzelf opnieuw opbouwt.
+function buildSections(alleen) {
+  const state = secState();
+  const pages = alleen ? [alleen] : [...document.querySelectorAll('.tabpage')];
+  for (const page of pages) {
+    const tab = page.id.replace('page-', '');
+    const koppen = [...page.children].filter((n) => n.tagName === 'H2');
+    if (koppen.length < 2) continue;      // één kop inklappen heeft geen zin
+
+    koppen.forEach((h2, i) => {
+      const sec = el('div', { class: 'sec' });
+      const body = el('div', { class: 'sec-body' });
+      const sleutel = tab + ':' + i;
+      const dicht = !!state[sleutel];
+
+      const head = el('button', {
+        class: 'sec-head', type: 'button',
+        title: 'Klik om dit onderdeel in of uit te klappen',
+        onclick: () => {
+          const nu = sec.classList.toggle('closed');
+          head.setAttribute('aria-expanded', String(!nu));
+          const st = secState();
+          if (nu) st[sleutel] = 1; else delete st[sleutel];
+          secSave(st);
+        }
+      },
+        el('span', { class: 'sec-num' }, String(i + 1)),
+        el('span', { class: 'sec-ttl' }, h2.textContent),
+        el('span', { class: 'sec-arrow' }, '▲'));
+      head.setAttribute('aria-expanded', String(!dicht));
+
+      // alles tussen deze kop en de volgende verhuist mee
+      const eind = koppen[i + 1] || null;
+      page.insertBefore(sec, h2);
+      let n = h2.nextSibling;
+      while (n && n !== eind) { const volgend = n.nextSibling; body.append(n); n = volgend; }
+      h2.remove();
+      sec.append(head, body);
+      if (dicht) sec.classList.add('closed');
+    });
+
+    // Alles open- of dichtzetten, voor wie snel wil overzien
+    const zetAlles = (dicht) => {
+      const st = secState();
+      [...page.querySelectorAll('.sec')].forEach((sec, i) => {
+        sec.classList.toggle('closed', dicht);
+        sec.querySelector('.sec-head').setAttribute('aria-expanded', String(!dicht));
+        if (dicht) st[tab + ':' + i] = 1; else delete st[tab + ':' + i];
+      });
+      secSave(st);
+    };
+    page.insertBefore(el('div', { class: 'sec-tools' },
+      el('button', { type: 'button', onclick: () => zetAlles(false) }, 'Alles uitklappen'),
+      el('button', { type: 'button', onclick: () => zetAlles(true) }, 'Alles inklappen')),
+      page.querySelector('.sec'));
+  }
+}
+
 /* ================= Tabblad: AI-avatars ================= */
 function avatarById(id) { return (config.avatars || []).find((a) => a.id === id) || null; }
 
@@ -5310,7 +5422,8 @@ $('#tbSave').addEventListener('click', () => { save(); toast('Opgeslagen'); });
 function renderDashboard() {
   const page = document.getElementById('page-dashboard');
   if (!page) return;
-  page.innerHTML = '';
+  page.innerHTML = '';   // let op: onderaan weer buildSections(page), anders
+                         // verdwijnen de inklapkoppen bij elke verversing
   const mediaBytes = [...mediaCache.values()].reduce((a, m) => a + (m.size || 0), 0);
   const allButtons = config.scenes.reduce((a, sc) => a + sc.buttons.length, 0);
   const stat = (label, value, sub) => el('div', { class: 'card', style: 'gap:2px' },
@@ -5345,6 +5458,7 @@ function renderDashboard() {
       el('button', { class: 'btn block', onclick: () => { document.querySelector('#tabs button[data-tab=buttons]').click(); } }, '+ Knop of scène toevoegen'),
       el('button', { class: 'btn block', onclick: () => { document.querySelector('#tabs button[data-tab=media]').click(); } }, 'Media beheren'),
       el('button', { class: 'btn block', onclick: closeEditor }, 'Preview op volledig scherm')));
+  buildSections(page);
 }
 
 /* ================= Inspector (contextgevoelig) ================= */
@@ -8551,6 +8665,7 @@ setInterval(() => { errorBurst = Math.max(0, errorBurst - 5); }, 60000);
   } catch (e) {
     toast('Let op: video-opslag niet beschikbaar in deze browser');
   }
+  buildSections();
   autoDetectLanguage();
   renderStage();
   applyOrientationMode();
