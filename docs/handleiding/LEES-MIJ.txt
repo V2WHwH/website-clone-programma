@@ -6,7 +6,7 @@ Open  index.html  in een browser. Verder is er niets nodig.
 Wat het is
 ----------
 De volledige handleiding bij de HereWeHolo Experience Manager, versie 2.9.
-Tweeëntwintig hoofdstukken (versie 2.10.3). Van elk onderdeel staat er:
+Tweeëntwintig hoofdstukken (versie 2.11.0). Van elk onderdeel staat er:
 
   WIE     gebruikt het
   WAT     het doet

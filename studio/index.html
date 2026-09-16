@@ -649,10 +649,13 @@
   .grow { flex: 1; min-width: 0; }
   label.field, .field { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px;
     color: var(--p-ink-2); flex: 1; font-weight: 500; }
-  input[type=text], input[type=number], select { background: var(--p-card-2); border: 1px solid var(--p-line);
+  input[type=text], input[type=number], select, textarea { background: var(--p-card-2); border: 1px solid var(--p-line);
     color: var(--p-ink); border-radius: 8px; padding: 8px 10px; width: 100%; font: inherit; font-size: 13.5px;
     transition: border-color 0.15s; }
-  input:focus, select:focus { outline: none; border-color: var(--accent-dark); }
+  /* Een tekstvak kreeg anders het schrijfmachineletterype van de browser —
+     naast de gewone velden leest dat als een ander formulier. */
+  textarea { font-family: var(--ui-font); line-height: 1.5; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-dark); }
   input[type=range] { width: 100%; accent-color: var(--accent); }
   input[type=color] { width: 44px; height: 32px; border: 1px solid var(--p-line); border-radius: 8px;
     background: var(--p-card-2); padding: 2px; }
@@ -667,6 +670,51 @@
   .btn.danger { color: var(--danger); }
   .btn.block { width: 100%; text-align: center; }
   .btn.small { padding: 5px 10px; font-size: 12.5px; }
+
+  /* -- Karakterblad: een venster over de editor heen. Een avatar heeft te
+     veel in te vullen voor een kaartje in een lijst; hier krijgt hij een
+     eigen blad met ruimte per onderwerp. -- */
+  #avEditor { position: fixed; inset: 0; z-index: 70; display: none;
+    background: rgba(4,7,11,0.72); backdrop-filter: blur(3px);
+    align-items: center; justify-content: center; padding: 24px;
+    font-family: var(--ui-font); }
+  #avEditor.open { display: flex; }
+  #avEditorBox { background: var(--color-bg); border: 1px solid var(--p-line);
+    border-radius: 16px; width: min(940px, 100%); max-height: 100%;
+    display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.6); }
+  #avEditorHead { display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; border-bottom: 1px solid var(--p-line); flex: none; }
+  #avEditorHead .ttl { font-weight: 650; font-size: 15px; color: var(--p-ink); }
+  #avEditorHead .sub { font-size: 12px; color: var(--p-ink-3); }
+  #avEditorTabs { display: flex; gap: 4px; padding: 0 18px; flex: none;
+    border-bottom: 1px solid var(--p-line); }
+  #avEditorTabs button { background: none; border: 0; border-bottom: 2px solid transparent;
+    color: var(--p-ink-3); font: 600 12px var(--ui-font); letter-spacing: .04em;
+    padding: 11px 12px 10px; }
+  #avEditorTabs button.active { color: var(--p-ink); border-bottom-color: var(--color-accent-teal, #35d0ba); }
+  #avEditorBody { padding: 18px; overflow-y: auto; display: flex; flex-direction: column;
+    gap: 14px; scrollbar-width: thin; }
+  #avEditorFoot { display: flex; gap: 10px; align-items: center;
+    padding: 12px 18px; border-top: 1px solid var(--p-line); flex: none; }
+  .avpage { display: none; flex-direction: column; gap: 14px; }
+  .avpage.on { display: flex; }
+
+  /* Emoties en houdingen: aanklikbaar, want een lijst met vinkjes leest
+     trager dan een rij woorden die oplichten. */
+  .chipset { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip { background: var(--p-card-2); border: 1px solid var(--p-line); color: var(--p-ink-2);
+    border-radius: 999px; padding: 6px 12px; font-size: 12.5px; font-weight: 550;
+    transition: border-color .15s, background .15s, color .15s; }
+  .chip:hover { border-color: #33455c; }
+  .chip.on { background: rgba(53,208,186,0.14); border-color: rgba(53,208,186,0.55);
+    color: var(--color-accent-teal, #35d0ba); }
+  .faqrow { display: flex; gap: 8px; align-items: flex-start; }
+  .faqrow .grow { display: flex; flex-direction: column; gap: 6px; }
+  #avPrompt { white-space: pre-wrap; font-family: ui-monospace, Menlo, monospace;
+    font-size: 11.5px; line-height: 1.6; color: var(--p-ink-2); background: var(--p-card-2);
+    border: 1px solid var(--p-line); border-radius: 10px; padding: 12px 14px;
+    max-height: 340px; overflow-y: auto; }
 
   /* Schakelaar */
   .switch { position: relative; display: inline-flex; flex: none; width: 40px; height: 22px; }
@@ -1614,13 +1662,13 @@
       scherm openmaakt zou hem kunnen lezen. Daarom loopt het zo:</p>
       <ol class="note" style="padding-left:18px;line-height:1.7">
         <li>De box vraagt je eigen server om een sessie, met zijn device-key.</li>
-        <li>De server roept de aanbieder aan met de geheime sleutel uit <code>.env</code>.</li>
-        <li>De server geeft alleen het adres en het toegangsbewijs terug.</li>
-        <li>De box maakt daarmee zelf verbinding en toont het beeld.</li>
+        <li>De server roept de aanbieder aan met de geheime sleutel.</li>
+        <li>De server geeft alleen het kamer-adres terug.</li>
+        <li>De box stapt die kamer binnen en toont het beeld.</li>
       </ol>
       <p class="note">Stel het serveradres en de device-key in bij <b>Beheer &amp; device</b>.
-      Op de server zet je <code>LEMONSLICE_API_KEY</code> en <code>LEMONSLICE_SESSION_URL</code>
-      in <code>.env</code>.</p>
+      De sleutel zet je op de server: per holobox in het beheerscherm, of voor alle
+      boxen samen als <code>LEMONSLICE_API_KEY</code> in <code>.env</code>.</p>
     </div>
   </div>
 
@@ -1796,6 +1844,29 @@
   </footer>
 </aside>
 
+  <!-- ================= KARAKTERBLAD VAN EEN AVATAR ================= -->
+  <div id="avEditor">
+    <div id="avEditorBox">
+      <div id="avEditorHead">
+        <div class="grow">
+          <div class="ttl" id="avEdTitle">Avatar</div>
+          <div class="sub" id="avEdSub"></div>
+        </div>
+        <button class="btn small" id="avEdClose">Sluiten</button>
+      </div>
+      <div id="avEditorTabs">
+        <button data-avtab="karakter" class="active">Karakter</button>
+        <button data-avtab="kennis">Kennis</button>
+        <button data-avtab="prompt">Wat de avatar meekrijgt</button>
+      </div>
+      <div id="avEditorBody"></div>
+      <div id="avEditorFoot">
+        <span class="note grow" id="avEdSaved">Alles wordt meteen bewaard.</span>
+        <button class="btn primary" id="avEdDone">Klaar</button>
+      </div>
+    </div>
+  </div>
+
 <div id="publishModal" class="hidden">
   <div class="pm">
     <h3>Experience publiceren</h3>
@@ -1813,7 +1884,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.10.3';
+const APP_VERSION = '2.11.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -1845,7 +1916,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 10,
+  version: 11,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -1970,7 +2041,28 @@ function migrateConfig(stored) {
     if (typeof sc.idleSound !== 'boolean') sc.idleSound = false;
     if (typeof sc.idleVolume !== 'number') sc.idleVolume = 60;
   }
-  c.version = 10;
+  // v11: een avatar is een karakterblad geworden in plaats van één tekstvak.
+  // De oude vrije tekst blijft staan als 'rol', de rest komt er leeg bij —
+  // een bestaande avatar praat dus precies zoals hij deed.
+  for (const a of c.avatars) {
+    if (typeof a.role !== 'string') a.role = a.persona || '';
+    if (!Array.isArray(a.emotions)) a.emotions = [];
+    if (!Array.isArray(a.stance)) a.stance = [];
+    if (!Array.isArray(a.motion)) a.motion = [];
+    if (typeof a.age !== 'string') a.age = '';
+    if (typeof a.tempo !== 'string') a.tempo = '';
+    if (typeof a.energy !== 'string') a.energy = '';
+    if (typeof a.language !== 'string') a.language = 'nl';
+    if (typeof a.address !== 'string') a.address = 'je';
+    if (typeof a.brevity !== 'string') a.brevity = 'kort';
+    if (typeof a.style !== 'string') a.style = '';
+    if (typeof a.boundaries !== 'string') a.boundaries = '';
+    if (typeof a.knowledge !== 'string') a.knowledge = '';
+    if (!Array.isArray(a.faq)) a.faq = [];
+    if (typeof a.fallback !== 'string') a.fallback = '';
+    if (typeof a.handoff !== 'string') a.handoff = '';
+  }
+  c.version = 11;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -4721,6 +4813,291 @@ document.querySelectorAll('#tabs button').forEach((t) => t.addEventListener('cli
 /* ================= Tabblad: AI-avatars ================= */
 function avatarById(id) { return (config.avatars || []).find((a) => a.id === id) || null; }
 
+/* De keuzewoorden. Ze zijn geen codes: elk woord wordt hieronder in een
+   gewone zin gezet, want LemonSlice krijgt tekst en geen instellingen.
+   Wat je hier kiest stuurt dus hóe hij praat en overkomt. Hoe hij eruitziet
+   komt van de avatar die je in je LemonSlice-account kiest (het avatar-ID);
+   een tekst kan geen ander gezicht maken. */
+const AV_AGE = [
+  ['jong', 'jong en fris'], ['volwassen', 'volwassen'],
+  ['ervaren', 'ouder en ervaren'], ['tijdloos', 'geen bepaalde leeftijd']
+];
+const AV_TEMPO = [
+  ['langzaam', 'langzaam en bedaard'], ['rustig', 'rustig'],
+  ['gemiddeld', 'gewoon tempo'], ['vlot', 'vlot'], ['kwiek', 'kwiek en snel']
+];
+const AV_ENERGY = [
+  ['loom', 'loom en laag bij de grond'], ['kalm', 'kalm'],
+  ['gemiddeld', 'gemiddeld'], ['levendig', 'levendig'], ['uitbundig', 'uitbundig']
+];
+const AV_EMO = ['warm', 'vriendelijk', 'enthousiast', 'empathisch', 'speels',
+  'nuchter', 'trots', 'nieuwsgierig', 'geruststellend', 'humoristisch'];
+const AV_STANCE = ['behulpzaam', 'proactief', 'geduldig', 'deskundig', 'bescheiden',
+  'direct', 'formeel', 'informeel', 'gastvrij', 'kort van stof'];
+const AV_LANG = [['nl', 'Nederlands'], ['en', 'Engels'], ['de', 'Duits'],
+  ['fr', 'Frans'], ['auto', 'de taal die de bezoeker spreekt']];
+const AV_BREV = [['kort', 'kort: twee of drie zinnen'],
+  ['normaal', 'normaal: een korte alinea'], ['uitgebreid', 'uitgebreid als het nodig is']];
+
+const avLabel = (lijst, sleutel) => (lijst.find((x) => x[0] === sleutel) || [])[1] || '';
+
+/* Zet het karakterblad om in de tekst die als system_prompt meegaat. Bewust
+   volzinnen in de taal die de avatar spreekt: een model volgt een instructie
+   die in dezelfde taal staat het best, en jij kunt teruglezen wat er staat. */
+function avatarPrompt(a) {
+  const r = [];
+  const naam = (a.name || 'de gastheer').trim();
+  r.push(a.role?.trim()
+    ? a.role.trim()
+    : `Je bent ${naam}, de gastheer van deze holobox.`);
+
+  const hoe = [];
+  if (a.age) hoe.push('je komt over als ' + avLabel(AV_AGE, a.age));
+  if (a.tempo) hoe.push('je praat ' + avLabel(AV_TEMPO, a.tempo));
+  if (a.energy) hoe.push('je energie is ' + avLabel(AV_ENERGY, a.energy));
+  if (a.emotions?.length) hoe.push('je toon is ' + a.emotions.join(', '));
+  if (a.stance?.length) hoe.push('je houding is ' + a.stance.join(', '));
+  if (hoe.length) r.push('Zo kom je over: ' + hoe.join('; ') + '.');
+
+  const taal = a.language === 'auto'
+    ? 'Spreek de taal die de bezoeker spreekt.'
+    : `Spreek ${avLabel(AV_LANG, a.language || 'nl')}.`;
+  const aanspreek = a.address === 'u' ? 'Spreek de bezoeker aan met u.'
+    : 'Spreek de bezoeker aan met je.';
+  r.push(taal + ' ' + aanspreek + ' Houd je antwoorden ' +
+    avLabel(AV_BREV, a.brevity || 'kort') + '.');
+
+  if (a.style?.trim()) r.push(a.style.trim());
+  if (a.greeting?.trim()) r.push(`Je begint het gesprek met: "${a.greeting.trim()}"`);
+
+  if (a.knowledge?.trim()) {
+    r.push('Dit weet je, en hierop baseer je je antwoorden:\n' + a.knowledge.trim());
+  }
+  const faq = (a.faq || []).filter((f) => (f.q || '').trim() && (f.a || '').trim());
+  if (faq.length) {
+    r.push('Veelgestelde vragen en hoe je ze beantwoordt:\n' +
+      faq.map((f) => `- Vraag: ${f.q.trim()}\n  Antwoord: ${f.a.trim()}`).join('\n'));
+  }
+  if (a.boundaries?.trim()) r.push('Dit doe je niet: ' + a.boundaries.trim());
+  r.push(a.fallback?.trim()
+    ? 'Weet je iets niet, dan zeg je: "' + a.fallback.trim() + '"'
+    : 'Weet je iets niet, zeg dat dan eerlijk en verzin niets.');
+  if (a.handoff?.trim()) r.push('Kun je niet verder helpen, verwijs dan naar: ' + a.handoff.trim());
+  return r.join('\n\n');
+}
+
+/* ---- Het karakterblad als venster ---- */
+let avEdId = null, avEdTab = 'karakter';
+
+function chipset(opties, huidig, meervoud, zet) {
+  const wrap = el('div', { class: 'chipset' });
+  for (const o of opties) {
+    const [waarde, label] = Array.isArray(o) ? o : [o, o];
+    const aan = meervoud ? (huidig || []).includes(waarde) : huidig === waarde;
+    wrap.append(el('button', {
+      class: 'chip' + (aan ? ' on' : ''), type: 'button',
+      onclick: () => {
+        if (meervoud) {
+          const lijst = (huidig || []).slice();
+          const i = lijst.indexOf(waarde);
+          if (i >= 0) lijst.splice(i, 1); else lijst.push(waarde);
+          zet(lijst);
+        } else {
+          zet(huidig === waarde ? '' : waarde);   // nog eens klikken = weer leeg
+        }
+      }
+    }, label));
+  }
+  return wrap;
+}
+
+const avVeld = (label, node, uitleg) => el('label', { class: 'field' }, label, node,
+  uitleg ? el('span', { class: 'note' }, uitleg) : null);
+
+function tekstvak(waarde, rijen, plaatshouder, zet) {
+  return el('textarea', {
+    rows: String(rijen), style: 'width:100%', placeholder: plaatshouder || '',
+    oninput: (e) => { zet(e.target.value); }
+  }, waarde || '');
+}
+
+function openAvatarEditor(id) {
+  avEdId = id; avEdTab = 'karakter';
+  $('#avEditor').classList.add('open');
+  renderAvatarEditor();
+}
+function closeAvatarEditor() {
+  $('#avEditor').classList.remove('open');
+  avEdId = null;
+  renderAvatars(); renderStage();
+}
+
+function renderAvatarEditor() {
+  const a = avatarById(avEdId);
+  if (!a) return closeAvatarEditor();
+  const bewaar = () => { save(); if (avEdTab === 'prompt') renderAvatarEditor(); };
+
+  $('#avEdTitle').textContent = a.name || 'Naamloze avatar';
+  $('#avEdSub').textContent = a.providerAvatarId
+    ? 'Avatar-ID bij de aanbieder: ' + a.providerAvatarId
+    : 'Nog geen avatar-ID bij de aanbieder ingevuld';
+  for (const b of document.querySelectorAll('#avEditorTabs button')) b.classList.toggle('active', b.dataset.avtab === avEdTab);
+
+  const body = $('#avEditorBody');
+  body.innerHTML = '';
+
+  if (avEdTab === 'karakter') {
+    body.append(
+      el('div', { class: 'card' },
+        el('div', { class: 'row' },
+          avVeld('Naam', el('input', { type: 'text', value: a.name || '',
+            oninput: (e) => { a.name = e.target.value; $('#avEdTitle').textContent = e.target.value || 'Naamloze avatar'; save(); } })),
+          avVeld('Avatar-ID bij de aanbieder', el('input', { type: 'text',
+            value: a.providerAvatarId || '', placeholder: 'uit je LemonSlice-account',
+            oninput: (e) => { a.providerAvatarId = e.target.value.trim(); save(); } }),
+            'Bepaalt hoe hij eruitziet en klinkt.')),
+        avVeld('Portret voor het wachtscherm', (() => {
+          const sel = el('select', { onchange: (e) => { a.imageId = e.target.value || null; save(); } });
+          sel.append(el('option', { value: '' }, '— geen —'));
+          for (const m of mediaCache.values()) {
+            if (m.kind !== 'image') continue;
+            const o = el('option', { value: m.id }, m.name);
+            if (m.id === a.imageId) o.selected = true;
+            sel.append(o);
+          }
+          return sel;
+        })(), 'Te zien zolang het beeld van de avatar nog binnenkomt.'),
+        avVeld('Begroeting', el('input', { type: 'text', value: a.greeting || '',
+          placeholder: 'Hallo! Waar kan ik je mee helpen?',
+          oninput: (e) => { a.greeting = e.target.value; save(); } }),
+          'De eerste zin die hij uitspreekt.')),
+
+      el('div', { class: 'card' },
+        avVeld('Wie is hij', tekstvak(a.role, 3,
+          'Je bent de gastvrouw van onze showroom. Je kent onze producten en helpt bezoekers op weg.',
+          (v) => { a.role = v; bewaar(); }),
+          'Eén of twee zinnen. Dit is de kern; de keuzes hieronder kleuren het in.')),
+
+      el('div', { class: 'card' },
+        el('div', { class: 't-label' }, 'Leeftijdsindruk'),
+        chipset(AV_AGE, a.age, false, (v) => { a.age = v; bewaar(); renderAvatarEditor(); }),
+        el('div', { class: 't-label' }, 'Tempo van praten'),
+        chipset(AV_TEMPO, a.tempo, false, (v) => { a.tempo = v; bewaar(); renderAvatarEditor(); }),
+        el('div', { class: 't-label' }, 'Energie'),
+        chipset(AV_ENERGY, a.energy, false, (v) => { a.energy = v; bewaar(); renderAvatarEditor(); }),
+        el('p', { class: 'note' },
+          'Dit stuurt hoe hij práát en overkomt. Zijn gezicht en stem komen van de ' +
+          'avatar die je bij de aanbieder koos — een tekst kan daar niets aan veranderen.')),
+
+      el('div', { class: 'card' },
+        el('div', { class: 't-label' }, 'Emoties in zijn toon (meerdere mogelijk)'),
+        chipset(AV_EMO, a.emotions, true, (v) => { a.emotions = v; bewaar(); renderAvatarEditor(); }),
+        el('div', { class: 't-label' }, 'Houding (meerdere mogelijk)'),
+        chipset(AV_STANCE, a.stance, true, (v) => { a.stance = v; bewaar(); renderAvatarEditor(); })),
+
+      el('div', { class: 'card' },
+        el('div', { class: 'row' },
+          avVeld('Taal', (() => {
+            const sel = el('select', { onchange: (e) => { a.language = e.target.value; bewaar(); } });
+            for (const [w, l] of AV_LANG) {
+              const o = el('option', { value: w }, l);
+              if ((a.language || 'nl') === w) o.selected = true;
+              sel.append(o);
+            }
+            return sel;
+          })()),
+          avVeld('Aanspreekvorm', (() => {
+            const sel = el('select', { onchange: (e) => { a.address = e.target.value; bewaar(); } });
+            for (const [w, l] of [['je', 'je (informeel)'], ['u', 'u (formeel)']]) {
+              const o = el('option', { value: w }, l);
+              if ((a.address || 'je') === w) o.selected = true;
+              sel.append(o);
+            }
+            return sel;
+          })()),
+          avVeld('Antwoordlengte', (() => {
+            const sel = el('select', { onchange: (e) => { a.brevity = e.target.value; bewaar(); } });
+            for (const [w, l] of AV_BREV) {
+              const o = el('option', { value: w }, l);
+              if ((a.brevity || 'kort') === w) o.selected = true;
+              sel.append(o);
+            }
+            return sel;
+          })(), 'Bij een holobox werkt kort het best: mensen blijven staan, niet zitten.')),
+        avVeld('Eigen toevoeging', tekstvak(a.style, 2,
+          'bijv. Je gebruikt nooit vakjargon en geeft altijd één concrete vervolgstap.',
+          (v) => { a.style = v; bewaar(); })),
+        avVeld('Dit doet hij niet', tekstvak(a.boundaries, 2,
+          'bijv. Je noemt geen prijzen en doet geen toezeggingen over levertijden.',
+          (v) => { a.boundaries = v; bewaar(); })))
+    );
+  }
+
+  if (avEdTab === 'kennis') {
+    const faqBox = el('div', { class: 'card' });
+    const tekenFaq = () => {
+      faqBox.innerHTML = '';
+      faqBox.append(el('div', { class: 't-label' }, 'Veelgestelde vragen'),
+        el('p', { class: 'note' },
+          'Vragen die vaak komen, met het antwoord dat je wilt horen. Hiermee ligt ' +
+          'het antwoord vast in plaats van dat hij het zelf verzint.'));
+      (a.faq || []).forEach((f, i) => {
+        faqBox.append(el('div', { class: 'faqrow' },
+          el('div', { class: 'grow' },
+            el('input', { type: 'text', value: f.q || '', placeholder: 'Vraag — bijv. Wat kost dit?',
+              oninput: (e) => { f.q = e.target.value; save(); } }),
+            tekstvak(f.a, 2, 'Antwoord', (v) => { f.a = v; save(); })),
+          el('button', { class: 'btn small danger', title: 'Vraag verwijderen',
+            onclick: () => { a.faq.splice(i, 1); save(); tekenFaq(); } }, '🗑')));
+      });
+      faqBox.append(el('button', { class: 'btn', onclick: () => {
+        a.faq = a.faq || []; a.faq.push({ q: '', a: '' }); save(); tekenFaq();
+      } }, '+ Vraag toevoegen'));
+    };
+    tekenFaq();
+
+    body.append(
+      el('div', { class: 'card' },
+        avVeld('Wat hij weet', tekstvak(a.knowledge, 10,
+          'Schrijf hier alles op wat hij moet kennen: wie jullie zijn, wat jullie maken, ' +
+          'openingstijden, de namen van de producten op de tegels, waar de wc is. ' +
+          'Gewone zinnen, geen lijstjes nodig.',
+          (v) => { a.knowledge = v; bewaar(); })),
+        el('p', { class: 'note' },
+          'Hoe concreter dit is, hoe minder hij hoeft te gokken. Alles wat hier niet ' +
+          'staat, weet hij alleen uit zijn algemene kennis — en dat kan er naast zitten.')),
+      faqBox,
+      el('div', { class: 'card' },
+        avVeld('Als hij het antwoord niet weet', el('input', { type: 'text',
+          value: a.fallback || '', placeholder: 'Dat weet ik niet zeker — vraag het even bij de balie.',
+          oninput: (e) => { a.fallback = e.target.value; bewaar(); } }),
+          'Laat je dit leeg, dan zegt hij eerlijk dat hij het niet weet.'),
+        avVeld('Doorverwijzen naar', el('input', { type: 'text',
+          value: a.handoff || '', placeholder: 'de balie / info@bedrijf.nl / 030 - 123 45 67',
+          oninput: (e) => { a.handoff = e.target.value; bewaar(); } })))
+    );
+  }
+
+  if (avEdTab === 'prompt') {
+    const tekst = avatarPrompt(a);
+    body.append(
+      el('div', { class: 'card' },
+        el('div', { class: 't-label' }, 'Dit gaat precies zo naar de aanbieder'),
+        el('p', { class: 'note' },
+          'Alles wat je invult wordt hier tot gewone zinnen gemaakt en als opdracht ' +
+          'meegestuurd bij het starten van een sessie. Zo is te controleren wat de ' +
+          'avatar werkelijk meekrijgt — geen verborgen instellingen.'),
+        el('div', { id: 'avPrompt' }, tekst),
+        el('div', { class: 'row' },
+          el('span', { class: 'note grow' }, tekst.length + ' tekens'),
+          el('button', { class: 'btn small', onclick: async () => {
+            try { await navigator.clipboard.writeText(tekst); toast('Gekopieerd'); }
+            catch { toast('Kopiëren lukt niet in deze browser'); }
+          } }, 'Kopieer'))));
+  }
+}
+
+/* ---- De lijst op het tabblad: kort, met een knop naar het blad ---- */
 function renderAvatars() {
   const list = $('#avList');
   if (!list) return;
@@ -4728,57 +5105,42 @@ function renderAvatars() {
   const avs = config.avatars || [];
   if (!avs.length) {
     list.append(el('p', { class: 'note' },
-      'Nog geen avatars. Voeg er een toe en geef hem een portret uit de mediabibliotheek.'));
+      'Nog geen avatars. Voeg er een toe; daarna opent het karakterblad waarin je ' +
+      'invult wie hij is en wat hij weet.'));
   }
   for (const a of avs) {
     const img = mediaCache.get(a.imageId);
-    const card = el('div', { class: 'card' },
+    const ingevuld = [
+      a.role?.trim() && 'rol',
+      (a.emotions?.length || a.stance?.length || a.age || a.tempo || a.energy) && 'karakter',
+      a.knowledge?.trim() && 'kennis',
+      (a.faq || []).some((f) => (f.q || '').trim()) && (() => {
+        const n = a.faq.filter((f) => (f.q || '').trim()).length;
+        return n + (n === 1 ? ' vraag' : ' vragen');
+      })()
+    ].filter(Boolean);
+    list.append(el('div', { class: 'card' },
       el('div', { class: 'media-item' },
         img && img.kind === 'image'
           ? el('img', { src: img.url, alt: a.name,
-              style: 'width:64px;height:64px;object-fit:cover;border-radius:50%;background:#0a0f16;flex:none' })
-          : el('div', { style: 'width:64px;height:64px;border-radius:50%;background:#0a0f16;display:flex;align-items:center;justify-content:center;font-size:26px;flex:none' }, '☺'),
+              style: 'width:56px;height:56px;object-fit:cover;border-radius:50%;background:#0a0f16;flex:none' })
+          : el('div', { style: 'width:56px;height:56px;border-radius:50%;background:#0a0f16;display:flex;align-items:center;justify-content:center;font-size:24px;flex:none' }, '☺'),
         el('div', { class: 'grow' },
           el('div', { class: 'nm', title: a.name }, a.name || 'Naamloze avatar'),
-          el('div', { class: 'sz' }, a.providerAvatarId
-            ? 'Avatar-ID: ' + a.providerAvatarId : 'Nog geen avatar-ID van de aanbieder')),
+          el('div', { class: 'sz' }, ingevuld.length
+            ? 'Ingevuld: ' + ingevuld.join(' · ')
+            : 'Nog niets ingevuld — open het blad')),
+        el('button', { class: 'btn small primary',
+          onclick: () => openAvatarEditor(a.id) }, 'Openen'),
         el('button', { class: 'btn small danger', title: 'Verwijderen', onclick: () => {
           if (!confirm(`Avatar "${a.name}" verwijderen?`)) return;
           pushUndo();
           config.avatars = config.avatars.filter((x) => x !== a);
-          // knoppen die naar deze avatar wezen worden weer gewone knoppen
           for (const sc of config.scenes) for (const b of sc.buttons) {
             if (b.action?.type === 'OpenAvatar' && b.action.avatarId === a.id) delete b.action;
           }
           save(); renderAvatars(); renderStage(); renderBtnList();
-        } }, '🗑')),
-      el('div', { class: 'row' },
-        el('label', { class: 'field' }, 'Naam',
-          el('input', { type: 'text', value: a.name || '',
-            oninput: (e) => { a.name = e.target.value; save(); renderStage(); } })),
-        el('label', { class: 'field' }, 'Avatar-ID bij de aanbieder',
-          el('input', { type: 'text', value: a.providerAvatarId || '', placeholder: 'uit je LemonSlice-account',
-            oninput: (e) => { a.providerAvatarId = e.target.value.trim(); save(); } }))),
-      el('label', { class: 'field' }, 'Portret (PNG of JPG uit de mediabibliotheek)', (() => {
-        const sel = el('select', { onchange: (e) => { a.imageId = e.target.value || null; save(); renderAvatars(); } });
-        sel.append(el('option', { value: '' }, '— geen —'));
-        for (const m of mediaCache.values()) {
-          if (m.kind !== 'image') continue;
-          const o = el('option', { value: m.id }, m.name);
-          if (m.id === a.imageId) o.selected = true;
-          sel.append(o);
-        }
-        return sel;
-      })()),
-      el('label', { class: 'field' }, 'Begroeting (wat hij als eerste zegt)',
-        el('input', { type: 'text', value: a.greeting || '', placeholder: 'Hallo! Waar kan ik je mee helpen?',
-          oninput: (e) => { a.greeting = e.target.value; save(); } })),
-      el('label', { class: 'field' }, 'Karakter en kennis',
-        el('textarea', { rows: '3', style: 'width:100%',
-          placeholder: 'Je bent de gastheer van onze showroom. Je kent onze producten en verwijst bezoekers naar de juiste tegel.',
-          oninput: (e) => { a.persona = e.target.value; save(); } }, a.persona || '')),
-      el('div', { class: 'note' }, 'ID: ' + a.id));
-    list.append(card);
+        } }, '🗑'))));
   }
 
   const lk = config.avatarLink || {};
@@ -4797,12 +5159,26 @@ function renderAvatars() {
   }
 }
 
+document.querySelectorAll('#avEditorTabs button').forEach((b) => b.addEventListener('click', () => {
+  avEdTab = b.dataset.avtab; renderAvatarEditor();
+}));
+$('#avEdClose').addEventListener('click', closeAvatarEditor);
+$('#avEdDone').addEventListener('click', closeAvatarEditor);
+$('#avEditor').addEventListener('click', (e) => { if (e.target.id === 'avEditor') closeAvatarEditor(); });
+addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && $('#avEditor').classList.contains('open')) closeAvatarEditor();
+});
+
 $('#avAdd').addEventListener('click', () => {
   pushUndo();
   const n = (config.avatars || []).length + 1;
-  config.avatars.push({ id: uid(), name: 'Avatar ' + n, imageId: null,
-    providerAvatarId: '', greeting: '', persona: '' });
+  const a = { id: uid(), name: 'Avatar ' + n, imageId: null, providerAvatarId: '',
+    greeting: '', persona: '', role: '', emotions: [], stance: [], motion: [],
+    age: '', tempo: '', energy: '', language: 'nl', address: 'je', brevity: 'kort',
+    style: '', boundaries: '', knowledge: '', faq: [], fallback: '', handoff: '' };
+  config.avatars.push(a);
   save(); renderAvatars();
+  openAvatarEditor(a.id);   // meteen invullen: een lege avatar zegt niets
 });
 $('#avEnabled').addEventListener('change', (e) => {
   config.avatarLink.enabled = e.target.checked; save(); renderAvatars(); renderStage();
@@ -7524,7 +7900,10 @@ async function requestAvatarSession(avatar, opts = {}) {
           id: avatar.id, name: avatar.name,
           providerAvatarId: avatar.providerAvatarId || '',
           greeting: config.avatarLink.greetOnOpen ? (avatar.greeting || '') : '',
-          persona: avatar.persona || ''
+          // Het hele karakterblad, omgezet in volzinnen. De server zet dit
+          // door als system_prompt; op het tabblad "Wat de avatar meekrijgt"
+          // staat woord voor woord wat hier vertrekt.
+          persona: avatarPrompt(avatar)
         } : null
       })
     });
