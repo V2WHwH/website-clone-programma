@@ -180,8 +180,12 @@ router.delete('/api/playlists/:id', (req, res) => {
 router.get('/api/devices', (req, res) => {
   const state = db.load();
   // studio-blok niet integraal meesturen: de schermafdruk kan megabytes zijn.
-  res.json(state.devices.map(({ studio, ...d }) => ({
+  // De avatarsleutel gaat er ook uit: die wordt ingevuld, nooit teruggelezen.
+  // Wel het staartje, zodat een beheerder ziet wélke sleutel er staat.
+  res.json(state.devices.map(({ studio, avatarKey, ...d }) => ({
     ...d,
+    avatarKeySet: !!avatarKey,
+    avatarKeyHint: avatarKey ? '…' + String(avatarKey).slice(-4) : '',
     online: hub.isOnline(d.id),
     studio: studio ? {
       lastStatus: studio.lastStatus || null,
@@ -217,6 +221,13 @@ router.put('/api/devices/:id', (req, res) => {
   const dev = db.load().devices.find((d) => d.id === req.params.id);
   if (!dev) return res.status(404).json({ error: 'Niet gevonden' });
   Object.assign(dev, pick(req.body, ['name', 'orientation', 'rotation', 'playlistId', 'externalEndpoint', 'location', 'notes']));
+  // Eigen LemonSlice-sleutel voor deze installatie. Leeg betekent: terug naar
+  // de sleutel van het huis in .env. Vandaar apart: pick() zou een lege tekst
+  // niet van 'niet meegestuurd' kunnen onderscheiden.
+  if (typeof req.body.avatarKey === 'string') {
+    const k = req.body.avatarKey.trim();
+    if (k) dev.avatarKey = k; else delete dev.avatarKey;
+  }
   db.save();
   hub.sendToDevice(dev.id, { type: 'refresh' });
   res.json(dev);
@@ -352,12 +363,18 @@ router.post('/api/v1/avatar/session', async (req, res) => {
   const dev = findDeviceByKey((req.body && req.body.key) || '');
   if (!dev) return res.status(404).json({ error: 'Onbekende device-key' });
 
-  const apiKey = process.env.LEMONSLICE_API_KEY;
+  // Per installatie mag een eigen sleutel ingesteld zijn — dan loopt het
+  // verbruik van die klant over zijn eigen LemonSlice-account. Staat er geen,
+  // dan geldt de sleutel van het huis uit .env.
+  const eigenSleutel = (dev.avatarKey || '').trim();
+  const apiKey = eigenSleutel || process.env.LEMONSLICE_API_KEY;
+  const keySource = eigenSleutel ? 'device' : 'server';
   const url = process.env.LEMONSLICE_SESSION_URL || LEMONSLICE_DEFAULT_URL;
   if (!apiKey) {
     return res.status(503).json({
-      error: 'De server heeft nog geen avatar-koppeling: zet LEMONSLICE_API_KEY ' +
-             'in .env en herstart het platform.'
+      error: 'Deze holobox heeft nog geen avatar-koppeling: vul een LemonSlice-sleutel ' +
+             'in bij de holobox in het beheerscherm, of zet LEMONSLICE_API_KEY in .env ' +
+             'en herstart het platform.'
     });
   }
 
@@ -382,7 +399,8 @@ router.post('/api/v1/avatar/session', async (req, res) => {
     if (!r.ok) {
       return res.status(502).json({
         error: `De aanbieder gaf ${r.status}`,
-        detail: text.slice(0, 400)
+        detail: text.slice(0, 400),
+        keySource
       });
     }
     // De veldnamen verschillen per aanbieder en per versie van hun API.
@@ -423,7 +441,8 @@ router.post('/api/v1/avatar/session', async (req, res) => {
       token: token || null,
       transport,
       sessionId: pick(data, ['session_id', 'sessionId', 'id']) || null,
-      controlUrl: pick(data, ['control_url', 'controlUrl']) || null
+      controlUrl: pick(data, ['control_url', 'controlUrl']) || null,
+      keySource
     };
     if (req.body && req.body.probe) out.probe = true;
     res.json(out);

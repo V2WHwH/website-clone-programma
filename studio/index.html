@@ -1813,7 +1813,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.10.2';
+const APP_VERSION = '2.10.3';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -4816,9 +4816,12 @@ $('#avTest').addEventListener('click', async () => {
   const out = $('#avTestOut');
   out.textContent = 'Bezig…';
   const r = await requestAvatarSession(config.avatars[0], { probe: true });
+  const sleutel = r.keySource === 'device' ? 'eigen sleutel van deze holobox'
+    : r.keySource === 'server' ? 'sleutel van de server' : null;
   out.textContent = r.ok
     ? `Werkt: de server gaf een sessie terug (${r.url}) — techniek: ${r.transport}`
-      + (r.sessionId ? `, sessie ${r.sessionId}.` : '.')
+      + (r.sessionId ? `, sessie ${r.sessionId}` : '')
+      + (sleutel ? `, via de ${sleutel}.` : '.')
     : 'Mislukt: ' + r.error;
 });
 
@@ -7536,7 +7539,8 @@ async function requestAvatarSession(avatar, opts = {}) {
     return {
       ok: true, url: data.url, token: data.token || null,
       transport: avatarTransport(data.url, data.transport),
-      sessionId: data.sessionId || null, controlUrl: data.controlUrl || null
+      sessionId: data.sessionId || null, controlUrl: data.controlUrl || null,
+      keySource: data.keySource || null
     };
   } catch (e) {
     return { ok: false, error: 'server niet bereikbaar (' + (e.message || e) + ')' };
@@ -7696,7 +7700,8 @@ async function openAvatar(avatarId) {
     const lokaal = /device-key|serveradres/.test(ses.error);
     return avatarStatus('Kan geen sessie starten.', ses.error + '<br><br>' + (lokaal
       ? 'Vul het serveradres en de device-key in bij <b>Beheer &amp; device</b>.'
-      : 'Controleer op de server <code>LEMONSLICE_API_KEY</code> in <code>.env</code>.'));
+      : 'Controleer de LemonSlice-sleutel: die staat per holobox in het beheerscherm, ' +
+        'of voor alle boxen samen als <code>LEMONSLICE_API_KEY</code> in <code>.env</code>.'));
   }
 
   try {

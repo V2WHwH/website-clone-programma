@@ -288,7 +288,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.10.2</span><span>22 hoofdstukken</span><span>25 schermafbeeldingen</span>
+    <span>Versie 2.10.3</span><span>22 hoofdstukken</span><span>25 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -1477,6 +1477,39 @@ header.cover{padding-block:88px 8px}
   zegt de server precies welke velden hij wél kreeg en vul je
   <code>LEMONSLICE_URL_FIELD</code> in.</p>
 
+  <h3>Eén sleutel, of één per klant</h3>
+  <p class="measure">De sleutel zegt alleen op wiens rekening een gesprek gaat. Wie hem
+  levert is dus geen technische, maar een commerciële keuze — en je hoeft hem niet één
+  keer voor iedereen te maken.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Waar de sleutel staat</th><th>Wat dat betekent</th></tr></thead>
+    <tbody>
+      <tr><td><code>.env</code> op de server</td><td>De sleutel van het huis: geldt voor
+        élke holobox die geen eigen sleutel heeft. De klant hoeft nergens een account te
+        maken; het verbruik komt op jouw rekening en je belast het door.</td></tr>
+      <tr><td>Per holobox in het beheerscherm</td><td>Die ene box draait op het
+        LemonSlice-account van die klant. Hij krijgt zijn eigen factuur; jij schiet niets
+        voor.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="measure">In het beheerscherm staat bij elke holobox het veld
+  <b>LemonSlice-sleutel</b>. Laat je het leeg, dan geldt de sleutel uit <code>.env</code>.
+  Vul je er een in, dan gebruikt alleen die box hem. Wissen kan met de knop ernaast — de
+  box valt dan vanzelf terug op de sleutel van het huis.</p>
+
+  <div class="note"><span class="t">Invullen kan, uitlezen niet</span>
+    <p>Een ingevulde sleutel komt nooit meer uit de server terug: het veld is na het
+    opslaan weer leeg en je ziet alleen dát er een staat, plus de laatste vier tekens. Zo
+    blijft hij ook onleesbaar voor iemand die een openstaand beheerscherm aantreft. Weet je
+    niet meer wélke sleutel erin staat, vul dan simpelweg een nieuwe in.</p></div>
+
+  <div class="note why"><span class="t">Wie verbruikt wat</span>
+    <p>Ook op één gedeelde sleutel is per box te zien wat er verbruikt wordt: bij elke
+    sessie stuurt de server mee welke holobox en welke avatar het betreft. Doorbelasten kan
+    dus zonder dat elke klant een eigen account nodig heeft.</p></div>
+
   <div class="note warn"><span class="t">Wat een avatar nodig heeft</span>
     <p>Anders dan de rest van de software werkt dit <b>niet offline</b>: er is internet
     nodig, een bereikbare eigen server, en een account bij de aanbieder. Een sessie kost
@@ -1506,10 +1539,13 @@ header.cover{padding-block:88px 8px}
   <div class="note"><span class="t">Wat de testknop je vertelt</span>
     <p>De knop <b>Verbinding testen</b> op dit tabblad doet de hele ketting één keer: box →
     eigen server → LemonSlice → terug. Slaagt het, dan noemt hij het kamer-adres, de gekozen
-    techniek (<code>daily</code> of <code>livekit</code>) en het sessienummer. Mislukt het,
-    dan staat er waar het strandde — bij de box zelf (serveradres of device-key niet
-    ingevuld), bij je eigen server (geen sleutel in <code>.env</code>), of bij LemonSlice
-    (die geeft dan zijn eigen foutcode mee).</p></div>
+    techniek (<code>daily</code> of <code>livekit</code>), het sessienummer én welke sleutel
+    er gebruikt is — die van de server of de eigen sleutel van deze holobox. Dat laatste is
+    meteen de controle of je hem bij de juiste box hebt ingevuld. Mislukt het, dan staat er
+    waar het strandde: bij de box zelf (serveradres of device-key niet ingevuld), bij je
+    eigen server (nergens een sleutel), of bij LemonSlice (die geeft dan zijn eigen foutcode
+    mee — een verkeerde eigen sleutel geeft bijvoorbeeld 401, en valt bewust <em>niet</em>
+    stilletjes terug op de sleutel van het huis).</p></div>
 </section>
 
 <!-- ═══════════════════════════════════════════════ 15 ═══ -->
@@ -1903,7 +1939,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.10.2 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.10.3 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>

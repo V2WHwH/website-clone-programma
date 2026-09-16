@@ -212,7 +212,8 @@ function deviceCard(d) {
       el('dt', {}, 'Externe endpoint'), el('dd', {}, el('input', {
         value: d.externalEndpoint || '', placeholder: 'https://… (optioneel, eigen content-API)',
         onchange: async (e) => { await api(`/api/devices/${d.id}`, { method: 'PUT', body: { externalEndpoint: e.target.value || null } }); toast('Endpoint opgeslagen'); }
-      }))
+      })),
+      el('dt', {}, 'LemonSlice-sleutel'), el('dd', {}, avatarKeyField(d))
     ),
     el('div', { class: 'copy-line' }, el('span', { class: 'grow' }, playerUrl), el('button', { class: 'btn small', onclick: () => copy(playerUrl) }, 'Kopieer')),
     el('div', { class: 'actions' },
@@ -225,6 +226,36 @@ function deviceCard(d) {
     ),
     studioBox
   );
+}
+
+/* De avatarsleutel van deze installatie. Hij wordt ingevuld, nooit teruggelezen:
+   de server stuurt alleen terug óf er een staat en wat de laatste vier tekens
+   zijn. Leeg laten betekent: deze box draait op de sleutel van het huis. */
+function avatarKeyField(d) {
+  const input = el('input', {
+    type: 'password', autocomplete: 'off', value: '',
+    placeholder: d.avatarKeySet
+      ? `ingesteld (${d.avatarKeyHint}) — typ om te vervangen`
+      : 'leeg = sleutel van het huis uit .env',
+    onchange: async (e) => {
+      const k = e.target.value.trim();
+      if (!k) return;
+      await api(`/api/devices/${d.id}`, { method: 'PUT', body: { avatarKey: k } });
+      e.target.value = '';
+      toast('Eigen sleutel opgeslagen voor deze holobox');
+      loadDevices();
+    }
+  });
+  const wis = el('button', {
+    class: 'btn small', style: d.avatarKeySet ? '' : 'display:none',
+    onclick: async () => {
+      if (!confirm(`Eigen sleutel van "${d.name}" wissen? Deze box valt dan terug op de sleutel uit .env.`)) return;
+      await api(`/api/devices/${d.id}`, { method: 'PUT', body: { avatarKey: '' } });
+      toast('Terug op de sleutel van het huis');
+      loadDevices();
+    }
+  }, 'Wissen');
+  return el('div', { class: 'copy-line' }, el('span', { class: 'grow' }, input), wis);
 }
 
 $('#addDeviceBtn').addEventListener('click', async () => {
