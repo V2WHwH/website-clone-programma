@@ -93,7 +93,11 @@
 
   /* Preview-knoppen: instelbaar frame (Video Frame Style) — het kader ligt
      visueel vóór het videobeeld, met gloss, highlight en diepte-schaduw. */
-  #buttonLayer { position: absolute; inset: 0; perspective: 1400px; }
+  /* De laag zelf vangt geen klikken: alleen de knoppen erin. Anders ligt hij
+     als een glasplaat over het welkomscherm en zijn de sjablonen niet aan te
+     klikken. */
+  #buttonLayer { position: absolute; inset: 0; perspective: 1400px; pointer-events: none; }
+  #buttonLayer > * { pointer-events: auto; }
   .vbtn.has-preview { padding: 0; aspect-ratio: 16 / 9; width: var(--pw, 30vmin); min-width: 0;
     overflow: hidden; border: 0; background-color: var(--frame, #35d0ba);
     border-radius: var(--frad, 0.6em);
@@ -529,6 +533,34 @@
   #tabs { display: flex; flex-direction: column; gap: 2px; padding: 10px 8px;
     background: var(--color-surface-1); border-right: 1px solid var(--color-border);
     overflow-y: auto; scrollbar-width: thin; }
+  /* Zoeken door alle instellingen. Er zijn meer dan honderd velden verdeeld
+     over elf tabbladen; zoeken is dan geen luxe maar de normale manier om
+     iets terug te vinden. */
+  #navZoek { position: relative; margin: 2px 2px 8px; }
+  #zoekVeld { width: 100%; background: var(--p-card-2); border: 1px solid var(--p-line);
+    color: var(--p-ink); border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 12.5px; }
+  #zoekVeld::placeholder { color: var(--p-ink-3); }
+  #zoekVeld:focus { outline: none; border-color: var(--accent-dark); }
+  #zoekUit { position: absolute; left: 0; right: -6px; top: calc(100% + 5px); z-index: 20;
+    background: var(--color-bg); border: 1px solid var(--p-line); border-radius: 10px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.55); overflow: hidden; max-height: 60vh;
+    overflow-y: auto; }
+  #zoekUit.hidden { display: none; }
+  #zoekUit button { display: block; width: 100%; text-align: left; background: none;
+    border: 0; border-bottom: 1px solid var(--rule-2, rgba(255,255,255,.05));
+    padding: 9px 11px; color: var(--p-ink); font: 500 12.5px var(--ui-font); }
+  #zoekUit button:last-child { border-bottom: 0; }
+  #zoekUit button:hover, #zoekUit button.op { background: rgba(21,242,224,.10); }
+  #zoekUit .pad { display: block; font-size: 11px; color: var(--p-ink-3); margin-top: 2px; }
+  #zoekUit .leeg { padding: 11px; font-size: 12.5px; color: var(--p-ink-3); }
+  /* Het gevonden veld even laten oplichten, anders zoek je in het tabblad
+     alsnog waar het stond. */
+  @keyframes zoekVondst {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(53,208,186,0); }
+    15%, 70% { box-shadow: 0 0 0 3px rgba(53,208,186,0.55); }
+  }
+  .zoek-vondst { animation: zoekVondst 2.2s ease-out; border-radius: 9px; }
+
   #tabs button { display: flex; align-items: center; gap: 12px; text-align: left;
     background: none; border: 0; border-radius: 8px; padding: 10px 12px;
     color: var(--color-text-secondary); font: 500 12.5px var(--ui-font); letter-spacing: .01em; }
@@ -824,12 +856,37 @@
     padding: 10px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: opacity 0.3s;
     font-size: 13.5px; }
 
-  #welcome { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column;
+  /* Het welkomscherm ving geen klikken — het was alleen tekst. Nu staan er
+     sjablonen in die aanklikbaar moeten zijn; de tekst eromheen laat klikken
+     wel door, zodat een bezoeker er niet tegenaan loopt. */
+  #welcome { position: absolute; inset: 0; z-index: 24; display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 6vmin;
     pointer-events: none; }
+  #sjablonen, .sjab { pointer-events: auto; }
   #welcome .big { font-size: clamp(26px, 5vmin, 60px); font-weight: 700; }
   #welcome .big span { color: var(--accent); }
   #welcome p { color: var(--muted); max-width: 560px; }
+  #welcome p.klein { font-size: 0.78em; opacity: 0.75; }
+  /* Sjablonen: vijf kaartjes met een tekening van de indeling erin, zodat je
+     ziet wat je kiest in plaats van een naam te moeten raden. */
+  /* align-items: stretch zet de kaartjes even hoog, zodat de plaatjes op één
+     lijn staan ook als de ene omschrijving twee regels heeft en de andere
+     drie. */
+  #sjablonen { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;
+    align-items: stretch; max-width: 900px; margin: 6px 0 2px; }
+  .sjab { display: flex; flex-direction: column; }
+  .sjab .om { margin-top: auto; }
+  .sjab { width: 158px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 12px; padding: 10px; color: #fff; text-align: left;
+    transition: border-color .15s, background .15s, transform .15s; }
+  .sjab:hover { border-color: var(--accent, #35d0ba); background: rgba(53,208,186,0.12);
+    transform: translateY(-2px); }
+  .sjab .vlak { position: relative; height: 62px; border-radius: 8px; overflow: hidden;
+    background: linear-gradient(160deg, #10202c, #050a10); margin-bottom: 8px; }
+  .sjab .vlak i { position: absolute; background: var(--accent, #35d0ba); border-radius: 3px;
+    transform: translate(-50%, -50%); opacity: 0.85; }
+  .sjab .nm { font-size: 13px; font-weight: 650; }
+  .sjab .om { font-size: 11px; opacity: 0.7; line-height: 1.35; margin-top: 2px; }
 
   pre.help { background: #0a0f16; border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px;
     font-size: 12px; overflow-x: auto; white-space: pre; }
@@ -845,8 +902,12 @@
   <img id="stageLogo" class="hidden" alt="">
   <div id="welcome">
     <div class="big">HereWe<span>Holo</span> Studio</div>
-    <p>Open het menu (⚙ linksonder) om video's toe te voegen en je eigen
-       holobox-presentatie samen te stellen. Alles wordt automatisch bewaard.</p>
+    <p>Begin met een indeling die bij je situatie past — knoppen, beweging en
+       screensaver staan dan meteen goed. Daarna vervang je de teksten en zet je
+       je eigen video's erin.</p>
+    <div id="sjablonen"></div>
+    <p class="klein">Liever zelf beginnen? Kies <b>Leeg scherm</b>. Je kunt later altijd
+       nog een andere indeling kiezen via <b>Dashboard &rarr; Snel aan de slag</b>.</p>
   </div>
   <div id="breadcrumb" class="hidden"></div>
   <div id="langBar" class="hidden"></div>
@@ -995,6 +1056,10 @@
 
   <div id="editorBody">
   <nav id="tabs">
+    <div id="navZoek">
+      <input type="search" id="zoekVeld" placeholder="Zoek een instelling…" autocomplete="off">
+      <div id="zoekUit" class="hidden"></div>
+    </div>
     <button data-tab="dashboard"><span class="nav-ic">&#8962;</span><span class="nav-txt">Dashboard</span></button>
     <button data-tab="buttons" class="active"><span class="nav-ic">&#9678;</span><span class="nav-txt">Knoppen &amp; sc&egrave;nes</span></button>
     <button data-tab="media"><span class="nav-ic">&#9654;</span><span class="nav-txt">Media</span></button>
@@ -1862,7 +1927,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.14.0';
+const APP_VERSION = '2.15.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -2127,7 +2192,8 @@ function toast(msg) {
   const t = $('#toast');
   t.textContent = msg; t.classList.remove('hidden'); t.style.opacity = 1;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.classList.add('hidden'), 350); }, 2400);
+  toastTimer = setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.classList.add('hidden'), 350); },
+    msg.length > 70 ? 6000 : 2400);
 }
 const fmtSize = (b) => b > 1e9 ? (b / 1e9).toFixed(2) + ' GB' : b > 1e6 ? (b / 1e6).toFixed(0) + ' MB' : Math.round(b / 1e3) + ' kB';
 
@@ -3177,7 +3243,9 @@ function renderStage() {
     logo.className = 'hidden';
     logo.removeAttribute('src');
   }
-  $('#welcome').classList.toggle('hidden', curButtons().length > 0 || !!curScene().idleMediaId || !!sceneTitle(curScene()));
+  const leeg = !(curButtons().length > 0 || curScene().idleMediaId || sceneTitle(curScene()));
+  $('#welcome').classList.toggle('hidden', !leeg);
+  if (leeg && !$('#sjablonen')?.children.length) renderSjablonen();
   document.body.classList.toggle('clean', !!config.cleanMode);
   renderBreadcrumb();
   renderLangBar();
@@ -5005,6 +5073,289 @@ function buildSections(alleen) {
       page.querySelector('.sec'));
   }
 }
+
+/* ================= Sjablonen: niet met een leeg scherm beginnen ==========
+   Wie de software voor het eerst opent kreeg elf tabbladen en niets om aan te
+   wijzen. Deze indelingen zetten knoppen, beweging en screensaver in één keer
+   goed; daarna hoef je alleen nog je eigen video's en teksten erin te zetten.
+
+   Bewust geen media: die heeft een nieuwe gebruiker nog niet. De knoppen
+   staan er wel, met kloppende maten en afstanden. */
+const SJABLONEN = [
+  {
+    id: 'showroom', naam: 'Showroom', om: 'Vier producten naast elkaar, rustige beweging.',
+    motion: { preset: 'corporate', intensity: 'immersive' },
+    scene: { title: 'Welkom' },
+    knoppen: [
+      { label: 'Model A', x: 22, y: 52, size: 11 }, { label: 'Model B', x: 41, y: 52, size: 11 },
+      { label: 'Model C', x: 59, y: 52, size: 11 }, { label: 'Model D', x: 78, y: 52, size: 11 }
+    ],
+    saver: { enabled: true, delaySec: 120 }
+  },
+  {
+    id: 'museum', naam: 'Museum', om: 'Drie grote vlakken, traag en ingetogen.',
+    motion: { preset: 'museum', intensity: 'subtle' },
+    scene: { title: 'De collectie' },
+    knoppen: [
+      { label: 'Zaal 1', x: 25, y: 50, size: 15 }, { label: 'Zaal 2', x: 50, y: 50, size: 15 },
+      { label: 'Zaal 3', x: 75, y: 50, size: 15 }
+    ],
+    saver: { enabled: true, delaySec: 180 }
+  },
+  {
+    id: 'beurs', naam: 'Beurs', om: 'Zes tegels, levendig, knoppen bewegen op de muziek.',
+    motion: { preset: 'dynamic', intensity: 'showcase' },
+    scene: { title: 'Kom kijken' },
+    knoppen: [
+      { label: 'Film', x: 20, y: 38, size: 10, beat: true }, { label: 'Techniek', x: 40, y: 38, size: 10, beat: true },
+      { label: 'Cases', x: 60, y: 38, size: 10, beat: true }, { label: 'Team', x: 80, y: 38, size: 10, beat: true },
+      { label: 'Prijzen', x: 30, y: 66, size: 10, beat: true }, { label: 'Contact', x: 70, y: 66, size: 10, beat: true }
+    ],
+    saver: { enabled: true, delaySec: 60 }
+  },
+  {
+    id: 'ontvangst', naam: 'Ontvangsthal', om: 'Twee keuzes en een gastvrouw die je te woord staat.',
+    motion: { preset: 'corporate', intensity: 'immersive' },
+    scene: { title: 'Goedemorgen' },
+    knoppen: [
+      { label: 'Over ons', x: 33, y: 52, size: 13 },
+      { label: 'Waar moet ik zijn?', x: 67, y: 52, size: 13, avatar: true }
+    ],
+    saver: { enabled: true, delaySec: 90 }
+  },
+  {
+    id: 'leeg', naam: 'Leeg scherm', om: 'Zelf beginnen, zonder voorgezette knoppen.',
+    knoppen: []
+  }
+];
+
+function sjabVoorbeeld(sj) {
+  const vlak = el('div', { class: 'vlak' });
+  for (const k of sj.knoppen) {
+    vlak.append(el('i', { style:
+      `left:${k.x}%; top:${k.y}%; width:${Math.max(7, k.size * 0.9)}%; height:${Math.max(9, k.size * 1.1)}%;` }));
+  }
+  if (!sj.knoppen.length) {
+    vlak.append(el('span', { style: 'position:absolute;inset:0;display:flex;align-items:center;' +
+      'justify-content:center;font-size:11px;opacity:.5' }, 'leeg'));
+  }
+  return vlak;
+}
+
+function renderSjablonen() {
+  const box = $('#sjablonen');
+  if (!box) return;
+  box.innerHTML = '';
+  for (const sj of SJABLONEN) {
+    box.append(el('button', { class: 'sjab', type: 'button',
+      onclick: () => pasSjabloonToe(sj) },
+      sjabVoorbeeld(sj),
+      el('div', { class: 'nm' }, sj.naam),
+      el('div', { class: 'om' }, sj.om)));
+  }
+}
+
+function pasSjabloonToe(sj) {
+  pushUndo();
+  const sc = curScene();
+  sc.title = sj.scene?.title || '';
+  sc.buttons = sj.knoppen.map((k, i) => ({
+    id: uid(), label: k.label, mediaId: null,
+    x: k.x, y: k.y, size: k.size, shape: 'rounded',
+    color: PALETTE[i % PALETTE.length], depth: 'subtle', drift: 0,
+    showPreview: true, fx: 'random', z: i, alpha: 100, glow: 1,
+    beat: { on: !!k.beat, band: 'auto', rise: 10, swell: 6,
+      outer: 18, inner: 55, glow: 100, lift: 40 },
+    ...(k.avatar && config.avatars?.length
+      ? { action: { type: 'OpenAvatar', avatarId: config.avatars[0].id } } : {})
+  }));
+  if (sj.motion) Object.assign(config.motion, sj.motion);
+  if (sj.saver) Object.assign(config.screensaver, sj.saver);
+  save(); renderStage();
+  // Het hele paneel verversen, niet alleen de knoppenlijst: een sjabloon zet
+  // ook de beweging en de screensaver, en die velden staan elders.
+  if (panel.classList.contains('open')) refreshPanel();
+  toast(sj.knoppen.length
+    ? `Indeling "${sj.naam}" gezet — ${sj.knoppen.length} knoppen. Koppel er nu video's aan.`
+    : 'Leeg scherm — voeg zelf knoppen toe via Knoppen & scènes.');
+}
+
+
+/* ================= Zoeken door alle instellingen =================
+   Er zijn meer dan honderd velden over elf tabbladen. Ze zijn geordend naar
+   techniek — Motion, Camera, Screensaver — terwijl iemand denkt in taken:
+   "ik wil dat deze knop meebeweegt". Zoeken overbrugt dat verschil.
+
+   De lijst wordt bij elke toetsaanslag uit de pagina zelf gelezen in plaats
+   van vooraf opgebouwd. Dat kost niets meetbaars en het klopt altijd, ook
+   voor de velden die per knop of per avatar opnieuw worden getekend. */
+const TAB_NAMEN = () => {
+  const m = {};
+  for (const b of document.querySelectorAll('#tabs button[data-tab]')) {
+    m[b.dataset.tab] = (b.querySelector('.nav-txt') || b).textContent.trim();
+  }
+  return m;
+};
+
+// Zonder accenten en hoofdletters vergelijken: wie "screensaver" typt hoort
+// ook "Screensaver" te vinden, en "scene" ook "scène".
+const plat = (t) => (t || '').toLowerCase()
+  .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
+
+/* Twee dingen die de pagina zelf niet kan vertellen.
+   Ten eerste: velden die pas bestaan als een schakelaar aanstaat — alles
+   onder Beats bijvoorbeeld — staan niet in de pagina en zijn dus onvindbaar.
+   Ten tweede: mensen zoeken met hun eigen woorden. Wie "muziek" typt bedoelt
+   de geluidsreactie, en wie "hz" typt ook. Deze lijst overbrugt allebei. */
+const ZOEK_EXTRA = [
+  { woorden: 'beats geluid muziek ritme beat equalizer hz toon bas hoog laag meebewegen',
+    tekst: '♫ Beats — knop beweegt mee met de muziek', tab: 'buttons',
+    hint: 'Staat onder elke knop. Zet de schakelaar ♫ Beats open; daaronder komen ' +
+      'de band, het opveren, de gevoeligheid en de demo-beat.' },
+  { woorden: 'bolling midden rand sterker dempen',
+    tekst: 'Bolling — knoppen in het midden reageren sterker', tab: 'buttons',
+    hint: 'Onder ♫ Beats bij een knop, in het blok "Geldt voor alle knoppen".' },
+  { woorden: 'demo beat proef ritme afspelen voorbeeld',
+    tekst: 'Demo-beat afspelen', tab: 'buttons',
+    hint: 'Onderaan het menu onder ♫ Beats bij een knop.' },
+  { woorden: 'logo website www site merk favicon',
+    tekst: 'Logo van de website in de knop', tab: 'buttons',
+    hint: 'Zet de actie van de knop op "Webpagina / HTML tonen"; daaronder ' +
+      'verschijnt de knop "Logo van de site ophalen".' },
+  { woorden: 'karakter kennis persona rol toon emoties houding vragen',
+    tekst: 'Karakterblad van een avatar', tab: 'avatar',
+    hint: 'Klik bij een avatar op "Openen". Daar staan Karakter, Kennis en ' +
+      'wat de avatar meekrijgt.' },
+  { woorden: 'proefmodus proefavatar lemonslice demo avatar',
+    tekst: 'Proefavatar — zonder sleutel iets laten zien', tab: 'avatar',
+    hint: 'Knop "+ Proefavatar van LemonSlice", of de schakelaar Proefmodus ' +
+      'bovenaan het karakterblad.' },
+  { woorden: 'sleutel api lemonslice licentie key',
+    tekst: 'LemonSlice-sleutel per holobox', tab: 'avatar',
+    hint: 'Die staat niet in de box maar in het beheerscherm van je server, ' +
+      'bij de betreffende holobox.' },
+  { woorden: 'handgebaar hand zwaaien opsteken menu',
+    tekst: 'Handgebaar — rechterhand omhoog toont het menu', tab: 'cam',
+    hint: 'Camera → onderdeel Handgebaar.' }
+];
+
+function zoekExtra(woorden) {
+  return ZOEK_EXTRA.filter((e) => woorden.every((w) => plat(e.woorden + ' ' + e.tekst).includes(w)))
+    .map((e) => ({ ...e, extra: true, score: 2,
+      tabNaam: (TAB_NAMEN())[e.tab] || e.tab, sectie: '' }));
+}
+
+function zoekInstellingen(vraag) {
+  const q = plat(vraag);
+  if (q.length < 2) return [];
+  const woorden = q.split(' ').filter(Boolean);
+  const namen = TAB_NAMEN();
+  const uit = [];
+  const gezien = new Set();
+
+  for (const page of document.querySelectorAll('.tabpage')) {
+    const tab = page.id.replace('page-', '');
+    const tabNaam = namen[tab] || tab;
+    const kandidaten = page.querySelectorAll(
+      'label.field, .toggle-row .t-label, .sec-head .sec-ttl, h2, .lay-row');
+    for (const n of kandidaten) {
+      // Alleen de eigen tekst van het label, niet die van de velden erin.
+      let tekst = '';
+      for (const k of n.childNodes) if (k.nodeType === 3) tekst += k.textContent;
+      if (!tekst.trim()) tekst = n.textContent;
+      tekst = tekst.replace(/\s+/g, ' ').trim();
+      if (!tekst || tekst.length > 90) continue;
+      const p = plat(tekst);
+      if (!woorden.every((w) => p.includes(w))) continue;
+
+      const sec = n.closest('.sec');
+      const sectie = sec ? sec.querySelector('.sec-ttl')?.textContent.trim() : '';
+      const sleutel = tab + '|' + p;
+      if (gezien.has(sleutel)) continue;
+      gezien.add(sleutel);
+      // Een treffer helemaal vooraan telt zwaarder dan eentje middenin.
+      uit.push({ tekst, tab, tabNaam, sectie, node: n, score: p.startsWith(woorden[0]) ? 0 : 1 });
+    }
+  }
+  for (const e of zoekExtra(woorden)) {
+    if (!uit.some((r) => plat(r.tekst) === plat(e.tekst))) uit.push(e);
+  }
+  uit.sort((a, b) => a.score - b.score || a.tekst.length - b.tekst.length);
+  return uit.slice(0, 12);
+}
+
+function toonZoekUit(lijst) {
+  const box = $('#zoekUit');
+  box.innerHTML = '';
+  if (!lijst.length) {
+    box.append(el('div', { class: 'leeg' }, 'Niets gevonden. Probeer een ander woord, ' +
+      'bijvoorbeeld "geluid", "camera" of "kleur".'));
+    box.classList.remove('hidden');
+    return;
+  }
+  lijst.forEach((r, i) => {
+    box.append(el('button', { type: 'button', class: i === 0 ? 'op' : '',
+      onclick: () => springNaar(r) },
+      r.tekst,
+      el('span', { class: 'pad' }, r.extra
+        ? r.tabNaam + ' — ' + r.hint
+        : r.tabNaam + (r.sectie ? ' › ' + r.sectie : ''))));
+  });
+  box.classList.remove('hidden');
+}
+
+function springNaar(r) {
+  document.querySelector(`#tabs button[data-tab="${r.tab}"]`)?.click();
+  // Een treffer uit de woordenlijst heeft geen veld om naartoe te springen:
+  // die zit achter een schakelaar. Dan wijzen we de weg in woorden.
+  if (r.extra) {
+    $('#zoekUit').classList.add('hidden');
+    $('#zoekVeld').value = '';
+    toast(r.hint);
+    return;
+  }
+  // Staat het onderdeel dichtgeklapt, dan eerst openen — anders spring je
+  // naar iets wat je niet ziet.
+  const sec = r.node.closest('.sec');
+  if (sec && sec.classList.contains('closed')) sec.querySelector('.sec-head')?.click();
+  $('#zoekUit').classList.add('hidden');
+  $('#zoekVeld').value = '';
+  setTimeout(() => {
+    r.node.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    r.node.classList.add('zoek-vondst');
+    setTimeout(() => r.node.classList.remove('zoek-vondst'), 2400);
+  }, 90);
+}
+
+let zoekTimer = 0;
+$('#zoekVeld').addEventListener('input', (e) => {
+  clearTimeout(zoekTimer);
+  const v = e.target.value;
+  zoekTimer = setTimeout(() => {
+    if (plat(v).length < 2) return $('#zoekUit').classList.add('hidden');
+    toonZoekUit(zoekInstellingen(v));
+  }, 110);
+});
+$('#zoekVeld').addEventListener('keydown', (e) => {
+  const box = $('#zoekUit');
+  const knoppen = [...box.querySelectorAll('button')];
+  if (e.key === 'Escape') { box.classList.add('hidden'); e.target.value = ''; return; }
+  if (!knoppen.length) return;
+  const nu = knoppen.findIndex((k) => k.classList.contains('op'));
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const volgend = (nu + (e.key === 'ArrowDown' ? 1 : -1) + knoppen.length) % knoppen.length;
+    knoppen.forEach((k, i) => k.classList.toggle('op', i === volgend));
+    knoppen[volgend].scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    (knoppen[Math.max(0, nu)] || knoppen[0]).click();
+  }
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#navZoek')) $('#zoekUit').classList.add('hidden');
+});
+
 
 /* ================= Tabblad: AI-avatars ================= */
 function avatarById(id) { return (config.avatars || []).find((a) => a.id === id) || null; }
