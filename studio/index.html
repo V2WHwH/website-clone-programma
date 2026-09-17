@@ -993,6 +993,8 @@
 
   <!-- ================= KNOPPEN ================= -->
   <div class="tabpage" id="page-buttons">
+    <p class="note">Effecten op de knoppen &mdash; bij het kiezen, aandacht trekken en
+    meebewegen met de muziek &mdash; staan bij elkaar op het tabblad <b>Motion</b>.</p>
     <div class="card">
       <label class="field">Sc&egrave;ne
         <select id="sceneSelect"></select>
@@ -1410,7 +1412,7 @@
       </div>
       <button id="gxPreview" class="btn block">Galaxy-voorbeeld afspelen</button>
     </div>
-    <h2>Bij het kiezen van een knop</h2>
+    <h2>Knopeffect &mdash; bij het kiezen</h2>
     <div class="card">
       <label class="field">Selectie-effect
         <select id="cfgSelectFx">
@@ -1425,7 +1427,7 @@
       </label>
       <p class="note">De video of het 3D-object start pas wanneer alle knoppen uit beeld zijn.</p>
     </div>
-    <h2>Aandachtseffecten</h2>
+    <h2>Knopeffect &mdash; aandacht trekken</h2>
     <div class="card">
       <label class="field">Gemiddeld interval per knop (seconden)
         <input type="number" id="cfgFxInterval" min="3" max="120" step="1">
@@ -1433,7 +1435,7 @@
       <p class="note">Welk effect een knop speelt (gloedpuls, lichtrand, flits, glans-veeg) stel je per knop in op het tabblad Knoppen.</p>
     </div>
 
-    <h2>Geluidsreactie</h2>
+    <h2>Knopeffect &mdash; geluidsreactie</h2>
     <div class="card">
       <label class="field">Effect
         <select id="arMode">
@@ -1444,6 +1446,8 @@
         </select>
       </label>
       <p class="note" id="arNote"></p>
+      <button id="arDemo" class="btn block">&#9835; Demo-beat afspelen</button>
+      <p class="note" id="arDemoNote"></p>
     </div>
 
     <div class="card hidden" id="arBeatCard">
@@ -1921,7 +1925,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.12.0';
+const APP_VERSION = '2.12.1';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -6562,6 +6566,10 @@ function applyEditorOverlays() {
 }
 
 $('#cfgSelectFx').addEventListener('change', (e) => { config.selectFx = e.target.value; save(); });
+$('#arDemo')?.addEventListener('click', () => {
+  AudioFX.demo(!AudioFX.demoLoopt);
+  renderAudioFx();
+});
 $('#cfgFxInterval').addEventListener('change', (e) => { config.fxIntervalSec = Math.max(3, Number(e.target.value) || 7); save(); });
 
 /* ---- Geluidsreactie: velden vullen en uitleg meeschrijven ---- */
@@ -6589,6 +6597,25 @@ function renderAudioFx() {
         'de screensaver of een knopvideo. Zet daarvoor wel het geluid aan bij Scherm & scène ' +
         'of bij Screensaver — zonder hoorbaar geluid is er niets te analyseren.';
   }
+  // Demo-beat: alleen zinvol als er een effect gekozen is, anders valt er
+  // niets te zien en lijkt de knop stuk.
+  const dknop = document.getElementById('arDemo');
+  const dnote = document.getElementById('arDemoNote');
+  if (dknop) {
+    const uit = fx.mode === 'off';
+    dknop.disabled = uit;
+    dknop.style.opacity = uit ? '0.45' : '';
+    const loopt = AudioFX.demoLoopt;
+    dknop.textContent = loopt ? '■ Demo-beat stoppen' : '♫ Demo-beat afspelen';
+    if (dnote) {
+      dnote.textContent = uit
+        ? 'Kies eerst een effect hierboven.'
+        : loopt
+          ? 'Een maat van 120 slagen per minuut. Kijk naar de knoppen in het canvas.'
+          : 'Speelt zelf een maat af zodat je de knoppen ziet meebewegen, zonder video.';
+    }
+  }
+
   const sn = document.getElementById('arSensNote');
   if (sn) {
     const v = fx.sens ?? 5;
@@ -8514,7 +8541,90 @@ const AudioFX = (() => {
     if (!running) { running = true; last = performance.now(); raf = requestAnimationFrame(frame); }
   }
 
-  return { apply, wireAll, get ready() { return !!ctx && ctx.state === 'running'; },
+  /* ---- Demo-beat ----------------------------------------------------
+     Om te zien wat een instelling doet moet er geluid zijn, en in de editor
+     staat meestal niets te spelen. Deze lus maakt zelf een maat: een kick op
+     elke tel, hi-hats op de achtste, en een baslijn. Dat vult alle drie de
+     banden, dus zowel de beat als de equalizer komt in beweging.
+
+     Het geluid gaat door dezelfde analyser als een echte video, dus wat je
+     hier ziet is precies wat een bezoeker straks ziet. Geen bestand nodig:
+     alles wordt ter plekke gemaakt. */
+  let demoTimer = 0, demoNext = 0, demoStap = 0, demoGain = null, demoRuis = null;
+  const BPM = 120;
+
+  function ruisBuffer() {
+    if (demoRuis) return demoRuis;
+    const n = Math.floor(ctx.sampleRate * 0.2);
+    demoRuis = ctx.createBuffer(1, n, ctx.sampleRate);
+    const d = demoRuis.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    return demoRuis;
+  }
+
+  function kick(t) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.setValueAtTime(120, t);
+    o.frequency.exponentialRampToValueAtTime(42, t + 0.11);
+    g.gain.setValueAtTime(0.9, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+    o.connect(g).connect(demoGain);
+    o.start(t); o.stop(t + 0.24);
+  }
+  function hat(t, hard) {
+    const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = ruisBuffer();
+    f.type = 'highpass'; f.frequency.value = 7000;
+    g.gain.setValueAtTime(hard ? 0.28 : 0.12, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + (hard ? 0.09 : 0.05));
+    s.connect(f).connect(g).connect(demoGain);
+    s.start(t); s.stop(t + 0.12);
+  }
+  function bas(t, hz) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(hz, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.22, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+    o.connect(g).connect(demoGain);
+    o.start(t); o.stop(t + 0.4);
+  }
+
+  // Vooruit plannen: de browser levert geen betrouwbare timer, de audioklok
+  // wel. Elke 25 ms zetten we klaar wat de komende 150 ms moet klinken.
+  function plan() {
+    const spb = 60 / BPM;
+    while (demoNext < ctx.currentTime + 0.15) {
+      const t = demoNext, i = demoStap % 8;
+      if (i % 2 === 0) kick(t);
+      hat(t, i % 4 === 2);
+      if (i === 0) bas(t, 55);
+      if (i === 3) bas(t, 73.4);
+      if (i === 6) bas(t, 65.4);
+      demoNext += spb / 2;   // achtste noten
+      demoStap++;
+    }
+  }
+
+  function demo(aan) {
+    if (!aan) {
+      clearInterval(demoTimer); demoTimer = 0;
+      if (demoGain) { try { demoGain.gain.value = 0; } catch {} }
+      return false;
+    }
+    if (!ensureCtx()) return false;
+    ctx.resume().catch(() => {});
+    if (!demoGain) { demoGain = ctx.createGain(); demoGain.connect(analyser); }
+    demoGain.gain.value = 0.6;
+    if (!running) { running = true; last = performance.now(); raf = requestAnimationFrame(frame); }
+    demoNext = ctx.currentTime + 0.08; demoStap = 0;
+    clearInterval(demoTimer);
+    demoTimer = setInterval(plan, 25);
+    return true;
+  }
+
+  return { apply, wireAll, demo, get demoLoopt() { return !!demoTimer; },
+    get ready() { return !!ctx && ctx.state === 'running'; },
     get level() { return env; } };
 })();
 
