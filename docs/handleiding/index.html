@@ -288,7 +288,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.12.1</span><span>22 hoofdstukken</span><span>30 schermafbeeldingen</span>
+    <span>Versie 2.13.0</span><span>22 hoofdstukken</span><span>31 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -1099,154 +1099,76 @@ header.cover{padding-block:88px 8px}
     <p>De video of het 3D-object start pas wanneer alle knoppen uit beeld zijn. Anders
     kijk je naar het begin van een film door een menu heen.</p></div>
 
-  <h3>Knopeffect — geluidsreactie: de knoppen ademen met de muziek</h3>
-  <p class="measure">Je vindt dit op het tabblad <b>Motion</b>, als vijfde onderdeel. De drie
-  knop-effecten staan daar bij elkaar en heten ook zo: <em>bij het kiezen</em>,
-  <em>aandacht trekken</em> en <em>geluidsreactie</em>.</p>
-  <p class="measure">De knoppen luisteren mee met wat er op dat moment speelt: de
-  achtergrondvideo, de screensaver of een knopvideo. Dat kan alleen als daar geluid op staat
-  (hoofdstuk 8 of 12) — zonder hoorbaar geluid valt er niets te analyseren.</p>
+  <h3>Beats — welke knoppen bewegen mee met de muziek</h3>
+  <p class="measure">Dit staat <b>bij de knop zelf</b>, op het tabblad <em>Knoppen &amp;
+  scènes</em>. Onder elke knop staat een schakelaar <b>♫ Beats</b>. Zet je die open, dan
+  klapt eronder alles uit wat die knop doet. Zo kies je per knop wie meedoet: de tegel met
+  de clip beweegt mee, de knop "Terug" blijft rustig.</p>
 
-  <div class="note"><span class="t">Demo-beat: meteen zien wat een schuif doet</span>
-    <p>In de editor staat meestal niets te spelen, en dan beweegt er dus niets. De knop
-    <b>Demo-beat afspelen</b> maakt zelf een maat van 120 slagen per minuut: een kick op
-    elke tel, hi-hats ertussen en een baslijn. Er is geen bestand voor nodig — de software
-    maakt het geluid ter plekke.</p>
-    <p>Dat geluid loopt door dezelfde analyse als een echte video, dus wat je in het canvas
-    ziet gebeuren is precies wat een bezoeker straks ziet. Schuif met <em>buitenring</em>,
-    <em>binnenring</em> of <em>gevoeligheid</em> terwijl de beat loopt en je ziet het
-    verschil meteen. De knop is grijs zolang het effect op <b>Uit</b> staat: dan valt er
-    niets te tonen.</p></div>
+  <figure>
+    <div class="shot"><img src="img/knop-beats.webp" alt="De Beats-schakelaar bij een knop met het uitgeklapte menu" width="1000" height="625" loading="lazy"></div>
+    <figcaption><b>Het uitklapmenu.</b> Bovenin wat déze knop doet, onderin — achter de kop
+    <em>Geldt voor alle knoppen</em> — hoe er geluisterd wordt. Dat laatste kan niet per
+    knop verschillen: er is één analyser voor het hele scherm.</figcaption>
+  </figure>
 
-  <div class="tw"><table>
-    <thead><tr><th>Effect</th><th>Wat je ziet</th></tr></thead>
-    <tbody>
-      <tr><td>Uit</td><td>De knoppen reageren niet op geluid.</td></tr>
-      <tr><td>Beat</td><td>Bij elke klap zwelt de <b>buitenring</b> licht op en komt het
-        <b>videovlak</b> duidelijk verder naar voren, met een gloedpuls en een diepere
-        zweefschaduw.</td></tr>
-      <tr><td>Equalizer</td><td>Staven in het videovlak tonen laag, midden en hoog —
-        logaritmisch verdeeld, zoals het oor hoort: links de bas, rechts de hoge tonen.</td></tr>
-      <tr><td>Beat én equalizer</td><td>Allebei tegelijk.</td></tr>
-    </tbody>
-  </table></div>
-
-  <div class="note why"><span class="t">Waarom de binnenring harder reageert</span>
-    <p>Twee ringen die even hard meebewegen lezen als één plat vlak dat schaalt. Laat je de
-    binnenring drie keer zo ver gaan als de buitenring, dan ziet het oog diepte: het kader
-    blijft staan en het beeld komt eruit. Vandaar dat de standaard 55 % tegen 18 % is, en dat
-    de regel onder de schuiven voorrekent hoeveel keer sterker de binnenring op dat moment
-    staat. Zet je hem lager dan de buitenring, dan zegt de app dat ook.</p></div>
-
-  <h4>Beat — de parameters</h4>
   <div class="tw"><table>
     <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
     <tbody>
-      <tr><td>Buitenring</td><td>Hoe ver het kader opzwelt. Standaard 18 %.</td>
-        <td>Houd hem laag: het kader is de rustige referentie waartegen het beeld naar voren
-        komt.</td></tr>
-      <tr><td>Binnenring</td><td>Hoe ver het videovlak naar voren komt. Standaard 55 %.</td>
-        <td>Dit is de beweging die je eigenlijk ziet. Hoger dan de buitenring, altijd.</td></tr>
-      <tr><td>Gloedpuls</td><td>Hoeveel de halo om de knop oplicht. 0–200 %.</td>
-        <td>Op een holobox is gloed wat een tegel laat zweven; op de beat maakt het de
-        tegel levend.</td></tr>
-      <tr><td>Zweefschaduw</td><td>Hoeveel de slagschaduw meegroeit.</td>
-        <td>Een schaduw die groter en zachter wordt, betekent voor het oog: dit ding komt
-        dichterbij.</td></tr>
-      <tr><td>Gevoeligheid</td><td>1 tot 10. De regel eronder rekent voor hoeveel de band
-        minstens moet halen.</td><td>De drempel loopt mee met het gemiddelde volume, dus
-        zacht gemasterde muziek geeft evengoed een klap. Laag = alleen de harde klappen en
-        een rustiger uitslag.</td></tr>
-      <tr><td>Luistert naar</td><td>Alleen de bas, bas plus onderkant midden, of het hele
-        spectrum.</td><td><b>Alleen de bas</b> volgt de kickdrum en is voor de meeste muziek
-        de juiste keuze. Het hele spectrum reageert ook op stemmen en effecten.</td></tr>
-      <tr><td>Aanslag · Uitdemping</td><td>Hoe snel hij opkomt en hoe lang hij nadeint, in
-        milliseconden.</td><td>Kort en kort geeft een strakke tik; een lange uitdemping laat
-        de knoppen nadeinen. Standaard 45 en 260 ms.</td></tr>
+      <tr><td>♫ Beats</td><td>Doet deze knop mee.</td><td>Uit blijft hij stil, ook als er
+        muziek speelt. Een scherm waarin álles pompt wordt onrustig.</td></tr>
+      <tr><td>Buitenring %</td><td>Hoeveel de rand opzwelt bij een klap.</td>
+        <td>Houd hem laag: de rand is het kader, dat hoort rustig te blijven.</td></tr>
+      <tr><td>Binnenring %</td><td>Hoeveel het videovlak naar voren komt.</td>
+        <td>Hoger dan de buitenring, anders komt het vlak niet naar voren.</td></tr>
+      <tr><td>Gloedpuls %</td><td>Hoe fel de gloed meepulst.</td><td>Maakt de klap zichtbaar
+        ook op een knop zonder video.</td></tr>
+      <tr><td>Zweefschaduw %</td><td>Hoeveel de slagschaduw meebeweegt.</td>
+        <td>Geeft de indruk dat de knop echt naar voren komt.</td></tr>
+      <tr><td>Equalizer in deze knop</td><td>Staafjes voor laag, midden en hoog.</td>
+        <td>Per knop te kiezen, met een eigen aantal staven, hoogte, dekking en kleuren.</td></tr>
     </tbody>
   </table></div>
 
-  <h4>Equalizer — de parameters</h4>
-  <div class="kv">
-    <dt>Aantal staven</dt><dd>3 tot 16. Meer staven = fijner spectrum, maar op een kleine
-      tegel worden ze dun.</dd>
-    <dt>Hoogte</dt><dd>Hoe hoog de staven mogen worden, als percentage van de tegel.</dd>
-    <dt>Dekking</dt><dd>Hoe sterk ze over het videobeeld liggen. Ze liggen boven het beeld
-      maar onder het label.</dd>
-    <dt>Vloeiendheid</dt><dd>0 is rauw en schokkerig, 95 is traag en vloeiend. Rond 55 volgt
-      hij de muziek zonder te trillen.</dd>
-    <dt>Laag · Midden · Hoog</dt><dd>De drie kleuren. Ze lopen over de staven in elkaar over,
-      zodat je de toonhoogte ook aan de kleur ziet en niet alleen aan de hoogte.</dd>
-  </div>
+  <h4>Geldt voor alle knoppen</h4>
+  <div class="tw"><table>
+    <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+    <tbody>
+      <tr><td>Gevoeligheid</td><td>1 = alleen harde klappen, 10 = bijna alles.</td>
+        <td>Eén analyser luistert voor alle knoppen, dus dit kan niet per knop.</td></tr>
+      <tr><td>Luistert naar</td><td>Alleen de bas, bas en midden, of het hele spectrum.</td>
+        <td>Een kick zit in de bas; bij spraak werkt het hele spectrum beter.</td></tr>
+      <tr><td>Aanslag / uitdemping</td><td>Hoe snel de reactie opkomt en wegzakt.</td>
+        <td>Korte aanslag = scherpe tik, lange uitdemping = ademen.</td></tr>
+      <tr><td><b>Bolling %</b></td><td>Hoeveel sterker een knop midden op het scherm
+        reageert dan een knop aan de rand.</td><td>Zie hieronder.</td></tr>
+    </tbody>
+  </table></div>
 
-  <div class="note warn"><span class="t">Eén ding om te weten</span>
-    <p>Zodra dit effect aanstaat, loopt alle geluid van de box door de analyse heen. Dat is
-    getest en het geluid blijft gewoon hoorbaar, maar het is de reden dat het effect zichzelf
-    pas inschakelt ná de eerste aanraking: eerder staat de audio-analyse van de browser nog
-    stil. In de Windows-app begint hij meteen.</p></div>
+  <div class="note why"><span class="t">Waarom het scherm bol lijkt te staan</span>
+    <p>Een knop midden op het scherm reageert voluit; hoe verder naar de randen, hoe
+    gedempter. Daardoor lijkt het vlak bol te staan, met de meeste beweging in het hart —
+    precies waar de bezoeker kijkt. Je hoeft er niets voor in te stellen: verschuif je een
+    knop naar het midden, dan gaat hij vanzelf heftiger meedoen.</p>
+    <p>Bij <b>bolling 55%</b> (de standaard) reageert een knop op 50% / 50% op 100% van de
+    sterkte, en een knop in de hoek op ongeveer 56% — dat is dus bijna twee keer zo veel in
+    het midden. Zet je hem op 0%, dan doet iedereen even hard mee; op 100% blijft er aan de
+    randen bijna niets over. Onder de schuif staat wat déze knop op zijn huidige plek
+    haalt.</p></div>
 
-  <h4>Aandachtseffecten en het demo-handje</h4>
-  <div class="kv">
-    <dt>Gemiddeld interval</dt><dd>Hoe vaak een knop uit zichzelf een effect speelt om een
-      voorbijganger te trekken. Wélk effect, stel je per knop in bij de inspector.</dd>
-    <dt>Handje aan</dt><dd>Een demo-hand wijst de knoppen aan en maakt een drukkende
-      beweging.</dd>
-    <dt>Verschijnt na</dt><dd>Seconden rust voordat het handje begint. Het verdwijnt direct
-      zodra iemand het scherm aanraakt.</dd>
-  </div>
-</section>
+  <div class="note"><span class="t">Demo-beat: meteen zien wat een schuif doet</span>
+    <p>In de editor staat meestal niets te spelen, en dan beweegt er niets. Onderaan het
+    uitklapmenu maakt <b>Demo-beat afspelen</b> zelf een maat van 120 slagen per minuut:
+    een kick op elke tel, hi-hats ertussen en een baslijn. Geen bestand nodig — het geluid
+    wordt ter plekke gemaakt, en loopt door dezelfde analyse als een echte video. Wat je in
+    het canvas ziet is dus wat een bezoeker straks ziet.</p></div>
 
-<!-- ═══════════════════════════════════════════════ 12 ═══ -->
-<section class="ch" id="t-saver">
-  <div class="ch-head"><div class="ch-num">12</div><div>
-    <h2>Screensaver</h2>
-    <p class="lead measure">Wat de box doet als er niemand staat — en optioneel ook wat er
-    achter de knoppen door speelt als er wél iemand staat.</p>
-  </div></div>
+  <div class="note warn"><span class="t">Er moet wél geluid zijn</span>
+    <p>In bedrijf luisteren de knoppen mee met wat er op dat moment speelt: de
+    achtergrondvideo, de screensaver of een knopvideo. Zet daarvoor het geluid aan bij
+    <em>Scherm &amp; scène</em> of bij <em>Screensaver</em> (hoofdstuk 8 of 12) — zonder
+    hoorbaar geluid valt er niets te analyseren en blijft alles stil.</p></div>
 
-  <div class="wwww">
-    <div><dt>Wie</dt><dd>De bouwer; in een showroom is dit vaak het meest bekeken
-      onderdeel.</dd></div>
-    <div><dt>Wat</dt><dd>Aan/uit, wachttijd, playlist, overgang, achtergrondmodus en
-      geluid.</dd></div>
-    <div><dt>Waar</dt><dd>Achtste tabblad.</dd></div>
-    <div><dt>Waarom</dt><dd>Een holobox staat het grootste deel van de dag alleen. Een zwart
-      scherm trekt niemand; een lus die doorloopt wel.</dd></div>
-  </div>
-
-  <div class="split">
-    <figure><div class="panelshot tall">
-      <img src="img/paneel-saver.webp" alt="Het paneel Screensaver" width="371" height="1185" loading="lazy">
-    </div></figure>
-    <div class="tw"><table>
-      <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
-      <tbody>
-        <tr><td>Screensaver aan</td><td>Start vanzelf na rust; aanraking brengt de knoppen
-          direct terug.</td><td>De terugweg moet onmiddellijk zijn, anders denkt de bezoeker
-          dat de box niet reageert.</td></tr>
-        <tr><td>Start na</td><td>Seconden zonder aanraking.</td>
-          <td>120 s is een goede showroomwaarde; op een drukke beurs mag het korter.</td></tr>
-        <tr><td>Ook op de achtergrond draaien</td><td>De playlist speelt — met dezelfde
-          overgangen — áchter de knoppen door.</td><td>Vervangt zolang hij aanstaat de losse
-          achtergrondvideo van de scène.</td></tr>
-        <tr><td>Playlist</td><td>De video's in volgorde; daarna opnieuw.</td>
-          <td>Eén video loopt naadloos in een lus, zonder zwart tussenbeeld.</td></tr>
-        <tr><td>Overgang</td><td>Crossfade, via zwart, zoom-crossfade (Ken Burns), schuiven
-          van rechts — of geen. Met een instelbare duur van 0,3 tot 3 s.</td>
-          <td>Een harde cut tussen twee sferen leest als een storing. De overgang start
-          zoveel seconden vóór het einde van de lopende video, zodat de wissel overlapt.</td></tr>
-        <tr><td>Geluid bij de screensaver</td><td>Aan of uit, met een eigen volumeschuif.
-          Geldt voor de playlist — schermvullend én in de achtergrondmodus.</td>
-          <td>Tot versie 2.9.1 speelde de playlist altijd stil. Nu kan een sfeerfilm of een
-          bedrijfsvideo gewoon geluid geven.</td></tr>
-        <tr><td>Volume van de screensaver</td><td>0 tot 100 %, maal het hoofdvolume.</td>
-          <td>Zelfde rekensom als bij de achtergrondvideo; de regel eronder laat zien wat er
-          werkelijk uit komt.</td></tr>
-        <tr><td>Nu testen</td><td>Start de screensaver meteen.</td>
-          <td>Zodat je niet twee minuten hoeft te wachten om je werk te zien.</td></tr>
-      </tbody>
-    </table></div>
-  </div>
   <h3>Geluid op de achtergrond</h3>
   <p class="measure">Er zijn twee lagen die geluid kunnen geven, en ze gebruiken hetzelfde
   scherm. Welke van de twee je hoort, hangt af van de achtergrondmodus.</p>
@@ -1430,6 +1352,16 @@ header.cover{padding-block:88px 8px}
     niets verstuurd. De software werkt op een raster van 96 × 72 grijswaarden — te grof voor
     een gezicht, precies genoeg voor een silhouet. Geen herkenning, geen opslag, geen
     netwerkverkeer.</p></div>
+  <div class="note warn"><span class="t">Lampje brandt, beeld blijft zwart</span>
+    <p>Komt er wel stroom op de camera — het lampje brandt — maar blijft het voorbeeld
+    zwart, dan zegt <b>Camerabeeld</b> dat nu met zoveel woorden: <em>"het beeld is helemaal
+    zwart"</em>. Daarvoor meldde hij "werkt", want er kwámen beelden binnen; dat ze zwart
+    waren zag hij niet.</p>
+    <p>Bijna altijd is er één van deze drie aan de hand: een ander programma gebruikt de
+    camera al (Teams, Zoom, een andere browsertab), er zit een privacyschuifje voor de lens,
+    of de camera staat in een donkere ruimte. Sluit het andere programma, schuif het
+    klepje weg, of doe het licht aan — het voorbeeld springt vanzelf weer aan.</p></div>
+
 </section>
 
 <!-- ═══════════════════════════════════════════════ 14 ═══ -->
@@ -2092,7 +2024,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.12.1 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.13.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>

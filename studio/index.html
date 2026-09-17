@@ -153,6 +153,17 @@
      De ring en de staven hangen ín de knop, dus ze botsen niet met de
      entrance- en zweefanimaties die de transform van .vbtn zelf sturen. */
 
+  /* Elke knop rekent zijn eigen reactie uit. De laag levert alleen de ruwe
+     --ar (0..1); de knop vermenigvuldigt die met zijn eigen sterktes en met
+     --bK, de bollingsfactor: 1 in het midden van het scherm, minder naar de
+     randen toe. Een knop die niet meedoet heeft alle factoren op 0 en staat
+     dus vanzelf stil — zonder dat er per frame iets aan hem geschreven wordt. */
+  .vbtn {
+    --arOut: calc(1 + var(--ar, 0) * var(--bK, 0) * var(--bOut, 0) * 0.25);
+    --arIn: calc(1 + var(--ar, 0) * var(--bK, 0) * var(--bIn, 0) * 0.25);
+    --arGlow: calc(1 + var(--ar, 0) * var(--bK, 0) * var(--bGlowP, 0));
+    --arLift: calc(var(--ar, 0) * var(--bK, 0) * var(--bLift, 0)); }
+
   /* Buitenring: zwelt licht op en licht op bij een klap. */
   .pv-ring { position: absolute; inset: 0; border-radius: inherit; z-index: 1;
     pointer-events: none; display: none;
@@ -160,20 +171,20 @@
     box-shadow: 0 0 0 calc(var(--ar, 0) * 0.16em) var(--frame, #35d0ba),
                 0 0 calc(var(--ar, 0) * 2.4em) var(--glow, rgba(53,208,186,0.35));
     opacity: calc(0.25 + var(--ar, 0) * 0.75); }
-  body.ar-beat .pv-ring { display: block; }
+  .vbtn.beat-on .pv-ring { display: block; }
   /* Binnenring krijgt er een vleugje licht bij, zodat het naar voren komen
      ook te zíen is en niet alleen te meten. */
-  body.ar-beat .vbtn.has-preview video.preview,
-  body.ar-beat .vbtn.has-preview canvas.preview3d {
-    filter: brightness(calc(1 + var(--ar, 0) * 0.22)); }
+  .vbtn.beat-on.has-preview video.preview,
+  .vbtn.beat-on.has-preview canvas.preview3d {
+    filter: brightness(calc(1 + var(--ar, 0) * var(--bK, 0) * 0.22)); }
 
   /* Equalizer: staven onderin het videovlak, onder het label door. */
   .pv-eq { position: absolute; left: var(--fpad, 0.45em); right: var(--fpad, 0.45em);
-    bottom: calc(var(--fpad, 0.45em) + 1.8em); height: calc(var(--eqH, 38) * 1%);
+    bottom: calc(var(--fpad, 0.45em) + 1.8em); height: calc(var(--bEqH, 38) * 1%);
     display: none; align-items: flex-end; gap: 4%;
     padding: 0 6%; z-index: 1; pointer-events: none;
-    opacity: calc(var(--eqO, 70) / 100); mix-blend-mode: screen; }
-  body.ar-eq .pv-eq { display: flex; }
+    opacity: calc(var(--bEqO, 70) / 100); mix-blend-mode: screen; }
+  .vbtn.eq-on .pv-eq { display: flex; }
   .pv-eq i { flex: 1 1 0; min-width: 0; height: calc(var(--v, 0) * 100%);
     min-height: 2px; border-radius: 0.12em 0.12em 0 0;
     background: linear-gradient(to top, var(--c, #35d0ba), #fff);
@@ -185,8 +196,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .pv-ring { transform: none; }
-    body.ar-beat .vbtn.has-preview video.preview,
-    body.ar-beat .vbtn.has-preview canvas.preview3d { filter: none; }
+    .vbtn.beat-on.has-preview video.preview,
+    .vbtn.beat-on.has-preview canvas.preview3d { filter: none; }
   }
 
   .vbtn.has-preview .pv-label { position: absolute; left: var(--fpad, 0.45em); right: var(--fpad, 0.45em);
@@ -748,6 +759,15 @@
     border: 1px solid var(--p-line); border-radius: 10px; padding: 12px 14px;
     max-height: 340px; overflow-y: auto; }
 
+  /* Het uitklapmenu onder de Beats-schakelaar. Ingesprongen met een lijn
+     ervoor, zodat te zien is dat alles erin bij die ene knop hoort. */
+  .beat-blok { display: flex; flex-direction: column; gap: 10px;
+    border: 1px solid var(--p-line); border-radius: 10px; padding: 11px 12px;
+    background: var(--p-card-2); }
+  .beat-menu { display: flex; flex-direction: column; gap: 10px;
+    margin-left: 4px; padding-left: 11px; border-left: 2px solid rgba(53,208,186,0.35); }
+  .beat-menu.hidden { display: none; }
+
   /* Schakelaar */
   .switch { position: relative; display: inline-flex; flex: none; width: 40px; height: 22px; }
   .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
@@ -993,8 +1013,9 @@
 
   <!-- ================= KNOPPEN ================= -->
   <div class="tabpage" id="page-buttons">
-    <p class="note">Effecten op de knoppen &mdash; bij het kiezen, aandacht trekken en
-    meebewegen met de muziek &mdash; staan bij elkaar op het tabblad <b>Motion</b>.</p>
+    <p class="note">Of een knop meebeweegt op de muziek zet je bij de knop zelf, met de
+    schakelaar <b>&#9835; Beats</b>. Effecten bij het kiezen en het aandacht trekken staan
+    op het tabblad <b>Motion</b>.</p>
     <div class="card">
       <label class="field">Sc&egrave;ne
         <select id="sceneSelect"></select>
@@ -1435,99 +1456,6 @@
       <p class="note">Welk effect een knop speelt (gloedpuls, lichtrand, flits, glans-veeg) stel je per knop in op het tabblad Knoppen.</p>
     </div>
 
-    <h2>Knopeffect &mdash; geluidsreactie</h2>
-    <div class="card">
-      <label class="field">Effect
-        <select id="arMode">
-          <option value="off">Uit</option>
-          <option value="beat">Beat &mdash; de knoppen ademen op de maat</option>
-          <option value="eq">Equalizer &mdash; laag, midden en hoog in beeld</option>
-          <option value="both">Beat &eacute;n equalizer</option>
-        </select>
-      </label>
-      <p class="note" id="arNote"></p>
-      <button id="arDemo" class="btn block">&#9835; Demo-beat afspelen</button>
-      <p class="note" id="arDemoNote"></p>
-    </div>
-
-    <div class="card hidden" id="arBeatCard">
-      <div class="lay-row" style="font-size:10px;font-weight:650;letter-spacing:.07em;color:var(--color-text-muted)">BEAT</div>
-      <div class="row">
-        <label class="field">Buitenring (%)
-          <input type="range" id="arOuter" min="0" max="100" step="1">
-        </label>
-        <label class="field">Binnenring (%)
-          <input type="range" id="arInner" min="0" max="100" step="1">
-        </label>
-      </div>
-      <p class="note" id="arRingNote"></p>
-      <div class="row">
-        <label class="field">Gloedpuls (%)
-          <input type="range" id="arGlowP" min="0" max="200" step="5">
-        </label>
-        <label class="field">Zweefschaduw (%)
-          <input type="range" id="arLift" min="0" max="100" step="5">
-        </label>
-      </div>
-      <div class="row">
-        <label class="field">Gevoeligheid (1&ndash;10)
-          <input type="range" id="arSens" min="1" max="10" step="1">
-        </label>
-        <label class="field">Luistert naar
-          <select id="arBand">
-            <option value="low">Alleen de bas (kickdrum)</option>
-            <option value="lowmid">Bas en onderkant midden</option>
-            <option value="full">Het hele spectrum</option>
-          </select>
-        </label>
-      </div>
-      <div class="row">
-        <label class="field">Aanslag (ms)
-          <input type="number" id="arAttack" min="10" max="400" step="5">
-        </label>
-        <label class="field">Uitdemping (ms)
-          <input type="number" id="arRelease" min="60" max="1500" step="10">
-        </label>
-      </div>
-      <p class="note" id="arSensNote"></p>
-      <p class="note">Korte aanslag en korte uitdemping geven een strakke tik; een lange
-      uitdemping laat de knoppen langer nadeinen. De drempel loopt mee met het gemiddelde
-      volume, dus zacht gemasterde muziek geeft evengoed een klap.</p>
-    </div>
-
-    <div class="card hidden" id="arEqCard">
-      <div class="lay-row" style="font-size:10px;font-weight:650;letter-spacing:.07em;color:var(--color-text-muted)">EQUALIZER</div>
-      <div class="row">
-        <label class="field">Aantal staven
-          <input type="number" id="arBars" min="3" max="16" step="1">
-        </label>
-        <label class="field">Hoogte (%)
-          <input type="range" id="arEqHeight" min="10" max="80" step="1">
-        </label>
-      </div>
-      <div class="row">
-        <label class="field">Dekking (%)
-          <input type="range" id="arEqOpacity" min="10" max="100" step="5">
-        </label>
-        <label class="field">Vloeiendheid (%)
-          <input type="range" id="arEqSmooth" min="0" max="95" step="5">
-        </label>
-      </div>
-      <div class="row">
-        <label class="field">Laag
-          <input type="color" id="arEqLow">
-        </label>
-        <label class="field">Midden
-          <input type="color" id="arEqMid">
-        </label>
-        <label class="field">Hoog
-          <input type="color" id="arEqHigh">
-        </label>
-      </div>
-      <p class="note">De staven staan logaritmisch verdeeld, zoals het oor hoort: links de
-      bas, rechts de hoge tonen. Ze liggen onder het label, in het videovlak zelf.</p>
-    </div>
-
     <h2>Demo-handje</h2>
     <div class="card">
       <div class="toggle-row">
@@ -1925,7 +1853,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.12.1';
+const APP_VERSION = '2.13.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -1957,7 +1885,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 12,
+  version: 13,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -2015,24 +1943,17 @@ const defaultConfig = () => ({
     mic: true,           // microfoon van de bezoeker meesturen
     greetOnOpen: true
   },
-  /* Geluidsreactie: de knoppen ademen mee met de muziek die op dat moment
-     speelt. De binnenring (het videovlak) reageert heftiger naar voren dan
-     de buitenring, en de equalizer laat laag/midden/hoog zien. */
+  /* Geluidsreactie. Wat een knop dóet staat bij de knop zelf (b.beat);
+     hier staat alleen wat gedeeld moet zijn, want er is één analyser voor
+     alle knoppen samen. 'bolling' bepaalt hoeveel sterker een knop midden
+     op het scherm reageert dan een knop aan de rand. */
   audioFx: {
-    mode: 'off',          // off | beat | eq | both
-    outer: 18,            // % reactie buitenring
-    inner: 55,            // % reactie binnenring — bewust groter
-    glow: 100,            // % gloedpuls
-    lift: 40,             // % extra slagschaduw bij een klap
     sens: 5,              // 1 (alleen harde klappen) .. 10 (alles)
+    band: 'low',          // waarop de beat gezocht wordt: low | lowmid | full
     attackMs: 45,         // hoe snel hij opkomt
     releaseMs: 260,       // hoe lang hij uitdempt
-    band: 'low',          // waarop de beat gezocht wordt: low | lowmid | full
-    bars: 7,              // aantal equalizer-staven
-    eqHeight: 38,         // % van de binnenhoogte
-    eqOpacity: 70,
     eqSmooth: 60,         // 0 = rauw, 100 = vloeiend
-    eqLow: '#ef5da8', eqMid: '#35d0ba', eqHigh: '#7cc7ff'
+    bolling: 55           // 0 = overal even sterk, 100 = alleen in het midden
   },
   fxIntervalSec: 7,      // hoe vaak een knop gemiddeld een aandachtseffect speelt
   selectFx: 'preset',    // 'preset' volgt de motionpreset | zoom | aside | depth | burst | none
@@ -2109,7 +2030,17 @@ function migrateConfig(stored) {
     if (typeof a.tryUrl !== 'string') a.tryUrl = '';
     if (typeof a.tryMode !== 'boolean') a.tryMode = false;
   }
-  c.version = 12;
+  // v13: de geluidsreactie zit nu bij de knop zelf. Elke knop kiest of hij
+  // meedoet en hoe sterk; wat gedeeld blijft is hoe er geluisterd wordt —
+  // er is immers één microfoon voor iedereen.
+  for (const sc of c.scenes) for (const b of (sc.buttons || [])) {
+    if (!b.beat || typeof b.beat !== 'object') b.beat = { on: false };
+    const d = { on: false, outer: 18, inner: 55, glow: 100, lift: 40,
+      eq: false, bars: 7, eqHeight: 38, eqOpacity: 70,
+      eqLow: '#ef5da8', eqMid: '#35d0ba', eqHigh: '#7cc7ff' };
+    b.beat = { ...d, ...b.beat };
+  }
+  c.version = 13;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -3314,7 +3245,7 @@ function renderStage() {
     } else if (preview && media.kind === 'model') {
       // 3D-object: langzaam ronddraaiend voorbeeld in het kader.
       const cv = el('canvas', { class: 'preview3d' });
-      btn.append(cv, el('span', { class: 'pv-well' }), ...audioDecor(),
+      btn.append(cv, el('span', { class: 'pv-well' }), ...audioDecor(b),
         el('span', { class: 'pv-badge' }, '3D'),
         el('span', { class: 'pv-play' }, '▶'),
         el('span', { class: 'pv-label' }, btnLabel(b) || media.name));
@@ -3327,7 +3258,7 @@ function renderStage() {
       // zodra die klaar is); de echte video start fullscreen bij aanraking.
       const v = el('video', { class: 'preview', src: media.previewUrl || media.url, muted: '', loop: '', autoplay: '', playsinline: '', preload: 'metadata' });
       v.muted = true; // attribuut alleen is niet genoeg voor autoplay
-      btn.append(v, el('span', { class: 'pv-well' }), ...audioDecor(),
+      btn.append(v, el('span', { class: 'pv-well' }), ...audioDecor(b),
         el('span', { class: 'pv-play' }, '▶'), el('span', { class: 'pv-label' }, btnLabel(b) || media.name));
       if (b.shape !== 'circle') {
         // Knopformaat = renditieformaat: liggend 1280×800, staand 800×1280.
@@ -3341,9 +3272,14 @@ function renderStage() {
       }
       if (!media.previewUrl) ensurePreviewRendition(b.mediaId);
     } else {
-      btn.append(el('span', { class: 'play-ico' }, '▶'), b.shape === 'circle' ? '' : (btnLabel(b) || 'Afspelen'));
+      // Ook een gewone knop zonder videovoorbeeld krijgt de ring en de staven
+      // mee: anders kan hij wel "meedoen met de muziek" maar is er niets van
+      // te zien behalve de gloed.
+      btn.append(...audioDecor(b),
+        el('span', { class: 'play-ico' }, '▶'), b.shape === 'circle' ? '' : (btnLabel(b) || 'Afspelen'));
       if (b.shape === 'circle' && btnLabel(b)) btn.title = btnLabel(b);
     }
+    applyBeatVars(btn, b);
     layer.append(btn);
     // Bewegingskader tonen in verplaats-modus wanneer "vrij bewegen" aanstaat.
     if ((b.drift || 0) > 0) {
@@ -3363,20 +3299,50 @@ function mixHex(a, b, t) {
   return '#' + c(r1, r2) + c(g1, g2) + c(b1, b2);
 }
 
-function audioDecor() {
-  const fx = config.audioFx || {};
-  const n = Math.max(3, Math.min(16, fx.bars || 7));
+function audioDecor(b) {
+  const bt = (b && b.beat) || {};
+  const n = Math.max(3, Math.min(16, bt.bars || 7));
   const eq = el('span', { class: 'pv-eq' });
   for (let i = 0; i < n; i++) {
     // laag → midden → hoog over de staven verdeeld, zodat je de toonhoogte
     // niet alleen aan de hoogte maar ook aan de kleur ziet
     const t = n === 1 ? 0 : i / (n - 1);
     const col = t < 0.5
-      ? mixHex(fx.eqLow || '#ef5da8', fx.eqMid || '#35d0ba', t * 2)
-      : mixHex(fx.eqMid || '#35d0ba', fx.eqHigh || '#7cc7ff', (t - 0.5) * 2);
+      ? mixHex(bt.eqLow || '#ef5da8', bt.eqMid || '#35d0ba', t * 2)
+      : mixHex(bt.eqMid || '#35d0ba', bt.eqHigh || '#7cc7ff', (t - 0.5) * 2);
     eq.append(el('i', { style: `--v: var(--eq${i}, 0); --c: ${col};` }));
   }
   return [el('span', { class: 'pv-ring' }), eq];
+}
+
+/* Bolling: een knop midden op het scherm reageert voluit, een knop aan de
+   rand gedempt. De afstand tot het midden gaat van 0 (midden) naar 1 (hoek);
+   de schuif 'bolling' bepaalt hoeveel daarvan afgaat. Zo lijkt het vlak bol
+   te staan, met de meeste beweging in het hart. */
+function beatBolling(b) {
+  const sterkte = Math.min(100, Math.max(0, config.audioFx?.bolling ?? 55)) / 100;
+  const dx = ((b.x ?? 50) - 50) / 50, dy = ((b.y ?? 50) - 50) / 50;
+  const d = Math.min(1, Math.hypot(dx, dy) / Math.SQRT2);
+  return Math.max(0, 1 - sterkte * d);
+}
+
+// Zet de vaste reactiewaarden op de knop. Ze veranderen alleen als je iets
+// instelt of de knop verplaatst, dus dit kost per frame niets.
+function applyBeatVars(btn, b) {
+  const bt = b.beat || {};
+  btn.classList.toggle('beat-on', !!bt.on);
+  btn.classList.toggle('eq-on', !!(bt.on && bt.eq));
+  if (!bt.on) {
+    for (const k of ['--bK', '--bOut', '--bIn', '--bGlowP', '--bLift']) btn.style.removeProperty(k);
+    return;
+  }
+  btn.style.setProperty('--bK', beatBolling(b).toFixed(4));
+  btn.style.setProperty('--bOut', String((bt.outer ?? 18) / 100));
+  btn.style.setProperty('--bIn', String((bt.inner ?? 55) / 100));
+  btn.style.setProperty('--bGlowP', String((bt.glow ?? 100) / 100));
+  btn.style.setProperty('--bLift', String((bt.lift ?? 40) / 100));
+  btn.style.setProperty('--bEqH', String(bt.eqHeight ?? 38));
+  btn.style.setProperty('--bEqO', String(bt.eqOpacity ?? 70));
 }
 
 // Kaders even groot maken als knop + bewegingsruimte (in px, na layout).
@@ -5915,6 +5881,109 @@ function playlistEditor(b) {
   return wrap;
 }
 
+/* ---- Beats: doet deze knop mee met de muziek? ----------------------
+   De schakelaar staat bij de knop, want dat is waar je kiest wat die knop
+   doet. Zet je hem open, dan klapt alles eronder uit: hoe hard hij reageert,
+   of de equalizer meedoet, en de instellingen die voor alle knoppen samen
+   gelden — er is immers één analyser voor het hele scherm. */
+function beatEditor(b) {
+  const bt = b.beat || (b.beat = { on: false });
+  const fx = config.audioFx || (config.audioFx = {});
+  const herteken = () => { save(); renderStage(); renderBtnList(); };
+
+  const schuif = (label, waarde, min, max, stap, zet, uitleg) =>
+    el('label', { class: 'field' }, `${label} (${waarde}${label.includes('%') ? '' : ''})`,
+      el('input', { type: 'range', min, max, step: stap, value: waarde,
+        oninput: (e) => { zet(Number(e.target.value)); save(); renderStage(); },
+        onchange: () => renderBtnList() }),
+      uitleg ? el('span', { class: 'note' }, uitleg) : null);
+
+  // Drie kleurvelden naast elkaar: met de standaardbreedte zouden ze onder
+  // elkaar vallen en drie regels van de smalle kolom opeten.
+  const kleur = (label, waarde, zet) =>
+    el('label', { class: 'field', style: 'flex:1 1 60px' }, label,
+      el('input', { type: 'color', value: waarde, style: 'height:30px;padding:2px',
+        oninput: (e) => { zet(e.target.value); save(); renderStage(); } }));
+
+  const menu = el('div', { class: 'beat-menu' + (bt.on ? '' : ' hidden') });
+  if (bt.on) {
+    const k = Math.round(beatBolling(b) * 100);
+    menu.append(
+      el('div', { class: 'row' },
+        schuif('Buitenring %', bt.outer ?? 18, 0, 100, 1, (v) => { bt.outer = v; }),
+        schuif('Binnenring %', bt.inner ?? 55, 0, 100, 1, (v) => { bt.inner = v; })),
+      el('p', { class: 'note' },
+        `Het videovlak reageert nu ${((bt.inner ?? 55) / Math.max(1, bt.outer ?? 18)).toFixed(1)}× ` +
+        'zo sterk als de rand — daardoor lijkt het naar voren te komen.'),
+      el('div', { class: 'row' },
+        schuif('Gloedpuls %', bt.glow ?? 100, 0, 200, 5, (v) => { bt.glow = v; }),
+        schuif('Zweefschaduw %', bt.lift ?? 40, 0, 100, 5, (v) => { bt.lift = v; })),
+
+      el('div', { class: 'toggle-row' },
+        el('div', {}, el('div', { class: 't-label' }, 'Equalizer in deze knop'),
+          el('div', { class: 't-sub' }, 'Staafjes voor laag, midden en hoog in het videovlak')),
+        (() => {
+          const sw = el('label', { class: 'switch' },
+            el('input', { type: 'checkbox', onchange: (e) => { bt.eq = e.target.checked; herteken(); } }),
+            el('i', {}));
+          sw.querySelector('input').checked = !!bt.eq;
+          return sw;
+        })()),
+      bt.eq ? el('div', { class: 'row' },
+        schuif('Aantal staven', bt.bars ?? 7, 3, 16, 1, (v) => { bt.bars = v; herteken(); }),
+        schuif('Hoogte %', bt.eqHeight ?? 38, 10, 90, 1, (v) => { bt.eqHeight = v; }),
+        schuif('Dekking %', bt.eqOpacity ?? 70, 10, 100, 5, (v) => { bt.eqOpacity = v; })) : null,
+      bt.eq ? el('div', { class: 'row' },
+        kleur('Laag', bt.eqLow || '#ef5da8', (v) => { bt.eqLow = v; herteken(); }),
+        kleur('Midden', bt.eqMid || '#35d0ba', (v) => { bt.eqMid = v; herteken(); }),
+        kleur('Hoog', bt.eqHigh || '#7cc7ff', (v) => { bt.eqHigh = v; herteken(); })) : null,
+
+      el('div', { class: 'lay-row', style: 'font-size:10px;font-weight:650;letter-spacing:.07em;color:var(--color-text-muted);margin-top:4px' },
+        'GELDT VOOR ALLE KNOPPEN'),
+      el('div', { class: 'row' },
+        schuif('Gevoeligheid', fx.sens ?? 5, 1, 10, 1, (v) => { fx.sens = v; }),
+        el('label', { class: 'field' }, 'Luistert naar', (() => {
+          const sel = el('select', { onchange: (e) => { fx.band = e.target.value; save(); } },
+            el('option', { value: 'low' }, 'Alleen de bas (kick)'),
+            el('option', { value: 'lowmid' }, 'Bas en midden'),
+            el('option', { value: 'full' }, 'Het hele spectrum'));
+          sel.value = fx.band || 'low';
+          return sel;
+        })())),
+      el('div', { class: 'row' },
+        schuif('Aanslag ms', fx.attackMs ?? 45, 10, 300, 5, (v) => { fx.attackMs = v; }),
+        schuif('Uitdemping ms', fx.releaseMs ?? 260, 60, 900, 10, (v) => { fx.releaseMs = v; })),
+      schuif('Bolling %', fx.bolling ?? 55, 0, 100, 5, (v) => { fx.bolling = v; renderStage(); },
+        `Deze knop staat op ${b.x ?? 50}% / ${b.y ?? 50}% en reageert daardoor op ` +
+        `${k}% van de volle sterkte. Midden op het scherm is dat 100%, aan de randen minder — ` +
+        'zo lijkt het vlak bol te staan.'),
+
+      el('button', { class: 'btn block', onclick: () => {
+        AudioFX.demo(!AudioFX.demoLoopt); renderBtnList();
+      } }, AudioFX.demoLoopt ? '■ Demo-beat stoppen' : '♫ Demo-beat afspelen'),
+      el('p', { class: 'note' }, AudioFX.demoLoopt
+        ? 'Een maat van 120 slagen per minuut. Kijk naar de knoppen in het canvas.'
+        : 'Speelt zelf een maat af zodat je meteen ziet wat een schuif doet, ook zonder video.'));
+  }
+
+  return el('div', { class: 'beat-blok' },
+    el('div', { class: 'toggle-row' },
+      el('div', {},
+        el('div', { class: 't-label' }, '♫ Beats — deze knop beweegt op de muziek'),
+        el('div', { class: 't-sub' }, bt.on
+          ? 'Aan. Alles wat hij doet stel je hieronder in.'
+          : 'Uit. Deze knop blijft stil, ook als er muziek speelt.')),
+      (() => {
+        const sw = el('label', { class: 'switch' },
+          el('input', { type: 'checkbox', 'data-role': 'beat',
+            onchange: (e) => { bt.on = e.target.checked; herteken(); AudioFX.apply(); } }),
+          el('i', {}));
+        sw.querySelector('input').checked = !!bt.on;
+        return sw;
+      })()),
+    menu);
+}
+
 function renderBtnList() {
   $('#edSnap').checked = !!config.editor.snap;
   $('#edGrid').value = config.editor.gridPercent;
@@ -6092,6 +6161,7 @@ function renderBtnList() {
         el('div', { class: 'field' }, 'Playlist (speelt na elkaar af)', playlistEditor(b)),
       el('label', { class: 'field' }, 'Aandachtseffect (speelt af en toe vanzelf)', fxSel),
         el('label', { class: 'field' }, 'Frame', frameSel)),
+      beatEditor(b),
       el('div', { class: 'toggle-row' },
         el('div', {}, el('div', { class: 't-label' }, 'Playlist in willekeurige volgorde'),
           el('div', { class: 't-sub' }, 'Na de eerste video volgt de rest geschud')),
@@ -6419,7 +6489,6 @@ function renderLook() {
   $('#navSwipe').checked = !!config.nav.swipeBack;
   $('#cfgSelectFx').value = config.selectFx || 'zoom';
   $('#cfgFxInterval').value = config.fxIntervalSec;
-  renderAudioFx();
   $('#handEnabled').checked = config.hand.enabled;
   $('#handSize').value = config.hand.size;
   $('#handDelay').value = config.hand.delaySec;
@@ -6566,103 +6635,8 @@ function applyEditorOverlays() {
 }
 
 $('#cfgSelectFx').addEventListener('change', (e) => { config.selectFx = e.target.value; save(); });
-$('#arDemo')?.addEventListener('click', () => {
-  AudioFX.demo(!AudioFX.demoLoopt);
-  renderAudioFx();
-});
 $('#cfgFxInterval').addEventListener('change', (e) => { config.fxIntervalSec = Math.max(3, Number(e.target.value) || 7); save(); });
 
-/* ---- Geluidsreactie: velden vullen en uitleg meeschrijven ---- */
-function renderAudioFx() {
-  const fx = config.audioFx || {};
-  const set = (id, v) => { const n = document.getElementById(id); if (n) n.value = v; };
-  set('arMode', fx.mode || 'off');
-  set('arOuter', fx.outer ?? 18);   set('arInner', fx.inner ?? 55);
-  set('arGlowP', fx.glow ?? 100);   set('arLift', fx.lift ?? 40);
-  set('arSens', fx.sens ?? 5);      set('arBand', fx.band || 'low');
-  set('arAttack', fx.attackMs ?? 45); set('arRelease', fx.releaseMs ?? 260);
-  set('arBars', fx.bars ?? 7);      set('arEqHeight', fx.eqHeight ?? 38);
-  set('arEqOpacity', fx.eqOpacity ?? 70); set('arEqSmooth', fx.eqSmooth ?? 60);
-  set('arEqLow', fx.eqLow || '#ef5da8'); set('arEqMid', fx.eqMid || '#35d0ba');
-  set('arEqHigh', fx.eqHigh || '#7cc7ff');
-  const beat = fx.mode === 'beat' || fx.mode === 'both';
-  const eq = fx.mode === 'eq' || fx.mode === 'both';
-  document.getElementById('arBeatCard')?.classList.toggle('hidden', !beat);
-  document.getElementById('arEqCard')?.classList.toggle('hidden', !eq);
-  const note = document.getElementById('arNote');
-  if (note) {
-    note.textContent = fx.mode === 'off'
-      ? 'Uit: de knoppen reageren niet op geluid.'
-      : 'De knoppen luisteren mee met wat er op dat moment speelt: de achtergrondvideo, ' +
-        'de screensaver of een knopvideo. Zet daarvoor wel het geluid aan bij Scherm & scène ' +
-        'of bij Screensaver — zonder hoorbaar geluid is er niets te analyseren.';
-  }
-  // Demo-beat: alleen zinvol als er een effect gekozen is, anders valt er
-  // niets te zien en lijkt de knop stuk.
-  const dknop = document.getElementById('arDemo');
-  const dnote = document.getElementById('arDemoNote');
-  if (dknop) {
-    const uit = fx.mode === 'off';
-    dknop.disabled = uit;
-    dknop.style.opacity = uit ? '0.45' : '';
-    const loopt = AudioFX.demoLoopt;
-    dknop.textContent = loopt ? '■ Demo-beat stoppen' : '♫ Demo-beat afspelen';
-    if (dnote) {
-      dnote.textContent = uit
-        ? 'Kies eerst een effect hierboven.'
-        : loopt
-          ? 'Een maat van 120 slagen per minuut. Kijk naar de knoppen in het canvas.'
-          : 'Speelt zelf een maat af zodat je de knoppen ziet meebewegen, zonder video.';
-    }
-  }
-
-  const sn = document.getElementById('arSensNote');
-  if (sn) {
-    const v = fx.sens ?? 5;
-    const floor = Math.round((0.18 + (10 - v) / 9 * 0.45) * 100);
-    sn.textContent = `Stand ${v}: de band moet minstens ${floor}% van zijn maximum halen ` +
-      `én boven zijn eigen gemiddelde uitkomen. Laag = alleen de harde klappen en een ` +
-      `rustiger uitslag, hoog = ook zachtere aanzetten en een heftiger uitslag.`;
-  }
-  const rn = document.getElementById('arRingNote');
-  if (rn) {
-    const o = fx.outer ?? 18, i = fx.inner ?? 55;
-    rn.textContent = i > o
-      ? `De binnenring reageert ${(i / Math.max(1, o)).toFixed(1)}× zo sterk als de buitenring — ` +
-        'daardoor lijkt het videovlak naar voren te komen en blijft het kader rustiger.'
-      : 'Zet de binnenring hoger dan de buitenring, anders komt het videovlak niet naar voren.';
-  }
-}
-
-function bindAudioFx(id, key, parse, rebuild) {
-  const n = document.getElementById(id); if (!n) return;
-  const evt = n.type === 'range' || n.type === 'color' ? 'input' : 'change';
-  n.addEventListener(evt, (e) => {
-    config.audioFx[key] = parse(e.target.value);
-    renderAudioFx();
-    AudioFX.apply();
-    if (rebuild) renderStage();     // aantal staven of kleuren: knoppen opnieuw opbouwen
-  });
-  if (evt === 'input') n.addEventListener('change', () => save());
-  else n.addEventListener('change', () => save());
-}
-const num = (lo, hi) => (v) => Math.min(hi, Math.max(lo, Number(v) || 0));
-bindAudioFx('arMode', 'mode', String);
-bindAudioFx('arOuter', 'outer', num(0, 100));
-bindAudioFx('arInner', 'inner', num(0, 100));
-bindAudioFx('arGlowP', 'glow', num(0, 200));
-bindAudioFx('arLift', 'lift', num(0, 100));
-bindAudioFx('arSens', 'sens', num(1, 10));
-bindAudioFx('arBand', 'band', String);
-bindAudioFx('arAttack', 'attackMs', num(10, 400));
-bindAudioFx('arRelease', 'releaseMs', num(60, 1500));
-bindAudioFx('arBars', 'bars', num(3, 16), true);
-bindAudioFx('arEqHeight', 'eqHeight', num(10, 80));
-bindAudioFx('arEqOpacity', 'eqOpacity', num(10, 100));
-bindAudioFx('arEqSmooth', 'eqSmooth', num(0, 95));
-bindAudioFx('arEqLow', 'eqLow', String, true);
-bindAudioFx('arEqMid', 'eqMid', String, true);
-bindAudioFx('arEqHigh', 'eqHigh', String, true);
 $('#handEnabled').addEventListener('change', (e) => { config.hand.enabled = e.target.checked; save(); if (!config.hand.enabled) hideHand(); });
 $('#handSize').addEventListener('input', (e) => { config.hand.size = Number(e.target.value); save(); applyHandSize(); });
 $('#handDelay').addEventListener('change', (e) => { config.hand.delaySec = Math.max(3, Number(e.target.value) || 8); save(); });
@@ -7727,6 +7701,7 @@ setInterval(() => {
      bezoeker en stopt de screensaver — voorbijlopers halen dat niet. */
 
 let camStream = null, camVideoEl = null, camTimer = null, camStarting = false;
+let camHelder = null, camLightSince = 0;   // gemiddelde helderheid van het beeld
 let camBg = null, camPrev = null, camQuiet = 0, camPresenceSince = 0, camLastPresent = 0;
 let camLastFrame = 0, camStillSince = 0;
 let camHandSince = 0, camHandLast = 0, camGestureUntil = 0;
@@ -7766,6 +7741,13 @@ function updateCamLive() {
   if (!camStream) return setCamLive('off', 'uit');
   const fresh = camLastFrame && Date.now() - camLastFrame < 1500;
   if (!fresh) return setCamLive('err', 'geen beeld — controleer de camera');
+  // Twee seconden onafgebroken zwart: dan is het geen toevallige donkere
+  // ruimte meer maar een camera die niets doorgeeft.
+  if (camHelder != null && camHelder < 8 && camLightSince &&
+      Date.now() - camLightSince > 2000) {
+    return setCamLive('err', 'het beeld is helemaal zwart — gebruikt een ander ' +
+      'programma de camera, of zit er een schuifje voor de lens?');
+  }
   const actual = camStream.getVideoTracks()[0]?.getSettings?.().deviceId;
   if (config.camera.deviceId && actual && config.camera.deviceId !== actual) {
     return setCamLive('err', 'andere camera actief dan gekozen — klik op Camera testen');
@@ -7887,6 +7869,7 @@ async function startCameraInner() {
   camBg = camPrev = null; camQuiet = 0; camPresenceSince = 0;
   camHandSince = camHandLast = camGestureUntil = 0;
   camStillSince = Date.now();
+  camHelder = null; camLightSince = Date.now();
   camTimer = setInterval(sampleCamera, 350);
   $('#camStatusText').textContent = 'Camera actief — nog niemand gedetecteerd';
   renderCamDevices(); // na toestemming zijn de cameranamen zichtbaar
@@ -7897,6 +7880,7 @@ function stopCamera() {
   clearTimeout(camRetryTimer); camRetryTimer = null;
   if (camStream) for (const t of camStream.getTracks()) t.stop();
   camStream = null; camBg = null; camLastFrame = 0;
+  camHelder = null; camLightSince = 0;
   camHandSince = camHandLast = 0;
   $('#camPreviewBox').innerHTML = '';
   $('#camDot').classList.remove('present');
@@ -7982,8 +7966,17 @@ function fracDiff(a, b, threshold) {
 function sampleCamera() {
   if (!camVideoEl || camVideoEl.readyState < 2) { updateCamLive(); return; }
   camLastFrame = Date.now();
-  updateCamLive();
   const cur = grayFrame();
+  /* Een camera kan frames leveren die helemaal zwart zijn: het lampje brandt,
+     er komt beeld binnen, maar er staat niets op. Dat gebeurt als een ander
+     programma de camera al gebruikt, als er een privacyschuifje voor zit of
+     als de lens is afgedekt. Zonder deze meting meldde het scherm "werkt"
+     terwijl de beheerder naar een zwart vlak keek. */
+  let som = 0;
+  for (let i = 0; i < cur.length; i++) som += cur[i];
+  camHelder = som / cur.length;
+  if (camHelder >= 8) camLightSince = camLastFrame;
+  updateCamLive();
   if (!camBg) { camBg = cur.slice(); camPrev = cur; return; }
 
   const { pixel: pixelTh, area: presenceTh } = camThresholds();
@@ -8413,7 +8406,17 @@ const AudioFX = (() => {
   const EL_IDS = ['idleVideo', 'idleVideoB', 'saverVideo', 'saverVideoB', 'playVideoA', 'playVideoB'];
   const BANDS = { low: [20, 160], lowmid: [20, 500], full: [20, 16000] };
 
-  function on() { return (config.audioFx?.mode || 'off') !== 'off'; }
+  // De motor draait zodra één knop in deze scène meedoet. Doet niemand mee,
+  // dan is er niets te berekenen en blijft de analyser stil.
+  const meedoeners = () => (typeof curButtons === 'function' ? curButtons() : [])
+    .filter((b) => b.beat?.on);
+  function on() { return meedoeners().length > 0; }
+  function eqNodig() { return meedoeners().some((b) => b.beat.eq); }
+  // Het aantal staven kan per knop verschillen; we rekenen er zoveel als de
+  // gulzigste knop nodig heeft.
+  function eqBars() {
+    return meedoeners().reduce((m, b) => Math.max(m, b.beat.eq ? (b.beat.bars || 7) : 0), 0) || 7;
+  }
 
   function ensureCtx() {
     if (ctx) return ctx;
@@ -8500,13 +8503,12 @@ const AudioFX = (() => {
     st.setProperty('--arLo', lo.toFixed(4));
     st.setProperty('--arMi', mid.toFixed(4));
     st.setProperty('--arHi', hi.toFixed(4));
-    st.setProperty('--arGlow', (1 + env * (fx.glow || 0) / 100).toFixed(4));
-    st.setProperty('--arOut', (1 + env * (fx.outer || 0) / 100 * 0.25).toFixed(4));
-    st.setProperty('--arIn', (1 + env * (fx.inner || 0) / 100 * 0.25).toFixed(4));
-    st.setProperty('--arLift', (env * (fx.lift || 0) / 100).toFixed(4));
+    // Verder rekent elke knop zelf: de laag levert alleen de ruwe waarden,
+    // de knop vermenigvuldigt ze met zijn eigen sterktes. Zo kost honderd
+    // knoppen nog steeds één schrijfactie per frame.
 
-    if (fx.mode === 'eq' || fx.mode === 'both') {
-      const n = Math.max(3, Math.min(16, fx.bars || 7));
+    if (eqNodig()) {
+      const n = Math.max(3, Math.min(16, eqBars()));
       const sm = Math.min(0.95, Math.max(0, (fx.eqSmooth ?? 60) / 100));
       for (let i = 0; i < n; i++) {
         // logaritmisch verdeeld: het oor hoort zo, en anders staan alle
@@ -8520,21 +8522,11 @@ const AudioFX = (() => {
   }
 
   function apply() {
-    const b = document.body;
-    const m = config.audioFx?.mode || 'off';
-    b.classList.toggle('ar-beat', m === 'beat' || m === 'both');
-    b.classList.toggle('ar-eq', m === 'eq' || m === 'both');
     const L = layer();
-    if (L) {
-      const fx = config.audioFx || {};
-      L.style.setProperty('--eqH', String(fx.eqHeight ?? 38));
-      L.style.setProperty('--eqO', String(fx.eqOpacity ?? 70));
+    if (L && !on()) {
+      for (const k of ['--ar', '--arLo', '--arMi', '--arHi']) L.style.setProperty(k, '0');
     }
-    if (L && m === 'off') {
-      for (const k of ['--ar', '--arLo', '--arMi', '--arHi', '--arLift']) L.style.setProperty(k, '0');
-      for (const k of ['--arGlow', '--arOut', '--arIn']) L.style.setProperty(k, '1');
-    }
-    if (m === 'off') { env = 0; return; }
+    if (!on()) { env = 0; return; }
     if (!ensureCtx()) return;
     if (ctx.state !== 'running') ctx.resume().then(wireAll).catch(() => {});
     else wireAll();
