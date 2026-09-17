@@ -302,6 +302,57 @@ ipcMain.handle('diagnostics:get', async () => {
   return { ...hw, settings, logDir, uptimeSec: Math.round(process.uptime()) };
 });
 ipcMain.handle('diagnostics:openLogs', () => shell.openPath(logDir));
+
+/* Het logo van een website opzoeken.
+   Een browser mag de inhoud van een vreemde site niet lezen; het hoofdproces
+   wel. We halen de pagina op en kijken op de plekken waar een logo pleegt te
+   staan: eerst wat de site zelf als pictogram opgeeft, dan de deelafbeelding
+   die hij aan social media meegeeft, en pas daarna een <img> bovenin de
+   pagina met "logo" in de naam. Levert dat niets op, dan blijft het bij de
+   vaste adressen die de Studio zelf al probeert. */
+ipcMain.handle('web:findLogo', async (e, url) => {
+  let basis;
+  try { basis = new URL(url); } catch { return null; }
+  if (!/^https?:$/.test(basis.protocol)) return null;
+  const heel = (u) => { try { return new URL(u, basis).href; } catch { return null; } };
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    const r = await fetch(basis.href, { signal: ctrl.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 HereWeHolo' } });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    const html = (await r.text()).slice(0, 400000);   // de kop is genoeg
+    const kandidaten = [];
+
+    // 1. apple-touch-icon: bijna altijd een net vierkant logo van 180px
+    for (const m of html.matchAll(/<link[^>]+>/gi)) {
+      const tag = m[0];
+      const rel = (tag.match(/rel=["']([^"']+)/i) || [])[1] || '';
+      const href = (tag.match(/href=["']([^"']+)/i) || [])[1];
+      if (!href) continue;
+      if (/apple-touch-icon/i.test(rel)) kandidaten.push([10, heel(href)]);
+      else if (/\bicon\b/i.test(rel)) kandidaten.push([/svg/i.test(href) ? 8 : 5, heel(href)]);
+    }
+    // 2. wat de site aan social media meegeeft
+    const og = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)/i)
+      || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+    if (og) kandidaten.push([6, heel(og[1])]);
+    // 3. een afbeelding bovenin met "logo" in de naam
+    const kop = html.slice(0, 60000);
+    for (const m of kop.matchAll(/<img[^>]+>/gi)) {
+      const tag = m[0];
+      const src = (tag.match(/src=["']([^"']+)/i) || [])[1];
+      if (!src) continue;
+      if (/logo|brand|merk/i.test(tag)) { kandidaten.push([9, heel(src)]); break; }
+    }
+    kandidaten.sort((a, b) => b[0] - a[0]);
+    const beste = kandidaten.find((k) => k[1]);
+    return beste ? beste[1] : null;
+  } catch {
+    return null;   // offline of te traag: de Studio probeert zelf nog de vaste adressen
+  }
+});
 ipcMain.handle('settings:set', (e, patch) => {
   const allowed = ['kiosk', 'hardwareAcceleration', 'zoomFactor'];
   for (const k of allowed) if (patch[k] !== undefined) settings[k] = patch[k];

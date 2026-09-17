@@ -288,7 +288,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.13.0</span><span>22 hoofdstukken</span><span>30 schermafbeeldingen</span>
+    <span>Versie 2.14.0</span><span>22 hoofdstukken</span><span>30 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -657,6 +657,31 @@ header.cover{padding-block:88px 8px}
     <p>Uitlijnen en verdelen werken op de <em>selectie</em>. Heb je niets geselecteerd, dan
     gelden ze voor alle knoppen in de scène. Dat is bedoeld — maar het verschuift dus wel
     alles tegelijk.</p></div>
+  <h3>Het logo van de website in de knop</h3>
+  <p class="measure">Zet je een knop op <b>Webpagina / HTML tonen</b>, dan zoekt de software
+  het logo van dat bedrijf op en zet het in de knop. Dat gebeurt zodra je het adres invult,
+  en kan opnieuw met de knop <b>🔍 Logo van de site ophalen</b>.</p>
+
+  <ol class="steps">
+    <li>Heb je zelf een PNG gekozen bij <b>Eigen PNG als knopvorm</b>, dan gaat die altijd
+      voor. De software laat hem met rust.</li>
+    <li>Anders wordt het logo van de site gebruikt.</li>
+    <li>Is er niets te vinden, dan komt er <b>WWW</b> in de knop. Dat leest als "hier zit een
+      website achter" en niet als een kapotte knop.</li>
+  </ol>
+
+  <div class="note"><span class="t">Waar hij kijkt, en het verschil tussen app en browser</span>
+    <p>In de <b>Windows-app</b> leest de software de pagina zelf en kijkt op de plekken waar
+    een logo pleegt te staan: het pictogram dat de site opgeeft (het scherpe
+    <em>apple-touch-icon</em> eerst), de afbeelding die hij aan social media meegeeft, en een
+    afbeelding bovenin de pagina met "logo" in de naam — dus meestal precies dat ding links-
+    of rechtsboven.</p>
+    <p>In een <b>gewone browser</b> mag dat niet: een webpagina mag de inhoud van een vreemde
+    site niet lezen. Daar probeert hij de vaste adressen die vrijwel elke site gebruikt
+    (<code>/apple-touch-icon.png</code>, <code>/favicon.svg</code>, <code>/favicon.ico</code>).
+    Levert dat niets op, dan wordt het WWW. Wil je zeker weten dat het goede logo erin staat,
+    zet er dan zelf een PNG in.</p></div>
+
 </section>
 
 <!-- ═══════════════════════════════════════════════ 06 ═══ -->
@@ -1125,8 +1150,16 @@ header.cover{padding-block:88px 8px}
         ook op een knop zonder video.</td></tr>
       <tr><td>Zweefschaduw %</td><td>Hoeveel de slagschaduw meebeweegt.</td>
         <td>Geeft de indruk dat de knop echt naar voren komt.</td></tr>
-      <tr><td>Equalizer in deze knop</td><td>Staafjes voor laag, midden en hoog.</td>
-        <td>Per knop te kiezen, met een eigen aantal staven, hoogte, dekking en kleuren.</td></tr>
+      <tr><td>Beweegt mee met</td><td>Automatisch (van laag links naar hoog rechts), of vast
+        op laag, midden of hoog.</td><td>Zie hieronder: de knoppen vormen samen één
+        equalizer.</td></tr>
+      <tr><td>Opveren px</td><td>Hoeveel de knop omhoog springt op zijn toon.</td>
+        <td>Dit is de equalizerbeweging: de knop gaat als geheel op en neer.</td></tr>
+      <tr><td>Opzwellen %</td><td>Hoeveel de knop als geheel groter wordt.</td>
+        <td>Samen met het opveren geeft dat een knop die ademt op de muziek.</td></tr>
+      <tr><td>Rand % / Videovlak %</td><td>Hoeveel de rand en het videovlak binnen de knop
+        meebewegen.</td><td>Voor de fijne afwerking; de grote beweging zit in opveren en
+        opzwellen.</td></tr>
     </tbody>
   </table></div>
 
@@ -1144,6 +1177,16 @@ header.cover{padding-block:88px 8px}
         reageert dan een knop aan de rand.</td><td>Zie hieronder.</td></tr>
     </tbody>
   </table></div>
+
+  <div class="note why"><span class="t">De knoppen zíjn de equalizer</span>
+    <p>Er staan geen staafjes meer ín de knoppen. In plaats daarvan is elke knop zélf een
+    band geworden: de meedoende knoppen worden van links naar rechts over het spectrum
+    verdeeld, van de bas helemaal links tot de hoge tonen rechts. Elke knop veert op en
+    zwelt aan op zijn eigen toonhoogte, zoals de staven van een echte equalizer. Wat er
+    achter de knoppen speelt — de video — blijft gewoon te zien.</p>
+    <p>Verschuif je een knop, dan schuift zijn toonhoogte mee. Onder de keuze staat op welke
+    plek hij zit en rond welke frequentie hij beweegt. Wil je dat een knop altijd op de bas
+    reageert, ongeacht waar hij staat, kies dan een vaste band.</p></div>
 
   <div class="note why"><span class="t">Waarom het scherm bol lijkt te staan</span>
     <p>Een knop midden op het scherm reageert voluit; hoe verder naar de randen, hoe
@@ -2024,7 +2067,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.13.0 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.14.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>

@@ -159,10 +159,23 @@
      randen toe. Een knop die niet meedoet heeft alle factoren op 0 en staat
      dus vanzelf stil — zonder dat er per frame iets aan hem geschreven wordt. */
   .vbtn {
-    --arOut: calc(1 + var(--ar, 0) * var(--bK, 0) * var(--bOut, 0) * 0.25);
-    --arIn: calc(1 + var(--ar, 0) * var(--bK, 0) * var(--bIn, 0) * 0.25);
-    --arGlow: calc(1 + var(--ar, 0) * var(--bK, 0) * var(--bGlowP, 0));
-    --arLift: calc(var(--ar, 0) * var(--bK, 0) * var(--bLift, 0)); }
+    /* --bLvl is het stukje spectrum van déze knop: links de bas, rechts de
+       hoge tonen, net als bij een equalizer. Hij staat per knop ingesteld als
+       var(--eqN) en verandert dus vanzelf mee met wat de laag per frame
+       schrijft. --bK dempt af naar de randen van het scherm (bolling). */
+    --bLvl: 0;
+    --arOut: calc(1 + var(--bLvl, 0) * var(--bK, 0) * var(--bOut, 0) * 0.25);
+    --arIn: calc(1 + var(--bLvl, 0) * var(--bK, 0) * var(--bIn, 0) * 0.25);
+    --arGlow: calc(1 + var(--bLvl, 0) * var(--bK, 0) * var(--bGlowP, 0));
+    --arLift: calc(var(--bLvl, 0) * var(--bK, 0) * var(--bLift, 0)); }
+
+  /* De knop als geheel beweegt: opveren en opzwellen. Bewust met de losse
+     eigenschappen translate en scale — transform is al bezet voor het
+     centreren en voor de entrance- en zweefanimaties, en die zouden elkaar
+     overschrijven. */
+  .vbtn.beat-on {
+    translate: 0 calc(var(--bLvl, 0) * var(--bK, 0) * var(--bRise, 0) * -1px);
+    scale: calc(1 + var(--bLvl, 0) * var(--bK, 0) * var(--bSwell, 0)); }
 
   /* Buitenring: zwelt licht op en licht op bij een klap. */
   .pv-ring { position: absolute; inset: 0; border-radius: inherit; z-index: 1;
@@ -178,24 +191,11 @@
   .vbtn.beat-on.has-preview canvas.preview3d {
     filter: brightness(calc(1 + var(--ar, 0) * var(--bK, 0) * 0.22)); }
 
-  /* Equalizer: staven onderin het videovlak, onder het label door. */
-  .pv-eq { position: absolute; left: var(--fpad, 0.45em); right: var(--fpad, 0.45em);
-    bottom: calc(var(--fpad, 0.45em) + 1.8em); height: calc(var(--bEqH, 38) * 1%);
-    display: none; align-items: flex-end; gap: 4%;
-    padding: 0 6%; z-index: 1; pointer-events: none;
-    opacity: calc(var(--bEqO, 70) / 100); mix-blend-mode: screen; }
-  .vbtn.eq-on .pv-eq { display: flex; }
-  .pv-eq i { flex: 1 1 0; min-width: 0; height: calc(var(--v, 0) * 100%);
-    min-height: 2px; border-radius: 0.12em 0.12em 0 0;
-    background: linear-gradient(to top, var(--c, #35d0ba), #fff);
-    box-shadow: 0 0 0.5em var(--c, #35d0ba); }
-  /* Bij ronde en ovale knoppen zouden de staven over de rand vallen. */
-  .vbtn.shape-circle .pv-eq, .vbtn.shape-pill .pv-eq { left: 18%; right: 18%;
-    bottom: calc(14% + 1.6em); }
   .vbtn.shape-circle .pv-ring, .vbtn.shape-pill .pv-ring { border-radius: inherit; }
 
   @media (prefers-reduced-motion: reduce) {
     .pv-ring { transform: none; }
+    .vbtn.beat-on { translate: none; scale: none; }
     .vbtn.beat-on.has-preview video.preview,
     .vbtn.beat-on.has-preview canvas.preview3d { filter: none; }
   }
@@ -758,6 +758,15 @@
     font-size: 11.5px; line-height: 1.6; color: var(--p-ink-2); background: var(--p-card-2);
     border: 1px solid var(--p-line); border-radius: 10px; padding: 12px 14px;
     max-height: 340px; overflow-y: auto; }
+
+  /* Webknop: het logo van de site vult de knop, met het opschrift eronder.
+     Geen logo gevonden? Dan staat er WWW — dat leest als "hier zit een
+     website achter" en niet als een kapotte knop. */
+  .vbtn.web-logo { flex-direction: column; gap: 0.25em; }
+  .wl-img { max-width: 62%; max-height: 52%; object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.45)); pointer-events: none; }
+  .wl-www { font: 800 1.35em/1 var(--uiFont); letter-spacing: 0.06em; opacity: 0.92; }
+  .wl-label { font-size: 0.72em; opacity: 0.9; line-height: 1.2; }
 
   /* Het uitklapmenu onder de Beats-schakelaar. Ingesprongen met een lijn
      ervoor, zodat te zien is dat alles erin bij die ene knop hoort. */
@@ -1853,7 +1862,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.13.0';
+const APP_VERSION = '2.14.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -1885,7 +1894,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 13,
+  version: 14,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -2035,12 +2044,16 @@ function migrateConfig(stored) {
   // er is immers één microfoon voor iedereen.
   for (const sc of c.scenes) for (const b of (sc.buttons || [])) {
     if (!b.beat || typeof b.beat !== 'object') b.beat = { on: false };
-    const d = { on: false, outer: 18, inner: 55, glow: 100, lift: 40,
-      eq: false, bars: 7, eqHeight: 38, eqOpacity: 70,
-      eqLow: '#ef5da8', eqMid: '#35d0ba', eqHigh: '#7cc7ff' };
+    // v14: geen staafjes meer ín de knop. De knop zelf is de band geworden:
+    // hij veert op en zwelt mee met zijn eigen stukje van het spectrum.
+    const d = { on: false, band: 'auto', rise: 10, swell: 6,
+      outer: 18, inner: 55, glow: 100, lift: 40 };
     b.beat = { ...d, ...b.beat };
+    for (const weg of ['eq', 'bars', 'eqHeight', 'eqOpacity', 'eqLow', 'eqMid', 'eqHigh']) {
+      delete b.beat[weg];
+    }
   }
-  c.version = 13;
+  c.version = 14;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -3245,7 +3258,7 @@ function renderStage() {
     } else if (preview && media.kind === 'model') {
       // 3D-object: langzaam ronddraaiend voorbeeld in het kader.
       const cv = el('canvas', { class: 'preview3d' });
-      btn.append(cv, el('span', { class: 'pv-well' }), ...audioDecor(b),
+      btn.append(cv, el('span', { class: 'pv-well' }), ...audioDecor(),
         el('span', { class: 'pv-badge' }, '3D'),
         el('span', { class: 'pv-play' }, '▶'),
         el('span', { class: 'pv-label' }, btnLabel(b) || media.name));
@@ -3258,7 +3271,7 @@ function renderStage() {
       // zodra die klaar is); de echte video start fullscreen bij aanraking.
       const v = el('video', { class: 'preview', src: media.previewUrl || media.url, muted: '', loop: '', autoplay: '', playsinline: '', preload: 'metadata' });
       v.muted = true; // attribuut alleen is niet genoeg voor autoplay
-      btn.append(v, el('span', { class: 'pv-well' }), ...audioDecor(b),
+      btn.append(v, el('span', { class: 'pv-well' }), ...audioDecor(),
         el('span', { class: 'pv-play' }, '▶'), el('span', { class: 'pv-label' }, btnLabel(b) || media.name));
       if (b.shape !== 'circle') {
         // Knopformaat = renditieformaat: liggend 1280×800, staand 800×1280.
@@ -3272,11 +3285,30 @@ function renderStage() {
       }
       if (!media.previewUrl) ensurePreviewRendition(b.mediaId);
     } else {
-      // Ook een gewone knop zonder videovoorbeeld krijgt de ring en de staven
-      // mee: anders kan hij wel "meedoen met de muziek" maar is er niets van
-      // te zien behalve de gloed.
-      btn.append(...audioDecor(b),
-        el('span', { class: 'play-ico' }, '▶'), b.shape === 'circle' ? '' : (btnLabel(b) || 'Afspelen'));
+      // Ook een gewone knop zonder videovoorbeeld krijgt de ring mee: anders
+      // kan hij wel "meedoen met de muziek" maar is er niets van te zien
+      // behalve de gloed.
+      btn.append(...audioDecor());
+      const web = b.action?.type === 'OpenURL' ? (b.action.url || '').trim() : '';
+      if (web) {
+        // Het logo van de site, of WWW als er niets te vinden was. Een eigen
+        // plaatje is hierboven al afgehandeld en gaat dus altijd voor.
+        const wl = b.webLogo;
+        if (wl && wl.bron === web && wl.url) {
+          btn.classList.add('web-logo');
+          btn.append(el('img', { class: 'wl-img', src: wl.url, alt: btnLabel(b) || 'Logo',
+            referrerpolicy: 'no-referrer' }));
+        } else if (wl && wl.bron === web && wl.bezig) {
+          btn.append(el('span', { class: 'wl-www' }, '…'));
+        } else {
+          btn.append(el('span', { class: 'wl-www' }, 'WWW'));
+        }
+        if (btnLabel(b)) btn.append(el('span', { class: 'wl-label' }, btnLabel(b)));
+        if (btnLabel(b)) btn.title = btnLabel(b);
+      } else {
+        btn.append(el('span', { class: 'play-ico' }, '▶'),
+          b.shape === 'circle' ? '' : (btnLabel(b) || 'Afspelen'));
+      }
       if (b.shape === 'circle' && btnLabel(b)) btn.title = btnLabel(b);
     }
     applyBeatVars(btn, b);
@@ -3299,20 +3331,68 @@ function mixHex(a, b, t) {
   return '#' + c(r1, r2) + c(g1, g2) + c(b1, b2);
 }
 
-function audioDecor(b) {
-  const bt = (b && b.beat) || {};
-  const n = Math.max(3, Math.min(16, bt.bars || 7));
-  const eq = el('span', { class: 'pv-eq' });
-  for (let i = 0; i < n; i++) {
-    // laag → midden → hoog over de staven verdeeld, zodat je de toonhoogte
-    // niet alleen aan de hoogte maar ook aan de kleur ziet
-    const t = n === 1 ? 0 : i / (n - 1);
-    const col = t < 0.5
-      ? mixHex(bt.eqLow || '#ef5da8', bt.eqMid || '#35d0ba', t * 2)
-      : mixHex(bt.eqMid || '#35d0ba', bt.eqHigh || '#7cc7ff', (t - 0.5) * 2);
-    eq.append(el('i', { style: `--v: var(--eq${i}, 0); --c: ${col};` }));
+function audioDecor() {
+  // Alleen nog de ring. De staafjes ín de knop zijn eruit: de knop zelf is
+  // nu de equalizerband geworden.
+  return [el('span', { class: 'pv-ring' })];
+}
+
+/* ---- Logo van de website achter een knop --------------------------
+   Staat er een webpagina achter een knop, dan hoort daar het logo van dat
+   bedrijf op. Zelf een plaatje kiezen gaat altijd voor; vindt hij niets, dan
+   komt er WWW te staan.
+
+   Twee wegen. In de Windows-app leest het hoofdproces de pagina en kijkt op
+   de plekken waar een logo pleegt te staan. In een gewone browser mag dat
+   niet — de inhoud van een vreemde site is afgeschermd — maar een áfbeelding
+   ophalen mag wel. Daarom proberen we daar de vaste adressen die vrijwel elke
+   site gebruikt, in volgorde van mooiste eerst. */
+const LOGO_PADEN = ['/apple-touch-icon.png', '/apple-touch-icon-precomposed.png',
+  '/favicon.svg', '/logo.svg', '/favicon.ico'];
+
+function laadtPlaatje(url, ms = 6000) {
+  return new Promise((klaar) => {
+    if (!url) return klaar(false);
+    const img = new Image();
+    const t = setTimeout(() => { img.src = ''; klaar(false); }, ms);
+    img.onload = () => { clearTimeout(t); klaar(img.naturalWidth >= 16); };
+    img.onerror = () => { clearTimeout(t); klaar(false); };
+    img.referrerPolicy = 'no-referrer';
+    img.src = url;
+  });
+}
+
+async function zoekWebLogo(pagina) {
+  let basis;
+  try { basis = new URL(pagina); } catch { return null; }
+  if (!/^https?:$/.test(basis.protocol)) return null;
+
+  // De Windows-app mag de pagina zelf lezen: dat levert het echte logo op.
+  if (window.hwhDesktop?.findLogo) {
+    try {
+      const uit = await window.hwhDesktop.findLogo(basis.href);
+      if (uit && await laadtPlaatje(uit)) return uit;
+    } catch { /* val terug op de vaste adressen */ }
   }
-  return [el('span', { class: 'pv-ring' }), eq];
+  for (const pad of LOGO_PADEN) {
+    const u = basis.origin + pad;
+    if (await laadtPlaatje(u)) return u;
+  }
+  return null;
+}
+
+// Zoekt het logo op en onthoudt het bij de knop, zodat het maar één keer
+// hoeft. Opnieuw zoeken kan met de knop in de editor.
+async function haalWebLogo(b, stil = false) {
+  const url = b.action?.type === 'OpenURL' ? (b.action.url || '').trim() : '';
+  if (!url) { delete b.webLogo; return null; }
+  b.webLogo = { url: null, bron: url, bezig: true };
+  renderStage();
+  const gevonden = await zoekWebLogo(url);
+  b.webLogo = { url: gevonden, bron: url, bezig: false };
+  save(); renderStage(); renderBtnList();
+  if (!stil) toast(gevonden ? 'Logo gevonden' : 'Geen logo gevonden — de knop toont WWW');
+  return gevonden;
 }
 
 /* Bolling: een knop midden op het scherm reageert voluit, een knop aan de
@@ -3328,21 +3408,41 @@ function beatBolling(b) {
 
 // Zet de vaste reactiewaarden op de knop. Ze veranderen alleen als je iets
 // instelt of de knop verplaatst, dus dit kost per frame niets.
+/* De knoppen die meedoen vormen samen één equalizer: van links naar rechts
+   loopt het spectrum van laag naar hoog. Welke band een knop krijgt hangt dus
+   af van zijn plaats ten opzichte van de andere meedoeners — verschuif je een
+   knop, dan schuift zijn toonhoogte mee. */
+const AR_BANDS = 16;
+
+function beatBandIndex(b) {
+  const vast = { low: 1, mid: Math.round(AR_BANDS / 2), high: AR_BANDS - 2 };
+  if (b.beat?.band && b.beat.band !== 'auto') return vast[b.beat.band] ?? 1;
+  const mee = curButtons().filter((x) => x.beat?.on)
+    .sort((x, y) => (x.x ?? 50) - (y.x ?? 50) || (x.y ?? 50) - (y.y ?? 50));
+  if (mee.length < 2) return Math.round(AR_BANDS / 2);   // in je eentje: het midden
+  const i = mee.indexOf(b);
+  return Math.round(i / (mee.length - 1) * (AR_BANDS - 1));
+}
+
 function applyBeatVars(btn, b) {
   const bt = b.beat || {};
   btn.classList.toggle('beat-on', !!bt.on);
-  btn.classList.toggle('eq-on', !!(bt.on && bt.eq));
   if (!bt.on) {
-    for (const k of ['--bK', '--bOut', '--bIn', '--bGlowP', '--bLift']) btn.style.removeProperty(k);
+    for (const k of ['--bK', '--bOut', '--bIn', '--bGlowP', '--bLift', '--bRise', '--bSwell', '--bLvl']) {
+      btn.style.removeProperty(k);
+    }
     return;
   }
+  // Verwijst naar de variabele van zijn band. De laag schrijft die per frame,
+  // dus deze regel wordt maar één keer gezet en loopt daarna vanzelf mee.
+  btn.style.setProperty('--bLvl', `var(--eq${beatBandIndex(b)}, 0)`);
   btn.style.setProperty('--bK', beatBolling(b).toFixed(4));
+  btn.style.setProperty('--bRise', String(bt.rise ?? 10));
+  btn.style.setProperty('--bSwell', String((bt.swell ?? 6) / 100));
   btn.style.setProperty('--bOut', String((bt.outer ?? 18) / 100));
   btn.style.setProperty('--bIn', String((bt.inner ?? 55) / 100));
   btn.style.setProperty('--bGlowP', String((bt.glow ?? 100) / 100));
   btn.style.setProperty('--bLift', String((bt.lift ?? 40) / 100));
-  btn.style.setProperty('--bEqH', String(bt.eqHeight ?? 38));
-  btn.style.setProperty('--bEqO', String(bt.eqOpacity ?? 70));
 }
 
 // Kaders even groot maken als knop + bewegingsruimte (in px, na layout).
@@ -5908,48 +6008,42 @@ function beatEditor(b) {
   const menu = el('div', { class: 'beat-menu' + (bt.on ? '' : ' hidden') });
   if (bt.on) {
     const k = Math.round(beatBolling(b) * 100);
+    const idx = beatBandIndex(b);
+    const hz = Math.round(40 * Math.pow(300, (idx + 0.5) / AR_BANDS));
     menu.append(
+      el('label', { class: 'field' }, 'Beweegt mee met', (() => {
+        const sel = el('select', { onchange: (e) => { bt.band = e.target.value; herteken(); } },
+          el('option', { value: 'auto' }, 'Automatisch — van laag links naar hoog rechts'),
+          el('option', { value: 'low' }, 'Alleen de lage tonen'),
+          el('option', { value: 'mid' }, 'Alleen de middentonen'),
+          el('option', { value: 'high' }, 'Alleen de hoge tonen'));
+        sel.value = bt.band || 'auto';
+        return sel;
+      })(),
+        el('span', { class: 'note' }, bt.band === 'auto' || !bt.band
+          ? `De meedoende knoppen vormen samen één equalizer. Deze staat op plek ` +
+            `${idx + 1} van ${AR_BANDS} en beweegt dus rond ${hz} Hz. Verschuif hem naar ` +
+            'links voor lagere tonen, naar rechts voor hogere.'
+          : `Vast op ongeveer ${hz} Hz, ongeacht waar hij staat.`)),
+
       el('div', { class: 'row' },
-        schuif('Buitenring %', bt.outer ?? 18, 0, 100, 1, (v) => { bt.outer = v; }),
-        schuif('Binnenring %', bt.inner ?? 55, 0, 100, 1, (v) => { bt.inner = v; })),
+        schuif('Opveren px', bt.rise ?? 10, 0, 40, 1, (v) => { bt.rise = v; }),
+        schuif('Opzwellen %', bt.swell ?? 6, 0, 30, 1, (v) => { bt.swell = v; })),
       el('p', { class: 'note' },
-        `Het videovlak reageert nu ${((bt.inner ?? 55) / Math.max(1, bt.outer ?? 18)).toFixed(1)}× ` +
-        'zo sterk als de rand — daardoor lijkt het naar voren te komen.'),
+        'De knop zelf beweegt: hij veert op en zwelt aan op zijn eigen toonhoogte, ' +
+        'zoals een staaf van een equalizer.'),
       el('div', { class: 'row' },
         schuif('Gloedpuls %', bt.glow ?? 100, 0, 200, 5, (v) => { bt.glow = v; }),
         schuif('Zweefschaduw %', bt.lift ?? 40, 0, 100, 5, (v) => { bt.lift = v; })),
-
-      el('div', { class: 'toggle-row' },
-        el('div', {}, el('div', { class: 't-label' }, 'Equalizer in deze knop'),
-          el('div', { class: 't-sub' }, 'Staafjes voor laag, midden en hoog in het videovlak')),
-        (() => {
-          const sw = el('label', { class: 'switch' },
-            el('input', { type: 'checkbox', onchange: (e) => { bt.eq = e.target.checked; herteken(); } }),
-            el('i', {}));
-          sw.querySelector('input').checked = !!bt.eq;
-          return sw;
-        })()),
-      bt.eq ? el('div', { class: 'row' },
-        schuif('Aantal staven', bt.bars ?? 7, 3, 16, 1, (v) => { bt.bars = v; herteken(); }),
-        schuif('Hoogte %', bt.eqHeight ?? 38, 10, 90, 1, (v) => { bt.eqHeight = v; }),
-        schuif('Dekking %', bt.eqOpacity ?? 70, 10, 100, 5, (v) => { bt.eqOpacity = v; })) : null,
-      bt.eq ? el('div', { class: 'row' },
-        kleur('Laag', bt.eqLow || '#ef5da8', (v) => { bt.eqLow = v; herteken(); }),
-        kleur('Midden', bt.eqMid || '#35d0ba', (v) => { bt.eqMid = v; herteken(); }),
-        kleur('Hoog', bt.eqHigh || '#7cc7ff', (v) => { bt.eqHigh = v; herteken(); })) : null,
+      el('div', { class: 'row' },
+        schuif('Rand %', bt.outer ?? 18, 0, 100, 1, (v) => { bt.outer = v; }),
+        schuif('Videovlak %', bt.inner ?? 55, 0, 100, 1, (v) => { bt.inner = v; })),
 
       el('div', { class: 'lay-row', style: 'font-size:10px;font-weight:650;letter-spacing:.07em;color:var(--color-text-muted);margin-top:4px' },
         'GELDT VOOR ALLE KNOPPEN'),
       el('div', { class: 'row' },
         schuif('Gevoeligheid', fx.sens ?? 5, 1, 10, 1, (v) => { fx.sens = v; }),
-        el('label', { class: 'field' }, 'Luistert naar', (() => {
-          const sel = el('select', { onchange: (e) => { fx.band = e.target.value; save(); } },
-            el('option', { value: 'low' }, 'Alleen de bas (kick)'),
-            el('option', { value: 'lowmid' }, 'Bas en midden'),
-            el('option', { value: 'full' }, 'Het hele spectrum'));
-          sel.value = fx.band || 'low';
-          return sel;
-        })())),
+        schuif('Vloeiendheid %', fx.eqSmooth ?? 60, 0, 95, 5, (v) => { fx.eqSmooth = v; })),
       el('div', { class: 'row' },
         schuif('Aanslag ms', fx.attackMs ?? 45, 10, 300, 5, (v) => { fx.attackMs = v; }),
         schuif('Uitdemping ms', fx.releaseMs ?? 260, 60, 900, 10, (v) => { fx.releaseMs = v; })),
@@ -6075,10 +6169,19 @@ function renderBtnList() {
           return sel;
         })()),
         buttonAction(b).type === 'OpenURL'
-          ? el('label', { class: 'field' }, 'Adres (https:// of lokaal bestand)',
+          ? el('div', { class: 'field' }, 'Adres (https:// of lokaal bestand)',
               el('input', { type: 'text', 'data-role': 'url', value: b.action.url || '',
                 placeholder: 'https://… of ./map/pagina.html',
-                oninput: (e) => { b.action.url = e.target.value.trim(); save(); } }))
+                oninput: (e) => { b.action.url = e.target.value.trim(); save(); },
+                onchange: () => { if (!b.imageId) haalWebLogo(b, true); } }),
+              el('div', { class: 'row mid' },
+                el('button', { class: 'btn small', onclick: () => haalWebLogo(b) },
+                  '🔍 Logo van de site ophalen'),
+                el('span', { class: 'note grow' },
+                  b.imageId ? 'Je eigen plaatje gaat voor het logo.'
+                    : b.webLogo?.bezig ? 'Bezig met zoeken…'
+                    : b.webLogo?.url ? 'Logo gevonden en in de knop gezet.'
+                    : 'Nog geen logo — de knop toont WWW.')))
           : null,
         buttonAction(b).type === 'OpenAvatar'
           ? el('label', { class: 'field' }, 'Welke avatar', (() => {
@@ -8411,12 +8514,7 @@ const AudioFX = (() => {
   const meedoeners = () => (typeof curButtons === 'function' ? curButtons() : [])
     .filter((b) => b.beat?.on);
   function on() { return meedoeners().length > 0; }
-  function eqNodig() { return meedoeners().some((b) => b.beat.eq); }
-  // Het aantal staven kan per knop verschillen; we rekenen er zoveel als de
-  // gulzigste knop nodig heeft.
-  function eqBars() {
-    return meedoeners().reduce((m, b) => Math.max(m, b.beat.eq ? (b.beat.bars || 7) : 0), 0) || 7;
-  }
+
 
   function ensureCtx() {
     if (ctx) return ctx;
@@ -8507,8 +8605,8 @@ const AudioFX = (() => {
     // de knop vermenigvuldigt ze met zijn eigen sterktes. Zo kost honderd
     // knoppen nog steeds één schrijfactie per frame.
 
-    if (eqNodig()) {
-      const n = Math.max(3, Math.min(16, eqBars()));
+    {
+      const n = AR_BANDS;
       const sm = Math.min(0.95, Math.max(0, (fx.eqSmooth ?? 60) / 100));
       for (let i = 0; i < n; i++) {
         // logaritmisch verdeeld: het oor hoort zo, en anders staan alle
@@ -8525,6 +8623,7 @@ const AudioFX = (() => {
     const L = layer();
     if (L && !on()) {
       for (const k of ['--ar', '--arLo', '--arMi', '--arHi']) L.style.setProperty(k, '0');
+      for (let i = 0; i < AR_BANDS; i++) L.style.setProperty('--eq' + i, '0');
     }
     if (!on()) { env = 0; return; }
     if (!ensureCtx()) return;

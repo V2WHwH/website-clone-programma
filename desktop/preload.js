@@ -12,5 +12,8 @@ contextBridge.exposeInMainWorld('hwhDesktop', {
   restart: (reason) => ipcRenderer.send('health:hardRestart', String(reason || '')),
   getDiagnostics: () => ipcRenderer.invoke('diagnostics:get'),
   openLogs: () => ipcRenderer.invoke('diagnostics:openLogs'),
-  setSettings: (patch) => ipcRenderer.invoke('settings:set', patch)
+  setSettings: (patch) => ipcRenderer.invoke('settings:set', patch),
+  // Logo van een website opzoeken. Alleen het hoofdproces kan de pagina
+  // ophalen: een browser mag de inhoud van een vreemde site niet lezen.
+  findLogo: (url) => ipcRenderer.invoke('web:findLogo', String(url || ''))
 });
