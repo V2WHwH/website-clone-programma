@@ -288,7 +288,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.15.0</span><span>22 hoofdstukken</span><span>31 schermafbeeldingen</span>
+    <span>Versie 2.16.0</span><span>22 hoofdstukken</span><span>31 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -1429,6 +1429,103 @@ header.cover{padding-block:88px 8px}
     of de camera staat in een donkere ruimte. Sluit het andere programma, schuif het
     klepje weg, of doe het licht aan — het voorbeeld springt vanzelf weer aan.</p></div>
 
+  <h3>Diepte-effect — de knoppen schuiven mee met de bezoeker</h3>
+  <p class="measure">Een holobox toont een plat beeld. Het enige dat er echt diepte in
+  brengt is beweging: loopt de bezoeker opzij, dan hoort wat vooraan zweeft verder op te
+  schuiven dan wat achteraan staat — net als bomen langs de weg. De camera hangt er toch
+  al, dus dit kost geen extra hardware. Zet je het aan terwijl de aanwezigheidsdetectie nog
+  uit staat, dan gaat die vanzelf mee aan; zonder camera weet de box niet waar iemand staat.</p>
+
+  <div class="map">
+    <svg viewBox="0 0 700 250" role="img" aria-label="Links staat de bezoeker links voor de box en schuiven de tegels naar links; rechts staat hij rechts en schuiven de tegels naar rechts. De voorste tegel verschuift het verst.">
+      <g font-family="IBM Plex Mono, monospace" font-size="9.5" font-weight="600"
+         letter-spacing="1.6" fill="currentColor" opacity=".45">
+        <text x="14" y="20">BEZOEKER LINKS</text><text x="364" y="20">BEZOEKER RECHTS</text>
+      </g>
+      <g stroke="currentColor" stroke-opacity=".16" fill="none">
+        <rect x="10" y="30" width="330" height="210" rx="10"/>
+        <rect x="360" y="30" width="330" height="210" rx="10"/>
+      </g>
+
+      <!-- LINKS -->
+      <g fill="currentColor" opacity=".18">
+        <rect x="60" y="56" width="74" height="42" rx="6"/>
+        <rect x="150" y="56" width="74" height="42" rx="6"/>
+        <rect x="240" y="56" width="74" height="42" rx="6"/>
+      </g>
+      <g fill="#0B9E92" opacity=".55">
+        <rect x="52" y="112" width="74" height="42" rx="6"/>
+        <rect x="136" y="112" width="74" height="42" rx="6"/>
+        <rect x="216" y="112" width="74" height="42" rx="6"/>
+      </g>
+      <g fill="currentColor" opacity=".5">
+        <circle cx="62" cy="200" r="11"/><rect x="51" y="214" width="22" height="26" rx="5"/>
+      </g>
+      <circle cx="240" cy="177" r="10" fill="#0B9E92"/>
+      <text x="240" y="181" text-anchor="middle" font-family="IBM Plex Mono, monospace"
+            font-size="11" font-weight="600" fill="#fff">1</text>
+
+      <!-- RECHTS -->
+      <g fill="currentColor" opacity=".18">
+        <rect x="410" y="56" width="74" height="42" rx="6"/>
+        <rect x="500" y="56" width="74" height="42" rx="6"/>
+        <rect x="590" y="56" width="74" height="42" rx="6"/>
+      </g>
+      <g fill="#0B9E92" opacity=".55">
+        <rect x="418" y="112" width="74" height="42" rx="6"/>
+        <rect x="514" y="112" width="74" height="42" rx="6"/>
+        <rect x="614" y="112" width="74" height="42" rx="6"/>
+      </g>
+      <g fill="currentColor" opacity=".5">
+        <circle cx="638" cy="200" r="11"/><rect x="627" y="214" width="22" height="26" rx="5"/>
+      </g>
+      <circle cx="460" cy="177" r="10" fill="#0B9E92"/>
+      <text x="460" y="181" text-anchor="middle" font-family="IBM Plex Mono, monospace"
+            font-size="11" font-weight="600" fill="#fff">2</text>
+    </svg>
+  </div>
+  <ul class="legend">
+    <li><span class="n">1</span><span><b>Naar links kijken</b> <span class="q">— staat de
+      bezoeker links, dan schuiven de tegels naar links. De lichte rij is waar ze zonder
+      bezoeker staan, de gekleurde waar ze dan staan.</span></span></li>
+    <li><span class="n">2</span><span><b>En omgekeerd</b> <span class="q">— de voorste tegel
+      verschuift het verst, de achterste maar een derde daarvan. Dat verschil ís het
+      diepte-effect; zou alles even ver schuiven, dan schoof alleen het hele beeld
+      op.</span></span></li>
+  </ul>
+
+  <div class="tw"><table>
+    <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+    <tbody>
+      <tr><td>Knoppen schuiven mee met de bezoeker</td><td>Zet het effect aan. Zet meteen ook
+        de aanwezigheidsdetectie aan als die nog uit stond.</td>
+        <td>Het effect leest hetzelfde camerabeeld als de aanwezigheidsdetectie.</td></tr>
+      <tr><td>Hoe ver schuiven ze mee</td><td>0 tot 100. De regel eronder rekent het om naar
+        pixels: op stand 55 schuift de voorste tegel maximaal ongeveer 33 pixels opzij op een
+        scherm van 1000 pixels hoog, en schaalt mee met grotere schermen.</td>
+        <td>Te weinig en niemand ziet het; te veel en de tegels lijken los te zitten. Rond de
+        helft is voor de meeste boxen prettig.</td></tr>
+      <tr><td>Laat zien op het podium</td><td>Speelt het effect één keer af zonder camera:
+        helemaal naar links, naar rechts en terug.</td>
+        <td>Zo zie je bij het instellen meteen wat een stand doet, zonder zelf heen en weer
+        voor de box te lopen.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="measure">Welke tegel het verst meeschuift bepaalt zijn <b>laag</b> — dezelfde
+  laag die ook de tekenvolgorde bepaalt (zie <a href="#t-buttons">Knoppen &amp; scènes</a>).
+  Wat vooraan ligt beweegt het meest. Staan alle tegels in dezelfde laag, wat in de meeste
+  projecten zo is, dan telt hun grootte: een grote tegel leest als een tegel die dichterbij
+  hangt. Tijdens het verplaatsen van tegels staat het effect stil — een tegel die wegschuift
+  terwijl je hem neerzet, staat niet waar je hem loslaat.</p>
+
+  <div class="note"><span class="t">Waarom het rustig oogt</span>
+    <p>De camera kijkt ongeveer drie keer per seconde. Die stappen rechtstreeks doorgeven zou
+    schokken; in plaats daarvan loopt de verschuiving er met een veer naartoe, zo'n tiende
+    seconde achter de bezoeker aan. Loopt de bezoeker weg, dan glijden de tegels terug naar
+    hun plek. Op een pc waar de bezoeker heeft ingesteld dat hij minder beweging wil zien
+    (<em>prefers-reduced-motion</em>) blijft alles stilstaan.</p></div>
+
 </section>
 
 <!-- ═══════════════════════════════════════════════ 14 ═══ -->
@@ -2084,6 +2181,8 @@ header.cover{padding-block:88px 8px}
         volumes onder vallen: knopvideo's, achtergrond en screensaver.</td></tr>
       <tr><td>Handgebaar</td><td>Hand omhoog voor de camera: de box gaat terug naar het menu,
         zonder aanraken.</td></tr>
+      <tr><td>Diepte-effect</td><td>De tegels schuiven mee met waar de bezoeker staat; de
+        voorste verder dan de achterste. Heeft de camera nodig.</td></tr>
       <tr><td>Device-key</td><td>De sleutel waarmee één box zich bij je beheerserver
         identificeert.</td></tr>
     </tbody>
@@ -2091,7 +2190,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.15.0 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.16.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>

@@ -173,12 +173,18 @@
     --arGlow: calc(1 + var(--bLvl, 0) * var(--bK, 0) * var(--bGlowP, 0));
     --arLift: calc(var(--bLvl, 0) * var(--bK, 0) * var(--bLift, 0)); }
 
-  /* De knop als geheel beweegt: opveren en opzwellen. Bewust met de losse
-     eigenschappen translate en scale — transform is al bezet voor het
-     centreren en voor de entrance- en zweefanimaties, en die zouden elkaar
-     overschrijven. */
+  /* De knop als geheel beweegt: opzij met de bezoeker mee (parallax) en
+     omhoog op de beat. Bewust met de losse eigenschappen translate en scale —
+     transform is al bezet voor het centreren en voor de entrance- en
+     zweefanimaties, en die zouden elkaar overschrijven.
+     --px schrijft de laag: -1 als de bezoeker links staat, +1 rechts.
+     --pOff is de diepte van déze knop, in vmin: de voorste knoppen schuiven
+     het verst mee, de achterste nauwelijks. Staat parallax uit, dan is --pOff
+     0 en blijft er alleen het opveren over. */
+  .vbtn {
+    translate: calc(var(--px, 0) * var(--pOff, 0) * 1vmin)
+               calc(var(--bLvl, 0) * var(--bK, 0) * var(--bRise, 0) * -1px); }
   .vbtn.beat-on {
-    translate: 0 calc(var(--bLvl, 0) * var(--bK, 0) * var(--bRise, 0) * -1px);
     scale: calc(1 + var(--bLvl, 0) * var(--bK, 0) * var(--bSwell, 0)); }
 
   /* Buitenring: zwelt licht op en licht op bij een klap. */
@@ -199,7 +205,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .pv-ring { transform: none; }
-    .vbtn.beat-on { translate: none; scale: none; }
+    .vbtn { translate: none; }
+    .vbtn.beat-on { scale: none; }
     .vbtn.beat-on.has-preview video.preview,
     .vbtn.beat-on.has-preview canvas.preview3d { filter: none; }
   }
@@ -533,6 +540,18 @@
   #tabs { display: flex; flex-direction: column; gap: 2px; padding: 10px 8px;
     background: var(--color-surface-1); border-right: 1px solid var(--color-border);
     overflow-y: auto; scrollbar-width: thin; }
+  /* Live meter onder de gevoeligheidsschuif. Zonder dit zet je een stand en
+     zie je pas een half uur later of hij klopt. */
+  #camMeter { display: flex; flex-direction: column; gap: 5px; }
+  #camMeter.hidden { display: none; }
+  .cm-bar { position: relative; height: 12px; border-radius: 6px; overflow: hidden;
+    background: var(--p-card-2); border: 1px solid var(--p-line); }
+  .cm-bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+    background: linear-gradient(90deg, #2f7ff0, #35d0ba); transition: width .12s linear; }
+  .cm-bar i.raak { background: linear-gradient(90deg, #35d0ba, #7cffb2); }
+  .cm-bar span { position: absolute; top: -2px; bottom: -2px; width: 2px;
+    background: #ef5da8; box-shadow: 0 0 6px #ef5da8; }
+
   /* Zoeken door alle instellingen. Er zijn meer dan honderd velden verdeeld
      over elf tabbladen; zoeken is dan geen luxe maar de normale manier om
      iets terug te vinden. */
@@ -1521,6 +1540,7 @@
         </select>
       </label>
       <p class="note">De video of het 3D-object start pas wanneer alle knoppen uit beeld zijn.</p>
+      <button id="selFxDemo" class="btn block">&#9654; Laat zien op het podium</button>
     </div>
     <h2>Knopeffect &mdash; aandacht trekken</h2>
     <div class="card">
@@ -1625,6 +1645,10 @@
           <input type="range" id="camSens" min="1" max="10" step="1">
         </label>
       </div>
+      <div id="camMeter" class="hidden">
+        <div class="cm-bar"><i id="cmVul"></i><span id="cmDrempel"></span></div>
+        <div class="note" id="cmTekst"></div>
+      </div>
       <p class="note" id="camSensNote"></p>
       <label class="field">Opnieuw ijken na (seconden stilstaand beeld; 0 = nooit)
         <input type="number" id="camStuck" min="0" max="600" step="5">
@@ -1653,6 +1677,25 @@
         </label>
       </div>
       <p class="note">De hand moet naast het hoofd staan en er duidelijk bovenuit komen &mdash; een hand recht boven het hoofd telt niet, anders zou het hoofd zelf al genoeg zijn. Werkt tijdens het afspelen van een video, in de 3D-weergave en tijdens de screensaver. Na een gebaar wacht de box 6 seconden voordat hij er opnieuw op reageert.</p>
+    </div>
+
+    <h2>Diepte-effect</h2>
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Knoppen schuiven mee met de bezoeker</div>
+          <div class="t-sub">Loopt hij opzij, dan schuiven de voorste knoppen verder mee dan
+          de achterste &mdash; dat geeft diepte aan een plat scherm</div></div>
+        <label class="switch"><input type="checkbox" id="paraEnabled"><i></i></label>
+      </div>
+      <label class="field">Hoe ver schuiven ze mee
+        <input type="range" id="paraSterkte" min="0" max="100" step="5">
+      </label>
+      <p class="note" id="paraNote"></p>
+      <button id="paraDemo" class="btn block">&#9654; Laat zien op het podium</button>
+      <p class="note">Heeft de camera nodig. Welke knop het verst meeschuift bepaalt zijn
+      laag: wat vooraan ligt beweegt het meest. Staan alle knoppen in dezelfde laag, dan
+      telt hun grootte &mdash; een grote knop leest als een knop die dichterbij hangt.
+      Tijdens verplaatsen staat het effect stil, zodat je knoppen op hun plek kunt zetten.</p>
     </div>
   </div>
 
@@ -1927,7 +1970,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.15.0';
+const APP_VERSION = '2.16.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -1959,7 +2002,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 14,
+  version: 15,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -1999,7 +2042,11 @@ const defaultConfig = () => ({
   // opnieuw — anders houdt een lichtsprong of verschoven meubel de box voor
   // altijd 'bezet'. 0 = nooit opnieuw ijken.
   camera: { enabled: false, dwellSec: 3, sensitivity: 5, deviceId: null, stuckSec: 45,
-    gesture: { enabled: false, hand: 'right', holdSec: 1.2 } },
+    gesture: { enabled: false, hand: 'right', holdSec: 1.2 } ,
+    // Parallax: de knoppen schuiven mee met de bezoeker, de voorste meer dan
+    // de achterste. Dat is het enige echte diepte-effect dat een holobox kan
+    // geven, en het kost geen extra hardware — de camera staat er al.
+    parallax: { enabled: false, sterkte: 55 } },
   object3d: { color: '#8fa3bd', rotSpeed: 0.8, light: 1.0, shininess: 0.35, maxTriangles: 150000, autoCloseSec: 60,
     lightBg: true, shadow: 0.35 },
   theme: { font: 'system', weight: 700, logoMediaId: null, logoSize: 12, logoPos: 'top-left' },
@@ -2041,7 +2088,10 @@ function migrateConfig(stored) {
   const c = { ...d, ...stored,
     screensaver: { ...d.screensaver, ...stored.screensaver },
     camera: { ...d.camera, ...stored.camera,
-      gesture: { ...d.camera.gesture, ...(stored.camera?.gesture || {}) } },
+      gesture: { ...d.camera.gesture, ...(stored.camera?.gesture || {}) },
+      // v15: parallax. Nieuw blok, dus oude projecten krijgen hem uit,
+      // precies zoals ze stonden.
+      parallax: { ...d.camera.parallax, ...(stored.camera?.parallax || {}) } },
     object3d: { ...d.object3d, ...stored.object3d },
     hand: { ...d.hand, ...stored.hand },
     motion: { ...d.motion, ...stored.motion, overrides: { ...(stored.motion?.overrides || {}) } },
@@ -2118,7 +2168,7 @@ function migrateConfig(stored) {
       delete b.beat[weg];
     }
   }
-  c.version = 14;
+  c.version = 15;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -3380,6 +3430,7 @@ function renderStage() {
       if (b.shape === 'circle' && btnLabel(b)) btn.title = btnLabel(b);
     }
     applyBeatVars(btn, b);
+    applyParallaxVars(btn, b);
     layer.append(btn);
     // Bewegingskader tonen in verplaats-modus wanneer "vrij bewegen" aanstaat.
     if ((b.drift || 0) > 0) {
@@ -3512,6 +3563,84 @@ function applyBeatVars(btn, b) {
   btn.style.setProperty('--bGlowP', String((bt.glow ?? 100) / 100));
   btn.style.setProperty('--bLift', String((bt.lift ?? 40) / 100));
 }
+
+/* ---- Parallax: de knoppen schuiven mee met de bezoeker ----------------
+   Een holobox toont een plat beeld. Het enige dat er echt diepte in brengt
+   is beweging: loopt de bezoeker opzij, dan hoort wat vooraan "zweeft" verder
+   op te schuiven dan wat achteraan staat — net als bomen langs de weg. De
+   camera hangt er toch al, dus het kost geen extra hardware.
+
+   De laag krijgt --px (-1..1, waar de bezoeker in beeld staat). Elke knop
+   krijgt eenmalig zijn eigen diepte --pOff in vmin, dus het schuiven zelf
+   kost per frame niets. */
+
+/* Hoe ver vooraan ligt deze knop? 0 = achterste laag, 1 = voorste.
+   Normaal bepaalt de laag (z) dat. Staan alle knoppen in dezelfde laag — dat
+   is in de meeste projecten zo — dan zou er geen enkel verschil zijn en viel
+   het effect weg; in dat geval telt de grootte, want een grote knop leest als
+   een knop die dichterbij hangt. */
+function parallaxDiepte(b) {
+  const mee = curButtons().filter((x) => !x.hidden);
+  if (mee.length < 2) return 1;
+  const zs = mee.map((x) => x.z || 0);
+  const zLo = Math.min(...zs), zHi = Math.max(...zs);
+  if (zHi > zLo) return ((b.z || 0) - zLo) / (zHi - zLo);
+  const gr = mee.map((x) => x.size || 8);
+  const gLo = Math.min(...gr), gHi = Math.max(...gr);
+  if (gHi > gLo) return ((b.size || 8) - gLo) / (gHi - gLo);
+  return 0.5;
+}
+
+function applyParallaxVars(btn, b) {
+  const px = config.camera?.parallax || {};
+  if (!px.enabled) { btn.style.removeProperty('--pOff'); return; }
+  const sterkte = Math.min(100, Math.max(0, Number(px.sterkte ?? 55))) / 100;
+  // Ook de achterste knop beweegt een beetje mee (0,35), anders lijkt hij
+  // vastgeplakt te zitten terwijl de rest schuift.
+  const diepte = 0.35 + 0.65 * parallaxDiepte(b);
+  btn.style.setProperty('--pOff', (sterkte * diepte * 6).toFixed(3));
+}
+
+/* De camera meet maar ~3x per seconde. Rechtstreeks doorgeven zou schokken,
+   dus loopt de waarde er met een rustige veer naartoe. */
+const Parallax = (() => {
+  let doel = 0, nu = 0, raf = 0, demoBezig = false;
+  const laag = () => document.getElementById('buttonLayer');
+  function stap() {
+    raf = 0;
+    nu += (doel - nu) * 0.12;
+    if (Math.abs(doel - nu) < 0.002) nu = doel;
+    laag()?.style.setProperty('--px', nu.toFixed(4));
+    if (nu !== doel) raf = requestAnimationFrame(stap);
+  }
+  function naar(x) { doel = Math.max(-1, Math.min(1, x)); if (!raf) raf = requestAnimationFrame(stap); }
+  return {
+    // x = 0 (links in beeld) .. 1 (rechts). null = niemand gezien.
+    zet(x) {
+      if (demoBezig) return;                       // de demo stuurt dan zelf
+      if (!config.camera?.parallax?.enabled) return this.terug();
+      // Tijdens verplaatsen staat het effect stil: een knop die meeschuift
+      // terwijl je hem probeert neer te zetten, staat niet waar je hem loslaat.
+      if (editing || x == null) return this.terug();
+      naar((x - 0.5) * 2);
+    },
+    terug() { naar(0); },
+    uit() {
+      cancelAnimationFrame(raf); raf = 0; doel = nu = 0;
+      laag()?.style.removeProperty('--px');
+    },
+    // Voor de knop "Laat zien": één keer heen en weer, zonder camera.
+    async demo() {
+      demoBezig = true;
+      try {
+        for (const v of [-1, 1, -0.5, 0]) {
+          naar(v);
+          await new Promise((r) => setTimeout(r, 900));
+        }
+      } finally { demoBezig = false; }
+    }
+  };
+})();
 
 // Kaders even groot maken als knop + bewegingsruimte (in px, na layout).
 function syncFrames() {
@@ -5236,7 +5365,11 @@ const ZOEK_EXTRA = [
       'bij de betreffende holobox.' },
   { woorden: 'handgebaar hand zwaaien opsteken menu',
     tekst: 'Handgebaar — rechterhand omhoog toont het menu', tab: 'cam',
-    hint: 'Camera → onderdeel Handgebaar.' }
+    hint: 'Camera → onderdeel Handgebaar.' },
+  { woorden: 'parallax diepte 3d meebewegen bezoeker meeschuiven perspectief lagen',
+    tekst: 'Diepte-effect — knoppen schuiven mee met de bezoeker', tab: 'cam',
+    hint: 'Camera → onderdeel Diepte-effect. Heeft de camera nodig; de laag ' +
+      'van een knop bepaalt hoe ver hij meeschuift.' }
 ];
 
 function zoekExtra(woorden) {
@@ -7089,6 +7222,33 @@ function applyEditorOverlays() {
 }
 
 $('#cfgSelectFx').addEventListener('change', (e) => { config.selectFx = e.target.value; save(); });
+
+/* Laat het gekozen selectie-effect één keer zien op het podium. Zonder dit
+   moet je een video aan een knop hangen, de editor sluiten en tikken om te
+   weten wat je gekozen hebt. */
+let selFxBezig = false;
+$('#selFxDemo')?.addEventListener('click', async () => {
+  const knoppen = [...document.querySelectorAll('#buttonLayer .vbtn')];
+  if (!knoppen.length) return toast('Zet eerst een knop op het podium.');
+  if (selFxBezig) return;
+  selFxBezig = true;
+  const knop = $('#selFxDemo');
+  knop.textContent = '… bezig';
+  // Het effect slaat zichzelf over in de editor; even doen alsof we kijken.
+  const was = editing;
+  editing = false;
+  try {
+    await runSelectTransition(knoppen[Math.floor(knoppen.length / 2)]);
+    await new Promise((r) => setTimeout(r, 400));
+  } finally {
+    cancelSelectAnims();
+    editing = was;
+    renderStage();
+    runEntrance();
+    knop.textContent = '▶ Laat zien op het podium';
+    selFxBezig = false;
+  }
+});
 $('#cfgFxInterval').addEventListener('change', (e) => { config.fxIntervalSec = Math.max(3, Number(e.target.value) || 7); save(); });
 
 $('#handEnabled').addEventListener('change', (e) => { config.hand.enabled = e.target.checked; save(); if (!config.hand.enabled) hideHand(); });
@@ -7475,6 +7635,10 @@ function renderSaver() {
   $('#gestEnabled').checked = !!g.enabled;
   $('#gestHand').value = g.hand || 'right';
   $('#gestHold').value = g.holdSec ?? 1.2;
+  const pa = cam.parallax || {};
+  $('#paraEnabled').checked = !!pa.enabled;
+  $('#paraSterkte').value = pa.sterkte ?? 55;
+  renderParaNote();
   renderCamSensNote();
   renderCamDevices();
   updateCamLive();
@@ -7536,6 +7700,44 @@ $('#gestEnabled').addEventListener('change', (e) => {
 $('#gestHand').addEventListener('change', (e) => { config.camera.gesture.hand = e.target.value; save(); });
 $('#gestHold').addEventListener('change', (e) => {
   config.camera.gesture.holdSec = Math.min(5, Math.max(0.3, Number(e.target.value) || 1.2)); save();
+});
+/* Een schuif van 0 tot 100 zegt niets; deze regel vertelt wat je instelt. */
+function renderParaNote() {
+  const note = $('#paraNote'); if (!note) return;
+  const st = Number(config.camera.parallax?.sterkte ?? 55);
+  if (!st) { note.textContent = 'Op 0 staat alles stil.'; return; }
+  const vmin = Math.min(innerWidth, innerHeight);
+  const voor = Math.round(st / 100 * 6 * vmin / 100);
+  note.textContent = `Stand ${st}: de voorste knoppen schuiven maximaal ${voor} pixels ` +
+    `opzij, de achterste ongeveer een derde daarvan. Loopt de bezoeker naar links, ` +
+    `dan schuiven de knoppen naar rechts \u2014 zoals je om iets heen kijkt.`;
+}
+$('#paraEnabled').addEventListener('change', (e) => {
+  config.camera.parallax = config.camera.parallax || {};
+  config.camera.parallax.enabled = e.target.checked;
+  save();
+  if (!e.target.checked) Parallax.uit();
+  else if (!config.camera.enabled) {
+    config.camera.enabled = true; save(); renderSaver(); startCamera();
+    toast('Aanwezigheidsdetectie aangezet \u2014 het diepte-effect heeft de camera nodig');
+  }
+  renderStage();
+});
+$('#paraSterkte').addEventListener('input', (e) => {
+  config.camera.parallax = config.camera.parallax || {};
+  config.camera.parallax.sterkte = Number(e.target.value);
+  renderParaNote();
+  renderStage();
+});
+$('#paraSterkte').addEventListener('change', () => save());
+$('#paraDemo').addEventListener('click', async (e) => {
+  const knoppen = document.querySelectorAll('#buttonLayer .vbtn');
+  if (!knoppen.length) return toast('Zet eerst een knop op het podium.');
+  if (!config.camera.parallax?.enabled) return toast('Zet het diepte-effect eerst aan.');
+  const knop = e.currentTarget;
+  knop.disabled = true;
+  try { await Parallax.demo(); }
+  finally { knop.disabled = false; }
 });
 $('#camDevice').addEventListener('change', (e) => {
   config.camera.deviceId = e.target.value || null;
@@ -8191,6 +8393,29 @@ function setCamLive(state, text) {
   $('#camLiveText').textContent = 'Camerabeeld: ' + text;
 }
 
+/* Laat zien wat de camera nú meet, afgezet tegen de drempel die bij de
+   gekozen stand hoort. Een stand kiezen zonder terugkoppeling is gokken:
+   je ziet pas een half uur later of hij te gevoelig of te doof staat. */
+function toonCamMeter(gemeten, drempel) {
+  const box = document.getElementById('camMeter');
+  if (!box) return;
+  box.classList.remove('hidden');
+  /* Vaste schaal van 0 tot 40% van het beeld. Eerst schaalde hij mee met de
+     drempel, waardoor het streepje altijd op dezelfde plek stond en je dus
+     niet zag wat de schuif deed. */
+  const schaal = 0.40;
+  const vul = document.getElementById('cmVul');
+  const pct = Math.min(100, gemeten / schaal * 100);
+  vul.style.width = pct.toFixed(1) + '%';
+  vul.classList.toggle('raak', gemeten >= drempel);
+  document.getElementById('cmDrempel').style.left =
+    Math.min(99, drempel / schaal * 100).toFixed(1) + '%';
+  document.getElementById('cmTekst').textContent =
+    `Nu gemeten: ${(gemeten * 100).toFixed(1)}% van het beeld wijkt af — ` +
+    `drempel ${(drempel * 100).toFixed(0)}%. ` +
+    (gemeten >= drempel ? 'Dit telt als "iemand aanwezig".' : 'Dit telt nog niet mee.');
+}
+
 function updateCamLive() {
   if (!camStream) return setCamLive('off', 'uit');
   const fresh = camLastFrame && Date.now() - camLastFrame < 1500;
@@ -8335,6 +8560,8 @@ function stopCamera() {
   if (camStream) for (const t of camStream.getTracks()) t.stop();
   camStream = null; camBg = null; camLastFrame = 0;
   camHelder = null; camLightSince = 0;
+  Parallax.uit();
+  document.getElementById('camMeter')?.classList.add('hidden');
   camHandSince = camHandLast = 0;
   $('#camPreviewBox').innerHTML = '';
   $('#camDot').classList.remove('present');
@@ -8411,6 +8638,21 @@ function menuByGesture() {
   runEntrance();
 }
 
+/* Waar staat de bezoeker? Het zwaartepunt van alles wat van de achtergrond
+   afwijkt, van 0 (links in beeld) tot 1 (rechts). Het beeld is niet
+   gespiegeld: loopt de bezoeker naar zijn eigen rechterkant, dan schuift hij
+   in beeld naar links. null betekent: te weinig voorgrond om iets te zeggen. */
+function voorgrondX(cur, bg, th) {
+  let n = 0, som = 0;
+  for (let r = 0; r < CAM_H; r++) {
+    const rij = r * CAM_W;
+    for (let c = 0; c < CAM_W; c++) {
+      if (Math.abs(cur[rij + c] - bg[rij + c]) > th) { n++; som += c; }
+    }
+  }
+  return n < CAM_W * CAM_H * 0.01 ? null : som / n / (CAM_W - 1);
+}
+
 function fracDiff(a, b, threshold) {
   let n = 0;
   for (let i = 0; i < a.length; i++) if (Math.abs(a[i] - b[i]) > threshold) n++;
@@ -8436,6 +8678,11 @@ function sampleCamera() {
   const { pixel: pixelTh, area: presenceTh } = camThresholds();
   const motion = fracDiff(cur, camPrev, pixelTh);
   const presence = fracDiff(cur, camBg, pixelTh);
+  toonCamMeter(presence, presenceTh);
+  /* Parallax: de knoppen schuiven mee met waar de bezoeker staat. */
+  if (config.camera.parallax?.enabled) {
+    Parallax.zet(presence >= presenceTh ? voorgrondX(cur, camBg, pixelTh) : null);
+  }
   camPrev = cur;
   const now = Date.now();
   if (motion >= 0.004) camStillSince = now;
