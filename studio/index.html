@@ -1600,6 +1600,41 @@
       </label>
       <p class="note" id="svSoundNote"></p>
     </div>
+
+    <h2>Speaker wakker houden</h2>
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Zacht signaal blijven meesturen</div>
+          <div class="t-sub">Voorkomt dat de speaker in de kast zichzelf uitzet omdat
+          hij minutenlang niets hoort</div></div>
+        <label class="switch"><input type="checkbox" id="kaOn"><i></i></label>
+      </div>
+      <label class="field">Soort signaal
+        <select id="kaType">
+          <option value="ruis">Zachte ruis &mdash; valt het minst op</option>
+          <option value="hoog">Hoge toon 18,5 kHz &mdash; meestal onhoorbaar</option>
+          <option value="laag">Lage toon 50 Hz &mdash; voel je eerder dan je hem hoort</option>
+        </select>
+      </label>
+      <label class="field">Niveau (1&ndash;20)
+        <input type="range" id="kaLevel" min="1" max="20" step="1">
+      </label>
+      <div class="t-sub" style="margin:2px 0 4px">Wat er nu werkelijk naar de speaker gaat</div>
+      <div class="cm-bar"><i id="kaVul"></i></div>
+      <p class="note" id="kaNote"></p>
+      <div class="toggle-row">
+        <div><div class="t-label">Alleen af en toe een korte puls</div>
+          <div class="t-sub">Elke 30 seconden anderhalve seconde geluid in plaats van
+          doorlopend &mdash; valt minder op, en is voor de meeste speakers genoeg</div></div>
+        <label class="switch"><input type="checkbox" id="kaPuls"><i></i></label>
+      </div>
+      <button id="kaTest" class="btn block">&#9654; 5 seconden hardop laten horen</button>
+      <p class="note">Het signaal loopt altijd &mdash; ook als de screensaver uitstaat &mdash;
+      en staat los van het hoofdvolume, anders zou het bij een lage stand zijn werk niet
+      meer doen. Valt de speaker toch in slaap? Zet het niveau hoger of kies een ander
+      soort signaal: niet elke speaker luistert naar dezelfde tonen.</p>
+    </div>
+
     <h2>Playlist</h2>
     <div class="card">
       <div id="svPlaylist"></div>
@@ -1970,7 +2005,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.16.0';
+const APP_VERSION = '2.17.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -2002,7 +2037,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 15,
+  version: 16,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -2038,6 +2073,14 @@ const defaultConfig = () => ({
   screensaver: { enabled: false, delaySec: 120, mediaIds: [],
     transition: 'crossfade', transitionSec: 1.2, background: false,
     sound: false, volume: 60 },
+  /* Speaker wakker houden. Een actieve speaker of versterker valt na een paar
+     minuten stilte in standby en is daarna alleen met de afstandsbediening
+     weer wakker te krijgen — in een holobox die de hele dag op een beurs of
+     in een hal staat is dat een dagelijks probleem. Een heel zacht signaal
+     dat blijft lopen houdt zijn signaaldetectie wakker. Het staat bewust los
+     van het hoofdvolume: zou je dat lager zetten, dan deed dit zijn werk
+     niet meer. */
+  keepAlive: { on: false, type: 'ruis', level: 3, puls: false },
   // stuckSec: na zoveel seconden bewegingloze 'aanwezigheid' ijkt de achtergrond
   // opnieuw — anders houdt een lichtsprong of verschoven meubel de box voor
   // altijd 'bezet'. 0 = nooit opnieuw ijken.
@@ -2087,6 +2130,9 @@ function migrateConfig(stored) {
   const d = defaultConfig();
   const c = { ...d, ...stored,
     screensaver: { ...d.screensaver, ...stored.screensaver },
+    // v16: speaker wakker houden. Nieuw blok, dus bestaande projecten
+    // beginnen met uit — precies zoals ze stonden.
+    keepAlive: { ...d.keepAlive, ...stored.keepAlive },
     camera: { ...d.camera, ...stored.camera,
       gesture: { ...d.camera.gesture, ...(stored.camera?.gesture || {}) },
       // v15: parallax. Nieuw blok, dus oude projecten krijgen hem uit,
@@ -2168,7 +2214,7 @@ function migrateConfig(stored) {
       delete b.beat[weg];
     }
   }
-  c.version = 15;
+  c.version = 16;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -5122,6 +5168,12 @@ document.querySelectorAll('#tabs button').forEach((t) => t.addEventListener('cli
   document.querySelectorAll('.tabpage').forEach((p) => p.classList.toggle('hidden', p.id !== 'page-' + t.dataset.tab));
   if (t.dataset.tab === 'dashboard') renderDashboard();
   if (t.dataset.tab === 'avatar') renderAvatars();
+  // De meter van de speaker-wekker leest de audiograaf 8x per seconde uit;
+  // dat hoeft alleen zolang je ernaar kijkt.
+  if (typeof kaMeterLoopt === 'function') {
+    kaMeterLoopt(t.dataset.tab === 'saver' && !!config.keepAlive?.on);
+    if (t.dataset.tab === 'saver') renderKaNote();
+  }
 }));
 
 /* ================= Inklapbare onderdelen in de tabbladen =================
@@ -5366,6 +5418,9 @@ const ZOEK_EXTRA = [
   { woorden: 'handgebaar hand zwaaien opsteken menu',
     tekst: 'Handgebaar — rechterhand omhoog toont het menu', tab: 'cam',
     hint: 'Camera → onderdeel Handgebaar.' },
+  { woorden: 'speaker standby slaap ruis geluid wakker versterker stil boxen signaal',
+    tekst: 'Speaker wakker houden — zacht signaal tegen standby', tab: 'saver',
+    hint: 'Screensaver → onderdeel Speaker wakker houden.' },
   { woorden: 'parallax diepte 3d meebewegen bezoeker meeschuiven perspectief lagen',
     tekst: 'Diepte-effect — knoppen schuiven mee met de bezoeker', tab: 'cam',
     hint: 'Camera → onderdeel Diepte-effect. Heeft de camera nodig; de laag ' +
@@ -7627,6 +7682,12 @@ function renderSaver() {
   $('#svTransNote').textContent = `De overgang start ${(sv.transitionSec ?? 1.2).toFixed(1)}s voor het einde van de lopende video, zodat de wissel vloeiend overlapt.`;
   $('#svSound').checked = !!sv.sound;
   $('#svVolume').value = sv.volume ?? 60;
+  const ka = config.keepAlive || {};
+  $('#kaOn').checked = !!ka.on;
+  $('#kaType').value = ka.type || 'ruis';
+  $('#kaLevel').value = ka.level ?? 3;
+  $('#kaPuls').checked = !!ka.puls;
+  renderKaNote();
   $('#camEnabled').checked = cam.enabled;
   $('#camDwell').value = cam.dwellSec;
   $('#camSens').value = cam.sensitivity;
@@ -7663,6 +7724,69 @@ $('#svTransitionSec').addEventListener('input', (e) => {
   save();
   $('#svTransNote').textContent = `De overgang start ${Number(e.target.value).toFixed(1)}s voor het einde van de lopende video, zodat de wissel vloeiend overlapt.`;
 });
+/* Uitleg onder de schuif: wat er nu werkelijk uit de speaker komt, en of de
+   audiomotor al mag draaien. Een percentage zegt meer dan een standnummer. */
+function renderKaNote() {
+  const note = $('#kaNote'); if (!note) return;
+  const ka = config.keepAlive || {};
+  if (!ka.on) { note.textContent = 'Uit — de speaker krijgt geen signaal als er niets speelt.'; return; }
+  const n = Math.min(20, Math.max(1, Number(ka.level ?? 3)));
+  const pct = (Math.pow(n / 20, 2) * 30).toFixed(1).replace('.', ',');   // Nederlandse komma
+  const soort = { ruis: 'zachte ruis', hoog: 'een toon van 18,5 kHz', laag: 'een toon van 50 Hz' }[ka.type || 'ruis'];
+  note.textContent = `Stand ${n}: ${soort} op ${pct}% van het maximale volume` +
+    (ka.puls ? ', elke 30 seconden anderhalve seconde lang. ' : ', doorlopend. ') +
+    (Wakker.klaar ? 'Het signaal loopt.'
+      : 'Wacht op de eerste aanraking — een browser mag pas geluid maken nadat iemand het scherm heeft aangeraakt. In de Windows-app begint hij vanzelf.');
+}
+
+// Live meter: leest de audiograaf zelf uit, dus hij beweegt alleen als er
+// echt iets naar de speaker gaat.
+let kaMeterTimer = 0;
+function kaMeterLoopt(aan) {
+  clearInterval(kaMeterTimer); kaMeterTimer = 0;
+  const vul = document.getElementById('kaVul');
+  if (!aan) { if (vul) vul.style.width = '0%'; return; }
+  kaMeterTimer = setInterval(() => {
+    const v = document.getElementById('kaVul');
+    if (!v) return;
+    // Het niveau is met opzet piepklein; anders zou de balk altijd leeg lijken.
+    const n = Math.min(1, Wakker.niveau() * 12);
+    v.style.width = (n * 100).toFixed(1) + '%';
+    v.classList.toggle('raak', n > 0.02);
+  }, 120);
+}
+
+$('#kaOn').addEventListener('change', (e) => {
+  config.keepAlive.on = e.target.checked;
+  save(); Wakker.apply(); renderKaNote();
+  kaMeterLoopt(e.target.checked);
+});
+$('#kaType').addEventListener('change', (e) => {
+  config.keepAlive.type = e.target.value;
+  save(); Wakker.apply(); renderKaNote();
+});
+$('#kaLevel').addEventListener('input', (e) => {
+  config.keepAlive.level = Number(e.target.value);
+  Wakker.apply(); renderKaNote();
+});
+$('#kaLevel').addEventListener('change', () => save());
+$('#kaPuls').addEventListener('change', (e) => {
+  config.keepAlive.puls = e.target.checked;
+  save(); Wakker.apply(); renderKaNote();
+});
+$('#kaTest').addEventListener('click', (e) => {
+  if (!config.keepAlive.on) return toast('Zet het signaal eerst aan.');
+  const knop = e.currentTarget;
+  if (!Wakker.hardop(5)) return toast('De audiomotor kon niet starten.');
+  knop.disabled = true;
+  knop.textContent = '♪ Je hoort hem nu…';
+  setTimeout(() => {
+    knop.disabled = false;
+    knop.innerHTML = '&#9654; 5 seconden hardop laten horen';
+    renderKaNote();
+  }, 5200);
+});
+
 $('#svPreview').addEventListener('click', () => {
   if (!saverPlaylist().length) return toast('Zet eerst video\u2019s in de playlist');
   closeEditor();
@@ -8236,6 +8360,7 @@ for (const evt of ['pointerdown', 'keydown']) {
     }
     // De AudioContext mag pas na een aanraking starten; dit is dat moment.
     AudioFX.apply();
+    Wakker.apply();
     if (saverActive) exitSaver();
   }, { capture: true });
 }
@@ -9314,7 +9439,171 @@ const AudioFX = (() => {
 
   return { apply, wireAll, demo, get demoLoopt() { return !!demoTimer; },
     get ready() { return !!ctx && ctx.state === 'running'; },
-    get level() { return env; } };
+    get level() { return env; },
+    // De speaker-wekker hieronder heeft dezelfde audiomotor nodig. Eén
+    // AudioContext per pagina is het maximum dat een browser toestaat, dus
+    // die wordt hier gedeeld in plaats van een tweede te openen.
+    ensure() { return ensureCtx(); },
+    get ctx() { return ctx; } };
+})();
+
+/* ================= Speaker wakker houden =================
+   Het probleem is hardware, niet software: een actieve speaker of versterker
+   zet zichzelf na een paar minuten zonder signaal uit, en gaat daarna alleen
+   met de afstandsbediening weer aan. Een holobox die een uur niemand ziet is
+   daarna dus stom — precies op het moment dat er wél iemand komt.
+
+   De oplossing is een signaal dat blijft lopen maar niet opvalt. Het gaat
+   rechtstreeks naar de uitgang en niet door de analyser van de beats: anders
+   zouden de knoppen de hele dag zachtjes op deze ruis staan te bewegen.
+
+   Drie soorten, omdat geen twee speakers hetzelfde detecteren. Werkt de ene
+   niet, dan de andere proberen — daarom staat de keuze in beeld en niet vast
+   in de code. */
+const Wakker = (() => {
+  let gain = null, meter = null, bron = null, data = null;
+  let ruis = null, pulsTimer = 0, huidigType = '';
+  let luidTot = 0;                     // tijdstip waarop "even hardop" afloopt
+  const PULS_ELK = 30, PULS_DUUR = 1.5;
+
+  const cfg = () => config.keepAlive || {};
+
+  /* Kwadratisch: het oor hoort volume niet lineair, dus een lineaire schuif
+     zou onderin niets doen en bovenin alles tegelijk. */
+  function amplitude() {
+    const n = Math.min(20, Math.max(1, Number(cfg().level ?? 3)));
+    return Math.pow(n / 20, 2) * 0.3;
+  }
+
+  /* Bruine ruis: donkerder dan witte ruis en daardoor veel minder opvallend —
+     het klinkt als een verre luchtstroom in plaats van als sissen. Breedbandig
+     genoeg dat vrijwel elke signaaldetectie hem oppikt. */
+  function ruisBuffer(ctx) {
+    if (ruis) return ruis;
+    const n = Math.floor(ctx.sampleRate * 4);
+    ruis = ctx.createBuffer(1, n, ctx.sampleRate);
+    const d = ruis.getChannelData(0);
+    let v = 0;
+    for (let i = 0; i < n; i++) {
+      v = (v + 0.02 * (Math.random() * 2 - 1)) / 1.02;
+      d[i] = Math.max(-1, Math.min(1, v * 3.5));
+    }
+    // Naadloos rondlopen: begin en eind in elkaar laten overvloeien, anders
+    // tikt de lus elke vier seconden hoorbaar.
+    const r = Math.floor(ctx.sampleRate * 0.05);
+    for (let i = 0; i < r; i++) {
+      const k = i / r;
+      d[i] = d[i] * k + d[n - r + i] * (1 - k);
+    }
+    return ruis;
+  }
+
+  function stopBron() {
+    if (!bron) return;
+    try { bron.stop(); } catch {}
+    try { bron.disconnect(); } catch {}
+    bron = null; huidigType = '';
+  }
+
+  function bouwBron(ctx) {
+    stopBron();
+    const type = cfg().type || 'ruis';
+    if (type === 'ruis') {
+      const s = ctx.createBufferSource();
+      s.buffer = ruisBuffer(ctx); s.loop = true;
+      s.connect(gain); s.start();
+      bron = s;
+    } else {
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      // 50 Hz voel je eerder dan dat je het hoort; 18,5 kHz horen de meeste
+      // volwassenen helemaal niet meer, maar niet elke speaker laat het door.
+      o.frequency.value = type === 'laag' ? 50 : 18500;
+      o.connect(gain); o.start();
+      bron = o;
+    }
+    huidigType = type;
+  }
+
+  function zetNiveau(ctx, waarde, tijd) {
+    if (!gain) return;
+    const t = ctx.currentTime;
+    try {
+      gain.gain.cancelScheduledValues(t);
+      gain.gain.setValueAtTime(gain.gain.value, t);
+      gain.gain.linearRampToValueAtTime(waarde, t + (tijd ?? 0.25));
+    } catch { gain.gain.value = waarde; }
+  }
+
+  function plansPuls(ctx) {
+    clearInterval(pulsTimer); pulsTimer = 0;
+    if (!cfg().puls) return;
+    const puls = () => {
+      if (Date.now() < luidTot) return;      // tijdens "even hardop" niet pulsen
+      const a = amplitude();
+      zetNiveau(ctx, a, 0.25);
+      setTimeout(() => { if (cfg().on && cfg().puls) zetNiveau(ctx, 0, 0.25); },
+        PULS_DUUR * 1000);
+    };
+    puls();
+    pulsTimer = setInterval(puls, PULS_ELK * 1000);
+  }
+
+  function apply() {
+    const aan = !!cfg().on;
+    if (!aan) {
+      clearInterval(pulsTimer); pulsTimer = 0;
+      if (gain) zetNiveau(AudioFX.ctx, 0, 0.2);
+      stopBron();
+      return;
+    }
+    const ctx = AudioFX.ensure();
+    if (!ctx) return;
+    if (ctx.state !== 'running') ctx.resume().catch(() => {});
+    if (!gain) {
+      gain = ctx.createGain();
+      gain.gain.value = 0;
+      // Meter tussen gain en uitgang: zo meet het scherm wat er werkelijk
+      // naar de speaker gaat, niet wat er ingesteld staat.
+      meter = ctx.createAnalyser();
+      meter.fftSize = 256;
+      // Float en niet de 8-bits variant: het signaal is met opzet zó zacht
+      // dat het in 8 bits op nul zou uitkomen en de meter altijd leeg bleef.
+      data = new Float32Array(meter.fftSize);
+      gain.connect(meter); meter.connect(ctx.destination);
+    }
+    if (!bron || huidigType !== (cfg().type || 'ruis')) bouwBron(ctx);
+    if (cfg().puls) plansPuls(ctx);
+    else { clearInterval(pulsTimer); pulsTimer = 0;
+      if (Date.now() >= luidTot) zetNiveau(ctx, amplitude(), 0.3); }
+  }
+
+  /* Even hardop: bij het opleveren wil je weten of er überhaupt geluid uit de
+     kast komt. Vijf seconden duidelijk hoorbaar, daarna terug naar de stand. */
+  function hardop(sec) {
+    if (!cfg().on) return false;
+    apply();
+    const ctx = AudioFX.ctx;
+    if (!ctx || !gain) return false;
+    luidTot = Date.now() + sec * 1000;
+    zetNiveau(ctx, 0.25, 0.2);
+    setTimeout(() => { luidTot = 0; apply(); }, sec * 1000);
+    return true;
+  }
+
+  // Wat er nu echt uit gaat, 0..1. Voedt zowel de meter op het scherm als
+  // de test: een cijfer dat uit de audiograaf komt liegt niet.
+  function niveau() {
+    if (!meter || !data) return 0;
+    meter.getFloatTimeDomainData(data);
+    let piek = 0;
+    for (let i = 0; i < data.length; i++) piek = Math.max(piek, Math.abs(data[i]));
+    return piek;
+  }
+
+  return { apply, hardop, niveau,
+    get luid() { return Date.now() < luidTot; },
+    get klaar() { const c = AudioFX.ctx; return !!c && c.state === 'running'; } };
 })();
 
 /* ================= Oriëntatie (portrait/landscape) ================= */
@@ -9556,6 +9845,9 @@ setInterval(() => { errorBurst = Math.max(0, errorBurst - 5); }, 60000);
   runEntrance();
   if (config.camera.enabled) startCamera();
   AudioFX.apply();
+  // Houdt de speaker in de kast wakker. In de Windows-app mag geluid meteen;
+  // in een gewone browser wacht hij op de eerste aanraking.
+  Wakker.apply();
   applyRemoteSettings();
   try { await navigator.storage?.persist?.(); } catch {}
 })();

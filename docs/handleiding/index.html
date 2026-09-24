@@ -288,7 +288,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.16.0</span><span>22 hoofdstukken</span><span>31 schermafbeeldingen</span>
+    <span>Versie 2.17.0</span><span>22 hoofdstukken</span><span>31 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -1269,6 +1269,64 @@ header.cover{padding-block:88px 8px}
     <p>Beide schuiven worden vermenigvuldigd met het <b>hoofdvolume</b> uit Scherm &amp;
     scène. Zo zet je met één schuif — ook op afstand vanuit het beheerpaneel — de hele box
     zachter zonder je verhoudingen kwijt te raken.</p></div>
+
+  <h3>Speaker wakker houden</h3>
+  <p class="measure">Dit lost een hardwareprobleem op, geen softwareprobleem. Een actieve
+  speaker of versterker zet zichzelf na een paar minuten zonder signaal in stand-by, en gaat
+  daarna alleen met de afstandsbediening weer aan. Een holobox die een uur niemand ziet staat
+  daarna dus stom — precies op het moment dat er eindelijk iemand langskomt, en de
+  afstandsbediening ligt niet op de beurs. De oplossing is een signaal dat blijft lopen maar
+  niet opvalt: de speaker hoort iets, de bezoeker niets.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+    <tbody>
+      <tr><td>Zacht signaal blijven meesturen</td><td>Zet het aan. Het loopt altijd — ook met
+        de screensaver uit — zodra de box open staat.</td>
+        <td>De speaker valt in slaap van stilte, en stilte is er ook zonder screensaver.</td></tr>
+      <tr><td>Soort signaal</td><td><b>Zachte ruis</b> (bruine ruis, klinkt als een verre
+        luchtstroom), <b>hoge toon</b> van 18,5 kHz, of <b>lage toon</b> van 50 Hz.</td>
+        <td>Geen twee speakers detecteren hetzelfde. Ruis is breedbandig en werkt bijna
+        altijd; de hoge toon horen de meeste volwassenen niet meer, maar niet elke speaker
+        laat hem door; de lage toon voel je eerder dan je hem hoort.</td></tr>
+      <tr><td>Niveau (1–20)</td><td>Hoe hard. De regel eronder rekent het om: stand 3 is
+        0,7 % van het maximale volume, stand 10 ongeveer 7,5 %.</td>
+        <td>Te zacht en de speaker merkt het niet; te hard en de bezoeker hoort het. Dit is
+        de schuif waar je op locatie even mee speelt.</td></tr>
+      <tr><td>Alleen af en toe een korte puls</td><td>Elke 30 seconden anderhalve seconde
+        geluid in plaats van doorlopend.</td>
+        <td>Een speaker slaapt pas na minuten stilte, dus eens per halve minuut is ruim
+        genoeg — en wat er 95 % van de tijd niet is, kan ook niet opvallen.</td></tr>
+      <tr><td>5 seconden hardop laten horen</td><td>Zet het signaal vijf tellen duidelijk
+        hoorbaar en gaat dan terug naar de ingestelde stand.</td>
+        <td>Bij het opleveren wil je wéten dat er geluid uit de kast komt, en niet alleen
+        dat de software het verstuurt.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="measure">Het balkje onder de schuif is geen instelling maar een <b>meter</b>: het
+  leest de audiograaf zelf uit en laat zien wat er op dit moment werkelijk naar de speaker
+  gaat. Staat hij leeg terwijl het signaal aanstaat, dan komt er ook echt niets uit — dan
+  wacht de box nog op de eerste aanraking (zie hieronder) of staat het niveau te laag.</p>
+
+  <div class="note"><span class="t">Waarom het los staat van het hoofdvolume</span>
+    <p>Alle andere geluidsschuiven worden vermenigvuldigd met het hoofdvolume; deze niet.
+    Zou dat wel zo zijn, dan hield het signaal precies dán op te werken wanneer je de box
+    zachter zet — en dat is juist het moment waarop de speaker in slaap valt. Om dezelfde
+    reden reageert dit signaal ook niet mee met de knoppen: het gaat rechtstreeks naar de
+    uitgang en niet langs de analyser van de beats, anders zouden de tegels de hele dag
+    zachtjes op deze ruis staan te bewegen.</p></div>
+
+  <div class="note warn"><span class="t">Valt de speaker tóch in slaap?</span>
+    <p>Dan haalt zijn detectie het niveau niet. Zet het niveau een paar standen hoger tot
+    hij wakker blijft, en kies pas daarna of het zachter kan. Helpt dat niet, probeer dan
+    een ander <b>soort signaal</b>: sommige speakers filteren juist de hoge tonen weg,
+    andere reageren alleen op laag. Staat de puls aan en blijft hij slapen, zet hem dan op
+    doorlopend — een enkele speaker wil onafgebroken signaal zien.</p>
+    <p>Net als bij de andere geluiden geldt: in een gewone browser begint het signaal pas
+    na de eerste aanraking van het scherm. In de <b>Windows-app</b> loopt het meteen vanaf
+    het opstarten, zonder dat er iemand langs hoeft te komen — voor deze functie is dat het
+    hele punt, dus gebruik daar de Windows-app.</p></div>
 </section>
 
 <!-- ═══════════════════════════════════════════════ 13 ═══ -->
@@ -2183,6 +2241,8 @@ header.cover{padding-block:88px 8px}
         zonder aanraken.</td></tr>
       <tr><td>Diepte-effect</td><td>De tegels schuiven mee met waar de bezoeker staat; de
         voorste verder dan de achterste. Heeft de camera nodig.</td></tr>
+      <tr><td>Speaker wakker houden</td><td>Een heel zacht signaal dat blijft lopen zodat de
+        speaker zichzelf niet in stand-by zet.</td></tr>
       <tr><td>Device-key</td><td>De sleutel waarmee één box zich bij je beheerserver
         identificeert.</td></tr>
     </tbody>
@@ -2190,7 +2250,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.16.0 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.17.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>
