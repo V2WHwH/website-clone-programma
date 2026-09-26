@@ -693,6 +693,20 @@
     display: flex; flex-direction: column; gap: 14px; font-family: var(--ui-font);
     box-shadow: 0 30px 80px rgba(0,0,0,.6); }
   #publishModal h3 { font-size: 16px; font-weight: 650; color: var(--color-text-primary); }
+  /* -- Verhuisvenster: bevestigen en voortgang van "Alles terugzetten" -- */
+  #verhuisModal { position: fixed; inset: 0; z-index: 85; display: flex; align-items: center;
+    justify-content: center; background: rgba(3,6,10,.7); backdrop-filter: blur(3px); }
+  #verhuisModal .pm { width: min(500px, 92vw); background: var(--color-surface-2);
+    border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 22px 24px;
+    display: flex; flex-direction: column; gap: 12px; font-family: var(--ui-font);
+    box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  #verhuisModal h3 { font-size: 16px; font-weight: 650; color: var(--color-text-primary); }
+  #verhuisModal .vh-tekst { font-size: 12.5px; line-height: 1.55; color: var(--color-text-secondary); margin: 0; }
+  #verhuisModal .vh-tekst b { color: var(--color-text-primary); font-weight: 600; }
+  #verhuisModal .vh-knoppen { display: flex; gap: 10px; justify-content: flex-end; }
+  details.vh-klein { margin-top: 8px; border-top: 1px solid var(--p-line); padding-top: 8px; }
+  details.vh-klein summary { cursor: pointer; font-size: 12px; color: var(--color-text-secondary);
+    padding: 4px 0; list-style-position: inside; }
   #pmChecks { display: flex; flex-direction: column; gap: 7px; font-size: 12px; color: var(--color-text-secondary); }
   #pmChecks .chk { display: flex; align-items: center; gap: 9px; }
   #pmChecks .chk .st { width: 15px; text-align: center; }
@@ -1798,10 +1812,22 @@
     <p class="note">Alles wordt automatisch bewaard in deze browser, ook offline. Na afsluiten staat alles er bij het openen weer.</p>
     <h2>Naar een andere computer</h2>
     <div class="card">
-      <p class="note">1. Exporteer het ontwerp (klein bestand) &middot; 2. Neem de mediabestanden mee (map of USB) &middot; 3. Importeer op de andere pc en wijs dezelfde bestanden aan.</p>
-      <button id="exportBtn" class="btn block">Ontwerp exporteren (.json)</button>
-      <button id="importBtn" class="btn block">Ontwerp importeren</button>
-      <input type="file" id="importInput" accept="application/json" hidden>
+      <p class="note">E&eacute;n bestand met alles erin: de indeling, knoppen, sc&egrave;nes en
+      instellingen &eacute;n alle video's, afbeeldingen en 3D-modellen. Zet het op een USB-stick
+      of in de cloud, en open het op de andere computer met <b>Terugzetten</b>.</p>
+      <button id="bundelExport" class="btn primary block">&#8681; Alles exporteren &mdash; &eacute;&eacute;n bestand</button>
+      <p class="note" id="bundelInfo"></p>
+      <button id="importBtn" class="btn block">&#8679; Terugzetten uit een bestand&hellip;</button>
+      <input type="file" id="importInput" accept=".holobox,.json,application/json" hidden>
+      <p class="note">Terugzetten vervangt wat er nu op deze computer staat. De koppeling met het
+      beheerplatform gaat bewust niet mee: elke holobox houdt zijn eigen device-key, anders
+      zouden twee boxen zich als &eacute;&eacute;n melden.</p>
+      <details class="vh-klein">
+        <summary>Alleen de indeling, zonder media</summary>
+        <p class="note">Een klein bestand (.json) met alleen knoppen, sc&egrave;nes en
+        instellingen. De video's neem je dan zelf mee en wijs je na het terugzetten opnieuw aan.</p>
+        <button id="exportBtn" class="btn block">Alleen de indeling exporteren (.json)</button>
+      </details>
     </div>
     <div id="relinkBox" class="card hidden">
       <div class="t-label">Media opnieuw koppelen</div>
@@ -1910,7 +1936,10 @@
     </div>
     <h2>Offline op een andere pc</h2>
     <div class="card">
-      <p class="note">Kopieer de app-map naar de pc of USB, dubbelklik op <code>index.html</code>, importeer je ontwerp en wijs de media aan. Internet is daarna niet nodig.</p>
+      <p class="note">Let op: de app-map bevat alleen het programma. Je indeling en video's staan
+      in de opslag van deze computer. Maak daarom eerst <b>Beheer &amp; device &rarr; Alles
+      exporteren</b>: dat geeft &eacute;&eacute;n bestand met alles erin. Installeer de app op de andere
+      pc en kies daar <b>Terugzetten uit een bestand</b>. Internet is daarna niet nodig.</p>
     </div>
     <h2>Soepel 4K (GPU)</h2>
     <div class="card">
@@ -2000,12 +2029,25 @@
   </div>
 </div>
 
+<div id="verhuisModal" class="hidden">
+  <div class="pm" role="dialog" aria-modal="true" aria-labelledby="vhTitel">
+    <h3 id="vhTitel">Alles terugzetten</h3>
+    <p class="vh-tekst" id="vhTekst"></p>
+    <div class="cm-bar hidden" id="vhBalk"><i id="vhVul"></i></div>
+    <p class="vh-tekst" id="vhStand"></p>
+    <div class="vh-knoppen">
+      <button class="btn" id="vhNee">Annuleren</button>
+      <button class="tb-btn cta" id="vhJa">Terugzetten</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="hidden"></div>
 
 <script>
 'use strict';
 
-const APP_VERSION = '2.17.0';
+const APP_VERSION = '2.18.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -2291,7 +2333,8 @@ function toast(msg) {
   toastTimer = setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.classList.add('hidden'), 350); },
     msg.length > 70 ? 6000 : 2400);
 }
-const fmtSize = (b) => b > 1e9 ? (b / 1e9).toFixed(2) + ' GB' : b > 1e6 ? (b / 1e6).toFixed(0) + ' MB' : Math.round(b / 1e3) + ' kB';
+// Nederlandse komma: "1,07 GB", niet "1.07 GB".
+const fmtSize = (b) => b > 1e9 ? (b / 1e9).toFixed(2).replace('.', ',') + ' GB' : b > 1e6 ? (b / 1e6).toFixed(0) + ' MB' : Math.round(b / 1e3) + ' kB';
 
 /* ================= Meertaligheid (spec 84-85) =================
    Labels en titels worden per taal opgeslagen als {nl:'…', en:'…'}. Zonder
@@ -5418,6 +5461,9 @@ const ZOEK_EXTRA = [
   { woorden: 'handgebaar hand zwaaien opsteken menu',
     tekst: 'Handgebaar — rechterhand omhoog toont het menu', tab: 'cam',
     hint: 'Camera → onderdeel Handgebaar.' },
+  { woorden: 'verhuizen kopie kopieren back-up backup usb andere computer pc exporteren terugzetten importeren overzetten meenemen',
+    tekst: 'Alles exporteren / terugzetten — indeling én video\'s in één bestand', tab: 'share',
+    hint: 'Beheer & device → onderdeel Naar een andere computer.' },
   { woorden: 'speaker standby slaap ruis geluid wakker versterker stil boxen signaal',
     tekst: 'Speaker wakker houden — zacht signaal tegen standby', tab: 'saver',
     hint: 'Screensaver → onderdeel Speaker wakker houden.' },
@@ -7577,6 +7623,7 @@ function renderShare() {
     : 'Geen PIN ingesteld — het menu is vrij toegankelijk.';
   $('#statsEnabled').checked = config.analytics.enabled;
   renderStats();
+  renderBundelInfo();
 }
 
 $('#pinSet').addEventListener('click', async () => {
@@ -7889,6 +7936,12 @@ $('#importInput').addEventListener('change', async (e) => {
   const f = e.target.files[0];
   e.target.value = '';
   if (!f) return;
+  /* Eén knop voor beide soorten: het bestand zegt zelf wat het is. Een
+     gebruiker hoeft niet te weten of hij een .holobox of een .json heeft. */
+  let bundel = null;
+  try { bundel = await bundelLezen(f); }
+  catch (err) { return toast('Dit bestand kan niet worden teruggezet: ' + err.message); }
+  if (bundel) return bundelVragen(f, bundel);
   let data;
   try { data = JSON.parse(await f.text()); } catch { return toast('Ongeldig bestand'); }
   // Zowel het huidige scènemodel als oude vlakke exports (v1) accepteren.
@@ -7902,6 +7955,254 @@ $('#importInput').addEventListener('change', async (e) => {
   updateRelinkBox();
   toast('Ontwerp geïmporteerd');
 });
+
+/* ================= Verhuizen: alles in één bestand =================
+   De app-map bevat alleen het programma. Wat iemand erin zet — de indeling
+   in localStorage, de video's als blobs in IndexedDB — hoort bij de computer,
+   niet bij de map. Wie de map kopieert, krijgt dus een lege box. Dit bestand
+   neemt alles mee.
+
+   Opbouw van een .holobox:
+     [8 bytes "HOLOBOX1"] [4 bytes lengte inhoudsopgave] [4 bytes gereserveerd]
+     [inhoudsopgave als JSON] [bestand 1] [bestand 2] …
+   Bewust geen zip: video's zijn al gecomprimeerd, een zip heeft boven de
+   4 GB een uitbreiding nodig, en dit formaat laat zich in stukken lezen
+   (Blob.slice) zonder dat een video van gigabytes ooit in het geheugen hoeft. */
+const BUNDEL_MERK = 'HOLOBOX1';
+const BUNDEL_KOP = 16;
+
+async function bundelMaken() {
+  const alles = await dbAll();
+  const echte = new Set(alles.filter((r) => !r.hidden).map((r) => r.id));
+  /* De previews gaan mee: anders rendert de nieuwe box bij de eerste start
+     elke video opnieuw, met een melding per video op het scherm. */
+  const mee = alles.filter((r) => r.blob &&
+    (!r.hidden || (String(r.id).startsWith('prev_') && echte.has(r.id.slice(5)))));
+  let offset = 0;
+  const media = mee.map((r) => {
+    const m = { id: r.id, name: r.name, size: r.blob.size, type: r.blob.type || '', offset };
+    if (r.hidden) m.hidden = true;
+    offset += r.blob.size;
+    return m;
+  });
+  const inhoud = { format: 'holobox', versie: 1, app: APP_VERSION,
+    gemaakt: new Date().toISOString(), config, media };
+  const json = new TextEncoder().encode(JSON.stringify(inhoud));
+  const kop = new Uint8Array(BUNDEL_KOP);
+  kop.set(new TextEncoder().encode(BUNDEL_MERK), 0);
+  new DataView(kop.buffer).setUint32(8, json.length, true);
+  // Een Blob van Blobs kopieert niets: de browser schrijft bij het opslaan
+  // rechtstreeks vanuit de database naar schijf.
+  const blob = new Blob([kop, json, ...mee.map((r) => r.blob)], { type: 'application/octet-stream' });
+  return { blob, aantal: media.filter((m) => !m.hidden).length, bytes: offset };
+}
+
+function bundelNaam() {
+  const naam = (config.projectName || 'presentatie').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'presentatie';
+  const d = new Date();
+  const dag = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return `holobox-${naam}-${dag}.holobox`;
+}
+
+// Leest kop en inhoudsopgave. Geeft null als het geen .holobox is (dan kan
+// het een oude .json zijn); gooit een fout met een leesbare reden als het
+// wel een .holobox is maar er iets mis mee is.
+async function bundelLezen(file) {
+  if (!file || file.size < BUNDEL_KOP) return null;
+  const kop = new Uint8Array(await file.slice(0, BUNDEL_KOP).arrayBuffer());
+  if (new TextDecoder().decode(kop.slice(0, 8)) !== BUNDEL_MERK) return null;
+  const lengte = new DataView(kop.buffer).getUint32(8, true);
+  const start = BUNDEL_KOP + lengte;
+  if (start > file.size) throw new Error('het bestand is afgebroken — onvolledig gekopieerd of gedownload.');
+  let inhoud;
+  try { inhoud = JSON.parse(await file.slice(BUNDEL_KOP, start).text()); }
+  catch { throw new Error('de inhoudsopgave is beschadigd.'); }
+  if (inhoud.format !== 'holobox' || !inhoud.config || !Array.isArray(inhoud.media)) {
+    throw new Error('dit is geen HereWeHolo-bestand.');
+  }
+  if ((inhoud.versie || 1) > 1) {
+    throw new Error(`gemaakt met versie ${inhoud.app || 'onbekend'} — werk deze computer eerst bij.`);
+  }
+  /* De meest voorkomende fout is geen kapot bestand maar een half bestand:
+     een download die afbrak of een USB-stick die te vroeg werd uitgetrokken.
+     Dat is vóór het terugzetten al te zien aan de grootte. */
+  const eind = inhoud.media.reduce((s, m) => Math.max(s, (m.offset || 0) + (m.size || 0)), 0);
+  if (start + eind > file.size) {
+    throw new Error(`het bestand is afgebroken: er ontbreekt ${fmtSize(start + eind - file.size)}. ` +
+      'Kopieer of download het opnieuw.');
+  }
+  return { inhoud, start };
+}
+
+/* ---- Venster: vragen, dan voortgang tonen ---- */
+function vhVenster({ titel, tekst, ja = 'Terugzetten', nee = 'Annuleren', enkel = false }) {
+  const m = $('#verhuisModal');
+  $('#vhTitel').textContent = titel;
+  $('#vhTekst').innerHTML = tekst;
+  $('#vhStand').textContent = '';
+  $('#vhBalk').classList.add('hidden');
+  $('#vhJa').textContent = ja; $('#vhNee').textContent = nee;
+  $('#vhJa').classList.remove('hidden'); $('#vhNee').classList.toggle('hidden', enkel);
+  $('#vhJa').disabled = false; $('#vhNee').disabled = false;
+  m.classList.remove('hidden');
+  return new Promise((klaar) => {
+    const kies = (v) => { $('#vhJa').onclick = $('#vhNee').onclick = null; klaar(v); };
+    // Een melding met één knop sluit zichzelf; een vraag laat het venster
+    // open staan, want daarna volgt de voortgang erin.
+    $('#vhJa').onclick = () => { if (enkel) m.classList.add('hidden'); kies(true); };
+    $('#vhNee').onclick = () => { m.classList.add('hidden'); kies(false); };
+  });
+}
+function vhVoortgang(fractie, regel) {
+  $('#vhBalk').classList.remove('hidden');
+  $('#vhVul').style.width = (Math.max(0, Math.min(1, fractie)) * 100).toFixed(1) + '%';
+  $('#vhStand').textContent = regel;
+}
+const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+async function bundelVragen(file, bundel) {
+  const { inhoud } = bundel;
+  const zicht = inhoud.media.filter((m) => !m.hidden);
+  const bytes = inhoud.media.reduce((s, m) => s + m.size, 0);
+  const knoppen = (inhoud.config.scenes || []).reduce((s, sc) => s + (sc.buttons || []).length, 0);
+  const scenes = (inhoud.config.scenes || []).length;
+  const wanneer = inhoud.gemaakt ? new Date(inhoud.gemaakt).toLocaleString('nl-NL',
+    { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'onbekend';
+
+  // Past het? Beter nu zeggen dan halverwege stranden.
+  let ruimte = '';
+  try {
+    const est = await navigator.storage?.estimate?.();
+    if (est && est.quota) {
+      const bestaand = new Set((await dbAll()).map((r) => r.id));
+      const nodig = inhoud.media.filter((m) => !bestaand.has(m.id)).reduce((s, m) => s + m.size, 0);
+      const vrij = est.quota - (est.usage || 0);
+      if (nodig > vrij) {
+        await vhVenster({ titel: 'Niet genoeg ruimte',
+          tekst: `Dit bestand heeft <b>${fmtSize(nodig)}</b> nodig, maar er is op deze computer nog
+            <b>${fmtSize(vrij)}</b> vrij voor de holobox. Maak ruimte vrij op de schijf, of wis eerst de
+            huidige inhoud (Beheer &amp; device &rarr; Alles wissen) en probeer het opnieuw.`,
+          ja: 'Sluiten', enkel: true });
+        return;
+      }
+      ruimte = ` Er is ruimte genoeg (${fmtSize(vrij)} vrij).`;
+    }
+  } catch { /* geen schatting beschikbaar: gewoon proberen */ }
+
+  const huidig = config.scenes.reduce((s, sc) => s + (sc.buttons || []).length, 0);
+  const ok = await vhVenster({
+    titel: 'Alles terugzetten',
+    tekst: `<b>${esc(inhoud.config.projectName || 'Naamloos project')}</b>, gemaakt op ${esc(wanneer)}
+      met versie ${esc(inhoud.app || '?')}:<br>
+      ${scenes} sc&egrave;ne${scenes === 1 ? '' : 's'}, ${knoppen} knop${knoppen === 1 ? '' : 'pen'} en
+      ${zicht.length} mediabestand${zicht.length === 1 ? '' : 'en'} (${fmtSize(bytes)}).<br><br>
+      Dit <b>vervangt</b> wat er nu op deze computer staat` +
+      (huidig ? ` (${huidig} knop${huidig === 1 ? '' : 'pen'})` : '') + `.${esc(ruimte)}`
+  });
+  if (!ok) return;
+  $('#vhJa').classList.add('hidden');
+  $('#vhNee').disabled = true;
+  try {
+    await bundelTerugzetten(file, bundel);
+  } catch (err) {
+    vhVoortgang(0, '');
+    $('#vhTitel').textContent = 'Terugzetten mislukt';
+    $('#vhTekst').innerHTML = `${esc(err.message || err)}<br><br>Er is niets veranderd: de inhoud die
+      er stond, staat er nog.`;
+    $('#vhBalk').classList.add('hidden');
+    $('#vhNee').disabled = false; $('#vhNee').textContent = 'Sluiten';
+    $('#vhNee').onclick = () => $('#verhuisModal').classList.add('hidden');
+  }
+}
+
+async function bundelTerugzetten(file, { inhoud, start }) {
+  if (!idb) throw new Error('de opslag van deze browser is niet beschikbaar.');
+  const oud = new Set((await dbAll()).map((r) => r.id));
+  const nieuw = [];
+  const totaal = inhoud.media.reduce((s, m) => s + m.size, 0) || 1;
+  let gedaan = 0;
+  const zicht = inhoud.media.filter((m) => !m.hidden).length;
+  let nr = 0;
+  $('#vhTekst').innerHTML = 'Niet afsluiten &mdash; grote video\'s kunnen even duren.';
+  try {
+    for (const m of inhoud.media) {
+      if (!m.hidden) nr++;
+      vhVoortgang(gedaan / totaal, m.hidden
+        ? `Previews… (${fmtSize(gedaan)} van ${fmtSize(totaal)})`
+        : `Bestand ${nr} van ${zicht}: ${m.name} (${fmtSize(m.size)}) — ${fmtSize(gedaan)} van ${fmtSize(totaal)}`);
+      /* Een stuk van het gekozen bestand, geen kopie in het geheugen: de
+         database leest het zelf van schijf. Het MIME-type gaat mee, anders
+         weet de videospeler niet wat hij krijgt. */
+      const stuk = file.slice(start + m.offset, start + m.offset + m.size, m.type || '');
+      const rec = { id: m.id, name: m.name, size: m.size, blob: stuk };
+      if (m.hidden) rec.hidden = true;
+      await dbPut(rec);
+      if (!oud.has(m.id)) nieuw.push(m.id);
+      gedaan += m.size;
+    }
+  } catch (err) {
+    /* Halverwege mis (schijf vol, stick eruit): wat we net schreven weer weg,
+       zodat de oude inhoud er precies zo staat als ervoor. */
+    for (const id of nieuw) { try { await dbDel(id); } catch {} }
+    throw new Error(`het terugzetten brak af (${err?.message || err?.name || 'onbekende fout'}). ` +
+      'Is de schijf vol, of werd de USB-stick verwijderd?');
+  }
+  vhVoortgang(1, 'Media staan erin. Indeling en instellingen overzetten…');
+
+  // Pas nu de indeling: tot hier kon alles nog terug.
+  const eigen = config.remote || {};
+  const nieuwCfg = migrateConfig(inhoud.config);
+  /* Het serveradres gaat mee, de device-key niet: twee boxen met dezelfde
+     sleutel melden zich als één box bij het beheerplatform. */
+  nieuwCfg.remote = { ...nieuwCfg.remote, key: eigen.key || '',
+    enabled: !!(eigen.enabled && eigen.key) };
+  localStorage.setItem(LS_KEY, JSON.stringify(nieuwCfg));
+
+  // Wat bij het oude project hoorde en niet in het bestand zat, opruimen.
+  const houden = new Set(inhoud.media.map((m) => m.id));
+  for (const id of oud) if (!houden.has(id)) { try { await dbDel(id); } catch {} }
+
+  vhVoortgang(1, `Klaar: ${zicht} mediabestand${zicht === 1 ? '' : 'en'} en de hele indeling. De presentatie start opnieuw…`);
+  $('#vhTitel').textContent = 'Alles teruggezet';
+  $('#vhTekst').textContent = '';
+  /* Opnieuw starten in plaats van alles los bijwerken: camera, geluid,
+     oriëntatie, screensaver en beheer lezen hun instellingen bij de start.
+     Zo staat het na afloop gegarandeerd precies zoals op de andere box. */
+  setTimeout(() => location.reload(), 1600);
+}
+
+$('#bundelExport').addEventListener('click', async (e) => {
+  const knop = e.currentTarget;
+  knop.disabled = true;
+  try {
+    const { blob, aantal } = await bundelMaken();
+    const url = URL.createObjectURL(blob);
+    const a = el('a', { href: url, download: bundelNaam() });
+    document.body.append(a); a.click(); a.remove();
+    // Niet meteen vrijgeven: het opslaan van een groot bestand loopt nog.
+    setTimeout(() => URL.revokeObjectURL(url), 30 * 60 * 1000);
+    toast(`Alles in één bestand: ${aantal} mediabestand${aantal === 1 ? '' : 'en'} en de hele indeling — ` +
+      `${fmtSize(blob.size)}. Kies waar je het bewaart.`);
+  } catch (err) {
+    toast('Exporteren mislukt: ' + (err?.message || err));
+  } finally {
+    knop.disabled = false;
+    renderBundelInfo();
+  }
+});
+
+// Vooraf zeggen hoe groot het wordt: 4K-video's maken dit bestand gauw
+// gigabytes groot, en dat wil je weten voordat je een stick pakt.
+function renderBundelInfo() {
+  const n = $('#bundelInfo'); if (!n) return;
+  const media = [...mediaCache.values()];
+  const bytes = media.reduce((s, m) => s + (m.size || 0), 0);
+  n.textContent = media.length
+    ? `Nu: ${media.length} mediabestand${media.length === 1 ? '' : 'en'}, samen ongeveer ${fmtSize(bytes)} — het bestand wordt ongeveer zo groot.`
+    : 'Er staan nog geen media in; het bestand bevat dan alleen de indeling.';
+}
 
 // Ontbrekende video's opnieuw koppelen (op bestandsnaam).
 let pendingRelink = [];

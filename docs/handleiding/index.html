@@ -288,7 +288,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.17.0</span><span>22 hoofdstukken</span><span>31 schermafbeeldingen</span>
+    <span>Versie 2.18.0</span><span>22 hoofdstukken</span><span>31 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -854,10 +854,11 @@ header.cover{padding-block:88px 8px}
   </figure>
 
   <div class="note"><span class="t">Waar blijven de bestanden</span>
-    <p>In IndexedDB, de bestandsopslag van de browser, onder de naam <code>hwh_studio</code>.
-    Ze gaan dus <em>niet</em> mee in een geëxporteerd ontwerp — dat is een klein
-    JSON-bestand met alleen verwijzingen. Verhuis je naar een andere pc, neem dan de
-    mediabestanden apart mee en gebruik <b>Media opnieuw koppelen</b>.</p></div>
+    <p>In IndexedDB, de bestandsopslag van de browser of de Windows-app, onder de naam
+    <code>hwh_studio</code>. Ze horen dus bij <em>deze computer</em>, niet bij de map waar
+    het programma in staat: wie de app-map kopieert, krijgt een lege box. Om te verhuizen
+    gebruik je <b>Beheer &amp; device → Alles exporteren</b>: één bestand met de indeling én
+    alle media erin (zie hoofdstuk 15).</p></div>
 </section>
 
 <!-- ═══════════════════════════════════════════════ 08 ═══ -->
@@ -1880,16 +1881,44 @@ header.cover{padding-block:88px 8px}
     <div>
       <h4>Naar een andere computer</h4>
       <ol class="steps">
-        <li><b>Ontwerp exporteren</b> — levert een klein <code>.json</code>-bestand met alle
-          scènes, knoppen en instellingen. Geen video's.</li>
-        <li><b>Neem de mediabestanden mee</b> in een map of op een USB-stick.</li>
-        <li><b>Importeer</b> op de andere pc en gebruik <b>Media opnieuw koppelen</b> om
-          dezelfde bestanden aan te wijzen.</li>
+        <li><b>Alles exporteren — één bestand</b> op de oude pc. Je krijgt een
+          <code>.holobox</code>-bestand met de indeling, knoppen, scènes, instellingen
+          <em>en</em> alle video's, afbeeldingen en 3D-modellen. De regel onder de knop zegt
+          vooraf hoe groot het wordt.</li>
+        <li>Zet het op een <b>USB-stick</b>, een netwerkschijf of in de cloud.</li>
+        <li>Installeer de app op de nieuwe pc en kies <b>Terugzetten uit een bestand</b>.
+          Het venster toont eerst wat erin zit en hoeveel ruimte het nodig heeft; na
+          <b>Terugzetten</b> start de presentatie vanzelf opnieuw, precies zoals op de oude
+          box.</li>
       </ol>
-      <div class="note why"><span class="t">Waarom niet alles in één bestand</span>
-        <p>Een showroomproject is al snel enkele gigabytes aan 4K-video. Eén exportbestand
-        daarvan zou onwerkbaar zijn om te mailen, te versioneren of te herstellen. Het
-        ontwerp blijft daarom klein en de media apart.</p></div>
+      <p>Daarna mag de stick eruit: alles is gekopieerd naar de eigen opslag van de box,
+      niet alleen ernaar verwezen. Getest met een halve gigabyte — na het verwijderen van
+      het bronbestand en een herstart is elke megabyte nog goed.</p>
+      <div class="note why"><span class="t">Waarom het nu wél in één bestand kan</span>
+        <p>Een showroomproject is al snel enkele gigabytes aan 4K-video. Een zip-bestand
+        loopt boven de 4 GB tegen grenzen aan en zou alles eerst in het geheugen willen
+        laden. Een <code>.holobox</code> is daarom geen zip maar een eenvoudige rij: een
+        inhoudsopgave, daarna de bestanden achter elkaar. De box leest hem in stukken, dus
+        ook een bestand van tientallen gigabytes past, en het werkgeheugen van de pc blijft
+        er buiten.</p></div>
+      <div class="note"><span class="t">Wat er bewust níet meegaat</span>
+        <p>De <b>device-key</b> voor het beheerplatform. Elke holobox houdt zijn eigen
+        sleutel, anders melden twee boxen zich als één bij de server. Het serveradres gaat
+        wel mee. Vervang je de pc van een bestaande box, zet dan zijn sleutel opnieuw in
+        (je vindt hem in het beheerscherm op de server).</p>
+        <p>Ook statistieken en de stand van ingeklapte onderdelen blijven op de oude pc —
+        die horen bij het apparaat, niet bij de presentatie.</p></div>
+      <div class="note warn"><span class="t">Terugzetten vervangt</span>
+        <p>Wat er op de nieuwe pc stond, wordt vervangen. Gaat het halverwege mis — schijf
+        vol, stick te vroeg eruit — dan draait de box alles terug en staat de oude inhoud er
+        nog precies zo. Is een bestand onvolledig gekopieerd of gedownload, dan zegt hij dat
+        vóór hij begint, met hoeveel er ontbreekt.</p></div>
+      <h4>Alleen de indeling</h4>
+      <p>Onder het uitklappijltje <b>Alleen de indeling, zonder media</b> staat de oude
+      export nog: een klein <code>.json</code>-bestand. Handig om een ontwerp te mailen. Na
+      het terugzetten daarvan wijs je de video's aan met <b>Media opnieuw koppelen</b>. Beide
+      soorten bestanden gaan via dezelfde knop <b>Terugzetten</b>: hij herkent zelf wat hij
+      krijgt.</p>
     </div>
   </div>
 
@@ -2078,16 +2107,21 @@ header.cover{padding-block:88px 8px}
         <td>De bestanden zelf: video's, afbeeldingen, 3D-modellen. Gigabytes.</td>
         <td>Zelfde momenten. Media zijn het duurst om kwijt te raken — bewaar ze ook
         ergens anders.</td></tr>
-      <tr><td>Het exportbestand<br><code>.json</code></td>
-        <td>Een kopie van het ontwerp, zonder media.</td>
-        <td>Nooit — dit is je back-up. Maak er een bij elke oplevering.</td></tr>
+      <tr><td>Het exportbestand<br><code>.holobox</code></td>
+        <td>Een complete kopie: het ontwerp én alle media. Zo groot als je video's samen.</td>
+        <td>Nooit — dit is je back-up. Maak er een bij elke oplevering, en bewaar hem
+        buiten de box.</td></tr>
+      <tr><td>Alleen de indeling<br><code>.json</code></td>
+        <td>Een kopie van het ontwerp, zonder media. Een paar honderd kilobyte.</td>
+        <td>Nooit — maar zonder de video's is het een halve verhuizing.</td></tr>
     </tbody>
   </table></div>
 
   <div class="note warn"><span class="t">De ene regel die telt</span>
     <p>Het ontwerp zit in de browser van <em>deze</em> computer, onder <em>dit</em>
-    browserprofiel. Een andere browser, een ander Windows-account of een privévenster ziet
-    een lege studio. Exporteer daarom na elke sessie.</p></div>
+    browserprofiel. Een andere browser, een ander Windows-account, een privévenster of een
+    gekopieerde app-map ziet een lege studio. Maak daarom na elke sessie een
+    <b>Alles exporteren</b>.</p></div>
 </section>
 
 <!-- ═══════════════════════════════════════════════ 20 ═══ -->
@@ -2125,7 +2159,8 @@ header.cover{padding-block:88px 8px}
     <li><b>Screensaver</b> — playlist en wachttijd.</li>
     <li><b>Camera</b> — alleen als er een camera hangt.</li>
     <li><b>Beheer &amp; device</b> — koppelen aan de server, zelfonderhoud aan, PIN zetten.</li>
-    <li><b>Publiceren</b>, en daarna <b>exporteren</b> als back-up.</li>
+    <li><b>Publiceren</b>, en daarna <b>Alles exporteren</b> als back-up — buiten de box
+      bewaren.</li>
   </ol>
 </section>
 
@@ -2156,8 +2191,16 @@ header.cover{padding-block:88px 8px}
         eigen venster te openen. Niet elke site staat inbedden toe.</td></tr>
       <tr><td>“Nog niet gepubliceerd” blijft staan</td><td>Je hebt opgeslagen maar niet
         gepubliceerd.</td><td>Dat zijn twee dingen — zie hoofdstuk 18.</td></tr>
-      <tr><td>Studio is leeg na verhuizen</td><td>Het ontwerp zat in de browseropslag van de
-        andere pc.</td><td>Importeer je <code>.json</code> en koppel de media opnieuw.</td></tr>
+      <tr><td>Studio is leeg na verhuizen of na het kopiëren van de app-map</td><td>De app-map
+        bevat alleen het programma; de inhoud zat in de opslag van de oude pc.</td>
+        <td>Op de oude pc <b>Alles exporteren</b>, op de nieuwe <b>Terugzetten uit een
+        bestand</b>. Is de oude pc weg, gebruik dan je laatste back-up.</td></tr>
+      <tr><td>Terugzetten zegt “het bestand is afgebroken”</td><td>Het bestand is
+        onvolledig gekopieerd of gedownload.</td><td>Kopieer het opnieuw en laat de stick
+        erin zitten tot het kopiëren helemaal klaar is. Er is niets veranderd.</td></tr>
+      <tr><td>Terugzetten zegt “niet genoeg ruimte”</td><td>De schijf van de box is te vol
+        voor alle video's.</td><td>Ruimte vrijmaken, of eerst <b>Alles wissen</b> op de
+        nieuwe box en dan opnieuw terugzetten.</td></tr>
       <tr><td>Ik kom niet in het menu op een kioskbox</td><td>Bedieningsknoppen verborgen,
         of er zit een PIN op.</td><td>5× snel tikken linksboven. Daarna de PIN.</td></tr>
       <tr><td>De achtergrondvideo blijft stil</td><td>Geluid staat uit, of de browser wacht
@@ -2250,7 +2293,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.17.0 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.18.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>

@@ -29,16 +29,21 @@ EERSTE KEER: PRESENTATIE INRICHTEN
 - Tabblad Effecten    : Galaxy Tiles, Extreme Galaxy, motionpresets.
 - Tabblad Presentatie : Video Frame Style (kleur, gradient, diepte, gloss).
 - Tabblad Camera      : aanwezigheidsdetectie via webcam.
-- Tabblad Opslaan     : ontwerp exporteren/importeren, PIN, statistieken.
+- Beheer & device    : alles exporteren/terugzetten, PIN, statistieken.
 
 Alles wordt automatisch bewaard op deze computer en werkt daarna offline.
 
 
 NAAR EEN ANDERE COMPUTER VERHUIZEN
 ----------------------------------
-1. Menu > Opslaan > "Ontwerp exporteren" -> bewaar het .json-bestand.
-2. Kopieer deze map en je videobestanden naar de andere computer.
-3. Start daar de app, kies "Ontwerp importeren" en wijs de video's aan.
+Let op: deze map bevat alleen het programma. Je indeling en video's
+staan in de opslag van deze computer. Een kopie van de map is dus leeg.
+
+1. Menu > Beheer & device > "Alles exporteren - een bestand".
+   Je krijgt een .holobox-bestand met de indeling EN alle video's.
+2. Zet dat bestand op een USB-stick (of netwerkschijf / cloud).
+3. Start de app op de andere computer en kies
+   "Terugzetten uit een bestand". Klaar - daarna mag de stick eruit.
 
 
 WAAROM GEEN VIRUSMELDING

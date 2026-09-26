@@ -103,9 +103,11 @@ serveradres + device-key uit het beheerpaneel.
  OM TE WETEN
 ═══════════════════════════════════════════════════════════════════
 
-- Je ontwerp staat in de browseropslag van die ene computer, onder dat
-  ene profiel. Exporteer na elke sessie via Beheer & device →
-  "Ontwerp exporteren (.json)". Media neem je apart mee.
+- Je ontwerp en je video's staan in de opslag van die ene computer,
+  niet in de programmamap: een kopie van de map is leeg. Maak na elke
+  sessie een back-up via Beheer & device → "Alles exporteren — één
+  bestand". Dat .holobox-bestand bevat de indeling én alle media; op
+  een andere pc zet je het terug met "Terugzetten uit een bestand".
 
 - Er zitten geen device-sleutels in deze download. Je voegt je eigen
   holoboxen toe in het beheerpaneel.
