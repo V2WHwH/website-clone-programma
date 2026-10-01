@@ -289,7 +289,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.23.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
+    <span>Versie 2.24.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -1595,21 +1595,30 @@ header.cover{padding-block:88px 8px}
     <li><span class="n">1</span><span><b>Nooit onderbroken</b> <span class="q">— de wachtvideo
       komt pas als de video helemaal afgelopen is. Ook 1&times; &gt; en de time-out laten een
       lopende video eerst uitspelen.</span></span></li>
-    <li><span class="n">2</span><span><b>Op het laatste beeld</b> <span class="q">— de browser
-      meldt &quot;afgelopen&quot; normaal pas een paar beeldjes later, en in die tijd staat het
-      laatste beeld stil. De box kijkt per beeld mee en wisselt op het laatste beeld zelf.
-      Gemeten: tussen het laatste videobeeld en de wachtlus zit precies één beeldje (33 ms bij
-      30 beelden per seconde) — het eerste beeld van de wachtlus.</span></span></li>
-    <li><span class="n">3</span><span><b>Altijd vanaf beeld 0, altijd hard</b> <span class="q">—
-      de wachtlus begint elke keer bij het begin, en deze wissel is nooit een zachte overgang,
-      ook als die bij Wisselen is ingesteld: een overvloeier zou de aansluiting juist
-      verstoren.</span></span></li>
-    <li><span class="n">4</span><span><b>Wakker gehouden</b> <span class="q">— een video die
-      minutenlang gepauzeerd en onzichtbaar staat, legt de browser te slapen. Een seconde voor
-      het einde zet de box de wachtlus nog eens op beeld 0, zodat hij wakker is als hij moet
-      beginnen. De Windows-app en de startbestanden zetten dat inslapen bovendien helemaal
-      uit.</span></span></li>
+    <li><span class="n">2</span><span><b>Het laatste beeld komt echt in beeld</b> <span class="q">—
+      de box kijkt per beeld mee. Komt het laatste beeld van de video op het scherm, dan blijft
+      het zijn volle beeldduur staan (40 ms bij 25 beelden per seconde) en pas daarna volgt de
+      wachtlus. Vóór versie 2.24 wisselde de box op hetzelfde moment, waardoor juist dat laatste
+      beeld nooit op het scherm kwam.</span></span></li>
+    <li><span class="n">3</span><span><b>Geen beeldje kwijt op een drukke box</b> <span class="q">—
+      bij 4K slaat de computer soms een beeldje over. De box rekent met de kleinste gemeten
+      beeldduur, zodat een overgeslagen beeldje het einde niet eerder laat lijken. Liggen de
+      beelden onregelmatig (bijvoorbeeld een schermopname), dan wacht de box op het
+      eindsignaal van de video: liever een fractie later dan een beeldje te vroeg.</span></span></li>
+    <li><span class="n">4</span><span><b>Altijd vanaf beeld 0, altijd hard</b> <span class="q">—
+      zodra de wachtlus uit beeld gaat, laadt de box hem opnieuw. Gewoon terugspoelen is niet
+      genoeg: op Windows laat een verborgen 4K-video dan nog heel even het oude beeld zien, de
+      plek waar de lus stopte. Een vers geladen video kent alleen beeld 0. De box wisselt pas als
+      dat beeld klaarstaat. Deze wissel is nooit een zachte overgang, ook als die bij Wisselen is
+      ingesteld: een overvloeier zou de aansluiting juist verstoren.</span></span></li>
   </ul>
+  <div class="note"><span class="t">Zelf controleren op de box</span>
+    <p>Speel een video af tot de wachtlus komt en open dan het menu bij <b>Reeks &amp;
+    klikker</b>. De statusregel bovenaan meldt hoe de laatste overgang ging, bijvoorbeeld:
+    <i>&ldquo;Laatste overgang: video 3 &rarr; wachtvideo, op het laatste beeld (19,96 van
+    20,00 s); wachtvideo begon op 0,00 s.&rdquo;</i> Staat er &ldquo;begon op&rdquo; iets anders
+    dan 0,00, of meldt hij overgeslagen beeldjes, laat het ons dan weten.</p></div>
+
   <div class="note"><span class="t">Voor wie de video's maakt</span>
     <p>Laat het laatste beeld van elke presentatievideo aansluiten op het eerste beeld van de
     wachtlus, en gebruik voor alle video's hetzelfde beeldformaat en dezelfde beeldsnelheid.
@@ -2534,6 +2543,11 @@ header.cover{padding-block:88px 8px}
         nieuwe box en dan opnieuw terugzetten.</td></tr>
       <tr><td>Ik kom niet in het menu op een kioskbox</td><td>Bedieningsknoppen verborgen,
         of er zit een PIN op.</td><td>5× snel tikken linksboven. Daarna de PIN.</td></tr>
+      <tr><td>De pratende video sluit niet aan op de wachtlus</td><td>Het laatste beeld
+        van de video en het eerste beeld van de wachtlus zijn niet hetzelfde, of de video's
+        hebben een andere beeldsnelheid.</td><td>Lees de statusregel bij Reeks &amp; klikker
+        (hoofdstuk 13): die moet &ldquo;op het laatste beeld&rdquo; en &ldquo;begon op 0,00 s&rdquo;
+        melden. Klopt dat, controleer dan de montage.</td></tr>
       <tr><td>De achtergrondvideo blijft stil</td><td>Geluid staat uit, of de browser wacht
         op de eerste aanraking.</td><td>Zet het aan bij Scherm &amp; scène (of bij
         Screensaver als de achtergrondmodus aanstaat). Blijft hij stil tot iemand het scherm
@@ -2631,7 +2645,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.23.0 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.24.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>

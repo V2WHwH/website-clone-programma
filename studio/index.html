@@ -1086,7 +1086,7 @@
 </div>
 
 <div id="reeksLaag" aria-hidden="true">
-  <video id="rkWachtVideo" class="rk-v" playsinline loop></video>
+  <video id="rkWachtVideo" class="rk-v" playsinline loop preload="auto"></video>
   <video id="rkV1" class="rk-v" playsinline preload="auto"></video>
   <video id="rkV2" class="rk-v" playsinline preload="auto"></video>
   <video id="rkV3" class="rk-v" playsinline preload="auto"></video>
@@ -2201,7 +2201,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.23.0';
+const APP_VERSION = '2.24.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -7885,6 +7885,16 @@ function renderReeksStatus() {
   else if (Reeks.pos) t += `Staat bij video ${Reeks.pos} — met 2× > ga je verder met ${Reeks.pos >= aantal ? 1 : Reeks.pos + 1}.`;
   else t += wacht ? 'Als je het menu sluit, loopt de wachtlus; 2× > start video 1.' : 'Druk 2× op > op de klikker en video 1 start.';
   if (mist) t += ` Let op: ${mist} video${mist === 1 ? ' ontbreekt' : "'s ontbreken"} op deze computer.`;
+  // Controle voor op de box zelf: hoe ging de laatste wissel naar de wachtvideo?
+  const o = Reeks.laatsteOvergang;
+  if (o.video && o.wachtStart != null) {
+    const k = (x) => x.toFixed(2).replace('.', ',');
+    t += ` Laatste overgang: video ${o.video} → wachtvideo, ` +
+      (o.hoe === 'vroeg' ? 'op het laatste beeld' : 'na het eindsignaal van de video') +
+      (isFinite(o.einde) && o.wisselOp != null ? ` (${k(o.wisselOp)} van ${k(o.einde)} s)` : '') +
+      `; wachtvideo begon op ${k(o.wachtStart)} s` +
+      (o.overgeslagen ? `; ${o.overgeslagen} beeldje${o.overgeslagen === 1 ? '' : 's'} overgeslagen door de computer.` : '.');
+  }
   n.textContent = t;
 }
 
@@ -10315,28 +10325,46 @@ const Reeks = (() => {
   function zorgWacht() {
     const m = mediaCache.get(cfg().wachtId);
     if (!m || m.kind !== 'video') return null;
-    if (wachtEl.src !== m.url) { wachtEl.src = m.url; wachtEl.load(); }
+    if (wachtEl.src !== m.url) { wachtEl.src = m.url; wachtEl.load(); wachtVers = true; }
     return m;
   }
 
+  /* De wachtvideo moet bij elke overgang op beeld 0 beginnen, en dat beeld
+     moet ook echt het eerste zijn dat je ziet. Terugspoelen (currentTime = 0)
+     is daarvoor niet betrouwbaar: op Windows met hardware-decodering laat een
+     verborgen 4K-video na het terugspoelen nog even het oude beeld zien — de
+     plek waar de lus stopte — en springt hij pas daarna naar het begin.
+     Daarom laden we hem opnieuw zodra hij uit beeld gaat. Een vers geladen
+     video heeft maar één beeld in zijn geheugen: beeld 0. */
+  let wachtVers = false;      // vers geladen en sindsdien niet gespeeld
+  let wachtTimer = 0;
+  function wachtVerversen() {
+    clearTimeout(wachtTimer);
+    if (!wachtEl.src || wachtEl.classList.contains('voor')) return;
+    wachtEl.pause();
+    wachtEl.load();
+    wachtVers = true;
+  }
+
+  let toonTeller = 0;
   function toon(el, direct = false) {
-    laag.classList.toggle('fade', !direct && cfg().overgang === 'fade');
+    toonTeller++;
+    const fade = !direct && cfg().overgang === 'fade';
+    laag.classList.toggle('fade', fade);
     for (const v of [wachtEl, ...slots, img]) {
       if (v === el) continue;
       const wasVoor = v.classList.contains('voor');
       v.classList.remove('voor');
       if (v.tagName === 'VIDEO' && !v.paused) v.pause();   // oud beeld stil, oud geluid weg
-      /* De wachtvideo begint elke keer bij het begin, zodat de overgang vanaf
-         het einde van een video klopt. Terugspoelen gebeurt al nu hij uit beeld
-         gaat: dan staat zijn eerste beeld klaar op het moment dat hij terugkomt,
-         in plaats van dat je heel even het oude beeld ziet. */
-      if (v === wachtEl && wasVoor) wachtNaarBegin();
+      /* Gaat de wachtvideo uit beeld, dan meteen vers laden (zie boven): zo
+         staat hij ruim voor het einde van de volgende video klaar op beeld 0.
+         Bij een zachte overgang pas als hij helemaal weg is. */
+      if (v === wachtEl && wasVoor) {
+        clearTimeout(wachtTimer);
+        if (fade) wachtTimer = setTimeout(wachtVerversen, 400); else wachtVerversen();
+      }
     }
     el.classList.add('voor');
-  }
-
-  function wachtNaarBegin(altijd = false) {
-    try { if (altijd || wachtEl.currentTime !== 0) wachtEl.currentTime = 0; } catch {}
   }
 
   function geluid(v) {
@@ -10390,11 +10418,23 @@ const Reeks = (() => {
     if (!m) return false;
     wachtEl.loop = true;
     geluid(wachtEl);
-    // Altijd vanaf het begin (meestal staat hij er al, zie toon()).
-    if (!wachtEl.classList.contains('voor')) wachtNaarBegin();
-    toon(wachtEl, direct);
     fase = 'wacht';
-    start(wachtEl);
+    if (wachtEl.classList.contains('voor')) { start(wachtEl); return true; }
+    // Vangnet: niet vers (bijv. na stoppen)? Dan nu alsnog vers laden.
+    if (!wachtVers) wachtVerversen();
+    /* Pas wisselen als beeld 0 echt klaarstaat. Tot die tijd blijft het
+       laatste beeld van de vorige video staan (dat sluit er toch op aan). */
+    const teller = toonTeller;
+    const ga = () => {
+      if (!actief || fase !== 'wacht' || toonTeller !== teller) return;
+      laatsteOvergang.wachtStart = wachtEl.currentTime;
+      laatsteOvergang.wachtVers = wachtVers;
+      toon(wachtEl, direct);
+      wachtVers = false;
+      start(wachtEl);
+    };
+    if (wachtEl.readyState >= 2) ga();
+    else wachtEl.addEventListener('loadeddata', ga, { once: true });
     return true;
   }
 
@@ -10405,42 +10445,70 @@ const Reeks = (() => {
      wachtlus. Daarom is deze overgang altijd een harde wissel (nooit de zachte
      overgang uit de instellingen), en altijd naar beeld 0 van de wachtvideo. */
   let overgangen = { vroeg: 0, einde: 0 };   // hoe de wissel gebeurde (voor de test)
-  function afgelopen(hoe = 'einde') {
+  // Meting van de laatste overgang, zichtbaar in het menu: zo kun je op de box
+  // zelf nagaan of de wissel op het laatste beeld en op beeld 0 gebeurde.
+  let laatsteOvergang = {};
+  function afgelopen(hoe = 'einde', meting = {}) {
     overgangen[hoe] = (overgangen[hoe] || 0) + 1;
+    const s = slots.find((x) => x.classList.contains('voor'));
+    const q = s?.getVideoPlaybackQuality?.();
+    laatsteOvergang = { video: pos, hoe, wisselOp: s ? s.currentTime : null, einde: s ? s.duration : null,
+      overgeslagen: q ? q.droppedVideoFrames : null, ...meting };
     if (toonWacht(true)) return;
     fase = 'af';
   }
 
-  /* Bewaking van het laatste beeld. De browser meldt 'ended' pas een paar
-     beeldjes nadat het laatste beeld getoond is; al die tijd staat dat beeld
-     stil, en bij een naadloze overgang zie je dat als een hapering. Daarom
-     kijken we per getoond beeld (requestVideoFrameCallback) mee en wisselen we
-     op het laatste beeld zelf. 'ended' blijft het vangnet, bijvoorbeeld voor
-     bestanden waarvan de lengte niet bekend is.
+  /* Bewaking van het laatste beeld. De browser meldt 'ended' pas als het
+     laatste beeld zijn volle tijd heeft gestaan, soms een paar beeldjes later.
+     Daarom kijken we per getoond beeld (requestVideoFrameCallback) mee en
+     wisselen we op het laatste beeld zelf. 'ended' blijft het vangnet.
 
-     Ongeveer een seconde voor het einde zetten we de wachtvideo nog eens op
-     beeld 0. Een video die minutenlang gepauzeerd en onzichtbaar staat, legt
-     de browser "te slapen"; hem dan pas wekken kost precies de tijd die je bij
-     de wissel niet hebt. Opnieuw op 0 zetten maakt hem op tijd wakker. */
+     De beeldduur is het KLEINSTE gemeten verschil tussen twee beelden. Op een
+     zwaar belaste 4K-box valt er weleens een beeldje weg; dan is één gemeten
+     verschil dubbel zo groot. Met dat getal zou het einde te vroeg lijken en
+     zou de video zijn laatste beeldjes verliezen. Het kleinste verschil is
+     altijd de echte beeldduur.
+
+     Dat werkt alleen bij een vaste beeldsnelheid (zoals elk montageprogramma
+     exporteert). Liggen de beelden onregelmatig — elk verschil moet een heel
+     aantal keer de beeldduur zijn — dan is het laatste beeld niet te
+     voorspellen en wachten we op 'ended'. Twijfel = nooit een beeldje kwijt. */
   function bewaakEinde(slot) {
     if (typeof slot.requestVideoFrameCallback !== 'function') return;
     const mijnPos = pos;
-    let vorige = null, stap = 1 / 30, gewekt = false;
+    let vorige = null, stap = Infinity;
+    const verschillen = [];
     const kijk = (nu, meta) => {
       if (!slot.classList.contains('voor') || fase !== 'video' || pos !== mijnPos) return;
       const ps = playSettings(lijst()[pos - 1]);
       const einde = ps.trimEnd > 0 ? ps.trimEnd : slot.duration;
       const t = meta.mediaTime;
-      if (vorige != null && t > vorige && t - vorige < 0.2) stap = t - vorige;   // beeldduur meten
+      if (vorige != null && t > vorige + 0.001) {
+        verschillen.push(t - vorige);
+        if (verschillen.length > 90) verschillen.shift();
+        stap = Math.min(stap, t - vorige);
+      }
       vorige = t;
-      if (isFinite(einde) && einde > 0) {
-        if (!gewekt && einde - t < 1.0) { gewekt = true; wachtNaarBegin(true); }
-        // Dit is het laatste beeld: het volgende zou voorbij het einde vallen.
-        if (t + stap * 1.5 >= einde) {
-          slot.pause();
-          afgelopen('vroeg');
-          return;
-        }
+      const regelmatig = verschillen.length >= 10 && stap < 0.2 && verschillen.every((d) => {
+        const k = Math.round(d / stap);
+        return k >= 1 && Math.abs(d - k * stap) < stap * 0.15;
+      });
+      /* Dit is het laatste beeld: het volgende zou voorbij het einde vallen.
+         Het komt pas bij de volgende schermverversing in beeld. Zouden we nu
+         al wisselen, dan kwam het nooit op het scherm en miste de aansluiting
+         precies één beeld. Dus: pauzeren (het laatste beeld blijft staan), het
+         zijn volle beeldduur laten staan, en dan pas naar beeld 0 van de wachtvideo. */
+      if (regelmatig && isFinite(einde) && einde > 0 && t + stap * 1.5 >= einde) {
+        slot.pause();
+        const doel = (meta.expectedDisplayTime || nu) + stap * 1000;
+        const later = (ts) => {
+          if (!slot.classList.contains('voor') || fase !== 'video' || pos !== mijnPos) return;
+          // Wat we nu veranderen, staat één verversing (±16 ms) later op het scherm.
+          if (ts + 12 < doel) { requestAnimationFrame(later); return; }
+          afgelopen('vroeg', { beeldduur: stap });
+        };
+        requestAnimationFrame(later);
+        return;
       }
       slot.requestVideoFrameCallback(kijk);
     };
@@ -10506,6 +10574,7 @@ const Reeks = (() => {
     clearInterval(hartslag); hartslag = 0;
     for (const v of [wachtEl, ...slots]) v.pause();
     for (const v of [wachtEl, ...slots, img]) v.classList.remove('voor');
+    wachtVerversen();
     zwartZet(false);
     nummerEl.classList.remove('zicht');
     laag.classList.remove('aan');
@@ -10758,6 +10827,7 @@ const Reeks = (() => {
     volgendeVideo, vorigeVideo, opnieuw, naarWacht, playKnop, zwartWissel, stop,
     get dubbelMs() { return dubbelMs(); },
     get overgangen() { return { ...overgangen }; },
+    get laatsteOvergang() { return { ...laatsteOvergang }; },
     // "Reeks starten" in het menu: vanaf het begin, met de wachtvideo.
     vanafBegin() {
       if (!aanzetten('begin')) return false;
