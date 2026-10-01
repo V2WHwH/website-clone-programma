@@ -289,7 +289,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.19.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
+    <span>Versie 2.20.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -1444,7 +1444,7 @@ header.cover{padding-block:88px 8px}
         <text x="226" y="112">vanzelf</text><text x="458" y="112">vanzelf</text>
       </g>
       <text x="14" y="150" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="currentColor" opacity=".7">
-        Klik je midden in een video op &gt;, dan start meteen de volgende — de rest van de video wordt overgeslagen.
+        Een video speelt één keer; opnieuw alleen met &lt;. Midden in een video op &gt; = meteen de volgende.
       </text>
     </svg>
   </div>
@@ -1487,7 +1487,7 @@ header.cover{padding-block:88px 8px}
 
   <div class="split">
     <figure><div class="panelshot tall">
-      <img src="img/paneel-reeks.webp" alt="Het paneel Reeks en klikker" width="371" height="2542" loading="lazy">
+      <img src="img/paneel-reeks.webp" alt="Het paneel Reeks en klikker" width="371" height="2551" loading="lazy">
     </div></figure>
     <div class="tw"><table>
       <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
@@ -1495,14 +1495,13 @@ header.cover{padding-block:88px 8px}
         <tr><td>Klikker bedient de reeks</td><td>Aan: de klikker stuurt de reeks. Uit: de
           klikker doet niets.</td><td>Zodat een toevallige Page Down op een gewoon toetsenbord
           niet ineens een presentatie start.</td></tr>
-        <tr><td>Reeks starten vanaf het begin</td><td>Sluit het menu en zet de wachtvideo
-          klaar. De eerste klik op &gt; start video 1.</td><td>Voor de generale repetitie en
-          voor de echte start.</td></tr>
-        <tr><td>Wachtvideo</td><td>Loopt in een lus tussen de genummerde video's door.</td>
-          <td>Een logo-animatie of sfeerlus vult de tijd terwijl jij praat.</td></tr>
-        <tr><td>Als een video afgelopen is</td><td>Wachtvideo spelen (standaard), blijven
-          staan op het laatste beeld, of meteen door naar de volgende.</td>
-          <td>Zonder wachtvideo blijft het laatste beeld staan tot de volgende klik.</td></tr>
+        <tr><td>Reeks starten vanaf het begin</td><td>Sluit het menu, zet de wachtlus aan en
+          begint opnieuw bij 1: de eerste klik op &gt; start video 1.</td><td>Voor de generale
+          repetitie en voor de echte start.</td></tr>
+        <tr><td>Wachtvideo</td><td>Loopt <b>altijd</b>, in een lus: bij het opstarten, na
+          elke video, na de laatste en na een tijd zonder klik.</td>
+          <td>Een logo-animatie of sfeerlus vult de tijd terwijl jij praat. Zonder wachtvideo
+          blijft het laatste beeld staan tot de volgende klik.</td></tr>
         <tr><td>De video's op volgorde</td><td>De nummers zijn de plek in de lijst. Typ een
           ander nummer om een video te verplaatsen, of gebruik de pijltjes.</td>
           <td>Bij honderd video's is slepen onbegonnen werk; een nummer intypen niet.</td></tr>
@@ -1515,8 +1514,6 @@ header.cover{padding-block:88px 8px}
           zit en de batterijen goed zijn.</td></tr>
         <tr><td>De &#9654;-knop</td><td>Pauze / verder, of reeks stoppen.</td>
           <td>Smaak: wie lange video's heeft, wil kunnen pauzeren.</td></tr>
-        <tr><td>Na de laatste video</td><td>Terug naar de knoppen, of opnieuw bij 1.</td>
-          <td>Opnieuw bij 1 is handig als je dezelfde demo de hele dag herhaalt.</td></tr>
         <tr><td>Wisselen</td><td>Direct, of met een zachte overgang van 0,3 s.</td>
           <td>Direct is het snelst; zacht oogt rustiger op een holobox.</td></tr>
         <tr><td>Volume van de reeks</td><td>0 tot 100 %, maal het hoofdvolume.</td>
@@ -1525,14 +1522,30 @@ header.cover{padding-block:88px 8px}
         <tr><td>Nummer kort tonen</td><td>&quot;12 / 40&quot; anderhalve seconde
           rechtsonder.</td><td>Zodat jij weet waar je bent. Uitzetten als het publiek het niet
           mag zien.</td></tr>
-        <tr><td>Aanraken stopt de reeks</td><td>Terug naar de knoppen; de plek blijft
-          onthouden.</td><td>Een volgende klik op &gt; gaat verder waar je was.</td></tr>
-        <tr><td>Terug na … minuten</td><td>Zonder klik gaat de box na deze tijd terug naar de
-          knoppen. Standaard 15; 0 = nooit.</td><td>Vergeet iemand de reeks te stoppen, dan
-          staat de box niet de hele middag op een wachtvideo.</td></tr>
+        <tr><td>Aanraken opent de knoppen</td><td>Standaard uit: de wachtlus loopt gewoon door
+          als iemand het scherm aanraakt. Aan: de bezoeker krijgt de knoppen, en na rust komt
+          de wachtlus vanzelf terug.</td><td>Aan als de box naast je presentatie ook door
+          bezoekers bediend mag worden.</td></tr>
+        <tr><td>Terug naar het begin na … minuten</td><td>Zonder klik staat de box na deze tijd
+          weer op de wachtlus, en de volgende &gt; start video 1. Standaard 15; 0 = nooit.</td>
+          <td>Vergeet iemand de reeks af te maken, dan begint de volgende presentator gewoon
+          bij het begin.</td></tr>
       </tbody>
     </table></div>
   </div>
+
+  <h3>De wachtlus is de rusttoestand</h3>
+  <p class="measure">Staat de klikker aan en is er een wachtvideo gekozen, dan is de wachtlus
+  wat de box doet als er niets gebeurt — net zoals anders de knoppen of de screensaver. Hij
+  start er meteen in, zonder dat iemand iets hoeft aan te raken, en keert er altijd naar
+  terug: na elke video, na de laatste, na een tijd zonder klik, en na het sluiten van het
+  menu. De lus gaat verder waar hij was, in plaats van steeds opnieuw te beginnen, zodat hij
+  aanvoelt als één doorlopende lus.</p>
+  <p class="measure">Een presentatievideo speelt precies één keer, ook als hij in
+  <b>Media</b> op herhalen staat. Opnieuw spelen gaat alleen met <b>&lt;</b>. Na de laatste
+  video begint <b>&gt;</b> weer bij video 1.</p>
+  <p class="measure">Naar het menu: <b>vijf keer snel tikken linksboven</b> — dat werkt ook op
+  de wachtlus. Sluit je het menu, dan loopt de lus weer.</p>
 
   <h3>Waarom het echt direct is</h3>
   <p class="measure">Een 4K-bestand pas openen op het moment van de klik geeft een zwart
@@ -1547,17 +1560,17 @@ header.cover{padding-block:88px 8px}
 
   <h3>Tijdens de presentatie</h3>
   <ul class="legend">
-    <li><span class="n">1</span><span><b>Geen screensaver</b> <span class="q">— zolang de
-      reeks loopt start hij niet, ook niet als je minutenlang praat op de
-      wachtvideo.</span></span></li>
+    <li><span class="n">1</span><span><b>Geen screensaver</b> <span class="q">— met een
+      wachtvideo ís de wachtlus de rusttoestand; de screensaver komt dan niet
+      op.</span></span></li>
     <li><span class="n">2</span><span><b>Alleen beeld</b> <span class="q">— de zwevende
       bedieningsknoppen verdwijnen; er is niets anders in beeld dan de video.</span></span></li>
     <li><span class="n">3</span><span><b>Een toetsenbord kan meer</b> <span class="q">— typ
       een nummer en Enter om naar die video te springen; <code>Home</code> stopt de
       reeks.</span></span></li>
-    <li><span class="n">4</span><span><b>Weg en terug</b> <span class="q">— aanraken, het
-      handgebaar of het menu openen stopt de reeks. Met &gt; ga je verder waar je
-      was.</span></span></li>
+    <li><span class="n">4</span><span><b>Weg en terug</b> <span class="q">— het menu openen
+      of het handgebaar stopt de reeks; daarna komt de wachtlus terug, en &gt; gaat verder
+      waar je was.</span></span></li>
   </ul>
 
   <div class="note warn"><span class="t">Gebruik op de box de Windows-app</span>
@@ -2544,7 +2557,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.19.0 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.20.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>

@@ -1740,15 +1740,8 @@
 
     <h2>Wachtvideo</h2>
     <div class="card">
-      <label class="field">Wachtvideo &mdash; loopt tussen de genummerde video's door
+      <label class="field">Wachtvideo &mdash; loopt altijd, in een lus
         <select id="rkWacht"></select>
-      </label>
-      <label class="field">Als een genummerde video afgelopen is
-        <select id="rkNaAfloop">
-          <option value="wacht">Wachtvideo spelen tot de volgende klik</option>
-          <option value="stil">Blijven staan op het laatste beeld</option>
-          <option value="door">Meteen door naar de volgende video</option>
-        </select>
       </label>
       <p class="note" id="rkWachtNote"></p>
     </div>
@@ -1792,12 +1785,6 @@
           <option value="stop">Reeks stoppen, terug naar de knoppen</option>
         </select>
       </label>
-      <label class="field">Na de laatste video
-        <select id="rkNaLaatste">
-          <option value="menu">Terug naar de knoppen</option>
-          <option value="opnieuw">Opnieuw bij video 1</option>
-        </select>
-      </label>
       <label class="field">Wisselen tussen video's
         <select id="rkOvergang">
           <option value="direct">Direct, in hetzelfde beeld</option>
@@ -1813,15 +1800,18 @@
         <label class="switch"><input type="checkbox" id="rkNummerTonen"><i></i></label>
       </div>
       <div class="toggle-row">
-        <div><div class="t-label">Aanraken van het scherm stopt de reeks</div>
-          <div class="t-sub">De box gaat terug naar de knoppen; met &gt; ga je later verder waar je was</div></div>
+        <div><div class="t-label">Aanraken van het scherm opent de knoppen</div>
+          <div class="t-sub">Uit: de wachtlus loopt gewoon door als iemand het scherm aanraakt.
+          Aan: de bezoeker krijgt de knoppen, en na rust komt de wachtlus vanzelf terug.</div></div>
         <label class="switch"><input type="checkbox" id="rkAanraak"><i></i></label>
       </div>
-      <label class="field">Terug naar de knoppen na (minuten zonder klik; 0 = nooit)
+      <label class="field">Terug naar het begin na (minuten zonder klik; 0 = nooit)
         <input type="number" id="rkTerugNa" min="0" max="240" step="1">
       </label>
-      <p class="note">Zolang de reeks loopt, start de screensaver niet &mdash; ook niet als je
-      minutenlang staat te praten op de wachtvideo.</p>
+      <p class="note">Vergeet iemand de reeks af te maken, dan staat de box na deze tijd weer op
+      de wachtlus en start de volgende &gt; bij video 1. De screensaver komt niet op zolang er
+      een wachtvideo is: de wachtlus <i>is</i> dan de rusttoestand. Naar het menu: vijf keer
+      snel tikken linksboven.</p>
     </div>
   </div>
 
@@ -2204,7 +2194,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.19.0';
+const APP_VERSION = '2.20.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -2236,7 +2226,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 17,
+  version: 18,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -2284,9 +2274,11 @@ const defaultConfig = () => ({
      presenter (Logitech R400 en vergelijkbaar) doorklikt. Tussen twee video's
      loopt een wachtvideo tot de volgende klik. items = mediaId's op volgorde;
      het nummer van een video is zijn plek in de lijst. */
-  reeks: { aan: false, items: [], wachtId: null, naAfloop: 'wacht', naLaatste: 'menu',
-    playKnop: 'pauze', overgang: 'direct', volume: 80, aanraakStopt: true,
-    terugNaMin: 15, nummerTonen: true },
+  /* Is er een wachtvideo, dan is die de rusttoestand van de box: hij loopt bij
+     het opstarten, na elke video, na de laatste en na een tijd zonder klik.
+     Een presentatievideo speelt één keer; opnieuw alleen met de < van de klikker. */
+  reeks: { aan: false, items: [], wachtId: null, playKnop: 'pauze', overgang: 'direct',
+    volume: 80, aanraakMenu: false, terugNaMin: 15, nummerTonen: true },
   // stuckSec: na zoveel seconden bewegingloze 'aanwezigheid' ijkt de achtergrond
   // opnieuw — anders houdt een lichtsprong of verschoven meubel de box voor
   // altijd 'bezet'. 0 = nooit opnieuw ijken.
@@ -2423,7 +2415,11 @@ function migrateConfig(stored) {
       delete b.beat[weg];
     }
   }
-  c.version = 17;
+  // v18: de wachtvideo loopt altijd. De keuzes "blijven staan" en "meteen door"
+  // na een video, en "terug naar de knoppen" na de laatste, zijn vervallen;
+  // aanraken opent de knoppen alleen nog als je dat zelf aanzet.
+  if (c.reeks) { delete c.reeks.naAfloop; delete c.reeks.naLaatste; delete c.reeks.aanraakStopt; }
+  c.version = 18;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -5366,6 +5362,7 @@ function closeEditor() {
   document.body.classList.remove('editor-open');
   clearEditorCanvas();
   applyOrientationMode();
+  Reeks.rust();                // met klikker en wachtvideo: terug in de wachtlus
 }
 
 $('#menuFab').addEventListener('click', async () => { if (!(await requireAdmin())) return; openEditor(); });
@@ -7876,8 +7873,8 @@ function renderReeksStatus() {
     (wacht ? `wachtvideo: ${wacht.name}. ` : 'geen wachtvideo. ');
   if (!aantal) t += 'Zet hieronder video\'s op volgorde.';
   else if (Reeks.actief) t += `Loopt nu, bij video ${Reeks.pos}.`;
-  else if (Reeks.pos) t += `Staat bij video ${Reeks.pos} — met > ga je verder met ${Math.min(aantal, Reeks.pos + 1)}.`;
-  else t += 'Druk op > op de klikker en video 1 start.';
+  else if (Reeks.pos) t += `Staat bij video ${Reeks.pos} — met > ga je verder met ${Reeks.pos >= aantal ? 1 : Reeks.pos + 1}.`;
+  else t += wacht ? 'Als je het menu sluit, loopt de wachtlus; > start video 1.' : 'Druk op > op de klikker en video 1 start.';
   if (mist) t += ` Let op: ${mist} video${mist === 1 ? ' ontbreekt' : "'s ontbreken"} op deze computer.`;
   n.textContent = t;
 }
@@ -7895,12 +7892,12 @@ function renderReeks() {
     if (m.id === r.wachtId) o.selected = true;
     wacht.append(o);
   }
-  $('#rkNaAfloop').value = r.naAfloop || 'wacht';
-  $('#rkWachtNote').textContent = (r.naAfloop || 'wacht') === 'wacht'
-    ? (rkMedia(r.wachtId)
-      ? 'Zo loopt het: wachtvideo → [>] video 1 → wachtvideo → [>] video 2 → wachtvideo → … De wachtvideo herhaalt zich tot de volgende klik.'
-      : 'Kies een wachtvideo. Zonder wachtvideo blijft het laatste beeld van een video staan tot de volgende klik.')
-    : '';
+  $('#rkWachtNote').textContent = rkMedia(r.wachtId)
+    ? 'De wachtvideo loopt altijd: bij het opstarten, na elke video, na de laatste en na een tijd zonder klik. ' +
+      'Zo gaat het: wachtlus → [>] video 1 → wachtlus → [>] video 2 → … Een presentatievideo speelt één keer; ' +
+      'opnieuw alleen met <. Na de laatste video begint > weer bij 1.'
+    : 'Kies een wachtvideo. Zonder wachtvideo blijft het laatste beeld van een video staan tot de volgende klik, ' +
+      'en gaat de box na de laatste video terug naar de knoppen.';
   const voeg = $('#rkVoegToe');
   voeg.innerHTML = '';
   voeg.append(el('option', { value: '' }, '+ Video of afbeelding kiezen…'));
@@ -7926,11 +7923,10 @@ function renderReeks() {
   $('#rkPlayKnop').value = r.playKnop || 'pauze';
   $('#rkPlayUitleg').innerHTML = (r.playKnop === 'stop' ? 'Reeks stoppen, terug naar de knoppen' : 'Pauze / verder') +
     ' (stuurt om en om <i>F5</i> en <i>Esc</i>; beide doen hier hetzelfde). Vanuit de knoppen start hij de reeks met de wachtvideo.';
-  $('#rkNaLaatste').value = r.naLaatste || 'menu';
   $('#rkOvergang').value = r.overgang || 'direct';
   $('#rkVolume').value = r.volume ?? 80;
   $('#rkNummerTonen').checked = r.nummerTonen !== false;
-  $('#rkAanraak').checked = r.aanraakStopt !== false;
+  $('#rkAanraak').checked = !!r.aanraakMenu;
   $('#rkTerugNa').value = r.terugNaMin ?? 15;
   renderReeksStatus();
 }
@@ -7954,7 +7950,6 @@ $('#rkStart').addEventListener('click', () => {
   Reeks.vanafBegin();
 });
 $('#rkWacht').addEventListener('change', (e) => { rkCfg().wachtId = e.target.value || null; save(); renderReeks(); });
-$('#rkNaAfloop').addEventListener('change', (e) => { rkCfg().naAfloop = e.target.value; save(); renderReeks(); });
 $('#rkVoegToe').addEventListener('change', (e) => {
   if (!e.target.value) return;
   pushUndo(); rkCfg().items.push(e.target.value); save(); renderReeks();
@@ -7978,12 +7973,11 @@ $('#rkLeeg').addEventListener('click', () => {
   pushUndo(); rkCfg().items = []; save(); Reeks.vergeet(); renderReeks();
 });
 $('#rkPlayKnop').addEventListener('change', (e) => { rkCfg().playKnop = e.target.value; save(); renderReeks(); });
-$('#rkNaLaatste').addEventListener('change', (e) => { rkCfg().naLaatste = e.target.value; save(); });
 $('#rkOvergang').addEventListener('change', (e) => { rkCfg().overgang = e.target.value; save(); });
 $('#rkVolume').addEventListener('input', (e) => { rkCfg().volume = Number(e.target.value); });
 $('#rkVolume').addEventListener('change', () => save());
 $('#rkNummerTonen').addEventListener('change', (e) => { rkCfg().nummerTonen = e.target.checked; save(); });
-$('#rkAanraak').addEventListener('change', (e) => { rkCfg().aanraakStopt = e.target.checked; save(); });
+$('#rkAanraak').addEventListener('change', (e) => { rkCfg().aanraakMenu = e.target.checked; save(); });
 $('#rkTerugNa').addEventListener('change', (e) => {
   rkCfg().terugNaMin = Math.max(0, Math.min(240, Number(e.target.value) || 0)); save();
 });
@@ -8733,7 +8727,9 @@ $('#rmTest').addEventListener('click', async () => {
    5× snel tikken in de hoek linksboven opent het menu — ook wanneer de
    bedieningsknoppen verborgen zijn. De PIN blijft gewoon gelden. */
 let cornerTaps = [];
-document.getElementById('stage').addEventListener('pointerdown', (e) => {
+/* Ook op de reekslaag: tijdens de wachtlus ligt die over het podium, en dit
+   gebaar is dan de enige weg naar het menu. */
+function hoekTik(e) {
   const lim = Math.min(innerWidth, innerHeight) * 0.14;
   if (e.clientX > lim || e.clientY > lim) return;
   const now = performance.now();
@@ -8747,7 +8743,9 @@ document.getElementById('stage').addEventListener('pointerdown', (e) => {
       toast('Editor geopend via het verborgen gebaar');
     })();
   }
-}, true);
+}
+document.getElementById('stage').addEventListener('pointerdown', hoekTik, true);
+document.getElementById('reeksLaag').addEventListener('pointerdown', hoekTik, true);
 
 /* ================= Screensaver =================
    Dubbele-speler-rotator: dezelfde engine draait de playlist fullscreen
@@ -9071,8 +9069,15 @@ function syncBackgroundRotator() {
 
 // Bewaker: start de screensaver na de ingestelde tijd zonder aanraking.
 setInterval(() => {
-  if (!config.screensaver.enabled || saverActive || editing) return;
+  if (saverActive || editing) return;
   if (panel.classList.contains('open') || playOverlay.classList.contains('show') || Reeks.actief) return;
+  /* Met klikker en wachtvideo is de wachtlus de rusttoestand, niet de
+     screensaver: na rust op de knoppen gaat de box terug naar de lus. */
+  if (Reeks.rustModus) {
+    if ((Date.now() - lastInteraction) / 1000 >= (config.screensaver.delaySec || 120)) Reeks.rust();
+    return;
+  }
+  if (!config.screensaver.enabled) return;
   if ((Date.now() - lastInteraction) / 1000 >= config.screensaver.delaySec) enterSaver();
 }, 1000);
 
@@ -10242,6 +10247,8 @@ const Reeks = (() => {
   let cijfers = '', cijferTimer = 0;
 
   const cfg = () => config.reeks || {};
+  // Rusttoestand: klikker aan én een wachtvideo die er echt is.
+  const rustModus = () => !!cfg().aan && mediaCache.get(cfg().wachtId)?.kind === 'video';
   // Het nummer is de plek in de lijst — ook als een bestand intussen ontbreekt,
   // anders zou de nummering van de presentator ongemerkt verschuiven.
   const lijst = () => cfg().items || [];
@@ -10353,18 +10360,19 @@ const Reeks = (() => {
     if (!m) return false;
     wachtEl.loop = true;
     geluid(wachtEl);
-    try { wachtEl.currentTime = 0; } catch {}
+    // Niet terug naar het begin: de lus gaat verder waar hij was, zodat hij
+    // aanvoelt als één doorlopende lus en niet elke keer opnieuw begint.
     toon(wachtEl);
     fase = 'wacht';
     start(wachtEl);
     return true;
   }
 
+  // Een presentatievideo speelt één keer. Daarna altijd de wachtvideo; is er
+  // geen, dan blijft het laatste beeld staan tot de volgende klik.
   function afgelopen() {
-    const keuze = cfg().naAfloop || 'wacht';
-    if (keuze === 'door' && pos < lijst().length) return speel(pos + 1);
-    if (keuze !== 'stil' && toonWacht()) return;
-    fase = 'af';                                           // blijft staan op het laatste beeld
+    if (toonWacht()) return;
+    fase = 'af';
   }
 
   for (const s of slots) {
@@ -10404,7 +10412,10 @@ const Reeks = (() => {
     hartslag = setInterval(() => {
       lastInteraction = Date.now();                        // geen screensaver zolang de reeks loopt
       const min = Number(cfg().terugNaMin) || 0;
-      if (min > 0 && Date.now() - laatsteKlik > min * 60000) stop();
+      if (min > 0 && Date.now() - laatsteKlik > min * 60000) {
+        laatsteKlik = Date.now();
+        if (rustModus()) naarBegin(); else stop();         // vergeten te stoppen: terug naar het begin
+      }
     }, 5000);
     /* In een gewone browser met volledig scherm zou de Esc van de ▶-knop het
        volledige scherm verlaten. Keyboard Lock houdt Esc dan bij de pagina. */
@@ -10438,10 +10449,28 @@ const Reeks = (() => {
     renderReeksStatus();
   }
 
+  // > na de laatste video. Met een wachtvideo begint de reeks opnieuw bij 1;
+  // zonder wachtvideo gaat de box terug naar de knoppen.
   function einde() {
-    if ((cfg().naLaatste || 'menu') === 'opnieuw') return speel(1);
-    pos = 0;                                               // volgende keer weer vanaf het begin
+    if (rustModus()) return speel(1);
+    pos = 0;
     stop();
+  }
+
+  // Terug naar het begin: wachtvideo, en de volgende > start video 1.
+  function naarBegin() {
+    pos = 0;
+    zwartZet(false);
+    voorbereiden(0);
+    if (!toonWacht()) stop();
+  }
+
+  // De rusttoestand innemen: bij het opstarten, na het menu, na rust.
+  function rust() {
+    if (!rustModus() || actief || panel.classList.contains('open')) return false;
+    if (!aanzetten('hervat')) return false;
+    toonWacht();
+    return true;
   }
 
   /* ---- De vier knoppen van de klikker ---- */
@@ -10497,8 +10526,10 @@ const Reeks = (() => {
     speel(n);
   }
 
-  // Aanraken: terug naar de knoppen, de plek blijft onthouden.
-  laag.addEventListener('pointerdown', () => { if (cfg().aanraakStopt !== false) stop(); });
+  /* Aanraken: met een wachtvideo blijft de lus gewoon lopen, tenzij je hebt
+     ingesteld dat aanraken de knoppen opent. Zonder wachtvideo is aanraken de
+     weg terug naar de knoppen. De plek blijft onthouden. */
+  laag.addEventListener('pointerdown', () => { if (!rustModus() || cfg().aanraakMenu) stop(); });
 
   /* ---- Toetsen ---- */
   const ACTIE = {
@@ -10576,6 +10607,8 @@ const Reeks = (() => {
     },
     // Na het herschikken van de lijst kloppen de voorgeladen spelers niet meer.
     vergeet() { for (const s of slots) if (!s.classList.contains('voor')) s.dataset.idx = ''; },
+    rust, naarBegin,
+    get rustModus() { return rustModus(); },
     get actief() { return actief; },
     get pos() { return pos; },
     get fase() { return fase; },
@@ -10825,6 +10858,8 @@ setInterval(() => { errorBurst = Math.max(0, errorBurst - 5); }, 60000);
   // Houdt de speaker in de kast wakker. In de Windows-app mag geluid meteen;
   // in een gewone browser wacht hij op de eerste aanraking.
   Wakker.apply();
+  // Met klikker en wachtvideo start de box in de wachtlus.
+  Reeks.rust();
   applyRemoteSettings();
   try { await navigator.storage?.persist?.(); } catch {}
 })();
