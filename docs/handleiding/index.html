@@ -289,7 +289,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.21.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
+    <span>Versie 2.22.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -1487,7 +1487,7 @@ header.cover{padding-block:88px 8px}
 
   <div class="split">
     <figure><div class="panelshot tall">
-      <img src="img/paneel-reeks.webp" alt="Het paneel Reeks en klikker" width="371" height="2609" loading="lazy">
+      <img src="img/paneel-reeks.webp" alt="Het paneel Reeks en klikker" width="371" height="2789" loading="lazy">
     </div></figure>
     <div class="tw"><table>
       <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
@@ -1510,8 +1510,12 @@ header.cover{padding-block:88px 8px}
           wachtvideo slaat hij over.</td><td>Geef je bestanden een nummer voorin, dan staat
           de hele reeks met één klik goed.</td></tr>
         <tr><td>Klikker testen</td><td>Laat zien welke toets er binnenkomt, of het een enkele
-          of een dubbele klik was, en wat de reeks ermee doet.</td><td>Zo weet je vóór het publiek binnenkomt dat de ontvanger erin
+          of een dubbele klik was, na hoeveel milliseconden de tweede druk kwam, en wat de
+          reeks ermee doet.</td><td>Zo weet je vóór het publiek binnenkomt dat de ontvanger erin
           zit en de batterijen goed zijn.</td></tr>
+        <tr><td>Tijd voor 2&times; snel</td><td>Binnen hoeveel tijd de tweede klik moet komen.
+          Standaard 600 ms, van 250 tot 1500.</td><td>Elke presenter en elke hand is anders.
+          Een enkele klik wordt zo lang uitgesteld.</td></tr>
         <tr><td>De &#9654;-knop</td><td>Pauze / verder, of reeks stoppen.</td>
           <td>Smaak: wie lange video's heeft, wil kunnen pauzeren.</td></tr>
         <tr><td>Wisselen</td><td>Direct, of met een zachte overgang van 0,3 s.</td>
@@ -1536,7 +1540,9 @@ header.cover{padding-block:88px 8px}
 
   <h3>Eén of twee keer klikken</h3>
   <p class="measure">Beide pijltjes hebben twee standen. <b>Snel</b> betekent: de tweede klik
-  binnen 0,4 seconde na de eerste — ongeveer de dubbelklik-snelheid van Windows.</p>
+  binnen 0,6 seconde na de eerste. Dat is ruimer dan bij een muis, omdat de knop van een
+  draadloze presenter een veerweg heeft; een dubbele druk op de R400 komt al gauw op 0,4 à
+  0,5 seconde. De grens is in te stellen onder <b>Klikker testen</b>.</p>
   <div class="tw"><table>
     <thead><tr><th>Knop</th><th>1&times;</th><th>2&times; snel</th></tr></thead>
     <tbody>
@@ -1545,22 +1551,32 @@ header.cover{padding-block:88px 8px}
     </tbody>
   </table></div>
   <p class="measure">Een dubbele klik gaat meteen bij de tweede druk. Een enkele klik komt
-  0,4 seconde later: zo lang wacht de box of er nog een tweede komt. De andere manier — de
+  pas na die 0,6 seconde: zo lang wacht de box of er nog een tweede komt. De andere manier — de
   enkele klik meteen uitvoeren en bij een tweede klik alsnog omschakelen — zou het publiek
   een flits van de wachtvideo laten zien, of een video die even opnieuw begint.</p>
   <p class="measure">Klikken tellen in paren. Vier keer snel op &gt; is twee keer
   &quot;volgende&quot;; drie keer snel is één keer &quot;volgende&quot; en daarna, voor de
   losse derde klik, de wachtvideo. Klik je eerst &lt; en meteen daarna &gt;, dan telt de
-  &lt; als een enkele klik. Oefen het tempo onder <b>Klikker testen</b>: daar zie je bij elke
-  druk of hij als 1&times; of als 2&times; snel binnenkomt.</p>
+  &lt; als een enkele klik.</p>
+
+  <div class="note"><span class="t">Werkt 2&times; niet? Meet je eigen tempo</span>
+    <p>Druk onder <b>Klikker testen</b> twee keer op &gt;. Bij de tweede druk staat er na hoeveel
+    milliseconden hij binnenkwam, bijvoorbeeld <em>&quot;Tweede druk kwam na 720 ms — te laat
+    voor 2&times; snel: de grens staat op 600 ms&quot;</em>. Daaronder verschijnt een knop
+    <b>Grens op mijn tempo zetten</b>, die de grens net boven jouw tempo legt. Met de schuif
+    <b>Tijd voor 2&times; snel</b> kun je hem ook zelf zetten, van 0,25 tot 1,5 seconde.
+    Hoger als je 2&times; drukt en de box toch 1&times; ziet; lager als een enkele klik te traag
+    aanvoelt — die wordt precies zo lang uitgesteld.</p></div>
 
   <h3>De wachtlus is de rusttoestand</h3>
   <p class="measure">Staat de klikker aan en is er een wachtvideo gekozen, dan is de wachtlus
   wat de box doet als er niets gebeurt — net zoals anders de knoppen of de screensaver. Hij
   start er meteen in, zonder dat iemand iets hoeft aan te raken, en keert er altijd naar
   terug: na elke video, na de laatste, na een tijd zonder klik, en na het sluiten van het
-  menu. De lus gaat verder waar hij was, in plaats van steeds opnieuw te beginnen, zodat hij
-  aanvoelt als één doorlopende lus.</p>
+  menu. Hij begint daarbij <b>elke keer bij het begin</b>, zodat de overgang vanaf het einde
+  van een video klopt. Terugspoelen gebeurt al zodra hij uit beeld gaat; zijn eerste beeld
+  staat dus klaar op het moment dat hij terugkomt, zonder dat je heel even het oude beeld
+  ziet.</p>
   <p class="measure">Een presentatievideo speelt precies één keer, ook als hij in
   <b>Media</b> op herhalen staat. Opnieuw spelen gaat alleen met <b>1&times; &lt;</b>. Na de
   laatste video begint <b>2&times; &gt;</b> weer bij video 1.</p>
@@ -2470,8 +2486,10 @@ header.cover{padding-block:88px 8px}
         daar niets binnenkomen, dan ligt het aan de ontvanger of de batterijen. Zie je wel iets,
         zet dan de schakelaar aan en sluit het menu.</td></tr>
       <tr><td>&gt; gaat naar de wachtvideo in plaats van naar de volgende</td><td>De tweede klik
-        kwam te laat; de box zag twee losse klikken.</td><td>Klik binnen 0,4 seconde twee keer.
-        Oefen het tempo onder Reeks &amp; klikker &rarr; <b>Klikker testen</b>.</td></tr>
+        kwam te laat; de box zag twee losse klikken.</td><td>Druk onder Reeks &amp; klikker
+        &rarr; <b>Klikker testen</b> twee keer op &gt;: je ziet na hoeveel milliseconden de
+        tweede druk kwam. Klik op <b>Grens op mijn tempo zetten</b>, of zet de schuif
+        <b>Tijd voor 2&times; snel</b> hoger.</td></tr>
       <tr><td>&#9654; op de klikker haalt de browser uit volledig scherm</td><td>De klikker
         stuurt om en om F5 en Esc; Esc verlaat in sommige browsers het volledige scherm.</td>
         <td>Gebruik de Windows-app of <code>Start Holobox.bat</code> (kioskmodus).</td></tr>
@@ -2580,7 +2598,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.21.0 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.22.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>

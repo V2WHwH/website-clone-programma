@@ -1766,11 +1766,15 @@
       stuurt en wat de reeks ermee doet &mdash; zo weet je zeker dat hij werkt voordat het
       publiek binnenkomt.</p>
       <div id="rkTest" class="rk-test">Nog niets ontvangen &mdash; druk op een knop van de klikker</div>
+      <label class="field">Tijd voor 2&times; snel (milliseconden)
+        <input type="range" id="rkDubbel" min="250" max="1500" step="50">
+      </label>
+      <p class="note" id="rkDubbelNote"></p>
       <div class="rk-kaart">
         <kbd>&gt;</kbd><span>1&times;: naar de wachtvideo. <b>2&times; snel: volgende video.</b>
           (De klikker stuurt <i>Page Down</i>.)</span>
         <kbd>&lt;</kbd><span>1&times;: de huidige video opnieuw. <b>2&times; snel: vorige video.</b>
-          (<i>Page Up</i>.) &quot;Snel&quot; is binnen 0,4 seconde &mdash; oefen het hierboven.</span>
+          (<i>Page Up</i>.) &quot;Snel&quot; is binnen de tijd hieronder &mdash; oefen het hierboven.</span>
         <kbd>&#9654;</kbd><span id="rkPlayUitleg">Pauze / verder (stuurt om en om <i>F5</i> en
           <i>Esc</i>; beide doen hier hetzelfde)</span>
         <kbd>&#9632;</kbd><span>Zwart scherm aan/uit (<i>punt</i>)</span>
@@ -2196,7 +2200,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.21.0';
+const APP_VERSION = '2.22.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -2280,7 +2284,9 @@ const defaultConfig = () => ({
      het opstarten, na elke video, na de laatste en na een tijd zonder klik.
      Een presentatievideo speelt één keer; opnieuw alleen met de < van de klikker. */
   reeks: { aan: false, items: [], wachtId: null, playKnop: 'pauze', overgang: 'direct',
-    volume: 80, aanraakMenu: false, terugNaMin: 15, nummerTonen: true },
+    volume: 80, aanraakMenu: false, terugNaMin: 15, nummerTonen: true,
+    // Binnen hoeveel ms de tweede klik moet komen om als "2× snel" te tellen.
+    dubbelMs: 600 },
   // stuckSec: na zoveel seconden bewegingloze 'aanwezigheid' ijkt de achtergrond
   // opnieuw — anders houdt een lichtsprong of verschoven meubel de box voor
   // altijd 'bezet'. 0 = nooit opnieuw ijken.
@@ -7930,6 +7936,8 @@ function renderReeks() {
   $('#rkNummerTonen').checked = r.nummerTonen !== false;
   $('#rkAanraak').checked = !!r.aanraakMenu;
   $('#rkTerugNa').value = r.terugNaMin ?? 15;
+  $('#rkDubbel').value = r.dubbelMs ?? 600;
+  renderRkDubbel();
   renderReeksStatus();
 }
 
@@ -7980,6 +7988,14 @@ $('#rkVolume').addEventListener('input', (e) => { rkCfg().volume = Number(e.targ
 $('#rkVolume').addEventListener('change', () => save());
 $('#rkNummerTonen').addEventListener('change', (e) => { rkCfg().nummerTonen = e.target.checked; save(); });
 $('#rkAanraak').addEventListener('change', (e) => { rkCfg().aanraakMenu = e.target.checked; save(); });
+function renderRkDubbel() {
+  const ms = Reeks.dubbelMs;
+  $('#rkDubbelNote').textContent = `Nu ${ms} ms (${(ms / 1000).toFixed(2).replace('.', ',')} s): komt de tweede druk ` +
+    'binnen deze tijd, dan telt hij als 2× snel. Een enkele klik wordt zo lang uitgesteld — de box wacht of er nog een ' +
+    'tweede komt. Hoger als je 2× drukt en hij toch 1× ziet; lager als een enkele klik te traag aanvoelt.';
+}
+$('#rkDubbel').addEventListener('input', (e) => { rkCfg().dubbelMs = Number(e.target.value); renderRkDubbel(); });
+$('#rkDubbel').addEventListener('change', () => save());
 $('#rkTerugNa').addEventListener('change', (e) => {
   rkCfg().terugNaMin = Math.max(0, Math.min(240, Number(e.target.value) || 0)); save();
 });
@@ -10306,10 +10322,20 @@ const Reeks = (() => {
     laag.classList.toggle('fade', cfg().overgang === 'fade');
     for (const v of [wachtEl, ...slots, img]) {
       if (v === el) continue;
+      const wasVoor = v.classList.contains('voor');
       v.classList.remove('voor');
       if (v.tagName === 'VIDEO' && !v.paused) v.pause();   // oud beeld stil, oud geluid weg
+      /* De wachtvideo begint elke keer bij het begin, zodat de overgang vanaf
+         het einde van een video klopt. Terugspoelen gebeurt al nu hij uit beeld
+         gaat: dan staat zijn eerste beeld klaar op het moment dat hij terugkomt,
+         in plaats van dat je heel even het oude beeld ziet. */
+      if (v === wachtEl && wasVoor) wachtNaarBegin();
     }
     el.classList.add('voor');
+  }
+
+  function wachtNaarBegin() {
+    try { if (wachtEl.currentTime !== 0) wachtEl.currentTime = 0; } catch {}
   }
 
   function geluid(v) {
@@ -10362,8 +10388,8 @@ const Reeks = (() => {
     if (!m) return false;
     wachtEl.loop = true;
     geluid(wachtEl);
-    // Niet terug naar het begin: de lus gaat verder waar hij was, zodat hij
-    // aanvoelt als één doorlopende lus en niet elke keer opnieuw begint.
+    // Altijd vanaf het begin (meestal staat hij er al, zie toon()).
+    if (!wachtEl.classList.contains('voor')) wachtNaarBegin();
     toon(wachtEl);
     fase = 'wacht';
     start(wachtEl);
@@ -10480,11 +10506,13 @@ const Reeks = (() => {
          >  1×: naar de wachtvideo        2× snel: volgende video
          <  1×: huidige video opnieuw     2× snel: vorige video
      Om een enkele klik van een dubbele te onderscheiden wacht de box na de
-     eerste klik DUBBEL_MS of er een tweede komt. Een dubbele klik gaat dus
-     meteen bij de tweede druk; een enkele 0,4 s later. Andersom — de enkele
+     eerste klik dubbelMs() of er een tweede komt (standaard 0,6 s, instelbaar:
+     een draadloze presenter met veerweg haalt de 0,4 s van een muis niet).
+     Een dubbele klik gaat dus meteen bij de tweede druk; een enkele die tijd
+     later. Andersom — de enkele
      klik meteen uitvoeren en bij een tweede alsnog omschakelen — zou het
      publiek een flits van de wachtvideo laten zien. */
-  const DUBBEL_MS = 400;
+  const dubbelMs = () => Math.max(250, Math.min(1500, Number(cfg().dubbelMs) || 600));
   let eersteKlik = null;          // { richting, timer } — wacht op een eventuele tweede
 
   function volgendeVideo() {
@@ -10528,7 +10556,7 @@ const Reeks = (() => {
       eersteKlik = null;
       enkel(r);
     }
-    eersteKlik = { richting, timer: setTimeout(() => { eersteKlik = null; enkel(richting); }, DUBBEL_MS) };
+    eersteKlik = { richting, timer: setTimeout(() => { eersteKlik = null; enkel(richting); }, dubbelMs()) };
   }
 
   function playKnop() {
@@ -10589,6 +10617,7 @@ const Reeks = (() => {
   };
 
   let testVorige = { key: '', t: 0 };
+  let testGat = null;             // gemeten tijd tussen de laatste twee drukken (ms)
   function toonTest(e, actie) {
     const box = document.getElementById('rkTest');
     if (!box) return;
@@ -10596,9 +10625,14 @@ const Reeks = (() => {
     let wat = actie ? UITLEG[actie] : 'doet niets in de reeks';
     // Ook in de test onderscheid tussen 1× en 2× snel: zo kan de presentator
     // oefenen hoe snel een dubbele klik moet zijn.
+    testGat = null;
     if ((actie === 'volgende' || actie === 'vorige') && !e.repeat) {
       const nu = performance.now();
-      const tweede = testVorige.key === e.key && nu - testVorige.t < DUBBEL_MS;
+      const gat = testVorige.key === e.key ? nu - testVorige.t : Infinity;
+      const tweede = gat < dubbelMs();
+      // Een tweede druk binnen 2 s meten we altijd: ook als hij te laat was,
+      // wil je weten hóé laat, zodat je de grens erop kunt zetten.
+      if (gat < 2000) testGat = Math.round(gat);
       testVorige = tweede ? { key: '', t: 0 } : { key: e.key, t: nu };
       if (tweede) wat = actie === 'volgende' ? '2× snel: volgende video' : '2× snel: vorige video';
       else wat += actie === 'volgende' ? ' (2× snel = volgende video)' : ' (2× snel = vorige video)';
@@ -10611,6 +10645,19 @@ const Reeks = (() => {
     if (e.key === 'PageUp') wat += ' — dit is de < van de klikker';
     box.innerHTML = '';
     box.append(el('kbd', {}, naam), el('span', { class: actie ? 'wat' : '' }, wat));
+    if (testGat != null) {
+      const telt = testGat < dubbelMs();
+      box.append(el('span', { class: 'bij' }, `Tweede druk kwam na ${testGat} ms — ` +
+        (telt ? `telt als 2× snel (grens ${dubbelMs()} ms).` : `te laat voor 2× snel: de grens staat op ${dubbelMs()} ms.`)));
+      if (!telt) {
+        const voorstel = Math.min(1500, Math.ceil((testGat + 150) / 50) * 50);
+        box.append(el('button', { class: 'btn small', onclick: (ev) => {
+          ev.stopPropagation();
+          config.reeks.dubbelMs = voorstel; save(); renderReeks();
+          toast(`Grens voor 2× snel staat nu op ${voorstel} ms`);
+        } }, `Grens op mijn tempo zetten: ${voorstel} ms`));
+      }
+    }
     if (e.repeat) box.append(el('span', { class: 'bij' }, 'Ingedrukt gehouden — telt als één klik.'));
     if (actie && !cfg().aan) box.append(el('span', { class: 'bij' }, 'Herkend. Zet de schakelaar bovenaan aan om ermee te spelen.'));
     box.classList.toggle('raak', !!actie);
@@ -10623,7 +10670,14 @@ const Reeks = (() => {
     const actie = ACTIE[e.key] || (/^[0-9]$/.test(e.key) ? 'cijfer' : null);
     const paneelOpen = panel.classList.contains('open');
     // Klikkertest: in het menu laten zien wat er binnenkomt, ook met de reeks uit.
-    if (paneelOpen && !typen && !document.getElementById('page-reeks').classList.contains('hidden')) {
+    /* Ook als er nog een keuzelijst of schuif actief is: Page Down zou anders
+       de gekozen wachtvideo of de schuif verzetten in plaats van te testen.
+       Alleen een punt in een tekst- of getalveld blijft gewoon een punt. */
+    const klikkerToets = ['PageDown', 'PageUp', 'F5', 'Escape', '.'].includes(e.key);
+    const tekstVeld = !!t && (t.isContentEditable || t.tagName === 'TEXTAREA' ||
+      (t.tagName === 'INPUT' && !/^(range|checkbox|radio|button)$/i.test(t.type || '')));
+    if (paneelOpen && !document.getElementById('page-reeks').classList.contains('hidden') &&
+        (!typen || (klikkerToets && !(tekstVeld && e.key === '.')))) {
       toonTest(e, actie);
       if (actie) e.preventDefault();
       return;
@@ -10647,7 +10701,8 @@ const Reeks = (() => {
   }, { capture: true });
 
   return {
-    volgendeVideo, vorigeVideo, opnieuw, naarWacht, playKnop, zwartWissel, stop, DUBBEL_MS,
+    volgendeVideo, vorigeVideo, opnieuw, naarWacht, playKnop, zwartWissel, stop,
+    get dubbelMs() { return dubbelMs(); },
     // "Reeks starten" in het menu: vanaf het begin, met de wachtvideo.
     vanafBegin() {
       if (!aanzetten('begin')) return false;
