@@ -1730,7 +1730,7 @@
     <div class="card">
       <div class="toggle-row">
         <div><div class="t-label">Klikker bedient de reeks</div>
-          <div class="t-sub"><b>&gt;</b> 1&times;: wachtvideo &middot; 2&times; snel: volgende video.
+          <div class="t-sub"><b>&gt;</b> 1&times;: wachtvideo na afloop &middot; 2&times; snel: volgende video.
           <b>&lt;</b> 1&times;: video opnieuw &middot; 2&times; snel: vorige video.
           Werkt met de Logitech R400 en vrijwel elke andere presenter.</div></div>
         <label class="switch"><input type="checkbox" id="rkAan"><i></i></label>
@@ -1771,7 +1771,8 @@
       </label>
       <p class="note" id="rkDubbelNote"></p>
       <div class="rk-kaart">
-        <kbd>&gt;</kbd><span>1&times;: naar de wachtvideo. <b>2&times; snel: volgende video.</b>
+        <kbd>&gt;</kbd><span>1&times;: naar de wachtvideo &mdash; een lopende video speelt eerst uit.
+          <b>2&times; snel: volgende video.</b>
           (De klikker stuurt <i>Page Down</i>.)</span>
         <kbd>&lt;</kbd><span>1&times;: de huidige video opnieuw. <b>2&times; snel: vorige video.</b>
           (<i>Page Up</i>.) &quot;Snel&quot; is binnen de tijd hieronder &mdash; oefen het hierboven.</span>
@@ -2200,7 +2201,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.22.0';
+const APP_VERSION = '2.23.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -10318,8 +10319,8 @@ const Reeks = (() => {
     return m;
   }
 
-  function toon(el) {
-    laag.classList.toggle('fade', cfg().overgang === 'fade');
+  function toon(el, direct = false) {
+    laag.classList.toggle('fade', !direct && cfg().overgang === 'fade');
     for (const v of [wachtEl, ...slots, img]) {
       if (v === el) continue;
       const wasVoor = v.classList.contains('voor');
@@ -10334,8 +10335,8 @@ const Reeks = (() => {
     el.classList.add('voor');
   }
 
-  function wachtNaarBegin() {
-    try { if (wachtEl.currentTime !== 0) wachtEl.currentTime = 0; } catch {}
+  function wachtNaarBegin(altijd = false) {
+    try { if (altijd || wachtEl.currentTime !== 0) wachtEl.currentTime = 0; } catch {}
   }
 
   function geluid(v) {
@@ -10380,17 +10381,18 @@ const Reeks = (() => {
     toon(slot);
     fase = 'video';
     start(slot);
+    bewaakEinde(slot);
     voorbereiden(idx);
   }
 
-  function toonWacht() {
+  function toonWacht(direct = false) {
     const m = zorgWacht();
     if (!m) return false;
     wachtEl.loop = true;
     geluid(wachtEl);
     // Altijd vanaf het begin (meestal staat hij er al, zie toon()).
     if (!wachtEl.classList.contains('voor')) wachtNaarBegin();
-    toon(wachtEl);
+    toon(wachtEl, direct);
     fase = 'wacht';
     start(wachtEl);
     return true;
@@ -10398,18 +10400,60 @@ const Reeks = (() => {
 
   // Een presentatievideo speelt één keer. Daarna altijd de wachtvideo; is er
   // geen, dan blijft het laatste beeld staan tot de volgende klik.
-  function afgelopen() {
-    if (toonWacht()) return;
+  /* De video's zijn gemaakt om naadloos in de wachtvideo over te lopen: het
+     laatste beeld van een presentatievideo sluit aan op het eerste van de
+     wachtlus. Daarom is deze overgang altijd een harde wissel (nooit de zachte
+     overgang uit de instellingen), en altijd naar beeld 0 van de wachtvideo. */
+  let overgangen = { vroeg: 0, einde: 0 };   // hoe de wissel gebeurde (voor de test)
+  function afgelopen(hoe = 'einde') {
+    overgangen[hoe] = (overgangen[hoe] || 0) + 1;
+    if (toonWacht(true)) return;
     fase = 'af';
   }
 
+  /* Bewaking van het laatste beeld. De browser meldt 'ended' pas een paar
+     beeldjes nadat het laatste beeld getoond is; al die tijd staat dat beeld
+     stil, en bij een naadloze overgang zie je dat als een hapering. Daarom
+     kijken we per getoond beeld (requestVideoFrameCallback) mee en wisselen we
+     op het laatste beeld zelf. 'ended' blijft het vangnet, bijvoorbeeld voor
+     bestanden waarvan de lengte niet bekend is.
+
+     Ongeveer een seconde voor het einde zetten we de wachtvideo nog eens op
+     beeld 0. Een video die minutenlang gepauzeerd en onzichtbaar staat, legt
+     de browser "te slapen"; hem dan pas wekken kost precies de tijd die je bij
+     de wissel niet hebt. Opnieuw op 0 zetten maakt hem op tijd wakker. */
+  function bewaakEinde(slot) {
+    if (typeof slot.requestVideoFrameCallback !== 'function') return;
+    const mijnPos = pos;
+    let vorige = null, stap = 1 / 30, gewekt = false;
+    const kijk = (nu, meta) => {
+      if (!slot.classList.contains('voor') || fase !== 'video' || pos !== mijnPos) return;
+      const ps = playSettings(lijst()[pos - 1]);
+      const einde = ps.trimEnd > 0 ? ps.trimEnd : slot.duration;
+      const t = meta.mediaTime;
+      if (vorige != null && t > vorige && t - vorige < 0.2) stap = t - vorige;   // beeldduur meten
+      vorige = t;
+      if (isFinite(einde) && einde > 0) {
+        if (!gewekt && einde - t < 1.0) { gewekt = true; wachtNaarBegin(true); }
+        // Dit is het laatste beeld: het volgende zou voorbij het einde vallen.
+        if (t + stap * 1.5 >= einde) {
+          slot.pause();
+          afgelopen('vroeg');
+          return;
+        }
+      }
+      slot.requestVideoFrameCallback(kijk);
+    };
+    slot.requestVideoFrameCallback(kijk);
+  }
+
   for (const s of slots) {
-    s.addEventListener('ended', () => { if (s.classList.contains('voor') && fase === 'video') afgelopen(); });
-    // Bijsnijden uit het Media-tabblad geldt ook hier: stop op het ingestelde eindpunt.
+    s.addEventListener('ended', () => { if (s.classList.contains('voor') && fase === 'video') afgelopen('einde'); });
+    // Vangnet voor bijsnijden zonder beeldbewaking: stop op het ingestelde eindpunt.
     s.addEventListener('timeupdate', () => {
       if (!s.classList.contains('voor') || fase !== 'video') return;
       const ps = playSettings(lijst()[pos - 1]);
-      if (ps.trimEnd > 0 && s.currentTime >= ps.trimEnd - 0.05) { s.pause(); afgelopen(); }
+      if (ps.trimEnd > 0 && s.currentTime >= ps.trimEnd - 0.05) { s.pause(); afgelopen('einde'); }
     });
   }
 
@@ -10440,9 +10484,11 @@ const Reeks = (() => {
     hartslag = setInterval(() => {
       lastInteraction = Date.now();                        // geen screensaver zolang de reeks loopt
       const min = Number(cfg().terugNaMin) || 0;
-      if (min > 0 && Date.now() - laatsteKlik > min * 60000) {
+      // Vergeten te stoppen: terug naar het begin — maar niet midden in een video.
+      const loopt = fase === 'video' && slots.some((x) => x.classList.contains('voor') && !x.paused);
+      if (min > 0 && !loopt && Date.now() - laatsteKlik > min * 60000) {
         laatsteKlik = Date.now();
-        if (rustModus()) naarBegin(); else stop();         // vergeten te stoppen: terug naar het begin
+        if (rustModus()) naarBegin(); else stop();
       }
     }, 5000);
     /* In een gewone browser met volledig scherm zou de Esc van de ▶-knop het
@@ -10533,11 +10579,19 @@ const Reeks = (() => {
     if (!toonWacht()) toonNummer(`0 / ${lijst().length}`);
   }
 
+  /* 1× >: de wachtvideo — maar nooit midden in een video. Een lopende
+     presentatievideo speelt uit en loopt dan vanzelf, naadloos, over in de
+     wachtvideo. Staat hij op pauze, dan gaat hij verder tot het einde. */
   function naarWacht() {
     if (!aanzetten('hervat')) return;
     zwartZet(false);
-    // Zonder wachtvideo is er geen wachtstand; dan is > gewoon de volgende.
-    if (!toonWacht()) volgendeVideo();
+    if (!zorgWacht()) return volgendeVideo();              // geen wachtvideo: dan is > gewoon de volgende
+    if (fase === 'wacht') return;
+    if (fase === 'video') {
+      const v = slots.find((x) => x.classList.contains('voor'));
+      if (v) { if (v.paused) start(v); return; }           // video loopt (weer): wachtvideo volgt na afloop
+    }
+    toonWacht();                                           // afbeelding, of nog niets gespeeld
   }
 
   function enkel(richting) { if (richting === 'volgende') naarWacht(); else opnieuw(); }
@@ -10611,7 +10665,7 @@ const Reeks = (() => {
   // en spatie zijn daar voor gewone toetsenbordbediening.
   const VANUIT_MENU = new Set(['PageDown', 'PageUp', 'F5', 'Escape']);
   const UITLEG = {
-    volgende: '1×: naar de wachtvideo', vorige: '1×: video opnieuw', play: '▶-knop',
+    volgende: '1×: wachtvideo (een lopende video speelt eerst uit)', vorige: '1×: video opnieuw', play: '▶-knop',
     zwart: 'Zwart scherm aan/uit', stop: 'Reeks stoppen', enter: 'Naar het ingetypte nummer',
     cijfer: 'Nummer intypen',
   };
@@ -10703,6 +10757,7 @@ const Reeks = (() => {
   return {
     volgendeVideo, vorigeVideo, opnieuw, naarWacht, playKnop, zwartWissel, stop,
     get dubbelMs() { return dubbelMs(); },
+    get overgangen() { return { ...overgangen }; },
     // "Reeks starten" in het menu: vanaf het begin, met de wachtvideo.
     vanafBegin() {
       if (!aanzetten('begin')) return false;

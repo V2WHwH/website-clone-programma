@@ -43,6 +43,7 @@ start "" "%BROWSER%" ^
   --kiosk ^
   --user-data-dir="%PROFILE%" ^
   --autoplay-policy=no-user-gesture-required ^
+  --disable-media-suspend ^
   --allow-file-access-from-files ^
   --ignore-gpu-blocklist ^
   --enable-gpu-rasterization ^

@@ -39,6 +39,7 @@ start "" "%BROWSER%" ^
   --window-size=1280,860 ^
   --user-data-dir="%PROFILE%" ^
   --autoplay-policy=no-user-gesture-required ^
+  --disable-media-suspend ^
   --allow-file-access-from-files ^
   --ignore-gpu-blocklist ^
   --enable-gpu-rasterization ^

@@ -80,6 +80,11 @@ function log(level, event, data = {}) {
    mogelijk aanzetten; Chromium valt zelf terug op CPU waar nodig. */
 
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+// Gepauzeerde, onzichtbare video's niet laten inslapen. De reeks met klikker
+// houdt de wachtvideo en de volgende video gepauzeerd klaar op hun eerste
+// beeld; een ingeslapen speler wekken kost een paar honderd ms, en dat is
+// precies de hapering die je bij een naadloze overgang niet wilt.
+app.commandLine.appendSwitch('disable-media-suspend');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
 app.commandLine.appendSwitch('enable-gpu-rasterization');
 app.commandLine.appendSwitch('enable-zero-copy');
