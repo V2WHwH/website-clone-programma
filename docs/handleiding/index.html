@@ -289,7 +289,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.20.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
+    <span>Versie 2.21.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -1403,7 +1403,7 @@ header.cover{padding-block:88px 8px}
   </div>
 
   <div class="map">
-    <svg viewBox="0 0 700 170" role="img" aria-label="Het verloop: de wachtvideo loopt; een klik op het pijltje naar rechts start video 1; na afloop komt de wachtvideo terug; de volgende klik start video 2, en zo verder.">
+    <svg viewBox="0 0 700 170" role="img" aria-label="Het verloop: de wachtvideo loopt; twee keer snel op het pijltje naar rechts start video 1; na afloop komt de wachtvideo terug; weer twee keer snel start video 2, en zo verder.">
       <defs>
         <marker id="rk-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
           <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
@@ -1436,15 +1436,15 @@ header.cover{padding-block:88px 8px}
         <path d="M442 71 H474"/><path d="M558 71 H590"/>
       </g>
       <g font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" text-anchor="middle">
-        <text x="110" y="40" fill="#0B9E92">klik &gt;</text>
-        <text x="342" y="40" fill="#0B9E92">klik &gt;</text>
-        <text x="574" y="40" fill="#0B9E92">klik &gt;</text>
+        <text x="110" y="40" fill="#0B9E92">2× &gt;</text>
+        <text x="342" y="40" fill="#0B9E92">2× &gt;</text>
+        <text x="574" y="40" fill="#0B9E92">2× &gt;</text>
       </g>
       <g font-family="IBM Plex Sans, sans-serif" font-size="10.5" fill="currentColor" opacity=".55" text-anchor="middle">
         <text x="226" y="112">vanzelf</text><text x="458" y="112">vanzelf</text>
       </g>
       <text x="14" y="150" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="currentColor" opacity=".7">
-        Een video speelt één keer; opnieuw alleen met &lt;. Midden in een video op &gt; = meteen de volgende.
+        1× &gt; = terug naar de wachtvideo · 1× &lt; = video opnieuw · 2× &lt; = vorige video.
       </text>
     </svg>
   </div>
@@ -1459,11 +1459,11 @@ header.cover{padding-block:88px 8px}
     <thead><tr><th>Knop</th><th>Stuurt</th><th>Wat de reeks ermee doet</th></tr></thead>
     <tbody>
       <tr><td><b>&gt;</b> (rechts)</td><td><code>Page Down</code></td>
-        <td><b>Volgende video.</b> Vanuit de knoppen start hij meteen de volgende video van
-        de reeks.</td></tr>
+        <td><b>1&times;: naar de wachtvideo.</b> Loopt er een video, dan stopt die en komt de
+        wachtlus. <b>2&times; snel: volgende video.</b></td></tr>
       <tr><td><b>&lt;</b> (links)</td><td><code>Page Up</code></td>
-        <td><b>Terug.</b> Is de video al afgelopen en loopt de wachtvideo, dan speelt hij de
-        laatste video nog eens. Loopt er een video, dan gaat hij naar de vorige.</td></tr>
+        <td><b>1&times;: de huidige video opnieuw</b> — of, op de wachtvideo, de video die net
+        speelde. <b>2&times; snel: vorige video.</b></td></tr>
       <tr><td><b>&#9654;</b> (start/stop)</td><td>om en om <code>F5</code> en <code>Esc</code></td>
         <td><b>Pauze / verder</b> — of, als je dat kiest, de reeks stoppen. Vanuit de knoppen
         start hij de reeks met de wachtvideo, zoals F5 in PowerPoint een diavoorstelling
@@ -1487,7 +1487,7 @@ header.cover{padding-block:88px 8px}
 
   <div class="split">
     <figure><div class="panelshot tall">
-      <img src="img/paneel-reeks.webp" alt="Het paneel Reeks en klikker" width="371" height="2551" loading="lazy">
+      <img src="img/paneel-reeks.webp" alt="Het paneel Reeks en klikker" width="371" height="2609" loading="lazy">
     </div></figure>
     <div class="tw"><table>
       <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
@@ -1496,7 +1496,7 @@ header.cover{padding-block:88px 8px}
           klikker doet niets.</td><td>Zodat een toevallige Page Down op een gewoon toetsenbord
           niet ineens een presentatie start.</td></tr>
         <tr><td>Reeks starten vanaf het begin</td><td>Sluit het menu, zet de wachtlus aan en
-          begint opnieuw bij 1: de eerste klik op &gt; start video 1.</td><td>Voor de generale
+          begint opnieuw bij 1: 2&times; &gt; start video 1.</td><td>Voor de generale
           repetitie en voor de echte start.</td></tr>
         <tr><td>Wachtvideo</td><td>Loopt <b>altijd</b>, in een lus: bij het opstarten, na
           elke video, na de laatste en na een tijd zonder klik.</td>
@@ -1509,8 +1509,8 @@ header.cover{padding-block:88px 8px}
           bestandsnaam gesorteerd — <code>2 intro</code> vóór <code>10 slot</code>. De
           wachtvideo slaat hij over.</td><td>Geef je bestanden een nummer voorin, dan staat
           de hele reeks met één klik goed.</td></tr>
-        <tr><td>Klikker testen</td><td>Laat zien welke toets er binnenkomt en wat de reeks
-          ermee doet.</td><td>Zo weet je vóór het publiek binnenkomt dat de ontvanger erin
+        <tr><td>Klikker testen</td><td>Laat zien welke toets er binnenkomt, of het een enkele
+          of een dubbele klik was, en wat de reeks ermee doet.</td><td>Zo weet je vóór het publiek binnenkomt dat de ontvanger erin
           zit en de batterijen goed zijn.</td></tr>
         <tr><td>De &#9654;-knop</td><td>Pauze / verder, of reeks stoppen.</td>
           <td>Smaak: wie lange video's heeft, wil kunnen pauzeren.</td></tr>
@@ -1534,6 +1534,26 @@ header.cover{padding-block:88px 8px}
     </table></div>
   </div>
 
+  <h3>Eén of twee keer klikken</h3>
+  <p class="measure">Beide pijltjes hebben twee standen. <b>Snel</b> betekent: de tweede klik
+  binnen 0,4 seconde na de eerste — ongeveer de dubbelklik-snelheid van Windows.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Knop</th><th>1&times;</th><th>2&times; snel</th></tr></thead>
+    <tbody>
+      <tr><td><b>&gt;</b></td><td>Naar de wachtvideo</td><td>Volgende video</td></tr>
+      <tr><td><b>&lt;</b></td><td>Huidige video opnieuw</td><td>Vorige video</td></tr>
+    </tbody>
+  </table></div>
+  <p class="measure">Een dubbele klik gaat meteen bij de tweede druk. Een enkele klik komt
+  0,4 seconde later: zo lang wacht de box of er nog een tweede komt. De andere manier — de
+  enkele klik meteen uitvoeren en bij een tweede klik alsnog omschakelen — zou het publiek
+  een flits van de wachtvideo laten zien, of een video die even opnieuw begint.</p>
+  <p class="measure">Klikken tellen in paren. Vier keer snel op &gt; is twee keer
+  &quot;volgende&quot;; drie keer snel is één keer &quot;volgende&quot; en daarna, voor de
+  losse derde klik, de wachtvideo. Klik je eerst &lt; en meteen daarna &gt;, dan telt de
+  &lt; als een enkele klik. Oefen het tempo onder <b>Klikker testen</b>: daar zie je bij elke
+  druk of hij als 1&times; of als 2&times; snel binnenkomt.</p>
+
   <h3>De wachtlus is de rusttoestand</h3>
   <p class="measure">Staat de klikker aan en is er een wachtvideo gekozen, dan is de wachtlus
   wat de box doet als er niets gebeurt — net zoals anders de knoppen of de screensaver. Hij
@@ -1542,8 +1562,8 @@ header.cover{padding-block:88px 8px}
   menu. De lus gaat verder waar hij was, in plaats van steeds opnieuw te beginnen, zodat hij
   aanvoelt als één doorlopende lus.</p>
   <p class="measure">Een presentatievideo speelt precies één keer, ook als hij in
-  <b>Media</b> op herhalen staat. Opnieuw spelen gaat alleen met <b>&lt;</b>. Na de laatste
-  video begint <b>&gt;</b> weer bij video 1.</p>
+  <b>Media</b> op herhalen staat. Opnieuw spelen gaat alleen met <b>1&times; &lt;</b>. Na de
+  laatste video begint <b>2&times; &gt;</b> weer bij video 1.</p>
   <p class="measure">Naar het menu: <b>vijf keer snel tikken linksboven</b> — dat werkt ook op
   de wachtlus. Sluit je het menu, dan loopt de lus weer.</p>
 
@@ -1569,8 +1589,8 @@ header.cover{padding-block:88px 8px}
       een nummer en Enter om naar die video te springen; <code>Home</code> stopt de
       reeks.</span></span></li>
     <li><span class="n">4</span><span><b>Weg en terug</b> <span class="q">— het menu openen
-      of het handgebaar stopt de reeks; daarna komt de wachtlus terug, en &gt; gaat verder
-      waar je was.</span></span></li>
+      of het handgebaar stopt de reeks; daarna komt de wachtlus terug, en 2&times; &gt; gaat
+      verder waar je was.</span></span></li>
   </ul>
 
   <div class="note warn"><span class="t">Gebruik op de box de Windows-app</span>
@@ -2449,6 +2469,9 @@ header.cover{padding-block:88px 8px}
         de ontvanger zit er niet in.</td><td>Reeks &amp; klikker → <b>Klikker testen</b>: zie je
         daar niets binnenkomen, dan ligt het aan de ontvanger of de batterijen. Zie je wel iets,
         zet dan de schakelaar aan en sluit het menu.</td></tr>
+      <tr><td>&gt; gaat naar de wachtvideo in plaats van naar de volgende</td><td>De tweede klik
+        kwam te laat; de box zag twee losse klikken.</td><td>Klik binnen 0,4 seconde twee keer.
+        Oefen het tempo onder Reeks &amp; klikker &rarr; <b>Klikker testen</b>.</td></tr>
       <tr><td>&#9654; op de klikker haalt de browser uit volledig scherm</td><td>De klikker
         stuurt om en om F5 en Esc; Esc verlaat in sommige browsers het volledige scherm.</td>
         <td>Gebruik de Windows-app of <code>Start Holobox.bat</code> (kioskmodus).</td></tr>
@@ -2504,8 +2527,8 @@ header.cover{padding-block:88px 8px}
     <dt>5× tikken in de hoek linksboven</dt><dd>Opent het menu ook als de bedieningsknoppen verborgen zijn.</dd>
     <dt>Naar rechts vegen</dt><dd>Vorige scène, als “Vegen om terug te gaan” aanstaat.</dd>
     <dt>Hand omhoog</dt><dd>Terug naar het menu, als het handgebaar aanstaat (hoofdstuk 14).</dd>
-    <dt>Page Down / &gt; op de klikker</dt><dd>Volgende video van de reeks (hoofdstuk 13).</dd>
-    <dt>Page Up / &lt; op de klikker</dt><dd>Terug in de reeks.</dd>
+    <dt>Page Down / &gt; op de klikker</dt><dd>1&times;: naar de wachtvideo · 2&times; snel: volgende video (hoofdstuk 13).</dd>
+    <dt>Page Up / &lt; op de klikker</dt><dd>1&times;: huidige video opnieuw · 2&times; snel: vorige video.</dd>
     <dt>F5 of Esc / &#9654;</dt><dd>Pauze / verder in de reeks; vanuit de knoppen start de reeks.</dd>
     <dt>. (punt) / &#9632;</dt><dd>Zwart scherm aan/uit tijdens de reeks.</dd>
     <dt>Nummer + Enter</dt><dd>Naar die video van de reeks springen. <kbd>Home</kbd> stopt de reeks.</dd>
@@ -2557,7 +2580,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.20.0 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.21.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>
