@@ -435,6 +435,51 @@
   #stopPlay { position: absolute; top: 18px; right: 18px; width: 52px; height: 52px; border-radius: 50%;
     background: rgba(0,0,0,0.55); color: #fff; border: 1px solid rgba(255,255,255,0.35); font-size: 22px; }
 
+  /* ============ REEKS MET KLIKKER ============
+     Eigen laag boven het podium en het afspeelvenster. Vier spelers: de
+     wachtvideo en drie plekken voor de genummerde video's (de huidige, de
+     volgende en de vorige). De buren staan al geladen en gepauzeerd op hun
+     eerste beeld, zodat een klik in hetzelfde frame wisselt — geen zwart
+     moment terwijl een 4K-bestand opstart. */
+  /* Boven de zwevende bedieningsknoppen (45): tijdens een presentatie hoort er
+     niets anders in beeld dan de video. Terug naar het menu gaat via aanraken. */
+  #reeksLaag { position: absolute; inset: 0; background: #000; z-index: 46; display: none; }
+  #reeksLaag.aan { display: block; }
+  #reeksLaag .rk-v { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+    background: #000; opacity: 0; transform: translateZ(0); }
+  #reeksLaag .rk-v.voor { opacity: 1; z-index: 2; }
+  #reeksLaag.fade .rk-v { transition: opacity .3s ease; }
+  #rkZwart { position: absolute; inset: 0; background: #000; z-index: 5; display: none; }
+  #rkZwart.aan { display: block; }
+  #rkNummer { position: absolute; right: 22px; bottom: 20px; z-index: 6; pointer-events: none;
+    font: 600 15px/1 system-ui, sans-serif; color: rgba(255,255,255,.85); letter-spacing: .04em;
+    background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.18); border-radius: 999px;
+    padding: 7px 13px; opacity: 0; transition: opacity .35s ease; }
+  #rkNummer.zicht { opacity: 1; }
+  body.editor-open #reeksLaag { z-index: 62; }
+  /* Klikker-test en lijst in het menu */
+  .rk-test { display: block; min-height: 54px; padding: 12px 14px; line-height: 1.6;
+    border-radius: 10px; background: var(--p-card-2); border: 1px solid var(--p-line);
+    font-size: 13px; color: var(--color-text-secondary); }
+  .rk-test kbd { margin-right: 8px; }
+  .rk-test .bij { display: block; font-size: 12px; margin-top: 4px; }
+  .rk-test.raak { border-color: var(--color-accent-teal); color: var(--color-text-primary); }
+  .rk-test kbd { font: 600 12px/1 ui-monospace, monospace; padding: 5px 8px; border-radius: 6px;
+    background: rgba(255,255,255,.08); border: 1px solid var(--p-line); color: var(--color-text-primary); }
+  .rk-test .wat { font-weight: 650; color: var(--color-accent-teal); }
+  .rk-kaart { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 12.5px;
+    color: var(--color-text-secondary); margin: 10px 0 2px; }
+  .rk-kaart kbd { font: 600 11.5px/1 ui-monospace, monospace; padding: 4px 7px; border-radius: 5px;
+    background: rgba(255,255,255,.06); border: 1px solid var(--p-line); color: var(--color-text-primary);
+    justify-self: start; align-self: start; }
+  .rk-rij { display: flex; align-items: center; gap: 8px; padding: 5px 0;
+    border-bottom: 1px solid var(--p-line); font-size: 12.5px; }
+  .rk-rij input.rk-nr { width: 54px; text-align: center; padding: 5px 4px; }
+  .rk-rij .rk-naam { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    color: var(--color-text-primary); }
+  .rk-rij.mist .rk-naam { color: #ef5da8; }
+  .rk-rij button { padding: 4px 9px; }
+
   /* ============ ZWEVENDE BEDIENING ============ */
   #orFab { left: 16px; bottom: 214px; font-size: 17px; }
   .fab { position: absolute; z-index: 45; width: 54px; height: 54px; border-radius: 50%;
@@ -1040,6 +1085,16 @@
   <button id="stopPlay" title="Stoppen">✕</button>
 </div>
 
+<div id="reeksLaag" aria-hidden="true">
+  <video id="rkWachtVideo" class="rk-v" playsinline loop></video>
+  <video id="rkV1" class="rk-v" playsinline preload="auto"></video>
+  <video id="rkV2" class="rk-v" playsinline preload="auto"></video>
+  <video id="rkV3" class="rk-v" playsinline preload="auto"></video>
+  <img id="rkImg" class="rk-v" alt="">
+  <div id="rkZwart"></div>
+  <div id="rkNummer"></div>
+</div>
+
 <div id="saver">
   <!-- Twee spelers: de volgende video buffert alvast en neemt het beeld
        over met het gekozen overgangseffect (crossfade, zwart, zoom, slide). -->
@@ -1101,6 +1156,7 @@
     <button data-tab="3d"><span class="nav-ic">&#9707;</span><span class="nav-txt">3D-objecten</span></button>
     <button data-tab="fx"><span class="nav-ic">&#12316;</span><span class="nav-txt">Motion</span></button>
     <button data-tab="saver"><span class="nav-ic">&#10033;</span><span class="nav-txt">Screensaver</span></button>
+    <button data-tab="reeks"><span class="nav-ic">&#9197;</span><span class="nav-txt">Reeks &amp; klikker</span></button>
     <button data-tab="cam"><span class="nav-ic">&#9737;</span><span class="nav-txt">Camera</span></button>
     <button data-tab="avatar"><span class="nav-ic">&#9786;</span><span class="nav-txt">AI-avatars</span></button>
     <button data-tab="share"><span class="nav-ic">&#8644;</span><span class="nav-txt">Beheer &amp; device</span></button>
@@ -1668,6 +1724,107 @@
     </div>
   </div>
 
+  <!-- ================= REEKS & KLIKKER ================= -->
+  <div class="tabpage hidden" id="page-reeks">
+    <h2>Reeks met klikker</h2>
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Klikker bedient de reeks</div>
+          <div class="t-sub">Met <b>&gt;</b> start de volgende video, met <b>&lt;</b> ga je terug.
+          Werkt met de Logitech R400 en vrijwel elke andere presenter.</div></div>
+        <label class="switch"><input type="checkbox" id="rkAan"><i></i></label>
+      </div>
+      <p class="note" id="rkStatus"></p>
+      <button id="rkStart" class="btn primary block">&#9654; Reeks starten vanaf het begin</button>
+    </div>
+
+    <h2>Wachtvideo</h2>
+    <div class="card">
+      <label class="field">Wachtvideo &mdash; loopt tussen de genummerde video's door
+        <select id="rkWacht"></select>
+      </label>
+      <label class="field">Als een genummerde video afgelopen is
+        <select id="rkNaAfloop">
+          <option value="wacht">Wachtvideo spelen tot de volgende klik</option>
+          <option value="stil">Blijven staan op het laatste beeld</option>
+          <option value="door">Meteen door naar de volgende video</option>
+        </select>
+      </label>
+      <p class="note" id="rkWachtNote"></p>
+    </div>
+
+    <h2>De video's op volgorde</h2>
+    <div class="card">
+      <button id="rkAlles" class="btn block">Alle video's toevoegen, op bestandsnaam gesorteerd</button>
+      <label class="field">Of voeg er &eacute;&eacute;n toe
+        <select id="rkVoegToe"></select>
+      </label>
+      <div id="rkLijst"></div>
+      <p class="note">Een ander nummer intypen verplaatst de video naar die plek. Tip: zet een
+      nummer voor de bestandsnaam (<code>01 intro.mp4</code>, <code>02 product.mp4</code>&hellip;),
+      dan staan ze met &eacute;&eacute;n klik goed.</p>
+      <button id="rkLeeg" class="btn small danger">Lijst leegmaken</button>
+    </div>
+
+    <h2>Klikker testen</h2>
+    <div class="card">
+      <p class="note">Druk op een knop van je klikker. Hieronder zie je wat hij naar de computer
+      stuurt en wat de reeks ermee doet &mdash; zo weet je zeker dat hij werkt voordat het
+      publiek binnenkomt.</p>
+      <div id="rkTest" class="rk-test">Nog niets ontvangen &mdash; druk op een knop van de klikker</div>
+      <div class="rk-kaart">
+        <kbd>&gt;</kbd><span>Volgende video (de klikker stuurt <i>Page Down</i>)</span>
+        <kbd>&lt;</kbd><span>Terug (<i>Page Up</i>). Tijdens de wachtvideo speelt hij de laatste
+          video nog eens; tijdens een video gaat hij naar de vorige.</span>
+        <kbd>&#9654;</kbd><span id="rkPlayUitleg">Pauze / verder (stuurt om en om <i>F5</i> en
+          <i>Esc</i>; beide doen hier hetzelfde)</span>
+        <kbd>&#9632;</kbd><span>Zwart scherm aan/uit (<i>punt</i>)</span>
+        <kbd>37 &#8629;</kbd><span>Op een toetsenbord: nummer intypen en Enter springt naar die video.
+          <i>Home</i> stopt de reeks.</span>
+      </div>
+    </div>
+
+    <h2>Gedrag</h2>
+    <div class="card">
+      <label class="field">De &#9654;-knop van de klikker
+        <select id="rkPlayKnop">
+          <option value="pauze">Pauze / verder</option>
+          <option value="stop">Reeks stoppen, terug naar de knoppen</option>
+        </select>
+      </label>
+      <label class="field">Na de laatste video
+        <select id="rkNaLaatste">
+          <option value="menu">Terug naar de knoppen</option>
+          <option value="opnieuw">Opnieuw bij video 1</option>
+        </select>
+      </label>
+      <label class="field">Wisselen tussen video's
+        <select id="rkOvergang">
+          <option value="direct">Direct, in hetzelfde beeld</option>
+          <option value="fade">Zachte overgang (0,3 s)</option>
+        </select>
+      </label>
+      <label class="field">Volume van de reeks (%)
+        <input type="range" id="rkVolume" min="0" max="100" step="5">
+      </label>
+      <div class="toggle-row">
+        <div><div class="t-label">Nummer kort tonen bij wisselen</div>
+          <div class="t-sub">Anderhalve seconde &quot;12 / 40&quot; rechtsonder, zodat jij weet waar je bent</div></div>
+        <label class="switch"><input type="checkbox" id="rkNummerTonen"><i></i></label>
+      </div>
+      <div class="toggle-row">
+        <div><div class="t-label">Aanraken van het scherm stopt de reeks</div>
+          <div class="t-sub">De box gaat terug naar de knoppen; met &gt; ga je later verder waar je was</div></div>
+        <label class="switch"><input type="checkbox" id="rkAanraak"><i></i></label>
+      </div>
+      <label class="field">Terug naar de knoppen na (minuten zonder klik; 0 = nooit)
+        <input type="number" id="rkTerugNa" min="0" max="240" step="1">
+      </label>
+      <p class="note">Zolang de reeks loopt, start de screensaver niet &mdash; ook niet als je
+      minutenlang staat te praten op de wachtvideo.</p>
+    </div>
+  </div>
+
   <!-- ================= CAMERA ================= -->
   <div class="tabpage hidden" id="page-cam">
     <div class="card">
@@ -2047,7 +2204,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.18.0';
+const APP_VERSION = '2.19.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -2079,7 +2236,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 16,
+  version: 17,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -2123,6 +2280,13 @@ const defaultConfig = () => ({
      van het hoofdvolume: zou je dat lager zetten, dan deed dit zijn werk
      niet meer. */
   keepAlive: { on: false, type: 'ruis', level: 3, puls: false },
+  /* Reeks met klikker: genummerde video's die een presentator met een
+     presenter (Logitech R400 en vergelijkbaar) doorklikt. Tussen twee video's
+     loopt een wachtvideo tot de volgende klik. items = mediaId's op volgorde;
+     het nummer van een video is zijn plek in de lijst. */
+  reeks: { aan: false, items: [], wachtId: null, naAfloop: 'wacht', naLaatste: 'menu',
+    playKnop: 'pauze', overgang: 'direct', volume: 80, aanraakStopt: true,
+    terugNaMin: 15, nummerTonen: true },
   // stuckSec: na zoveel seconden bewegingloze 'aanwezigheid' ijkt de achtergrond
   // opnieuw — anders houdt een lichtsprong of verschoven meubel de box voor
   // altijd 'bezet'. 0 = nooit opnieuw ijken.
@@ -2175,6 +2339,9 @@ function migrateConfig(stored) {
     // v16: speaker wakker houden. Nieuw blok, dus bestaande projecten
     // beginnen met uit — precies zoals ze stonden.
     keepAlive: { ...d.keepAlive, ...stored.keepAlive },
+    // v17: reeks met klikker. Nieuw blok; oude projecten krijgen hem uit.
+    reeks: { ...d.reeks, ...stored.reeks,
+      items: Array.isArray(stored.reeks?.items) ? stored.reeks.items.slice() : [] },
     camera: { ...d.camera, ...stored.camera,
       gesture: { ...d.camera.gesture, ...(stored.camera?.gesture || {}) },
       // v15: parallax. Nieuw blok, dus oude projecten krijgen hem uit,
@@ -2256,7 +2423,7 @@ function migrateConfig(stored) {
       delete b.beat[weg];
     }
   }
-  c.version = 16;
+  c.version = 17;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -5186,6 +5353,7 @@ window.addEventListener('resize', syncFrames);
 /* ================= Menu ================= */
 const panel = $('#panel');
 function openEditor() {
+  if (Reeks.actief) Reeks.stop();
   panel.classList.add('open');
   document.body.classList.add('editor-open');
   refreshPanel();
@@ -5211,6 +5379,7 @@ document.querySelectorAll('#tabs button').forEach((t) => t.addEventListener('cli
   document.querySelectorAll('.tabpage').forEach((p) => p.classList.toggle('hidden', p.id !== 'page-' + t.dataset.tab));
   if (t.dataset.tab === 'dashboard') renderDashboard();
   if (t.dataset.tab === 'avatar') renderAvatars();
+  if (t.dataset.tab === 'reeks') renderReeks();
   // De meter van de speaker-wekker leest de audiograaf 8x per seconde uit;
   // dat hoeft alleen zolang je ernaar kijkt.
   if (typeof kaMeterLoopt === 'function') {
@@ -5461,6 +5630,9 @@ const ZOEK_EXTRA = [
   { woorden: 'handgebaar hand zwaaien opsteken menu',
     tekst: 'Handgebaar — rechterhand omhoog toont het menu', tab: 'cam',
     hint: 'Camera → onderdeel Handgebaar.' },
+  { woorden: 'klikker presenter logitech r400 afstandsbediening reeks volgorde nummer nummeren wachtvideo pijltjes volgende vorige',
+    tekst: 'Reeks met klikker — genummerde video\'s doorklikken met een presenter', tab: 'reeks',
+    hint: 'Tabblad Reeks & klikker.' },
   { woorden: 'verhuizen kopie kopieren back-up backup usb andere computer pc exporteren terugzetten importeren overzetten meenemen',
     tekst: 'Alles exporteren / terugzetten — indeling én video\'s in één bestand', tab: 'share',
     hint: 'Beheer & device → onderdeel Naar een andere computer.' },
@@ -6057,7 +6229,7 @@ $('#avTest').addEventListener('click', async () => {
 let editorZoom = 'fit'; // 'fit' | schaalfactor t.o.v. werkelijke pixels
 
 function editorCanvasTargets() {
-  return ['stage', 'saver', 'playOverlay', 'webOverlay'].map((id) => document.getElementById(id));
+  return ['stage', 'saver', 'playOverlay', 'webOverlay', 'reeksLaag'].map((id) => document.getElementById(id));
 }
 
 function fitEditorCanvas() {
@@ -6518,6 +6690,7 @@ $('#pmGo').addEventListener('click', async () => {
 
 function refreshPanel() {
   refreshSceneUI(); renderBtnList(); renderMediaList(); renderLook(); renderSaver(); renderMotion(); renderShare();
+  renderReeks();
   renderDashboard(); renderInspector(); renderLayers(); renderMotionDock(); updateTopbar();
   requestAnimationFrame(fitEditorCanvas);
 }
@@ -7687,6 +7860,134 @@ $('#statsReset').addEventListener('click', () => {
 });
 
 /* ---- Tab: screensaver & sensor ---- */
+/* ---- Tab: reeks & klikker ---- */
+const rkCfg = () => config.reeks;
+const rkMedia = (id) => mediaCache.get(id);
+
+function renderReeksStatus() {
+  const n = document.getElementById('rkStatus');
+  if (!n) return;
+  const r = rkCfg();
+  const aantal = r.items.length;
+  const mist = r.items.filter((id) => !rkMedia(id)).length;
+  const wacht = rkMedia(r.wachtId);
+  if (!r.aan) { n.textContent = 'Uit — de klikker doet nu niets met de reeks.'; return; }
+  let t = `${aantal} video${aantal === 1 ? '' : "'s"} in de reeks, ` +
+    (wacht ? `wachtvideo: ${wacht.name}. ` : 'geen wachtvideo. ');
+  if (!aantal) t += 'Zet hieronder video\'s op volgorde.';
+  else if (Reeks.actief) t += `Loopt nu, bij video ${Reeks.pos}.`;
+  else if (Reeks.pos) t += `Staat bij video ${Reeks.pos} — met > ga je verder met ${Math.min(aantal, Reeks.pos + 1)}.`;
+  else t += 'Druk op > op de klikker en video 1 start.';
+  if (mist) t += ` Let op: ${mist} video${mist === 1 ? ' ontbreekt' : "'s ontbreken"} op deze computer.`;
+  n.textContent = t;
+}
+
+function renderReeks() {
+  const r = rkCfg();
+  if (!document.getElementById('rkAan')) return;
+  $('#rkAan').checked = !!r.aan;
+  const videos = [...mediaCache.values()].filter((m) => m.kind === 'video');
+  const wacht = $('#rkWacht');
+  wacht.innerHTML = '';
+  wacht.append(el('option', { value: '' }, '— geen wachtvideo —'));
+  for (const m of videos) {
+    const o = el('option', { value: m.id }, m.name);
+    if (m.id === r.wachtId) o.selected = true;
+    wacht.append(o);
+  }
+  $('#rkNaAfloop').value = r.naAfloop || 'wacht';
+  $('#rkWachtNote').textContent = (r.naAfloop || 'wacht') === 'wacht'
+    ? (rkMedia(r.wachtId)
+      ? 'Zo loopt het: wachtvideo → [>] video 1 → wachtvideo → [>] video 2 → wachtvideo → … De wachtvideo herhaalt zich tot de volgende klik.'
+      : 'Kies een wachtvideo. Zonder wachtvideo blijft het laatste beeld van een video staan tot de volgende klik.')
+    : '';
+  const voeg = $('#rkVoegToe');
+  voeg.innerHTML = '';
+  voeg.append(el('option', { value: '' }, '+ Video of afbeelding kiezen…'));
+  for (const m of mediaCache.values()) {
+    if (m.kind === 'video' || m.kind === 'image') voeg.append(el('option', { value: m.id }, m.name));
+  }
+  const lijst = $('#rkLijst');
+  lijst.innerHTML = '';
+  r.items.forEach((id, i) => {
+    const m = rkMedia(id);
+    const nr = el('input', { type: 'number', class: 'rk-nr', min: '1', max: String(r.items.length), value: String(i + 1),
+      title: 'Typ een ander nummer om de video te verplaatsen' });
+    nr.addEventListener('change', () => rkVerplaats(i, Number(nr.value) - 1));
+    lijst.append(el('div', { class: 'rk-rij' + (m ? '' : ' mist') },
+      nr,
+      el('span', { class: 'rk-naam', title: m ? m.name : 'ontbreekt' }, m ? m.name : 'ontbreekt op deze computer'),
+      el('button', { class: 'btn small', title: 'Omhoog', onclick: () => rkVerplaats(i, i - 1) }, '↑'),
+      el('button', { class: 'btn small', title: 'Omlaag', onclick: () => rkVerplaats(i, i + 1) }, '↓'),
+      el('button', { class: 'btn small', title: 'Uit de reeks halen', onclick: () => {
+        pushUndo(); r.items.splice(i, 1); save(); Reeks.vergeet(); renderReeks(); } }, '✕')));
+  });
+  if (!r.items.length) lijst.append(el('p', { class: 'note' }, 'Nog geen video\'s in de reeks.'));
+  $('#rkPlayKnop').value = r.playKnop || 'pauze';
+  $('#rkPlayUitleg').innerHTML = (r.playKnop === 'stop' ? 'Reeks stoppen, terug naar de knoppen' : 'Pauze / verder') +
+    ' (stuurt om en om <i>F5</i> en <i>Esc</i>; beide doen hier hetzelfde). Vanuit de knoppen start hij de reeks met de wachtvideo.';
+  $('#rkNaLaatste').value = r.naLaatste || 'menu';
+  $('#rkOvergang').value = r.overgang || 'direct';
+  $('#rkVolume').value = r.volume ?? 80;
+  $('#rkNummerTonen').checked = r.nummerTonen !== false;
+  $('#rkAanraak').checked = r.aanraakStopt !== false;
+  $('#rkTerugNa').value = r.terugNaMin ?? 15;
+  renderReeksStatus();
+}
+
+function rkVerplaats(van, naar) {
+  const it = rkCfg().items;
+  naar = Math.max(0, Math.min(it.length - 1, naar));
+  if (naar === van || isNaN(naar)) return renderReeks();
+  pushUndo();
+  const [x] = it.splice(van, 1);
+  it.splice(naar, 0, x);
+  save(); Reeks.vergeet(); renderReeks();
+}
+
+$('#rkAan').addEventListener('change', (e) => {
+  rkCfg().aan = e.target.checked; save(); renderReeksStatus();
+  if (!e.target.checked && Reeks.actief) Reeks.stop();
+});
+$('#rkStart').addEventListener('click', () => {
+  if (!rkCfg().aan) { rkCfg().aan = true; save(); }
+  Reeks.vanafBegin();
+});
+$('#rkWacht').addEventListener('change', (e) => { rkCfg().wachtId = e.target.value || null; save(); renderReeks(); });
+$('#rkNaAfloop').addEventListener('change', (e) => { rkCfg().naAfloop = e.target.value; save(); renderReeks(); });
+$('#rkVoegToe').addEventListener('change', (e) => {
+  if (!e.target.value) return;
+  pushUndo(); rkCfg().items.push(e.target.value); save(); renderReeks();
+});
+// Op bestandsnaam, met getallen als getallen: "2 intro" komt vóór "10 slot".
+$('#rkAlles').addEventListener('click', () => {
+  const r = rkCfg();
+  const al = new Set(r.items);
+  const nieuw = [...mediaCache.values()]
+    .filter((m) => m.kind === 'video' && !al.has(m.id) && m.id !== r.wachtId)
+    .sort((a, b) => a.name.localeCompare(b.name, 'nl', { numeric: true, sensitivity: 'base' }));
+  if (!nieuw.length) return toast(r.items.length ? 'Alle video\'s staan al in de reeks.' : 'Er staan nog geen video\'s in Media.');
+  pushUndo();
+  r.items.push(...nieuw.map((m) => m.id));
+  save(); Reeks.vergeet(); renderReeks();
+  toast(`${nieuw.length} video${nieuw.length === 1 ? '' : "'s"} toegevoegd, op naam gesorteerd`);
+});
+$('#rkLeeg').addEventListener('click', () => {
+  if (!rkCfg().items.length) return;
+  if (!confirm('Alle video\'s uit de reeks halen? De bestanden zelf blijven in Media staan.')) return;
+  pushUndo(); rkCfg().items = []; save(); Reeks.vergeet(); renderReeks();
+});
+$('#rkPlayKnop').addEventListener('change', (e) => { rkCfg().playKnop = e.target.value; save(); renderReeks(); });
+$('#rkNaLaatste').addEventListener('change', (e) => { rkCfg().naLaatste = e.target.value; save(); });
+$('#rkOvergang').addEventListener('change', (e) => { rkCfg().overgang = e.target.value; save(); });
+$('#rkVolume').addEventListener('input', (e) => { rkCfg().volume = Number(e.target.value); });
+$('#rkVolume').addEventListener('change', () => save());
+$('#rkNummerTonen').addEventListener('change', (e) => { rkCfg().nummerTonen = e.target.checked; save(); });
+$('#rkAanraak').addEventListener('change', (e) => { rkCfg().aanraakStopt = e.target.checked; save(); });
+$('#rkTerugNa').addEventListener('change', (e) => {
+  rkCfg().terugNaMin = Math.max(0, Math.min(240, Number(e.target.value) || 0)); save();
+});
+
 function renderSaver() {
   const sv = config.screensaver, cam = config.camera;
   $('#svEnabled').checked = sv.enabled;
@@ -8771,7 +9072,7 @@ function syncBackgroundRotator() {
 // Bewaker: start de screensaver na de ingestelde tijd zonder aanraking.
 setInterval(() => {
   if (!config.screensaver.enabled || saverActive || editing) return;
-  if (panel.classList.contains('open') || playOverlay.classList.contains('show')) return;
+  if (panel.classList.contains('open') || playOverlay.classList.contains('show') || Reeks.actief) return;
   if ((Date.now() - lastInteraction) / 1000 >= config.screensaver.delaySec) enterSaver();
 }, 1000);
 
@@ -9056,6 +9357,7 @@ const HAND_LABEL = { right: 'rechterhand', left: 'linkerhand', any: 'hand' };
    staat de screensaver aan, dan gaat die uit; anders landen de knoppen opnieuw. */
 function menuByGesture() {
   lastInteraction = Date.now();
+  if (Reeks.actief) return Reeks.stop();
   track('gesture', 'hand-omhoog');
   if (saverActive) return exitSaver();
   if (playOverlay.classList.contains('show')) return stopPlaying();
@@ -9907,6 +10209,380 @@ const Wakker = (() => {
     get klaar() { const c = AudioFX.ctx; return !!c && c.state === 'running'; } };
 })();
 
+/* ================= Reeks met klikker =================
+   Een presentator klikt met een presenter door genummerde video's. Tussen twee
+   video's loopt een wachtvideo tot de volgende klik:
+       wacht → 1 → wacht → [klik] → 2 → wacht → [klik] → 3 …
+
+   Wat de klikker stuurt (Logitech R400, en vrijwel elke andere presenter): hij
+   meldt zich als een gewoon USB-toetsenbord, zonder software.
+       >  = Page Down        <  = Page Up
+       ▶  = om en om F5 en Esc (de klikker houdt zelf bij welke de volgende is)
+       ■  = punt (zwart scherm)
+   Omdat de ▶-knop wisselt tussen F5 en Esc, en die stand kan afwijken van de
+   onze, doen F5 en Esc hier precies hetzelfde. F5 wordt altijd onderschept: in
+   een browser zou hij anders de hele pagina herladen.
+
+   "Direct" betekent hier ook echt direct: de volgende en de vorige video staan
+   al geladen en gepauzeerd op hun eerste beeld, in drie vaste spelers. Een klik
+   wisselt in hetzelfde frame. Een 4K-bestand pas bij de klik openen zou een
+   zwart moment geven van een paar honderd milliseconden. */
+const Reeks = (() => {
+  const laag = document.getElementById('reeksLaag');
+  const wachtEl = document.getElementById('rkWachtVideo');
+  const slots = ['rkV1', 'rkV2', 'rkV3'].map((id) => document.getElementById(id));
+  const img = document.getElementById('rkImg');
+  const zwartEl = document.getElementById('rkZwart');
+  const nummerEl = document.getElementById('rkNummer');
+
+  let actief = false;
+  let pos = 0;           // laatst gestarte genummerde video (1..n); 0 = nog niets gespeeld
+  let fase = 'uit';      // 'wacht' | 'video' | 'af' (afgelopen, staat stil) | 'uit'
+  let zwart = false, nummerTimer = 0, hartslag = 0, laatsteKlik = 0;
+  let cijfers = '', cijferTimer = 0;
+
+  const cfg = () => config.reeks || {};
+  // Het nummer is de plek in de lijst — ook als een bestand intussen ontbreekt,
+  // anders zou de nummering van de presentator ongemerkt verschuiven.
+  const lijst = () => cfg().items || [];
+  const volume = () => Math.max(0, Math.min(1,
+    (cfg().volume ?? 80) / 100 * ((config.masterVolume ?? 100) / 100)));
+
+  function toonNummer(tekst, ms = 1500, altijd = false) {
+    if (!altijd && !cfg().nummerTonen) return;
+    nummerEl.textContent = tekst;
+    nummerEl.classList.add('zicht');
+    clearTimeout(nummerTimer);
+    nummerTimer = setTimeout(() => nummerEl.classList.remove('zicht'), ms);
+  }
+
+  function laad(slot, idx) {
+    const m = mediaCache.get(lijst()[idx - 1]);
+    if (!m || m.kind !== 'video') {
+      slot.dataset.idx = '';
+      return;
+    }
+    if (slot.dataset.idx === String(idx) && slot.src === m.url) return;
+    slot.dataset.idx = String(idx);
+    slot.pause();
+    slot.muted = true;
+    slot.src = m.url;
+    slot.load();
+    const ps = playSettings(m.id);
+    if (ps.trimStart > 0) {
+      slot.addEventListener('loadedmetadata', () => { try { slot.currentTime = ps.trimStart; } catch {} }, { once: true });
+    }
+  }
+
+  // Houdt de huidige, de volgende en de vorige klaar in de drie spelers.
+  function voorbereiden(rond) {
+    const n = lijst().length;
+    const nodig = [rond, rond + 1, rond - 1].filter((i) => i >= 1 && i <= n);
+    const vrij = slots.filter((s) => !nodig.includes(Number(s.dataset.idx)) && !s.classList.contains('voor'));
+    for (const i of nodig) {
+      if (slots.some((s) => s.dataset.idx === String(i))) continue;
+      const s = vrij.shift();
+      if (s) laad(s, i);
+    }
+  }
+
+  function zorgWacht() {
+    const m = mediaCache.get(cfg().wachtId);
+    if (!m || m.kind !== 'video') return null;
+    if (wachtEl.src !== m.url) { wachtEl.src = m.url; wachtEl.load(); }
+    return m;
+  }
+
+  function toon(el) {
+    laag.classList.toggle('fade', cfg().overgang === 'fade');
+    for (const v of [wachtEl, ...slots, img]) {
+      if (v === el) continue;
+      v.classList.remove('voor');
+      if (v.tagName === 'VIDEO' && !v.paused) v.pause();   // oud beeld stil, oud geluid weg
+    }
+    el.classList.add('voor');
+  }
+
+  function geluid(v) {
+    const vol = volume();
+    v.muted = vol <= 0;
+    v.volume = vol;
+  }
+  // Een klik is een gebruikershandeling, dus geluid mag. Weigert de browser
+  // toch, dan liever zonder geluid spelen dan helemaal niet.
+  function start(v) {
+    const p = v.play();
+    if (p && p.catch) p.catch(() => { v.muted = true; v.play().catch(() => {}); });
+  }
+
+  function speel(idx) {
+    const n = lijst().length;
+    if (!n) return;
+    idx = Math.max(1, Math.min(n, idx));
+    pos = idx;
+    zwartZet(false);
+    toonNummer(`${idx} / ${n}`);
+    const m = mediaCache.get(lijst()[idx - 1]);
+    if (!m) { afgelopen(); voorbereiden(idx); return; }    // ontbreekt: meteen naar de wachtvideo
+    if (m.kind === 'image') {
+      img.src = m.url;
+      toon(img);
+      fase = 'video';
+      voorbereiden(idx);
+      return;
+    }
+    let slot = slots.find((s) => s.dataset.idx === String(idx));
+    if (!slot) {
+      slot = slots.find((s) => !s.classList.contains('voor')) || slots[0];
+      laad(slot, idx);
+    }
+    const ps = playSettings(m.id);
+    slot.loop = false;
+    geluid(slot);
+    try {
+      if (Math.abs(slot.currentTime - (ps.trimStart || 0)) > 0.05) slot.currentTime = ps.trimStart || 0;
+    } catch {}
+    toon(slot);
+    fase = 'video';
+    start(slot);
+    voorbereiden(idx);
+  }
+
+  function toonWacht() {
+    const m = zorgWacht();
+    if (!m) return false;
+    wachtEl.loop = true;
+    geluid(wachtEl);
+    try { wachtEl.currentTime = 0; } catch {}
+    toon(wachtEl);
+    fase = 'wacht';
+    start(wachtEl);
+    return true;
+  }
+
+  function afgelopen() {
+    const keuze = cfg().naAfloop || 'wacht';
+    if (keuze === 'door' && pos < lijst().length) return speel(pos + 1);
+    if (keuze !== 'stil' && toonWacht()) return;
+    fase = 'af';                                           // blijft staan op het laatste beeld
+  }
+
+  for (const s of slots) {
+    s.addEventListener('ended', () => { if (s.classList.contains('voor') && fase === 'video') afgelopen(); });
+    // Bijsnijden uit het Media-tabblad geldt ook hier: stop op het ingestelde eindpunt.
+    s.addEventListener('timeupdate', () => {
+      if (!s.classList.contains('voor') || fase !== 'video') return;
+      const ps = playSettings(lijst()[pos - 1]);
+      if (ps.trimEnd > 0 && s.currentTime >= ps.trimEnd - 0.05) { s.pause(); afgelopen(); }
+    });
+  }
+
+  function zwartZet(aan) { zwart = !!aan; zwartEl.classList.toggle('aan', zwart); }
+
+  function aanzetten(vanaf) {
+    if (!lijst().length) {
+      toast('De reeks is nog leeg — zet eerst video\'s klaar in Reeks & klikker.');
+      return false;
+    }
+    if (vanaf === 'begin') pos = 0;
+    if (actief) return true;
+    actief = true;
+    if (panel.classList.contains('open')) closeEditor();
+    if (saverActive) exitSaver();
+    if (playOverlay.classList.contains('show')) stopPlaying();
+    if (!document.getElementById('avatarOverlay').classList.contains('hidden')) closeAvatar();
+    closeWebContent();
+    document.getElementById('idleVideo').pause();
+    document.getElementById('overlayVideo').pause();
+    bgRotator.setPaused(true);
+    setPreviewsPaused(true);
+    AppState.set('CONTENT_PLAYBACK');
+    laag.classList.add('aan');
+    laag.setAttribute('aria-hidden', 'false');
+    laatsteKlik = Date.now();
+    clearInterval(hartslag);
+    hartslag = setInterval(() => {
+      lastInteraction = Date.now();                        // geen screensaver zolang de reeks loopt
+      const min = Number(cfg().terugNaMin) || 0;
+      if (min > 0 && Date.now() - laatsteKlik > min * 60000) stop();
+    }, 5000);
+    /* In een gewone browser met volledig scherm zou de Esc van de ▶-knop het
+       volledige scherm verlaten. Keyboard Lock houdt Esc dan bij de pagina. */
+    try { if (document.fullscreenElement) navigator.keyboard?.lock?.(['Escape', 'F5']); } catch {}
+    zorgWacht();
+    voorbereiden(Math.max(pos, 0));
+    return true;
+  }
+
+  function stop() {
+    if (!actief) return;
+    actief = false;
+    fase = 'uit';
+    clearInterval(hartslag); hartslag = 0;
+    for (const v of [wachtEl, ...slots]) v.pause();
+    for (const v of [wachtEl, ...slots, img]) v.classList.remove('voor');
+    zwartZet(false);
+    nummerEl.classList.remove('zicht');
+    laag.classList.remove('aan');
+    laag.setAttribute('aria-hidden', 'true');
+    try { navigator.keyboard?.unlock?.(); } catch {}
+    const idle = document.getElementById('idleVideo');
+    if (!idle.classList.contains('hidden')) idle.play().catch(() => {});
+    const ov = document.getElementById('overlayVideo');
+    if (!ov.classList.contains('hidden')) ov.play().catch(() => {});
+    bgRotator.setPaused(false);
+    setPreviewsPaused(false);
+    lastInteraction = Date.now();
+    AppState.set('RETURN_TRANSITION');
+    runEntrance().then(() => AppState.set('IDLE'));
+    renderReeksStatus();
+  }
+
+  function einde() {
+    if ((cfg().naLaatste || 'menu') === 'opnieuw') return speel(1);
+    pos = 0;                                               // volgende keer weer vanaf het begin
+    stop();
+  }
+
+  /* ---- De vier knoppen van de klikker ---- */
+  function volgende() {
+    laatsteKlik = Date.now();
+    if (!aanzetten('hervat')) return;
+    if (pos >= lijst().length) return einde();
+    speel(pos + 1);
+  }
+
+  function vorige() {
+    laatsteKlik = Date.now();
+    const was = actief;
+    if (!aanzetten('hervat')) return;
+    if (!was) { if (pos) speel(pos); else if (!toonWacht()) toonNummer(`0 / ${lijst().length}`); return; }
+    if (pos === 0) return;                                 // vóór video 1: niets om naar terug te gaan
+    // Is de video al afgelopen, dan is "terug" de video die net speelde.
+    if (fase === 'wacht' || fase === 'af') return speel(pos);
+    speel(Math.max(1, pos - 1));
+  }
+
+  function playKnop() {
+    laatsteKlik = Date.now();
+    if (!actief) {
+      // Vanuit het menu start ▶ de reeks, net als F5 in PowerPoint.
+      if (!aanzetten('hervat')) return;
+      if (!toonWacht()) { if (pos) speel(pos); else toonNummer(`Klaar · > start video 1`, 2500); }
+      return;
+    }
+    if ((cfg().playKnop || 'pauze') === 'stop') return stop();
+    const v = [wachtEl, ...slots].find((x) => x.classList.contains('voor'));
+    if (!v) return;
+    if (v.paused) { start(v); toonNummer('▶ verder'); } else { v.pause(); toonNummer('❚❚ pauze', 1500); }
+  }
+
+  function zwartWissel() {
+    laatsteKlik = Date.now();
+    if (actief) zwartZet(!zwart);
+  }
+
+  function cijfer(c) {
+    cijfers = (cijfers + c).slice(-3);
+    clearTimeout(cijferTimer);
+    cijferTimer = setTimeout(() => { cijfers = ''; }, 4000);
+    toonNummer('→ ' + cijfers, 4000, true);
+  }
+  function enter() {
+    if (!cijfers) return;
+    const n = parseInt(cijfers, 10);
+    cijfers = '';
+    laatsteKlik = Date.now();
+    if (!n || !aanzetten('hervat')) return;
+    speel(n);
+  }
+
+  // Aanraken: terug naar de knoppen, de plek blijft onthouden.
+  laag.addEventListener('pointerdown', () => { if (cfg().aanraakStopt !== false) stop(); });
+
+  /* ---- Toetsen ---- */
+  const ACTIE = {
+    PageDown: 'volgende', PageUp: 'vorige',                // de pijltjes > en < van de klikker
+    ArrowRight: 'volgende', ArrowDown: 'volgende', ' ': 'volgende',
+    ArrowLeft: 'vorige', ArrowUp: 'vorige', Backspace: 'vorige',
+    F5: 'play', Escape: 'play',
+    '.': 'zwart', b: 'zwart', B: 'zwart',
+    Home: 'stop', Enter: 'enter',
+  };
+  // Vanuit het menu starten alleen de echte klikkertoetsen de reeks: pijltjes
+  // en spatie zijn daar voor gewone toetsenbordbediening.
+  const VANUIT_MENU = new Set(['PageDown', 'PageUp', 'F5', 'Escape']);
+  const UITLEG = {
+    volgende: 'Volgende video', vorige: 'Terug', play: '▶-knop',
+    zwart: 'Zwart scherm aan/uit', stop: 'Reeks stoppen', enter: 'Naar het ingetypte nummer',
+    cijfer: 'Nummer intypen',
+  };
+
+  function toonTest(e, actie) {
+    const box = document.getElementById('rkTest');
+    if (!box) return;
+    const naam = e.key === ' ' ? 'Spatie' : e.key;
+    let wat = actie ? UITLEG[actie] : 'doet niets in de reeks';
+    if (actie === 'play') {
+      wat = (cfg().playKnop === 'stop' ? 'Reeks stoppen' : 'Pauze / verder') +
+        ' — de klikker wisselt zelf tussen F5 en Esc, beide doen hier hetzelfde';
+    }
+    if (e.key === 'PageDown') wat += ' — dit is de > van de klikker';
+    if (e.key === 'PageUp') wat += ' — dit is de < van de klikker';
+    box.innerHTML = '';
+    box.append(el('kbd', {}, naam), el('span', { class: actie ? 'wat' : '' }, wat));
+    if (e.repeat) box.append(el('span', { class: 'bij' }, 'Ingedrukt gehouden — telt als één klik.'));
+    if (actie && !cfg().aan) box.append(el('span', { class: 'bij' }, 'Herkend. Zet de schakelaar bovenaan aan om ermee te spelen.'));
+    box.classList.toggle('raak', !!actie);
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const t = e.target;
+    const typen = !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || ''));
+    const actie = ACTIE[e.key] || (/^[0-9]$/.test(e.key) ? 'cijfer' : null);
+    const paneelOpen = panel.classList.contains('open');
+    // Klikkertest: in het menu laten zien wat er binnenkomt, ook met de reeks uit.
+    if (paneelOpen && !typen && !document.getElementById('page-reeks').classList.contains('hidden')) {
+      toonTest(e, actie);
+      if (actie) e.preventDefault();
+      return;
+    }
+    if (!cfg().aan) return;
+    if (e.key === 'F5' && !typen) e.preventDefault();      // de klikker mag nooit de pagina herladen
+    if (paneelOpen || typen || !actie) return;
+    if (!actief && !VANUIT_MENU.has(e.key) && actie !== 'cijfer' && !(actie === 'enter' && cijfers)) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (e.repeat) return;                                  // ingedrukt houden ≠ tien keer klikken
+    switch (actie) {
+      case 'volgende': volgende(); break;
+      case 'vorige': vorige(); break;
+      case 'play': playKnop(); break;
+      case 'zwart': zwartWissel(); break;
+      case 'stop': stop(); break;
+      case 'cijfer': cijfer(e.key); break;
+      case 'enter': enter(); break;
+    }
+  }, { capture: true });
+
+  return {
+    volgende, vorige, playKnop, zwartWissel, stop,
+    // "Reeks starten" in het menu: vanaf het begin, met de wachtvideo.
+    vanafBegin() {
+      if (!aanzetten('begin')) return false;
+      if (!toonWacht()) toonNummer(`Klaar · > start video 1`, 2500, true);
+      return true;
+    },
+    // Na het herschikken van de lijst kloppen de voorgeladen spelers niet meer.
+    vergeet() { for (const s of slots) if (!s.classList.contains('voor')) s.dataset.idx = ''; },
+    get actief() { return actief; },
+    get pos() { return pos; },
+    get fase() { return fase; },
+    get zwart() { return zwart; }
+  };
+})();
+
 /* ================= Oriëntatie (portrait/landscape) ================= */
 
 const orFab = $('#orFab');
@@ -9933,7 +10609,7 @@ function applyOrientationMode() {
   const landscapeScreen = window.innerWidth >= window.innerHeight;
   const rotate = !editing && !panel.classList.contains('open') &&
     ((mode === 'portrait' && landscapeScreen) || (mode === 'landscape' && !landscapeScreen));
-  for (const target of [document.getElementById('stage'), playOverlay, saverEl]) {
+  for (const target of [document.getElementById('stage'), playOverlay, saverEl, document.getElementById('reeksLaag')]) {
     if (rotate) {
       target.style.width = window.innerHeight + 'px';
       target.style.height = window.innerWidth + 'px';
