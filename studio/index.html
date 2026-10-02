@@ -478,6 +478,9 @@
   .rk-rij .rk-naam { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     color: var(--color-text-primary); }
   .rk-rij.mist .rk-naam { color: #ef5da8; }
+  .rk-rij .rk-vast { width: 54px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .rk-rij .rk-vast.geen { font-weight: 400; opacity: .55; font-size: .8em; }
+  .rk-waarschuw { color: #f0b429; }
   .rk-rij button { padding: 4px 9px; }
 
   /* ============ ZWEVENDE BEDIENING ============ */
@@ -1749,14 +1752,23 @@
 
     <h2>De video's op volgorde</h2>
     <div class="card">
-      <button id="rkAlles" class="btn block">Alle video's toevoegen, op bestandsnaam gesorteerd</button>
+      <div class="toggle-row">
+        <div><div class="t-label">Volgorde volgens het nummer in de bestandsnaam</div>
+          <div class="t-sub">Aanbevolen. <code>1 welkom.mp4</code> speelt v&oacute;&oacute;r
+          <code>2 product.mp4</code>, ook als je hem later toevoegt. Uit: je zet de volgorde zelf
+          met de pijltjes.</div></div>
+        <label class="switch"><input type="checkbox" id="rkOpNummer"><i></i></label>
+      </div>
+      <p class="note rk-waarschuw" id="rkNummerNote" hidden></p>
+      <button id="rkAlles" class="btn block">Alle video's toevoegen</button>
       <label class="field">Of voeg er &eacute;&eacute;n toe
         <select id="rkVoegToe"></select>
       </label>
       <div id="rkLijst"></div>
-      <p class="note">Een ander nummer intypen verplaatst de video naar die plek. Tip: zet een
-      nummer voor de bestandsnaam (<code>01 intro.mp4</code>, <code>02 product.mp4</code>&hellip;),
-      dan staan ze met &eacute;&eacute;n klik goed.</p>
+      <p class="note">Zet een nummer in elke bestandsnaam (<code>01 intro.mp4</code>,
+      <code>02 product.mp4</code>&hellip;): de reeks speelt ze op dat nummer af, 1, 2, 3 &hellip;
+      Getallen als 4K, 2160p of een jaartal tellen niet als nummer. Staat de volgorde op nummer
+      uit, dan verplaats je een video door een ander nummer in te typen.</p>
       <button id="rkLeeg" class="btn small danger">Lijst leegmaken</button>
     </div>
 
@@ -2202,7 +2214,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.25.0';
+const APP_VERSION = '2.26.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -2288,7 +2300,10 @@ const defaultConfig = () => ({
   reeks: { aan: false, items: [], wachtId: null, playKnop: 'pauze', overgang: 'direct',
     volume: 80, aanraakMenu: false, terugNaMin: 15, nummerTonen: true,
     // Binnen hoeveel ms de tweede klik moet komen om als "2× snel" te tellen.
-    dubbelMs: 600 },
+    dubbelMs: 600,
+    // Het nummer in de bestandsnaam bepaalt de volgorde (1, 2, 3 …), niet de
+    // plek waar iemand de video in de lijst heeft gezet.
+    opNummer: true },
   // stuckSec: na zoveel seconden bewegingloze 'aanwezigheid' ijkt de achtergrond
   // opnieuw — anders houdt een lichtsprong of verschoven meubel de box voor
   // altijd 'bezet'. 0 = nooit opnieuw ijken.
@@ -7871,6 +7886,43 @@ $('#statsReset').addEventListener('click', () => {
 const rkCfg = () => config.reeks;
 const rkMedia = (id) => mediaCache.get(id);
 
+/* Het nummer van een video, uit zijn bestandsnaam: "01 welkom.mp4" → 1,
+   "Welkom 3.mp4" → 3, "clip_12 (4K).mp4" → 12. Getallen die een eenheid zijn
+   (4K, 2160p, 60fps, 1920x1080), een versie (v2) of een jaartal tellen niet mee,
+   zolang er een ander getal is. Geen nummer → null. */
+function videoNummer(naam) {
+  const basis = String(naam || '').replace(/\.[a-z0-9]{2,5}$/i, '');
+  const kand = [];
+  for (const m of basis.matchAll(/\d+/g)) {
+    const voor = basis.slice(0, m.index);
+    const na = basis.slice(m.index + m[0].length);
+    if (/^(k|p|i|fps|hz|x|bit|kbps|mbps|mb|gb)(?![a-z])/i.test(na)) continue;   // 4K, 1080p, 60fps, 1920x…
+    if (/x$/i.test(voor) && /\d$/.test(voor.slice(0, -1))) continue;            // …x1080
+    if (/(^|[^a-z])v$/i.test(voor)) continue;                                   // v2
+    if (/[.,]$/.test(voor) && /\d$/.test(voor.slice(0, -1))) continue;          // 1.5 → alleen de 1
+    const n = parseInt(m[0], 10);
+    kand.push({ n, jaar: m[0].length === 4 && n >= 1900 && n <= 2099 });
+  }
+  const k = kand.find((x) => !x.jaar) || kand[0];
+  return k ? k.n : null;
+}
+const rkNummer = (id) => { const m = rkMedia(id); return m ? videoNummer(m.name) : null; };
+
+/* Zet de reeks op nummer, als dat aanstaat. Video's zonder nummer komen
+   achteraan, in hun eigen volgorde; bij een gelijk nummer beslist de naam.
+   Geeft true als de volgorde veranderde. */
+function rkOrden() {
+  const r = config.reeks;
+  if (!r || r.opNummer === false || !Array.isArray(r.items) || r.items.length < 2) return false;
+  const voor = r.items.join('|');
+  const naam = (id) => rkMedia(id)?.name || '';
+  r.items = r.items.map((id, i) => ({ id, i, n: rkNummer(id) })).sort((a, b) => {
+    if (a.n == null || b.n == null) return a.n == null && b.n == null ? a.i - b.i : (a.n == null ? 1 : -1);
+    return a.n - b.n || naam(a.id).localeCompare(naam(b.id), 'nl', { numeric: true, sensitivity: 'base' }) || a.i - b.i;
+  }).map((x) => x.id);
+  return r.items.join('|') !== voor;
+}
+
 function renderReeksStatus() {
   const n = document.getElementById('rkStatus');
   if (!n) return;
@@ -7924,21 +7976,48 @@ function renderReeks() {
   for (const m of mediaCache.values()) {
     if (m.kind === 'video' || m.kind === 'image') voeg.append(el('option', { value: m.id }, m.name));
   }
+  const opNummer = r.opNummer !== false;
+  $('#rkOpNummer').checked = opNummer;
+  if (!Reeks.actief && rkOrden()) { save(); Reeks.vergeet(); }
   const lijst = $('#rkLijst');
   lijst.innerHTML = '';
   r.items.forEach((id, i) => {
     const m = rkMedia(id);
+    const weg = el('button', { class: 'btn small', title: 'Uit de reeks halen', onclick: () => {
+      pushUndo(); r.items.splice(i, 1); save(); Reeks.vergeet(); renderReeks(); } }, '✕');
+    const naam = el('span', { class: 'rk-naam', title: m ? m.name : 'ontbreekt' }, m ? m.name : 'ontbreekt op deze computer');
+    if (opNummer) {
+      // Het nummer komt uit de bestandsnaam; verplaatsen = de naam aanpassen.
+      const n = rkNummer(id);
+      lijst.append(el('div', { class: 'rk-rij' + (m ? '' : ' mist') },
+        el('span', { class: 'rk-vast' + (n == null ? ' geen' : ''),
+          title: n == null ? 'Geen nummer in de bestandsnaam — staat achteraan' : 'Nummer uit de bestandsnaam' },
+          n == null ? 'geen nr' : String(n)),
+        naam, weg));
+      return;
+    }
     const nr = el('input', { type: 'number', class: 'rk-nr', min: '1', max: String(r.items.length), value: String(i + 1),
       title: 'Typ een ander nummer om de video te verplaatsen' });
     nr.addEventListener('change', () => rkVerplaats(i, Number(nr.value) - 1));
     lijst.append(el('div', { class: 'rk-rij' + (m ? '' : ' mist') },
-      nr,
-      el('span', { class: 'rk-naam', title: m ? m.name : 'ontbreekt' }, m ? m.name : 'ontbreekt op deze computer'),
+      nr, naam,
       el('button', { class: 'btn small', title: 'Omhoog', onclick: () => rkVerplaats(i, i - 1) }, '↑'),
       el('button', { class: 'btn small', title: 'Omlaag', onclick: () => rkVerplaats(i, i + 1) }, '↓'),
-      el('button', { class: 'btn small', title: 'Uit de reeks halen', onclick: () => {
-        pushUndo(); r.items.splice(i, 1); save(); Reeks.vergeet(); renderReeks(); } }, '✕')));
+      weg));
   });
+  // Controle op de nummering: ontbrekend, dubbel, of geen nummer.
+  const note = $('#rkNummerNote');
+  const nrs = r.items.map(rkNummer).filter((n) => n != null);
+  const zonder = r.items.filter((id) => rkMedia(id) && rkNummer(id) == null).length;
+  const dubbel = [...new Set(nrs.filter((n, i) => nrs.indexOf(n) !== i))];
+  const gat = [];
+  if (nrs.length) for (let n = Math.min(...nrs); n <= Math.max(...nrs) && gat.length < 6; n++) if (!nrs.includes(n)) gat.push(n);
+  const zinnen = [];
+  if (opNummer && gat.length) zinnen.push(`Nummer ${gat.join(', ')} ontbreekt — de reeks slaat het over.`);
+  if (opNummer && dubbel.length) zinnen.push(`Nummer ${dubbel.join(', ')} komt meer dan één keer voor — op naam gesorteerd.`);
+  if (opNummer && zonder) zinnen.push(`${zonder} video${zonder === 1 ? ' heeft' : "'s hebben"} geen nummer in de naam en ${zonder === 1 ? 'staat' : 'staan'} achteraan.`);
+  note.hidden = !zinnen.length;
+  note.textContent = zinnen.join(' ');
   if (!r.items.length) lijst.append(el('p', { class: 'note' }, 'Nog geen video\'s in de reeks.'));
   $('#rkPlayKnop').value = r.playKnop || 'pauze';
   $('#rkPlayUitleg').innerHTML = (r.playKnop === 'stop' ? 'Reeks stoppen, terug naar de knoppen' : 'Pauze / verder') +
@@ -7974,9 +8053,13 @@ $('#rkStart').addEventListener('click', () => {
 $('#rkWacht').addEventListener('change', (e) => { rkCfg().wachtId = e.target.value || null; save(); renderReeks(); });
 $('#rkVoegToe').addEventListener('change', (e) => {
   if (!e.target.value) return;
-  pushUndo(); rkCfg().items.push(e.target.value); save(); renderReeks();
+  pushUndo(); rkCfg().items.push(e.target.value); rkOrden(); save(); Reeks.vergeet(); renderReeks();
+});
+$('#rkOpNummer').addEventListener('change', (e) => {
+  pushUndo(); rkCfg().opNummer = e.target.checked; rkOrden(); save(); Reeks.vergeet(); renderReeks();
 });
 // Op bestandsnaam, met getallen als getallen: "2 intro" komt vóór "10 slot".
+// Met de volgorde op nummer wordt daarna de hele lijst op nummer gezet.
 $('#rkAlles').addEventListener('click', () => {
   const r = rkCfg();
   const al = new Set(r.items);
@@ -7986,8 +8069,9 @@ $('#rkAlles').addEventListener('click', () => {
   if (!nieuw.length) return toast(r.items.length ? 'Alle video\'s staan al in de reeks.' : 'Er staan nog geen video\'s in Media.');
   pushUndo();
   r.items.push(...nieuw.map((m) => m.id));
+  rkOrden();
   save(); Reeks.vergeet(); renderReeks();
-  toast(`${nieuw.length} video${nieuw.length === 1 ? '' : "'s"} toegevoegd, op naam gesorteerd`);
+  toast(`${nieuw.length} video${nieuw.length === 1 ? '' : "'s"} toegevoegd` + (r.opNummer !== false ? ', op nummer gezet' : ', op naam gesorteerd'));
 });
 $('#rkLeeg').addEventListener('click', () => {
   if (!rkCfg().items.length) return;
@@ -10386,7 +10470,9 @@ const Reeks = (() => {
     idx = Math.max(1, Math.min(n, idx));
     pos = idx;
     zwartZet(false);
-    toonNummer(`${idx} / ${n}`);
+    // Op nummer: het nummer uit de bestandsnaam tonen, zoals de presentator het kent.
+    const label = cfg().opNummer !== false ? (rkNummer(lijst()[idx - 1]) ?? idx) : idx;
+    toonNummer(`${label} / ${n}`);
     const m = mediaCache.get(lijst()[idx - 1]);
     if (!m) { afgelopen(); voorbereiden(idx); return; }    // ontbreekt: meteen naar de wachtvideo
     if (m.kind === 'image') {
@@ -10535,6 +10621,13 @@ const Reeks = (() => {
     }
     if (vanaf === 'begin') pos = 0;
     if (actief) return true;
+    // Nummers zijn leidend: vóór elke start de lijst op nummer zetten, ook als
+    // er intussen video's zijn bijgekomen of hernoemd.
+    if (rkOrden()) {
+      save();
+      for (const s of slots) s.dataset.idx = '';
+      pos = 0;
+    }
     actief = true;
     if (panel.classList.contains('open')) closeEditor();
     if (saverActive) exitSaver();
@@ -10737,6 +10830,11 @@ const Reeks = (() => {
     cijfers = '';
     laatsteKlik = Date.now();
     if (!n || !aanzetten('hervat')) return;
+    // Op nummer: naar de video met dát nummer in de naam, niet naar de n-de plek.
+    if (cfg().opNummer !== false) {
+      const plek = lijst().findIndex((id) => rkNummer(id) === n);
+      if (plek >= 0) return speel(plek + 1);
+    }
     speel(n);
   }
 

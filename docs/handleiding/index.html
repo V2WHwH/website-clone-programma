@@ -289,7 +289,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.25.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
+    <span>Versie 2.26.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -1449,6 +1449,29 @@ header.cover{padding-block:88px 8px}
     </svg>
   </div>
 
+  <h3>Nummers zijn leidend</h3>
+  <p class="measure">De volgorde komt uit het nummer in de bestandsnaam, niet uit de plek
+  waar een video in de lijst staat. <code>1 welkom.mp4</code>, <code>2 product.mp4</code>,
+  <code>10 afsluiting.mp4</code> spelen dus als 1, 2, 10 &mdash; ook als je video 2 pas later
+  toevoegt, en ook als de namen alfabetisch anders zouden uitkomen (<code>Welkom 1</code>,
+  <code>Uitleg 2</code>, <code>Afsluiting 3</code> blijft 1-2-3). Vóór elke start zet de box
+  de lijst opnieuw op nummer.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Bestandsnaam</th><th>Nummer</th></tr></thead>
+    <tbody>
+      <tr><td><code>01 welkom.mp4</code></td><td>1</td></tr>
+      <tr><td><code>Welkom 3.mp4</code>, <code>intro_3.mov</code>, <code>video3.mp4</code></td><td>3</td></tr>
+      <tr><td><code>Uitleg 2 (4K).mp4</code>, <code>Uitleg 2 2160p.mp4</code></td><td>2 &mdash; 4K en 2160p tellen niet</td></tr>
+      <tr><td><code>HWH 2024 video 7.mp4</code></td><td>7 &mdash; een jaartal telt niet als er een ander getal is</td></tr>
+      <tr><td><code>Praat 6 v2.mp4</code></td><td>6 &mdash; een versie (v2) telt niet</td></tr>
+      <tr><td><code>wachtlus.mp4</code></td><td>geen &mdash; staat achteraan</td></tr>
+    </tbody>
+  </table></div>
+  <p class="measure">Het menu waarschuwt als er iets niet klopt: een nummer dat ontbreekt
+  (de reeks slaat het over), een nummer dat twee keer voorkomt (dan beslist de naam), of
+  video's zonder nummer. Typ je op een toetsenbord een nummer en Enter, dan springt de box naar
+  de video met <b>dat nummer in de naam</b>; het nummer in beeld is ook dat nummer.</p>
+
   <h3>Hoe de Logitech R400 werkt</h3>
   <p class="measure">De R400 heeft geen software nodig. Het ontvangertje in de USB-poort meldt
   zich bij Windows als een gewoon toetsenbord, en elke knop stuurt een toets. Bereik tot
@@ -1489,7 +1512,7 @@ header.cover{padding-block:88px 8px}
 
   <div class="split">
     <figure><div class="panelshot tall">
-      <img src="img/paneel-reeks.webp" alt="Het paneel Reeks en klikker" width="371" height="2941" loading="lazy">
+      <img src="img/paneel-reeks.webp" alt="Het paneel Reeks en klikker" width="371" height="3076" loading="lazy">
     </div></figure>
     <div class="tw"><table>
       <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
@@ -1504,13 +1527,14 @@ header.cover{padding-block:88px 8px}
           elke video, na de laatste en na een tijd zonder klik.</td>
           <td>Een logo-animatie of sfeerlus vult de tijd terwijl jij praat. Zonder wachtvideo
           blijft het laatste beeld staan tot de volgende klik.</td></tr>
-        <tr><td>De video's op volgorde</td><td>De nummers zijn de plek in de lijst. Typ een
-          ander nummer om een video te verplaatsen, of gebruik de pijltjes.</td>
-          <td>Bij honderd video's is slepen onbegonnen werk; een nummer intypen niet.</td></tr>
-        <tr><td>Alle video's toevoegen</td><td>Zet alle video's uit Media in de reeks, op
-          bestandsnaam gesorteerd — <code>2 intro</code> vóór <code>10 slot</code>. De
-          wachtvideo slaat hij over.</td><td>Geef je bestanden een nummer voorin, dan staat
-          de hele reeks met één klik goed.</td></tr>
+        <tr><td>Volgorde volgens het nummer in de bestandsnaam</td><td>Standaard aan. Het
+          nummer in de naam is leidend: de reeks speelt 1, 2, 3 &hellip; af, hoe en wanneer je de
+          video's ook hebt toegevoegd. De lijst toont per video het gevonden nummer.</td>
+          <td>Zo kan de volgorde nooit ongemerkt verschuiven. Uit: je bepaalt de volgorde zelf
+          met de pijltjes of door een ander nummer in te typen.</td></tr>
+        <tr><td>Alle video's toevoegen</td><td>Zet alle video's uit Media in de reeks, meteen op
+          nummer. De wachtvideo slaat hij over.</td><td>Met een nummer in elke bestandsnaam
+          staat de hele reeks met één klik goed.</td></tr>
         <tr><td>Klikker testen</td><td>Laat zien welke toets er binnenkomt, of het een enkele
           of een dubbele klik was, na hoeveel milliseconden de tweede druk kwam, en wat de
           reeks ermee doet.</td><td>Zo weet je vóór het publiek binnenkomt dat de ontvanger erin
@@ -2535,6 +2559,10 @@ header.cover{padding-block:88px 8px}
       <tr><td>&gt; tijdens een video doet niets</td><td>Zo hoort het: de wachtvideo zit altijd
         tussen twee video's, en een video wordt nooit onderbroken.</td><td>Laat de video
         uitspelen; in de wachtlus start &gt; de volgende.</td></tr>
+      <tr><td>De video's spelen in de verkeerde volgorde</td><td>Een bestandsnaam heeft geen
+        of een ander nummer dan je denkt, of de volgorde op nummer staat uit.</td><td>Kijk bij
+        Reeks &amp; klikker in de lijst: links staat per video het gevonden nummer. Pas zo nodig
+        de bestandsnaam aan en zet <b>Volgorde volgens het nummer</b> aan.</td></tr>
       <tr><td>2&times; &lt; herhaalt de video in plaats van de vorige te kiezen</td><td>De tweede
         klik kwam te laat; de box zag twee losse klikken.</td><td>Druk onder Reeks &amp; klikker
         &rarr; <b>Klikker testen</b> twee keer op &lt;: je ziet na hoeveel milliseconden de
@@ -2653,7 +2681,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.25.0 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.26.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>
