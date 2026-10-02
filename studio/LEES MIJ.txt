@@ -29,8 +29,8 @@ EERSTE KEER: PRESENTATIE INRICHTEN
 - Tabblad Effecten    : Galaxy Tiles, Extreme Galaxy, motionpresets.
 - Tabblad Presentatie : Video Frame Style (kleur, gradient, diepte, gloss).
 - Reeks & klikker    : genummerde video's doorklikken met een presenter,
-                       met een wachtvideo ertussen. > 1x: wachtvideo na
-                       afloop, 2x snel: volgende. < 1x: opnieuw, 2x snel: vorige.
+                       altijd met de wachtvideo ertussen. >: volgende
+                       video. < 1x: opnieuw, 2x snel: vorige.
 - Tabblad Camera      : aanwezigheidsdetectie via webcam.
 - Beheer & device    : alles exporteren/terugzetten, PIN, statistieken.
 

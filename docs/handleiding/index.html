@@ -289,7 +289,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.24.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
+    <span>Versie 2.25.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -1436,15 +1436,15 @@ header.cover{padding-block:88px 8px}
         <path d="M442 71 H474"/><path d="M558 71 H590"/>
       </g>
       <g font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" text-anchor="middle">
-        <text x="110" y="40" fill="#0B9E92">2× &gt;</text>
-        <text x="342" y="40" fill="#0B9E92">2× &gt;</text>
-        <text x="574" y="40" fill="#0B9E92">2× &gt;</text>
+        <text x="110" y="40" fill="#0B9E92">&gt;</text>
+        <text x="342" y="40" fill="#0B9E92">&gt;</text>
+        <text x="574" y="40" fill="#0B9E92">&gt;</text>
       </g>
       <g font-family="IBM Plex Sans, sans-serif" font-size="10.5" fill="currentColor" opacity=".55" text-anchor="middle">
         <text x="226" y="112">vanzelf</text><text x="458" y="112">vanzelf</text>
       </g>
       <text x="14" y="150" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="currentColor" opacity=".7">
-        1× &gt; = wachtvideo na afloop · 1× &lt; = video opnieuw · 2× &lt; = vorige video.
+        &gt; = volgende video, altijd via de wachtlus · 1× &lt; = video opnieuw · 2× &lt; = vorige video.
       </text>
     </svg>
   </div>
@@ -1459,9 +1459,10 @@ header.cover{padding-block:88px 8px}
     <thead><tr><th>Knop</th><th>Stuurt</th><th>Wat de reeks ermee doet</th></tr></thead>
     <tbody>
       <tr><td><b>&gt;</b> (rechts)</td><td><code>Page Down</code></td>
-        <td><b>1&times;: wachtvideo.</b> Een lopende video wordt nooit onderbroken: hij speelt
-        uit en loopt dan naadloos over in de wachtlus. Staat hij op pauze, dan speelt hij verder.
-        <b>2&times; snel: volgende video.</b></td></tr>
+        <td><b>Volgende video</b>, direct &mdash; met altijd de wachtvideo ertussen. In de
+        wachtlus start &gt; meteen de volgende video. Tijdens een video doet &gt; niets: die
+        speelt uit en loopt naadloos over in de wachtlus; de volgende &gt; start dan de volgende
+        video. Staat de video op pauze, dan speelt hij verder.</td></tr>
       <tr><td><b>&lt;</b> (links)</td><td><code>Page Up</code></td>
         <td><b>1&times;: de huidige video opnieuw</b> — of, op de wachtvideo, de video die net
         speelde. <b>2&times; snel: vorige video.</b></td></tr>
@@ -1488,7 +1489,7 @@ header.cover{padding-block:88px 8px}
 
   <div class="split">
     <figure><div class="panelshot tall">
-      <img src="img/paneel-reeks.webp" alt="Het paneel Reeks en klikker" width="371" height="2846" loading="lazy">
+      <img src="img/paneel-reeks.webp" alt="Het paneel Reeks en klikker" width="371" height="2941" loading="lazy">
     </div></figure>
     <div class="tw"><table>
       <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
@@ -1497,7 +1498,7 @@ header.cover{padding-block:88px 8px}
           klikker doet niets.</td><td>Zodat een toevallige Page Down op een gewoon toetsenbord
           niet ineens een presentatie start.</td></tr>
         <tr><td>Reeks starten vanaf het begin</td><td>Sluit het menu, zet de wachtlus aan en
-          begint opnieuw bij 1: 2&times; &gt; start video 1.</td><td>Voor de generale
+          begint opnieuw bij 1: &gt; start video 1.</td><td>Voor de generale
           repetitie en voor de echte start.</td></tr>
         <tr><td>Wachtvideo</td><td>Loopt <b>altijd</b>, in een lus: bij het opstarten, na
           elke video, na de laatste en na een tijd zonder klik.</td>
@@ -1514,9 +1515,10 @@ header.cover{padding-block:88px 8px}
           of een dubbele klik was, na hoeveel milliseconden de tweede druk kwam, en wat de
           reeks ermee doet.</td><td>Zo weet je vóór het publiek binnenkomt dat de ontvanger erin
           zit en de batterijen goed zijn.</td></tr>
-        <tr><td>Tijd voor 2&times; snel</td><td>Binnen hoeveel tijd de tweede klik moet komen.
-          Standaard 600 ms, van 250 tot 1500.</td><td>Elke presenter en elke hand is anders.
-          Een enkele klik wordt zo lang uitgesteld.</td></tr>
+        <tr><td>Tijd voor 2&times; snel op &lt;</td><td>Binnen hoeveel tijd de tweede klik op
+          &lt; moet komen. Standaard 600 ms, van 250 tot 1500.</td><td>Elke presenter en elke
+          hand is anders. Een enkele &lt; wordt zo lang uitgesteld; &gt; gaat altijd
+          direct.</td></tr>
         <tr><td>De &#9654;-knop</td><td>Pauze / verder, of reeks stoppen.</td>
           <td>Smaak: wie lange video's heeft, wil kunnen pauzeren.</td></tr>
         <tr><td>Wisselen</td><td>Direct, of met een zachte overgang van 0,3 s. Geldt voor wat
@@ -1534,7 +1536,7 @@ header.cover{padding-block:88px 8px}
           de wachtlus vanzelf terug.</td><td>Aan als de box naast je presentatie ook door
           bezoekers bediend mag worden.</td></tr>
         <tr><td>Terug naar het begin na … minuten</td><td>Zonder klik staat de box na deze tijd
-          weer op de wachtlus, en de volgende 2&times; &gt; start video 1 — maar nooit midden in
+          weer op de wachtlus, en de volgende &gt; start video 1 — maar nooit midden in
           een video: een lopende video speelt eerst uit. Standaard 15; 0 = nooit.</td>
           <td>Vergeet iemand de reeks af te maken, dan begint de volgende presentator gewoon
           bij het begin.</td></tr>
@@ -1542,35 +1544,39 @@ header.cover{padding-block:88px 8px}
     </table></div>
   </div>
 
-  <h3>Eén of twee keer klikken</h3>
-  <p class="measure">Beide pijltjes hebben twee standen. <b>Snel</b> betekent: de tweede klik
-  binnen 0,6 seconde na de eerste. Dat is ruimer dan bij een muis, omdat de knop van een
-  draadloze presenter een veerweg heeft; een dubbele druk op de R400 komt al gauw op 0,4 à
-  0,5 seconde. De grens is in te stellen onder <b>Klikker testen</b>.</p>
+  <h3>Eén klik vooruit, één of twee terug</h3>
+  <p class="measure">Vooruit is altijd één klik. De wachtvideo zit er altijd tussen:
+  wachtlus &rarr; <b>&gt;</b> &rarr; video 1 &rarr; (speelt uit, naadloos) wachtlus &rarr;
+  <b>&gt;</b> &rarr; video 2, enzovoort. Een video wordt dus nooit overgeslagen en nooit
+  onderbroken, hoe vaak je ook drukt: wie tijdens een video op &gt; drukt, ziet die video
+  gewoon uitspelen en daarna de wachtlus.</p>
+  <p class="measure">Terug heeft twee standen. <b>Snel</b> betekent: de tweede klik binnen
+  0,6 seconde na de eerste. Dat is ruimer dan bij een muis, omdat de knop van een draadloze
+  presenter een veerweg heeft; een dubbele druk op de R400 komt al gauw op 0,4 à 0,5
+  seconde. De grens is in te stellen onder <b>Klikker testen</b>.</p>
   <div class="tw"><table>
-    <thead><tr><th>Knop</th><th>1&times;</th><th>2&times; snel</th></tr></thead>
+    <thead><tr><th>Knop</th><th>In de wachtlus</th><th>Tijdens een video</th></tr></thead>
     <tbody>
-      <tr><td><b>&gt;</b></td><td>Wachtvideo — na afloop van een lopende video</td><td>Volgende video</td></tr>
-      <tr><td><b>&lt;</b></td><td>Huidige video opnieuw</td><td>Vorige video</td></tr>
+      <tr><td><b>&gt;</b></td><td>Volgende video, direct</td><td>Niets: de video speelt uit,
+        daarna de wachtlus</td></tr>
+      <tr><td><b>1&times; &lt;</b></td><td>De video die net speelde opnieuw</td><td>Deze video
+        opnieuw vanaf het begin</td></tr>
+      <tr><td><b>2&times; snel &lt;</b></td><td colspan="2">Vorige video</td></tr>
     </tbody>
   </table></div>
-  <p class="measure">Een dubbele klik gaat meteen bij de tweede druk. Een enkele klik komt
-  pas na die 0,6 seconde: zo lang wacht de box of er nog een tweede komt. De andere manier — de
-  enkele klik meteen uitvoeren en bij een tweede klik alsnog omschakelen — zou het publiek
-  een flits van de wachtvideo laten zien, of een video die even opnieuw begint.</p>
-  <p class="measure">Klikken tellen in paren. Vier keer snel op &gt; is twee keer
-  &quot;volgende&quot;; drie keer snel is één keer &quot;volgende&quot; plus een losse derde
-  klik, die de net gestarte video niet onderbreekt. Klik je eerst &lt; en meteen daarna
-  &gt;, dan telt de &lt; als een enkele klik.</p>
+  <p class="measure">Een dubbele &lt; gaat meteen bij de tweede druk. Een enkele &lt; komt pas
+  na die 0,6 seconde: zo lang wacht de box of er nog een tweede komt. Anders zou het publiek
+  bij 2&times; &lt; eerst de huidige video even opnieuw zien beginnen. De &gt; hoeft nergens op
+  te wachten. Druk je &gt; terwijl er nog een &lt; openstaat, dan vervalt die &lt;.</p>
 
-  <div class="note"><span class="t">Werkt 2&times; niet? Meet je eigen tempo</span>
-    <p>Druk onder <b>Klikker testen</b> twee keer op &gt;. Bij de tweede druk staat er na hoeveel
+  <div class="note"><span class="t">Werkt 2&times; &lt; niet? Meet je eigen tempo</span>
+    <p>Druk onder <b>Klikker testen</b> twee keer op &lt;. Bij de tweede druk staat er na hoeveel
     milliseconden hij binnenkwam, bijvoorbeeld <em>&quot;Tweede druk kwam na 720 ms — te laat
     voor 2&times; snel: de grens staat op 600 ms&quot;</em>. Daaronder verschijnt een knop
     <b>Grens op mijn tempo zetten</b>, die de grens net boven jouw tempo legt. Met de schuif
-    <b>Tijd voor 2&times; snel</b> kun je hem ook zelf zetten, van 0,25 tot 1,5 seconde.
-    Hoger als je 2&times; drukt en de box toch 1&times; ziet; lager als een enkele klik te traag
-    aanvoelt — die wordt precies zo lang uitgesteld.</p></div>
+    <b>Tijd voor 2&times; snel op &lt;</b> kun je hem ook zelf zetten, van 0,25 tot 1,5 seconde.
+    Hoger als je 2&times; drukt en de box toch 1&times; ziet; lager als een enkele &lt; te traag
+    aanvoelt &mdash; die wordt precies zo lang uitgesteld.</p></div>
 
   <h3>De wachtlus is de rusttoestand</h3>
   <p class="measure">Staat de klikker aan en is er een wachtvideo gekozen, dan is de wachtlus
@@ -1578,12 +1584,12 @@ header.cover{padding-block:88px 8px}
   start er meteen in, zonder dat iemand iets hoeft aan te raken, en keert er altijd naar
   terug: na elke video, na de laatste, na een tijd zonder klik, en na het sluiten van het
   menu. Hij begint daarbij <b>elke keer bij het begin</b>, zodat de overgang vanaf het einde
-  van een video klopt. Terugspoelen gebeurt al zodra hij uit beeld gaat; zijn eerste beeld
+  van een video klopt. Zodra hij uit beeld gaat, laadt de box hem opnieuw; zijn eerste beeld
   staat dus klaar op het moment dat hij terugkomt, zonder dat je heel even het oude beeld
   ziet.</p>
   <p class="measure">Een presentatievideo speelt precies één keer, ook als hij in
   <b>Media</b> op herhalen staat. Opnieuw spelen gaat alleen met <b>1&times; &lt;</b>. Na de
-  laatste video begint <b>2&times; &gt;</b> weer bij video 1.</p>
+  laatste video begint <b>&gt;</b> weer bij video 1.</p>
   <p class="measure">Naar het menu: <b>vijf keer snel tikken linksboven</b> — dat werkt ook op
   de wachtlus. Sluit je het menu, dan loopt de lus weer.</p>
 
@@ -1593,7 +1599,7 @@ header.cover{padding-block:88px 8px}
   aansluiting ook op het scherm klopt:</p>
   <ul class="legend">
     <li><span class="n">1</span><span><b>Nooit onderbroken</b> <span class="q">— de wachtvideo
-      komt pas als de video helemaal afgelopen is. Ook 1&times; &gt; en de time-out laten een
+      komt pas als de video helemaal afgelopen is. Ook &gt; en de time-out laten een
       lopende video eerst uitspelen.</span></span></li>
     <li><span class="n">2</span><span><b>Het laatste beeld komt echt in beeld</b> <span class="q">—
       de box kijkt per beeld mee. Komt het laatste beeld van de video op het scherm, dan blijft
@@ -1646,7 +1652,7 @@ header.cover{padding-block:88px 8px}
       een nummer en Enter om naar die video te springen; <code>Home</code> stopt de
       reeks.</span></span></li>
     <li><span class="n">4</span><span><b>Weg en terug</b> <span class="q">— het menu openen
-      of het handgebaar stopt de reeks; daarna komt de wachtlus terug, en 2&times; &gt; gaat
+      of het handgebaar stopt de reeks; daarna komt de wachtlus terug, en &gt; gaat
       verder waar je was.</span></span></li>
   </ul>
 
@@ -2526,12 +2532,14 @@ header.cover{padding-block:88px 8px}
         de ontvanger zit er niet in.</td><td>Reeks &amp; klikker → <b>Klikker testen</b>: zie je
         daar niets binnenkomen, dan ligt het aan de ontvanger of de batterijen. Zie je wel iets,
         zet dan de schakelaar aan en sluit het menu.</td></tr>
-      <tr><td>2&times; &gt; doet niets of de video speelt gewoon uit</td><td>De tweede klik
-        kwam te laat; de box zag twee losse klikken, en een losse klik onderbreekt een lopende
-        video niet.</td><td>Druk onder Reeks &amp; klikker
-        &rarr; <b>Klikker testen</b> twee keer op &gt;: je ziet na hoeveel milliseconden de
+      <tr><td>&gt; tijdens een video doet niets</td><td>Zo hoort het: de wachtvideo zit altijd
+        tussen twee video's, en een video wordt nooit onderbroken.</td><td>Laat de video
+        uitspelen; in de wachtlus start &gt; de volgende.</td></tr>
+      <tr><td>2&times; &lt; herhaalt de video in plaats van de vorige te kiezen</td><td>De tweede
+        klik kwam te laat; de box zag twee losse klikken.</td><td>Druk onder Reeks &amp; klikker
+        &rarr; <b>Klikker testen</b> twee keer op &lt;: je ziet na hoeveel milliseconden de
         tweede druk kwam. Klik op <b>Grens op mijn tempo zetten</b>, of zet de schuif
-        <b>Tijd voor 2&times; snel</b> hoger.</td></tr>
+        <b>Tijd voor 2&times; snel op &lt;</b> hoger.</td></tr>
       <tr><td>&#9654; op de klikker haalt de browser uit volledig scherm</td><td>De klikker
         stuurt om en om F5 en Esc; Esc verlaat in sommige browsers het volledige scherm.</td>
         <td>Gebruik de Windows-app of <code>Start Holobox.bat</code> (kioskmodus).</td></tr>
@@ -2592,7 +2600,7 @@ header.cover{padding-block:88px 8px}
     <dt>5× tikken in de hoek linksboven</dt><dd>Opent het menu ook als de bedieningsknoppen verborgen zijn.</dd>
     <dt>Naar rechts vegen</dt><dd>Vorige scène, als “Vegen om terug te gaan” aanstaat.</dd>
     <dt>Hand omhoog</dt><dd>Terug naar het menu, als het handgebaar aanstaat (hoofdstuk 14).</dd>
-    <dt>Page Down / &gt; op de klikker</dt><dd>1&times;: wachtvideo na afloop · 2&times; snel: volgende video (hoofdstuk 13).</dd>
+    <dt>Page Down / &gt; op de klikker</dt><dd>Volgende video, altijd via de wachtvideo (hoofdstuk 13).</dd>
     <dt>Page Up / &lt; op de klikker</dt><dd>1&times;: huidige video opnieuw · 2&times; snel: vorige video.</dd>
     <dt>F5 of Esc / &#9654;</dt><dd>Pauze / verder in de reeks; vanuit de knoppen start de reeks.</dd>
     <dt>. (punt) / &#9632;</dt><dd>Zwart scherm aan/uit tijdens de reeks.</dd>
@@ -2645,7 +2653,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.24.0 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.25.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>
