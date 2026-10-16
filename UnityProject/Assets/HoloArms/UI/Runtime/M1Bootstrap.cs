@@ -132,12 +132,13 @@ namespace HoloArms.UI
 
             var go = new GameObject($"ArmAgent {(index + 1):00}");
             var arm = go.AddComponent<ArmAgent>();
-            arm.Initialize($"A-{index + 1:00}", _wall, x, y, identity, personality);
+            arm.Initialize($"A-{index + 1:00}", _wall, x, y, identity, personality, cfg.Arm.Appearance);
             arm.ConfigureDepth(cfg.LookDepth.DepthStrength, cfg.LookDepth.ArmExtension);
             arm.Extend();
             _arms.Add(arm);
             _director.Register(arm);
-            Debug.Log($"[HoloArms] Spawned {arm.ArmId}: {personality.Temperament} · {identity.Describe()}");
+            Debug.Log($"[HoloArms] Spawned {arm.ArmId} ({(arm.UsesImportedRig ? "rigged FBX" : "capsule")}): " +
+                      $"{personality.Temperament} · {identity.Describe()}");
             return arm;
         }
 

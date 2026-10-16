@@ -91,7 +91,8 @@ namespace HoloArms.UI
             foreach (var arm in _bootstrap.Arms)
             {
                 GUILayout.Label(
-                    $"{arm.ArmId} [{arm.Personality.Temperament}/{arm.Personality.Emotion}] " +
+                    $"{arm.ArmId}{(arm.UsesImportedRig ? "" : " (capsule)")} " +
+                    $"[{arm.Personality.Temperament}/{arm.Personality.Emotion}] " +
                     arm.Identity.Describe(),
                     new GUIStyle(GUI.skin.label) { fontSize = 10 });
             }

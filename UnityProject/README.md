@@ -109,11 +109,20 @@ Assets/HoloArms/
 - **Dynamic resolution tier**: the lowest auto-quality tier drives render
   scale via `DynamicResolutionHandler`; it only takes effect when
   *Dynamic Resolution* is enabled in the active HDRP asset.
-- **The capsule arm is a placeholder**, never production quality (spec §6).
-  The textured+rigged GLB from `ContentSamples/models/` is the first real
-  mesh to swap in; the swap point is `ProceduralArmBuilder.Build` →
-  a GLB-import variant with the same joint contract (upper/fore/hand,
-  +z bone axis).
+- **Rigged arms** (`Art/Resources/Arms/*.fbx`, built by `Tools/blender/`):
+  `RiggedArmBuilder` loads them per identity — masculine → `Scan01` (the
+  textured Higgsfield scan: veins, nails, skin detail), feminine →
+  `Feminine`, androgynous → `Masculine` (procedural) — and falls back to
+  the capsule placeholder if a file is missing. Config `arm.appearance`:
+  `Auto` (default) · `Procedural` · `Capsule`.
+- **Hands move**: `HandPoseController` drives 5 three-joint fingers, wrist
+  flex and forearm twist — relaxed (curl shaped by temperament: shy hands
+  curl in, bored hands droop), point, and offer (palm turns up) — with
+  per-finger micro motion. Scan01 has fused fingers, so neighbouring curls
+  are coupled (max 12° apart) and its pointing gesture is subtler.
+- Not production quality yet (spec §6): no subsurface-scattering skin
+  profile, tattoos/painted nails are not rendered on textured arms, and
+  scanned fingers are fused. See `Tools/blender/README.md`.
 - **The IMGUI panel is a stand-in**; the operator application UI is
   implemented from the Figma design system (`FigmaHandoff/`), which is the
   UI source of truth.

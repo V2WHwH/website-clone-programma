@@ -1,0 +1,25 @@
+{
+  "comment": "Landmarks for the Higgsfield image_to_3d arm (job f04bf053). Units = the GLB's own units, measured with cross-section profiles in Blender. Arm runs along +X (shoulder stub at -X), thumb toward +Z, palm toward +Y. Fingers are fused in this scan, so each finger is a Z band.",
+  "scale_to_metres": 0.415,
+  "axis": "x",
+  "palm_side": [0, 1, 0],
+  "shoulder_x": -0.80,
+  "elbow_x": -0.31,
+  "wrist_x": 0.34,
+  "knuckle_x": 0.69,
+  "fingers": [
+    {"name": "Index",  "z_center":  0.020, "tip_x": 0.915},
+    {"name": "Middle", "z_center": -0.045, "tip_x": 0.945},
+    {"name": "Ring",   "z_center": -0.105, "tip_x": 0.925},
+    {"name": "Pinky",  "z_center": -0.160, "tip_x": 0.870}
+  ],
+  "finger_band_blend": 0.022,
+  "thumb": {
+    "base_x": 0.42,
+    "joint_x": [0.42, 0.55, 0.635, 0.715],
+    "region_z_at_x0": 0.030,
+    "region_z_slope": 0.12,
+    "region_x0": 0.40
+  },
+  "phalanx_split": [0.46, 0.30, 0.24]
+}

@@ -12,14 +12,34 @@ namespace HoloArms.Agents
     /// scan-quality mesh variants with real accessory sockets and tattoo
     /// texture layers; this builder makes identity testable today.
     /// </summary>
+    /// <summary>
+    /// Rig contract shared by the procedural placeholder and imported
+    /// (Blender-rigged FBX) arms. The IK solver produces bone FRAMES
+    /// (forward = bone direction, up = bend plane); <see cref="UpperOffset"/>
+    /// and <see cref="ForeOffset"/> map those frames onto the actual bone
+    /// rotations, so any bone-axis convention works.
+    /// </summary>
     public sealed class ProceduralArmRig
     {
-        public Transform Root;       // shoulder anchor, sits BEHIND the wall (z > 0)
-        public Transform Upper;      // shoulder joint (+z = bone axis)
+        public Transform Root;       // object to move; shoulder sits BEHIND the wall (z > 0)
+        public Transform Upper;      // shoulder joint
         public Transform Fore;       // elbow joint
         public Transform Hand;       // wrist
         public float UpperLen;
         public float ForeLen;
+
+        public Quaternion UpperOffset = Quaternion.identity;
+        public Quaternion ForeOffset = Quaternion.identity;
+
+        /// <summary>Finger chains (proximal→distal), order Index, Middle, Ring, Pinky; null for the capsule arm.</summary>
+        public Transform[][] Fingers;
+        public Transform[] Thumb;
+        /// <summary>Palm-side point on the hand (world position defines palm direction).</summary>
+        public Transform PalmMarker;
+        /// <summary>Scanned meshes fuse the fingers: neighbouring curls must stay close.</summary>
+        public bool FusedFingers;
+        public bool IsImported;
+        public SkinnedMeshRenderer Skin;
     }
 
     public static class ProceduralArmBuilder
@@ -133,7 +153,7 @@ namespace HoloArms.Agents
         }
 
         /// <summary>Thin cylinder ring around a bone (+z axis) at distance `along`.</summary>
-        private static void Band(Transform joint, float along, float radius, float halfWidth,
+        internal static void Band(Transform joint, float along, float radius, float halfWidth,
                                  Color color, float smooth = 0.6f)
         {
             var b = GameObject.CreatePrimitive(PrimitiveType.Cylinder);

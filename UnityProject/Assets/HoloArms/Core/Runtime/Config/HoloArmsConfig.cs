@@ -68,7 +68,9 @@ namespace HoloArms.Core.Config
         [JsonProperty("identitySeed")] public int IdentitySeed = 1337; // same seed → same unique cast after restart
         [JsonProperty("anchorY")] public float AnchorY = 1.25f;  // metres from floor
         [JsonProperty("armScale")] public float ArmScale = 1.0f;
-        [JsonProperty("appearance")] public string Appearance = "PlaceholderProcedural";
+        // Auto = best rigged FBX arm per identity (scan for masculine), Procedural = Blender-generated
+        // rigged arms only, Capsule = the original capsule placeholder.
+        [JsonProperty("appearance")] public string Appearance = "Auto";
 
         [JsonExtensionData] public IDictionary<string, JToken> Extra;
     }

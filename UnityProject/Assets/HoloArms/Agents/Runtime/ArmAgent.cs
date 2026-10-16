@@ -25,6 +25,7 @@ namespace HoloArms.Agents
         public ArmTaskType CurrentTask => _task;
 
         private ProceduralArmRig _rig;
+        private HandPoseController _hand;
         private Vector3 _anchorWorld;
         private float _extension;
         private float _extensionTarget;
@@ -39,9 +40,12 @@ namespace HoloArms.Agents
         private Vector3 _currentIkTarget;
 
         public float MaxReach => _rig != null ? _rig.UpperLen + _rig.ForeLen : 0f;
+        /// <summary>True when a Blender-rigged FBX arm is in use (capsule placeholder otherwise).</summary>
+        public bool UsesImportedRig => _rig != null && _rig.IsImported;
 
         public void Initialize(string armId, WallPortalSystem wall, float anchorX, float anchorY,
-                               ArmIdentityProfile identity, PersonalityProfile personality)
+                               ArmIdentityProfile identity, PersonalityProfile personality,
+                               string appearance = "Auto")
         {
             ArmId = armId;
             Identity = identity;
@@ -49,9 +53,13 @@ namespace HoloArms.Agents
             LeftSide = anchorX <= 0f; // side purely from wall position
             _anchorWorld = wall.AnchorToWorld(anchorX, anchorY);
 
-            _rig = ProceduralArmBuilder.Build(transform, identity, LeftSide);
-            _rig.Root.position = _anchorWorld + new Vector3(0f, 0f, 0.10f);
             _swayPhase = Mathf.Abs(armId.GetHashCode() % 1000) * 0.1f;
+            _rig = RiggedArmBuilder.TryBuild(transform, identity, LeftSide, appearance)
+                   ?? ProceduralArmBuilder.Build(transform, identity, LeftSide);
+            // Shoulder joint sits behind the wall plane; move the whole rig so it lands there.
+            _rig.Root.position += _anchorWorld + new Vector3(0f, 0f, 0.10f) - _rig.Upper.position;
+            if (_rig.IsImported && _rig.Fingers != null && _rig.PalmMarker != null)
+                _hand = new HandPoseController(_rig, _swayPhase);
             _currentIkTarget = BehindWallTarget();
             ApplyIk(_currentIkTarget);
         }
@@ -121,7 +129,7 @@ namespace HoloArms.Agents
 
             if (reacting && _extension > 0.3f)
             {
-                var shoulder = _rig.Root.position;
+                var shoulder = _rig.Upper.position;
                 switch (_task)
                 {
                     case ArmTaskType.PointAt:
@@ -151,12 +159,36 @@ namespace HoloArms.Agents
                 -depth);
         }
 
+        private HandPose CurrentHandPose()
+        {
+            bool reacting = _task != ArmTaskType.None && Time.time >= _taskAssignedAt + _reactionDelay;
+            if (!reacting) return HandPose.Relaxed;
+            return _task == ArmTaskType.PointAt ? HandPose.Point : HandPose.Offer;
+        }
+
         private void ApplyIk(Vector3 target)
         {
             if (_rig == null) return;
-            var pole = _rig.Root.position + new Vector3(LeftSide ? 0.25f : -0.25f, -0.6f, -0.1f);
-            TwoBoneIK.Solve(_rig.Upper, _rig.Fore, _rig.UpperLen, _rig.ForeLen, target, pole);
-            _rig.Hand.localRotation = Quaternion.Euler(_task == ArmTaskType.Offer ? -20f : 12f, 0f, 0f);
+            var shoulder = _rig.Upper.position;
+            // Elbow pole below and slightly outside: natural hang. The IK frame's
+            // "up" follows the pole, and imported rigs map their palm onto it,
+            // so a relaxed palm faces down; the hand controller twists from there.
+            var pole = shoulder + new Vector3(LeftSide ? 0.25f : -0.25f, -0.6f, -0.1f);
+            TwoBoneIK.SolveFrames(shoulder, _rig.UpperLen, _rig.ForeLen, target, pole,
+                                  out var upperFrame, out var foreFrame);
+            if (_hand != null)
+            {
+                // Half the pronation/supination twist lives in the forearm, half in the wrist.
+                var foreDir = foreFrame * Vector3.forward;
+                foreFrame = Quaternion.AngleAxis(_hand.ForearmTwist * 0.5f, foreDir) * foreFrame;
+            }
+            _rig.Upper.rotation = upperFrame * _rig.UpperOffset;
+            _rig.Fore.rotation = foreFrame * _rig.ForeOffset;
+
+            if (_hand != null)
+                _hand.Tick(CurrentHandPose(), Personality.CurrentStyle(), Personality, Time.deltaTime);
+            else
+                _rig.Hand.localRotation = Quaternion.Euler(_task == ArmTaskType.Offer ? -20f : 12f, 0f, 0f);
         }
     }
 }

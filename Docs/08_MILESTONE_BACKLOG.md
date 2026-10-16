@@ -39,6 +39,12 @@ arm within its bounded personality delay.
 **Status 2026-08-30:** identity/personality/director foundations shipped
 early on the M1 scaffold (ArmIdentity, Personality, RuleBasedBehaviourDirector,
 identity-dressed procedural arm, multi-arm bootstrap with A/T demo keys).
+**Status 2026-10-16:** rigged-arm pipeline in Blender (`Tools/blender/`):
+procedural masculine/feminine arms and the Higgsfield scan, auto-rigged with
+analytic weights and verified with posed renders (`Docs/images/`); Unity
+loads them (`RiggedArmBuilder`), maps IK onto any bone convention, and
+animates fingers/wrist (`HandPoseController`). Open: SSS skin profile,
+separated-finger production asset, grip/handoff.
 
 ## M3 — Object/content workflow
 GLB/glTF runtime import; PNG/JPG/WEBP card creation (aspect, thickness,
