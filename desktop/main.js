@@ -199,6 +199,7 @@ function createWindow() {
 
 let lastBeat = Date.now();
 let recovering = false;
+let afsluiten = false;         // bewust afgesloten via het menu: niet herstellen
 let reloadAttempts = 0;
 let lastRecoverAt = 0;
 
@@ -223,7 +224,7 @@ ipcMain.on('health:hardRestart', (e, reason) => {
 });
 
 function recover(reason) {
-  if (recovering || !win || win.isDestroyed()) return;
+  if (afsluiten || recovering || !win || win.isDestroyed()) return;
   recovering = true;
   const sinceLast = Date.now() - lastRecoverAt;
   if (sinceLast > 10 * 60000) reloadAttempts = 0;   // ver uit elkaar = losse incidenten
@@ -358,6 +359,14 @@ ipcMain.handle('web:findLogo', async (e, url) => {
     return null;   // offline of te traag: de Studio probeert zelf nog de vaste adressen
   }
 });
+// "Naar Windows" in het menu: de app netjes afsluiten. De watchdog en het
+// crashherstel mogen hem daarna niet opnieuw starten.
+ipcMain.on('app:quit', () => {
+  log('info', 'afgesloten via het menu (naar Windows)');
+  afsluiten = true;
+  app.quit();
+});
+
 ipcMain.handle('settings:set', (e, patch) => {
   const allowed = ['kiosk', 'hardwareAcceleration', 'zoomFactor'];
   for (const k of allowed) if (patch[k] !== undefined) settings[k] = patch[k];

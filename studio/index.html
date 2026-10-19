@@ -496,6 +496,10 @@
   body.editing #lockFab { background: var(--accent-dark); border-color: var(--accent); }
   body.clean .fab { opacity: 0.14; }
   body.clean .fab:hover { opacity: 1; }
+  /* Verborgen: echt weg, niet aanraakbaar. Alleen tijdens het verplaatsen blijft
+     het slotje staan — daarmee zet je de knoppen weer vast. */
+  body.knoppen-weg .fab { display: none; }
+  body.knoppen-weg.editing #lockFab { display: flex; }
 
   /* ============ MENU-PANEEL — professioneel controlepaneel ============
      Rustige typografie, hairlines, subtiele reliëftextuur (ingebed, offline)
@@ -544,6 +548,16 @@
     overflow: hidden; background: var(--color-surface-1); border-bottom: 1px solid var(--color-border); }
   #tbProject { width: 150px; }
   #tbScene { max-width: 150px; }
+  #topbar > * { flex-shrink: 0; }
+  /* Staand scherm (1080 breed): de alleen-lezen velden en de ondertitel van het
+     merk wijken, zodat Naar Windows links en het sluitkruisje rechts altijd in
+     beeld blijven. */
+  @media (max-width: 1400px) { #topbar .tb-info, #tbLogo .sub { display: none; } }
+  @media (max-width: 1100px) { #tbLogo .nm { display: none; } #topbar { gap: 8px; padding: 0 10px; }
+    #tbProject { width: 120px; } #tbDevice .sub { display: none; } }
+  @media (max-width: 1000px) { #tbDevice, #tbSave { display: none; } }
+  @media (max-width: 860px) { #tbPreview, #tbRedo { display: none; } #tbProject { width: 90px; }
+    #tbScene { max-width: 110px; } }
   #tbLogo { display: flex; align-items: center; gap: 10px; margin-right: 4px; }
   #tbLogo .mark { width: 27px; height: 27px; border-radius: 8px; flex: none;
     background: linear-gradient(135deg, var(--color-accent-teal), var(--color-accent-purple)); }
@@ -574,6 +588,8 @@
   .sdot { width: 8px; height: 8px; border-radius: 50%; background: #566274; flex: none; }
   .sdot.on { background: #22c55e; box-shadow: 0 0 7px rgba(34,197,94,.8); }
   .sdot.err { background: #e5605e; }
+  .tb-btn.exit { border-color: rgba(229,96,94,.45); color: #f4a9a8; font-weight: 600; }
+  .tb-btn.exit:hover { background: rgba(229,96,94,.16); border-color: #e5605e; color: #fff; }
   #closePanel { background: none; border: 0; color: var(--color-text-muted); font-size: 19px;
     padding: 6px 9px; border-radius: 8px; }
   #closePanel:hover { color: var(--color-text-primary); background: var(--color-surface-2); }
@@ -1113,6 +1129,7 @@
 
 <aside id="panel">
   <header id="topbar">
+    <button class="tb-btn exit" id="tbExit" title="Programma afsluiten en terug naar Windows">&#9211;&nbsp;Naar Windows</button>
     <div id="tbLogo">
       <div class="mark"></div>
       <div>
@@ -1126,10 +1143,10 @@
     <label class="tb-sel"><span class="lbl">Sc&egrave;ne</span>
       <select id="tbScene"></select>
     </label>
-    <div class="tb-sel"><span class="lbl">Device</span>
+    <div class="tb-sel tb-info"><span class="lbl">Device</span>
       <div class="ro" id="tbDeviceName">Deze computer</div>
     </div>
-    <div class="tb-sel"><span class="lbl">Resolutie</span>
+    <div class="tb-sel tb-info"><span class="lbl">Resolutie</span>
       <div class="ro" id="tbResolution">&mdash;</div>
     </div>
     <div id="tbSpacer"></div>
@@ -1309,11 +1326,15 @@
         <div><div class="t-label">Knoppen verbergen tijdens afspelen</div></div>
         <label class="switch"><input type="checkbox" id="cfgHideBtns"><i></i></label>
       </div>
-      <div class="toggle-row">
-        <div><div class="t-label">Kioskmodus</div>
-          <div class="t-sub">Bedieningsknoppen vrijwel onzichtbaar; verschijnen bij aanwijzen</div></div>
-        <label class="switch"><input type="checkbox" id="cfgClean"><i></i></label>
-      </div>
+      <label class="field">Bedieningsknoppen links onder
+        <select id="cfgKnoppen">
+          <option value="verborgen">Verborgen &mdash; alleen 5&times; tikken linksboven opent het menu (aanbevolen)</option>
+          <option value="vaag">Vaag &mdash; bijna onzichtbaar, verschijnen bij aanwijzen</option>
+          <option value="zichtbaar">Zichtbaar</option>
+        </select>
+      </label>
+      <p class="note">Verborgen: bezoekers zien en raken geen menuknop. Jij komt in het menu met
+      <b>5&times; snel tikken in de hoek linksboven</b> (met een muis: 5&times; klikken).</p>
     </div>
     <h2>Taal &amp; navigatie</h2>
     <div class="card">
@@ -2214,7 +2235,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.26.0';
+const APP_VERSION = '2.27.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -2246,7 +2267,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 18,
+  version: 19,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -2276,7 +2297,11 @@ const defaultConfig = () => ({
   title: '',
   idleMediaId: null,
   hideButtonsDuringPlay: true,
-  cleanMode: false,
+  /* De ronde bedieningsknoppen links onder (menu, verplaatsen, volledig
+     scherm, oriëntatie). 'verborgen': weg; alleen 5× tikken linksboven opent
+     het menu, zodat omstanders niet aan de instellingen zitten.
+     'vaag': bijna onzichtbaar, verschijnen bij aanwijzen. 'zichtbaar'. */
+  bedieningsKnoppen: 'verborgen',
   orientationMode: 'auto', // 'auto' | 'portrait' | 'landscape'
   // sound/volume: de playlist speelde altijd gedempt, ook in achtergrondmodus.
   screensaver: { enabled: false, delaySec: 120, mediaIds: [],
@@ -2444,7 +2469,12 @@ function migrateConfig(stored) {
   // na een video, en "terug naar de knoppen" na de laatste, zijn vervallen;
   // aanraken opent de knoppen alleen nog als je dat zelf aanzet.
   if (c.reeks) { delete c.reeks.naAfloop; delete c.reeks.naLaatste; delete c.reeks.aanraakStopt; }
-  c.version = 18;
+  // v19: bedieningsknoppen standaard weg — ook in bestaande projecten, want
+  // juist op een staande box drukken omstanders er voor de grap op. De oude
+  // kioskmodus (vage knoppen) is nu de keuze 'vaag'.
+  if ((stored.version || 0) < 19) c.bedieningsKnoppen = 'verborgen';
+  delete c.cleanMode;
+  c.version = 19;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -3573,7 +3603,11 @@ function renderStage() {
   const leeg = !(curButtons().length > 0 || curScene().idleMediaId || sceneTitle(curScene()));
   $('#welcome').classList.toggle('hidden', !leeg);
   if (leeg && !$('#sjablonen')?.children.length) renderSjablonen();
-  document.body.classList.toggle('clean', !!config.cleanMode);
+  // Leeg project (welkomstscherm): knoppen altijd zichtbaar, anders kom je er
+  // bij een nieuwe installatie niet in.
+  const knoppen = leeg ? 'zichtbaar' : (config.bedieningsKnoppen || 'verborgen');
+  document.body.classList.toggle('clean', knoppen === 'vaag');
+  document.body.classList.toggle('knoppen-weg', knoppen === 'verborgen');
   renderBreadcrumb();
   renderLangBar();
 
@@ -5392,6 +5426,21 @@ function closeEditor() {
 
 $('#menuFab').addEventListener('click', async () => { if (!(await requireAdmin())) return; openEditor(); });
 $('#closePanel').addEventListener('click', closeEditor);
+/* "Naar Windows": het programma afsluiten. In de Windows-app sluit het
+   hoofdproces de app (de watchdog start hem dan niet opnieuw). In een browser
+   mag een pagina zichzelf meestal sluiten als hij als enige in het venster is
+   geopend (zoals de startbestanden doen); lukt dat niet, dan zeggen we hoe het wel kan. */
+$('#tbExit').addEventListener('click', () => {
+  if (!confirm('Programma afsluiten en terug naar Windows?\n\nDe presentatie stopt tot je HereWeHolo opnieuw start. Je instellingen en video\'s blijven bewaard.')) return;
+  try { save(); } catch {}
+  if (window.hwhDesktop?.quit) { window.hwhDesktop.quit(); return; }
+  try { navigator.keyboard?.unlock?.(); } catch {}
+  window.close();
+  setTimeout(() => {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    toast('Deze browser laat zich niet door de pagina sluiten — druk op Alt+F4.');
+  }, 500);
+});
 $('#fsFab').addEventListener('click', () => {
   if (document.fullscreenElement) document.exitFullscreen();
   else document.documentElement.requestFullscreen().catch(() => toast('Volledig scherm niet toegestaan'));
@@ -7339,7 +7388,7 @@ function renderLook() {
   $('#cfgIdleVolume').value = curScene().idleVolume ?? 60;
   updateSoundNotes();
   $('#cfgHideBtns').checked = config.hideButtonsDuringPlay;
-  $('#cfgClean').checked = config.cleanMode;
+  $('#cfgKnoppen').value = config.bedieningsKnoppen || 'verborgen';
   $('#cfgOrientation').value = config.orientationMode || 'auto';
   $('#thFont').value = config.theme.font;
   $('#thWeight').value = String(config.theme.weight);
@@ -7604,7 +7653,10 @@ $('#cfgMasterVol').addEventListener('input', (e) => {
   refreshAllBgSound();   // achtergrond en screensaver vallen ook onder het hoofdvolume
 });
 $('#cfgHideBtns').addEventListener('change', (e) => { config.hideButtonsDuringPlay = e.target.checked; save(); });
-$('#cfgClean').addEventListener('change', (e) => { config.cleanMode = e.target.checked; save(); renderStage(); });
+$('#cfgKnoppen').addEventListener('change', (e) => {
+  config.bedieningsKnoppen = e.target.value; save(); renderStage();
+  if (e.target.value === 'verborgen') toast('Knoppen verborgen — menu: 5× tikken linksboven');
+});
 $('#cfgOrientation').addEventListener('change', (e) => { setOrientationMode(e.target.value); });
 
 /* ---- Scènebeheer ---- */
@@ -8838,8 +8890,9 @@ $('#rmTest').addEventListener('click', async () => {
 });
 
 /* ================= Verborgen admin-gebaar (spec, blok 9) =================
-   5× snel tikken in de hoek linksboven opent het menu — ook wanneer de
-   bedieningsknoppen verborgen zijn. De PIN blijft gewoon gelden. */
+   5× snel tikken in de hoek linksboven opent het menu. Met de
+   bedieningsknoppen verborgen (standaard) is dit de enige weg erin, zodat
+   omstanders niet aan de instellingen kunnen. De PIN blijft gewoon gelden. */
 let cornerTaps = [];
 /* Ook op de reekslaag: tijdens de wachtlus ligt die over het podium, en dit
    gebaar is dan de enige weg naar het menu. */
@@ -8858,8 +8911,10 @@ function hoekTik(e) {
     })();
   }
 }
-document.getElementById('stage').addEventListener('pointerdown', hoekTik, true);
-document.getElementById('reeksLaag').addEventListener('pointerdown', hoekTik, true);
+/* Op het hele venster, vóór alles: zo werkt het gebaar ook boven de
+   screensaver, een spelende video, de wachtlus of een avatar. Met de
+   bedieningsknoppen verborgen is dit de enige weg naar het menu. */
+window.addEventListener('pointerdown', (e) => { if (!panel.classList.contains('open')) hoekTik(e); }, true);
 
 /* ================= Screensaver =================
    Dubbele-speler-rotator: dezelfde engine draait de playlist fullscreen

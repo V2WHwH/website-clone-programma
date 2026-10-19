@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld('hwhDesktop', {
   heartbeat: () => ipcRenderer.send('health:beat'),
   notifyRestart: (reason) => ipcRenderer.send('health:restart', String(reason || '')),
   restart: (reason) => ipcRenderer.send('health:hardRestart', String(reason || '')),
+  // "Naar Windows" in het menu: de app afsluiten.
+  quit: () => ipcRenderer.send('app:quit'),
   getDiagnostics: () => ipcRenderer.invoke('diagnostics:get'),
   openLogs: () => ipcRenderer.invoke('diagnostics:openLogs'),
   setSettings: (patch) => ipcRenderer.invoke('settings:set', patch),
