@@ -70,7 +70,10 @@
     box-shadow: 0 calc(16px + var(--arLift, 0) * 14px) calc(42px + var(--arLift, 0) * 26px) rgba(0,0,0,0.5),
       0 0 calc(30px * var(--glowI, 1) * var(--arGlow, 1)) var(--glow, rgba(53,208,186,0.35)),
       inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -0.35em 0.6em rgba(0,0,0,0.18);
-    transition: filter 0.15s; line-height: 1.25; padding: 0.4em 0.9em; overflow-wrap: anywhere; }
+    transition: filter 0.15s; line-height: 1.25; padding: 0.4em 0.9em; overflow-wrap: anywhere;
+    /* Breedte naar de tekst, niet naar de ruimte tot de rand: een knop rechts
+       van het midden brak zijn tekst anders midden in een woord af. */
+    width: max-content; max-width: 44vw; }
   .vbtn:active { filter: brightness(1.2); }
   /* Losse "grondschaduw" onder de knop: dit verkoopt het zweefeffect. */
   .vbtn::after { content: ''; position: absolute; left: 6%; right: 6%; bottom: -1.15em; height: 0.5em;
@@ -593,6 +596,120 @@
   #closePanel { background: none; border: 0; color: var(--color-text-muted); font-size: 19px;
     padding: 6px 9px; border-radius: 8px; }
   #closePanel:hover { color: var(--color-text-primary); background: var(--color-surface-2); }
+
+  /* ============ AANRAAKMENU (staande holobox) ============
+     Op een staand scherm of smaller dan 1200 pixels wordt het menu een
+     aanraakmenu: een startscherm met de taken als grote tegels, en per taak
+     één kolom met bovenaan het podium. Alles op vingerformaat (48 px).
+     De gewone vier kolommen blijven voor een breed scherm met muis. */
+  #panel:not(.box) .box-alleen { display: none !important; }
+  #panel.box .box-alleen.hidden { display: none !important; }
+  #tbTerug { flex: none; }
+  #panel.box { grid-template-rows: 64px minmax(0, 1fr) auto; font-size: 16px; }
+  #panel.box #topbar { gap: 10px; padding: 0 12px; }
+  #panel.box #topbar > .tb-sel, #panel.box #tbLogo, #panel.box #tbPreview, #panel.box #tbSave,
+  #panel.box #tbPublish, #panel.box #tbDevice, #panel.box #closePanel, #panel.box #tbSpacer { display: none; }
+  #panel.box .tb-btn { min-height: 46px; font-size: 15px; padding: 10px 16px; border-radius: 11px; }
+  #panel.box .tb-btn.icon { min-width: 46px; justify-content: center; font-size: 18px; }
+  #panel.box #tbTitel { flex: 1; min-width: 0; font: 650 18px/1.2 var(--ui-font); color: var(--color-text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #panel.box.op-start #tbTerug { display: none !important; }
+  #panel.box #tbKlaar { padding: 10px 22px; }
+  #panel.box #motionDock, #panel.box #tabs, #panel.box #inspector { display: none; }
+  #panel.box #statusBar { min-height: 30px; font-size: 12px; }
+  #panel.box #statusBar #sbPublished, #panel.box #statusBar #sbDevices { display: none; }
+  #panel.box #editorBody { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 34vh) minmax(0, 1fr); }
+  #panel.box #canvasCell { grid-row: 1; padding: 10px 14px 8px; border-bottom: 1px solid var(--color-border); }
+  #panel.box #canvasToolbar { display: none; }
+  #panel.box #cvHint { font-size: 13px; color: var(--color-text-muted); text-align: center; }
+  #panel.box #dock { grid-row: 2; border-right: 0; }
+  #panel.box.zonder-podium #canvasCell { display: none; }
+  #panel.box.zonder-podium #dock { grid-row: 1 / -1; }
+  #panel.box.op-start #canvasCell, #panel.box.op-start #dock { display: none; }
+  #startScherm { display: none; }
+  /* Zonder canvas in beeld ook het podium zelf weg: anders zweeft het over het startscherm. */
+  body.podium-weg #stage, body.podium-weg #saver, body.podium-weg #playOverlay,
+  body.podium-weg #webOverlay, body.podium-weg #avatarOverlay, body.podium-weg #reeksLaag { visibility: hidden !important; }
+  /* De gekozen knop duidelijk zichtbaar in de (verkleinde) voorvertoning */
+  body.aanraakmenu.editing .vbtn.multi-sel { outline: 10px solid #fff; outline-offset: 10px; }
+  #panel.box.op-start #startScherm { display: flex; }
+  #startScherm { grid-row: 1 / -1; min-height: 0; overflow-y: auto; flex-direction: column; gap: 18px;
+    padding: 22px 22px 40px; background: var(--color-bg); }
+  #startScherm .st-vraag { font: 650 26px/1.2 var(--ui-font); color: var(--color-text-primary); margin: 4px 2px 0; }
+  #startScherm #navZoek { margin: 0; }
+  #startScherm #zoekVeld { min-height: 52px; font-size: 16px; padding: 12px 16px; }
+  .st-tegels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .st-tegel { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; text-align: left;
+    min-height: 150px; padding: 18px; border-radius: 16px; background: var(--color-surface-2);
+    border: 1px solid var(--color-border); color: var(--color-text-primary); font: inherit; }
+  .st-tegel:active { border-color: var(--color-border-active); background: rgba(21,242,224,.07); }
+  .st-tegel .ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center;
+    font-size: 21px; background: rgba(21,242,224,.12); color: var(--color-accent-teal); }
+  .st-tegel .nm { font-size: 19px; font-weight: 650; line-height: 1.2; margin-top: auto; }
+  .st-tegel .st { font-size: 14px; color: var(--color-text-secondary); line-height: 1.35; }
+  .st-tegel .st.let { color: #f0b429; }
+  .st-kop { font-size: 13px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--color-text-muted); margin: 8px 2px -4px; }
+  .st-meer { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .st-meer button { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 16px;
+    border-radius: 12px; background: var(--color-surface-1); border: 1px solid var(--color-border);
+    color: var(--color-text-primary); font: 550 16px var(--ui-font); text-align: left; }
+  .st-meer button .ic { color: var(--color-text-muted); width: 22px; text-align: center; }
+  .st-meer button:active { border-color: var(--color-border-active); }
+
+  /* Vingerformaat voor alle bediening in het aanraakmenu */
+  #panel.box .tabpage { padding: 18px 20px 40px; gap: 16px; }
+  #panel.box .tabpage h2 { font-size: 13px; }
+  #panel.box .note { font-size: 14.5px; }
+  #panel.box .card { padding: 18px; gap: 14px; border-radius: 14px; }
+  #panel.box .btn { min-height: 48px; font-size: 16px; padding: 11px 18px; border-radius: 11px; }
+  #panel.box .btn.small { min-height: 46px; font-size: 15px; padding: 10px 14px; }
+  #panel.box input[type=text], #panel.box input[type=number], #panel.box input[type=search],
+  #panel.box select, #panel.box textarea { min-height: 50px; font-size: 16px; padding: 12px 14px; border-radius: 10px; }
+  #panel.box label.field, #panel.box .field { font-size: 15px; gap: 8px; }
+  #panel.box input[type=range] { height: 36px; }
+  #panel.box input[type=color] { width: 56px; height: 48px; }
+  #panel.box .toggle-row { min-height: 52px; }
+  #panel.box .toggle-row .t-label { font-size: 16px; }
+  #panel.box .toggle-row .t-sub { font-size: 14px; }
+  #panel.box .switch { width: 60px; height: 34px; }
+  #panel.box .switch i::after { top: 4px; left: 4px; width: 24px; height: 24px; }
+  #panel.box .switch input:checked + i::after { transform: translateX(26px); }
+  #panel.box .sec-head { min-height: 56px; }
+  #panel.box .sec-ttl { font-size: 15px; }
+  #panel.box .sec-tools button { min-height: 44px; font-size: 14px; padding: 8px 12px; }
+  #panel.box .swatch { width: 42px; height: 42px; }
+  #panel.box .chip { min-height: 44px; font-size: 15px; padding: 9px 16px; }
+  #panel.box #inspBody summary { min-height: 54px; padding: 14px 16px; font-size: 13px; }
+  #panel.box #inspBody .sec { gap: 12px; padding: 4px 16px 18px; }
+  #panel.box #inspBody .note { font-size: 14px; }
+
+  /* Knoppen & video's in het aanraakmenu */
+  #panel.box #btnIntro, #panel.box #btnList, #panel.box #undoRow { display: none; }
+  #panel.box #edRasterCard, #panel.box #edAlignCard { display: none; }
+  #panel.box #page-buttons.toon-indeling #edRasterCard, #panel.box #page-buttons.toon-indeling #edAlignCard { display: flex; }
+  #panel.box.knop-open #sceneCard, #panel.box.knop-open #addBtn,
+  #panel.box.knop-open #boxIndeling, #panel.box.knop-open #edRasterCard, #panel.box.knop-open #edAlignCard { display: none !important; }
+  #boxKnoppen { display: grid; gap: 10px; }
+  .box-rij { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto 18px; align-items: center; gap: 14px;
+    min-height: 64px; padding: 10px 16px; border-radius: 14px; background: var(--p-card);
+    border: 1px solid var(--p-line); color: var(--p-ink); font: inherit; text-align: left; width: 100%; }
+  .box-rij:active { border-color: var(--color-border-active); }
+  .box-rij .dot { width: 18px; height: 18px; border-radius: 50%; }
+  .box-rij .nm { font-size: 17px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .box-rij .sub { font-size: 14px; color: var(--p-ink-3); max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .box-rij .sub.mist { color: #f0b429; }
+  .box-rij .pijl { font-size: 22px; color: var(--p-ink-3); }
+  #boxKaart { display: flex; flex-direction: column; gap: 16px; }
+  .bk-kop { display: flex; align-items: center; gap: 10px; }
+  .bk-kop .grow { font-size: 19px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #boxKaart details.bk-meer { border: 1px solid var(--p-line); border-radius: 14px; background: var(--p-card); overflow: hidden; }
+  #boxKaart details.bk-meer > summary { list-style: none; cursor: pointer; min-height: 56px; display: flex;
+    align-items: center; gap: 10px; padding: 0 18px; font-size: 16px; font-weight: 600; color: var(--p-ink); }
+  #boxKaart details.bk-meer > summary::before { content: '\25B8'; color: var(--p-ink-3); transition: transform .15s; }
+  #boxKaart details.bk-meer[open] > summary::before { transform: rotate(90deg); }
+  #boxKaart #inspBody { overflow: visible; }
+  #boxIndeling { display: grid; gap: 10px; }
 
   /* -- Body: sidebar | dock | canvas | inspector -- */
   #editorBody { display: grid; grid-template-columns: 212px 372px 1fr 340px; min-height: 0; }
@@ -1130,6 +1247,8 @@
 <aside id="panel">
   <header id="topbar">
     <button class="tb-btn exit" id="tbExit" title="Programma afsluiten en terug naar Windows">&#9211;&nbsp;Naar Windows</button>
+    <button class="tb-btn box-alleen" id="tbTerug" title="Terug naar het overzicht">&#8249;&nbsp;Menu</button>
+    <div class="box-alleen" id="tbTitel">Menu</div>
     <div id="tbLogo">
       <div class="mark"></div>
       <div>
@@ -1160,6 +1279,7 @@
       <div class="sub" id="tbDevSub">niet gekoppeld</div>
     </div>
     <button id="closePanel" title="Editor sluiten">&#10005;</button>
+    <button class="tb-btn cta box-alleen" id="tbKlaar" title="Menu sluiten en terug naar de presentatie">Klaar</button>
   </header>
 
   <div id="editorBody">
@@ -1196,10 +1316,10 @@
 
   <!-- ================= KNOPPEN ================= -->
   <div class="tabpage" id="page-buttons">
-    <p class="note">Of een knop meebeweegt op de muziek zet je bij de knop zelf, met de
+    <p class="note" id="btnIntro">Of een knop meebeweegt op de muziek zet je bij de knop zelf, met de
     schakelaar <b>&#9835; Beats</b>. Effecten bij het kiezen en het aandacht trekken staan
     op het tabblad <b>Motion</b>.</p>
-    <div class="card">
+    <div class="card" id="sceneCard">
       <label class="field">Sc&egrave;ne
         <select id="sceneSelect"></select>
       </label>
@@ -1211,8 +1331,11 @@
       <p class="note">Een knop kan media afspelen &oacute;f naar een andere sc&egrave;ne navigeren (actie per knop hieronder). De homescène is het startpunt.</p>
     </div>
     <button id="addBtn" class="btn primary block">+ Knop toevoegen</button>
-    <div class="card">
-      <div class="row">
+    <div id="boxKnoppen" class="box-alleen"></div>
+    <div id="boxKaart" class="box-alleen hidden"></div>
+    <div id="boxIndeling" class="box-alleen"></div>
+    <div class="card" id="edRasterCard">
+      <div class="row" id="undoRow">
         <button id="undoBtn" class="btn small">&#8630; Ongedaan (Ctrl+Z)</button>
         <button id="redoBtn" class="btn small">&#8631; Opnieuw (Ctrl+Y)</button>
       </div>
@@ -1229,10 +1352,10 @@
           <input type="number" id="edSafe" min="0" max="25" step="1">
         </label>
       </div>
-      <p class="note">Verslepen: klik op het slot linksonder in het scherm. Raster,
+      <p class="note">Verslepen: zet de voorvertoning op <b>Bewerken</b> en sleep een knop. Raster,
       hulplijnen en de veilige marge zijn dan zichtbaar.</p>
     </div>
-    <div class="card">
+    <div class="card" id="edAlignCard">
       <div class="t-label">Uitlijnen, verdelen &amp; layout</div>
       <p class="note" id="selInfo">Geen selectie &mdash; klik in verplaats-modus op knoppen (shift = meerdere)</p>
       <div class="row" style="flex-wrap:wrap">
@@ -2153,6 +2276,7 @@
       <button class="cv-btn" id="cvEdit" title="Verplaats-modus aan/uit">&#128275; Bewerken</button>
       <button class="cv-btn" id="cvFull" title="Volledig scherm (preview)">&#10530;</button>
     </div>
+    <div id="cvHint" class="box-alleen">Tik op een knop om hem aan te passen &middot; sleep om te verplaatsen</div>
     <div id="stageHole"></div>
   </div>
 
@@ -2235,7 +2359,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.27.0';
+const APP_VERSION = '2.28.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -4348,6 +4472,7 @@ function markSelection() {
   if (panel.classList.contains('open') && typeof renderInspector === 'function') {
     renderInspector();
     renderLayers();
+    if (typeof AanraakMenu !== 'undefined' && AanraakMenu.aan) AanraakMenu.selectie();
   }
 }
 
@@ -5336,7 +5461,11 @@ async function handCycle() {
 const lockFab = $('#lockFab');
 async function toggleEditing() {
   if (!editing && !(await requireAdmin())) return;
-  editing = !editing;
+  setEditing(!editing);
+}
+function setEditing(aan, { stil = false } = {}) {
+  if (editing === !!aan) return;
+  editing = !!aan;
   document.body.classList.toggle('editing', editing);
   lockFab.textContent = editing ? '🔓' : '🔒';
   const ce = document.getElementById('cvEdit');
@@ -5344,8 +5473,8 @@ async function toggleEditing() {
   $('#editHint').classList.toggle('hidden', !editing);
   applyOrientationMode(); // tijdens verplaatsen niet roteren, daarna weer wel
   syncFrames();
-  if (!editing) { clearSelection(); save(); toast('Knoppen vastgezet'); }
-  else { markSelection(); toast('Shift-klik selecteert meerdere knoppen tegelijk'); }
+  if (!editing) { clearSelection(); save(); if (!stil) toast('Knoppen vastgezet'); }
+  else { markSelection(); if (!stil) toast('Shift-klik selecteert meerdere knoppen tegelijk'); }
 }
 lockFab.addEventListener('click', toggleEditing);
 $('#cvEdit').addEventListener('click', toggleEditing);
@@ -5413,11 +5542,13 @@ function openEditor() {
   document.body.classList.add('editor-open');
   refreshPanel();
   applyOrientationMode(); // editor toont het podium ongedraaid in het canvas
+  AanraakMenu?.pasToe({ vers: true });
   requestAnimationFrame(fitEditorCanvas);
 }
 
 function closeEditor() {
   panel.classList.remove('open');
+  AanraakMenu?.pasToe();
   document.body.classList.remove('editor-open');
   clearEditorCanvas();
   applyOrientationMode();
@@ -5623,9 +5754,13 @@ function pasSjabloonToe(sj) {
   pushUndo();
   const sc = curScene();
   sc.title = sj.scene?.title || '';
+  // De indelingen zijn liggend getekend. Op een staand scherm schoven vier
+  // knoppen naast elkaar over elkaar heen; dan onder elkaar zetten.
+  const staand = innerHeight > innerWidth;
+  const pos = staand && typeof AanraakMenu !== 'undefined' ? AanraakMenu.staandePosities(sj.knoppen) : null;
   sc.buttons = sj.knoppen.map((k, i) => ({
     id: uid(), label: k.label, mediaId: null,
-    x: k.x, y: k.y, size: k.size, shape: 'rounded',
+    x: pos ? pos[i].x : k.x, y: pos ? pos[i].y : k.y, size: k.size, shape: 'rounded',
     color: PALETTE[i % PALETTE.length], depth: 'subtle', drift: 0,
     showPreview: true, fx: 'random', z: i, alpha: 100, glow: 1,
     beat: { on: !!k.beat, band: 'auto', rise: 10, swell: 6,
@@ -6763,8 +6898,309 @@ function refreshPanel() {
   refreshSceneUI(); renderBtnList(); renderMediaList(); renderLook(); renderSaver(); renderMotion(); renderShare();
   renderReeks();
   renderDashboard(); renderInspector(); renderLayers(); renderMotionDock(); updateTopbar();
+  if (typeof AanraakMenu !== 'undefined' && AanraakMenu.aan) AanraakMenu.teken();
   requestAnimationFrame(fitEditorCanvas);
 }
+
+/* ================= Aanraakmenu voor de staande holobox =================
+   Het menu was gebouwd als bureaubladprogramma: vier kolommen naast elkaar.
+   Op een staande holobox van 1080 breed, bediend met een vinger, bleef daar
+   weinig van over. Op een staand of smal scherm wordt het daarom een
+   aanraakmenu: eerst een startscherm met de taken die je echt doet, dan per
+   taak één rustige pagina met bovenaan het podium.
+
+   Er wordt niets nagebouwd. De bestaande tabbladen, velden en hun logica
+   blijven precies dezelfde; alleen de schikking en de weg erheen
+   veranderen. Twee onderdelen verhuizen zolang het aanraakmenu aanstaat (het
+   zoekveld naar het startscherm, de inspector naar de knopkaart) en gaan
+   daarna terug naar hun eigen plek. */
+// var, niet const: andere code vraagt al tijdens het opstarten naar het menu.
+var AanraakMenu = (() => {
+  const TAKEN = [
+    { tab: 'buttons', naam: "Knoppen & video's", ic: '◎', status: () => {
+      const n = curButtons().length;
+      const zonder = curButtons().filter((b) => !buttonAction(b).type || buttonAction(b).type === 'PlayMedia').filter((b) => !b.mediaId).length;
+      if (!n) return { t: 'Nog geen knoppen' };
+      return { t: `${n} knop${n === 1 ? '' : 'pen'}` + (config.scenes.length > 1 ? ` · ${config.scenes.length} scènes` : '') +
+        (zonder ? ` · ${zonder} zonder video` : ''), let: zonder > 0 };
+    } },
+    { tab: 'saver', naam: 'Screensaver', ic: '✱', status: () => {
+      const sv = config.screensaver || {};
+      if (!sv.enabled) return { t: 'Uit' };
+      const sec = Number(sv.delaySec) || 0;
+      return { t: `Aan · na ${sec >= 60 ? Math.round(sec / 60) + ' min' : sec + ' s'}` +
+        (config.keepAlive?.on ? ' · speaker wakker' : '') };
+    } },
+    { tab: 'reeks', naam: 'Reeks & klikker', ic: '⏭', status: () => {
+      const r = config.reeks || {};
+      const n = (r.items || []).length;
+      if (!r.aan) return { t: n ? `Uit · ${n} video's klaar` : 'Uit' };
+      return { t: `Aan · ${n} video${n === 1 ? '' : "'s"}` + (mediaCache.get(r.wachtId) ? ' · wachtvideo' : ' · geen wachtvideo'),
+        let: !mediaCache.get(r.wachtId) };
+    } },
+    { tab: 'share', naam: 'Opslaan & verhuizen', ic: '⇩', titel: 'Opslaan & verhuizen',
+      status: () => ({ t: 'Alles in één bestand, naar USB of terug' }) },
+  ];
+  const MEER = [
+    ['media', 'Media', '▶'], ['look', 'Scherm & scène', '▣'], ['style', 'Vormgeving', '◇'],
+    ['fx', 'Motion', '〜'], ['3d', '3D-objecten', '◫'], ['cam', 'Camera', '☉'],
+    ['avatar', 'AI-avatars', '☺'], ['share', 'Beheer & device', '⇄'], ['help', 'Help', '?'],
+  ];
+  // Bij deze taken hoort het podium in beeld; bij de rest is het alleen ruimteverlies.
+  const MET_PODIUM = new Set(['buttons', 'look', 'style', 'fx', '3d']);
+  const NAMEN = Object.fromEntries([...MEER.map(([t, n]) => [t, n]), ...TAKEN.map((t) => [t.tab, t.naam])]);
+
+  let aan = false;
+  let scherm = 'start';
+  let intern = false;            // een tabblad openen vanuit het aanraakmenu zelf
+  const thuis = {};              // eigen plek van verhuisde onderdelen
+  let inspStandOud = null;
+
+  const start = el('div', { id: 'startScherm' });
+  document.getElementById('editorBody').append(start);
+  const zoekPlek = el('div', {});
+  const kaartBody = el('details', { class: 'bk-meer' }, el('summary', {}, 'Meer opties'));
+
+  const isAanraak = () => innerHeight > innerWidth || innerWidth < 1200;
+
+  function verhuis(id, naar) {
+    const n = document.getElementById(id);
+    if (!n || n.parentNode === naar) return;
+    if (!thuis[id]) thuis[id] = { ouder: n.parentNode, na: n.nextSibling };
+    naar.append(n);
+  }
+  function terugzetten(id) {
+    const n = document.getElementById(id), t = thuis[id];
+    if (n && t) t.ouder.insertBefore(n, t.na);
+    delete thuis[id];
+  }
+
+  function pasToe({ vers = false } = {}) {
+    const moet = panel.classList.contains('open') && isAanraak();
+    if (moet !== aan) {
+      aan = moet;
+      panel.classList.toggle('box', aan);
+      if (aan) {
+        verhuis('navZoek', zoekPlek);
+        verhuis('inspBody', kaartBody);
+        // In de knopkaart is "Meer opties" al een uitklapper: daarbinnen
+        // alleen het eerste onderdeel open, anders wordt het weer een lange lap.
+        inspStandOud = { ...inspOpenState };
+        Object.keys(inspOpenState).forEach((k) => { inspOpenState[k] = k === 'CONTENT'; });
+        renderInspector();
+      } else {
+        terugzetten('navZoek');
+        terugzetten('inspBody');
+        if (inspStandOud) Object.assign(inspOpenState, inspStandOud);
+        panel.classList.remove('op-start', 'zonder-podium', 'knop-open');
+        setEditing(false, { stil: true });
+        if (panel.classList.contains('open')) {
+          // Terug naar de brede indeling: het tabblad dat open stond blijft open.
+          renderInspector();
+        }
+      }
+      vers = true;
+    }
+    if (aan && vers) naarStart();
+    podiumStand();
+    requestAnimationFrame(fitEditorCanvas);
+  }
+
+  function zetTitel(t) { document.getElementById('tbTitel').textContent = t; }
+  function podiumStand() {
+    document.body.classList.toggle('aanraakmenu', aan);
+    document.body.classList.toggle('podium-weg', aan && (scherm === 'start' || !MET_PODIUM.has(scherm)));
+  }
+
+  function naarStart() {
+    scherm = 'start';
+    setEditing(false, { stil: true });
+    clearSelection();
+    panel.classList.add('op-start');
+    panel.classList.remove('zonder-podium', 'knop-open');
+    zetTitel('Menu');
+    podiumStand();
+    tekenStart();
+  }
+
+  function open(tab, titel) {
+    scherm = tab;
+    panel.classList.remove('op-start');
+    panel.classList.toggle('zonder-podium', !MET_PODIUM.has(tab));
+    intern = true;
+    document.querySelector(`#tabs button[data-tab="${tab}"]`)?.click();
+    intern = false;
+    zetTitel(titel || NAMEN[tab] || tab);
+    podiumStand();
+    // Bij knoppen meteen in bewerkstand: tikken selecteert, slepen verplaatst.
+    setEditing(tab === 'buttons', { stil: true });
+    if (tab === 'buttons') { clearSelection(); tekenKnoppen(); }
+    const pagina = document.getElementById('page-' + tab);
+    if (pagina) pagina.scrollTop = 0;
+    requestAnimationFrame(fitEditorCanvas);
+  }
+
+  function tekenStart() {
+    start.innerHTML = '';
+    start.append(el('div', { class: 'st-vraag' }, 'Wat wil je doen?'), zoekPlek);
+    start.append(el('div', { class: 'st-tegels' }, TAKEN.map((t) => {
+      const st = t.status();
+      return el('button', { class: 'st-tegel', type: 'button', 'data-taak': t.tab, onclick: () => open(t.tab, t.titel || t.naam) },
+        el('span', { class: 'ic' }, t.ic),
+        el('span', { class: 'nm' }, t.naam),
+        el('span', { class: 'st' + (st.let ? ' let' : '') }, st.t));
+    })));
+    start.append(el('div', { class: 'st-kop' }, 'Meer'));
+    start.append(el('div', { class: 'st-meer' }, MEER.map(([tab, naam, ic]) =>
+      el('button', { type: 'button', 'data-tab-meer': tab, onclick: () => open(tab, naam) },
+        el('span', { class: 'ic' }, ic), naam))));
+  }
+
+  /* ---- Knoppen & video's ----
+     Zonder selectie: de knoppen als lijst, met per knop zijn video (of dat
+     hij er nog geen heeft). Met een knop geselecteerd: alleen die knop, met
+     wat je meestal wilt veranderen bovenaan en de rest onder "Meer opties". */
+  function mediaNaam(b) {
+    const a = buttonAction(b);
+    if (a.type && a.type !== 'PlayMedia') {
+      return { t: { OpenScene: 'gaat naar een scène', OpenURL: 'opent een webpagina', OpenAvatar: 'opent een avatar',
+        Back: 'terug', Home: 'naar home', SetLanguage: 'wisselt van taal' }[a.type] || a.type };
+    }
+    const m = mediaCache.get(b.mediaId);
+    return m ? { t: m.name } : { t: 'Nog geen video', mist: true };
+  }
+
+  function tekenKnoppen() {
+    const b = primarySelected();
+    panel.classList.toggle('knop-open', !!b);
+    const lijst = document.getElementById('boxKnoppen');
+    const kaart = document.getElementById('boxKaart');
+    lijst.classList.toggle('hidden', !!b);
+    kaart.classList.toggle('hidden', !b);
+    if (b) return tekenKaart(b, kaart);
+    lijst.innerHTML = '';
+    const knoppen = [...curButtons()].sort((p, q) => (p.y - q.y) || (p.x - q.x));
+    if (!knoppen.length) lijst.append(el('p', { class: 'note' }, 'Nog geen knoppen. Voeg er hieronder één toe.'));
+    for (const k of knoppen) {
+      const m = mediaNaam(k);
+      lijst.append(el('button', { class: 'box-rij', type: 'button', 'data-knop': k.id,
+        onclick: () => { selectedIds.clear(); selectedIds.add(k.id); markSelection(); } },
+        el('span', { class: 'dot', style: `background:${k.color}` }),
+        el('span', { class: 'nm' }, k.label || '(zonder tekst)'),
+        el('span', { class: 'sub' + (m.mist ? ' mist' : '') }, m.t),
+        el('span', { class: 'pijl' }, '›')));
+    }
+    const ind = document.getElementById('boxIndeling');
+    const pagina = document.getElementById('page-buttons');
+    ind.innerHTML = '';
+    ind.append(
+      el('button', { class: 'btn block', type: 'button', id: 'boxStaand', onclick: () => staandIndelen() },
+        'Netjes indelen voor een staand scherm'),
+      el('button', { class: 'btn block', type: 'button', onclick: (e) => {
+        const nu = pagina.classList.toggle('toon-indeling');
+        e.currentTarget.textContent = nu ? 'Uitlijnen & raster verbergen' : 'Uitlijnen, verdelen & raster…';
+      } }, pagina.classList.contains('toon-indeling') ? 'Uitlijnen & raster verbergen' : 'Uitlijnen, verdelen & raster…'));
+  }
+
+  function tekenKaart(b, kaart) {
+    const alleKnoppen = () => { clearSelection(); };
+    const opnieuw = () => { save(); renderStage(); renderInspector(); };
+    const a = buttonAction(b);
+    const speeltMedia = !a.type || a.type === 'PlayMedia';
+    kaart.innerHTML = '';
+    kaart.append(
+      el('div', { class: 'bk-kop' },
+        el('button', { class: 'btn', type: 'button', onclick: alleKnoppen }, '‹ Alle knoppen'),
+        el('span', { class: 'grow' }),
+        el('button', { class: 'btn', type: 'button', title: 'Knop dupliceren', onclick: () => {
+          pushUndo();
+          const copy = { ...structuredClone(b), id: uid(), label: (b.label || 'Knop') + ' kopie',
+            x: Math.min(96, b.x + 4), y: Math.min(96, b.y + 4), z: curButtons().length };
+          curScene().buttons.push(copy);
+          save(); renderStage(); renderBtnList();
+          selectedIds.clear(); selectedIds.add(copy.id); markSelection();
+          toast('Knop gedupliceerd');
+        } }, '⧉ Dupliceren'),
+        el('button', { class: 'btn danger', type: 'button', title: 'Knop verwijderen', onclick: () => {
+          if (!confirm(`Knop "${b.label || 'zonder tekst'}" verwijderen?`)) return;
+          pushUndo();
+          curScene().buttons = curScene().buttons.filter((x) => x !== b);
+          save(); renderStage(); renderBtnList(); clearSelection();
+        } }, 'Verwijderen')),
+      el('div', { class: 'card' },
+        el('label', { class: 'field' }, 'Tekst op de knop',
+          el('input', { type: 'text', id: 'bkTekst', value: b.label || '', placeholder: 'Bijvoorbeeld: Bekijk de film',
+            oninput: (e) => { b.label = e.target.value; save(); renderStage(); } })),
+        speeltMedia
+          ? el('label', { class: 'field' }, 'Video',
+              (() => { const sel = mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); if (v) ensurePreviewRendition(v); renderStage(); renderInspector(); });
+                       sel.id = 'bkVideo'; return sel; })())
+          : el('p', { class: 'note' }, `Deze knop ${mediaNaam(b).t}. Wijzigen kan onder Meer opties, bij Actie.`),
+        el('div', { class: 'field' }, 'Kleur',
+          el('div', { class: 'swatches' }, PALETTE.map((c) =>
+            el('button', { class: 'swatch' + (b.color === c ? ' sel' : ''), type: 'button', style: `background:${c}`,
+              'aria-label': 'Kleur ' + c,
+              onclick: () => { b.color = c; opnieuw(); tekenKaart(b, kaart); } })))),
+        el('label', { class: 'field' }, 'Grootte',
+          el('input', { type: 'range', id: 'bkGrootte', min: 4, max: 20, step: 0.5, value: b.size || 8,
+            oninput: (e) => { b.size = Number(e.target.value); save(); renderStage(); } }))),
+      kaartBody);
+    // De inspector zat los van de pagina zolang er geen knop gekozen was;
+    // nu hij weer in beeld is, met de gegevens van déze knop vullen.
+    renderInspector();
+  }
+
+  /* Knoppen in een staand scherm netjes onder elkaar: twee kolommen (één
+     bij grote knoppen), in de onderste helft. Daar zit hij op reikhoogte en
+     staat hij niet voor het gezicht van wie er in de holobox staat. */
+  function staandePosities(knoppen) {
+    const n = knoppen.length;
+    if (!n) return [];
+    const groot = Math.max(...knoppen.map((k) => k.size || 8)) >= 14;
+    const kol = groot || n === 1 ? 1 : 2;
+    const rijen = Math.ceil(n / kol);
+    const stap = rijen > 1 ? Math.min(14, 34 / (rijen - 1)) : 0;
+    const y0 = rijen === 1 ? 64 : Math.max(46, 66 - (stap * (rijen - 1)) / 2);
+    return knoppen.map((k, i) => {
+      const r = Math.floor(i / kol), c = i % kol;
+      const alleenInRij = kol === 2 && r === rijen - 1 && n % 2 === 1;
+      return { x: kol === 1 || alleenInRij ? 50 : (c === 0 ? 28 : 72), y: +(y0 + r * stap).toFixed(1) };
+    });
+  }
+  function staandIndelen() {
+    const knoppen = [...curButtons()].sort((p, q) => (p.y - q.y) || (p.x - q.x));
+    if (!knoppen.length) return toast('Er zijn nog geen knoppen om in te delen');
+    pushUndo();
+    staandePosities(knoppen).forEach((p, i) => { knoppen[i].x = p.x; knoppen[i].y = p.y; });
+    save(); renderStage(); renderBtnList(); tekenKnoppen();
+    toast('Knoppen ingedeeld voor een staand scherm');
+  }
+
+  function teken() {
+    if (!aan) return;
+    if (scherm === 'start') tekenStart();
+    else if (scherm === 'buttons') tekenKnoppen();
+  }
+
+  // Een tabblad dat anders wordt geopend (zoeken, een snelkoppeling) opent
+  // in het aanraakmenu als taakpagina.
+  for (const t of document.querySelectorAll('#tabs button[data-tab]')) {
+    t.addEventListener('click', () => {
+      if (!aan || intern) return;
+      open(t.dataset.tab);
+    });
+  }
+  document.getElementById('tbTerug').addEventListener('click', naarStart);
+  document.getElementById('tbKlaar').addEventListener('click', closeEditor);
+  addEventListener('resize', () => pasToe());
+
+  return {
+    get aan() { return aan; },
+    get scherm() { return scherm; },
+    pasToe, teken, open, naarStart, staandePosities,
+    selectie() { if (aan && scherm === 'buttons') tekenKnoppen(); },
+  };
+})();
 
 /* ---- Tab: knoppen ---- */
 function mediaSelect(selectedId, onchange) {

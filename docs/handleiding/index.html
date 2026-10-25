@@ -289,7 +289,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.27.0</span><span>23 hoofdstukken</span><span>33 schermafbeeldingen</span>
+    <span>Versie 2.28.0</span><span>23 hoofdstukken</span><span>36 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -420,9 +420,57 @@ header.cover{padding-block:88px 8px}
       <span class="pin" style="left:44%;top:91.5%">6</span>
       <span class="pin" style="left:33%;top:98.7%">7</span>
     </div>
-    <figcaption><b>De editor.</b> Zelfde app, 5&times; tikken linksboven verder. De zeven zones
-    staan in het volgende hoofdstuk stuk voor stuk uitgelegd.</figcaption>
+    <figcaption><b>De editor op een breed scherm.</b> Zelfde app, 5&times; tikken linksboven
+    verder. De zeven zones staan in het volgende hoofdstuk stuk voor stuk uitgelegd.</figcaption>
   </figure>
+
+  <h3>Op de holobox zelf: het aanraakmenu</h3>
+  <p class="measure">Op een staand scherm, of een scherm smaller dan 1200 pixels, opent het menu
+  als <b>aanraakmenu</b>. Dat is gemaakt om met je vinger op de holobox te bedienen: alles is
+  minstens 48 pixels hoog, en je ziet steeds maar één ding tegelijk. De instellingen zelf zijn
+  precies dezelfde als in de brede editor; alleen de weg ernaartoe is anders.</p>
+  <figure>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:760px">
+      <div class="shot"><img src="img/aanraak-start.webp" alt="Startscherm van het aanraakmenu met vier grote taaktegels en een lijst Meer" width="400" height="711" loading="lazy">
+        <span class="pin" style="left:50%;top:22%">1</span><span class="pin" style="left:50%;top:39%">2</span></div>
+      <div class="shot"><img src="img/aanraak-knoppen.webp" alt="Knoppen en video's: podium bovenaan, lijst met knoppen eronder" width="400" height="711" loading="lazy">
+        <span class="pin" style="left:50%;top:20%">3</span><span class="pin" style="left:50%;top:60%">4</span></div>
+      <div class="shot"><img src="img/aanraak-kaart.webp" alt="De knopkaart met tekst, video, kleur en grootte" width="400" height="711" loading="lazy">
+        <span class="pin" style="left:50%;top:50%">5</span><span class="pin" style="left:50%;top:64%">6</span></div>
+    </div>
+    <ul class="legend">
+      <li><span class="n">1</span><span><b>Wat wil je doen?</b> <span class="q">— de vier taken die
+        je het vaakst doet, als grote tegels: <b>Knoppen &amp; video's</b>, <b>Screensaver</b>,
+        <b>Reeks &amp; klikker</b> en <b>Opslaan &amp; verhuizen</b>. Op elke tegel staat hoe het
+        er nu voor staat, bijvoorbeeld &ldquo;4 knoppen &middot; 1 zonder video&rdquo; (in geel als er
+        iets ontbreekt).</span></span></li>
+      <li><span class="n">2</span><span><b>Meer</b> <span class="q">— de overige onderdelen
+        (media, vormgeving, motion, 3D, camera, AI-avatars, beheer, help). Erboven staat het
+        zoekveld: typ een woord als &ldquo;wachtvideo&rdquo; en tik op het resultaat.</span></span></li>
+      <li><span class="n">3</span><span><b>Het podium bovenaan</b> <span class="q">— alleen bij
+        taken die over het podium gaan. Tik op een knop om hem aan te passen, sleep hem om hem te
+        verplaatsen. Bij screensaver, reeks en beheer krijgen de instellingen de hele hoogte.</span></span></li>
+      <li><span class="n">4</span><span><b>De knoppen als lijst</b> <span class="q">— per knop zijn
+        video, of &ldquo;Nog geen video&rdquo;. Daaronder <b>+ Knop toevoegen</b>, <b>Netjes indelen voor
+        een staand scherm</b> (zet de knoppen in twee kolommen op reikhoogte, zonder overlap) en
+        het uitklapbare <b>Uitlijnen, verdelen &amp; raster</b>.</span></span></li>
+      <li><span class="n">5</span><span><b>De knopkaart</b> <span class="q">— wat je meestal wilt
+        veranderen: tekst, video, kleur en grootte. Bovenaan <b>Dupliceren</b> en
+        <b>Verwijderen</b>, en <b>&lsaquo; Alle knoppen</b> om terug te gaan.</span></span></li>
+      <li><span class="n">6</span><span><b>Meer opties</b> <span class="q">— alle andere
+        instellingen van deze knop (actie, positie, vorm, effecten), dezelfde als in de inspector
+        van de brede editor.</span></span></li>
+    </ul>
+    <figcaption><b>Het aanraakmenu op 1080 &times; 1920.</b> Bovenin staan altijd
+    <b>&#9211; Naar Windows</b>, <b>&lsaquo; Menu</b> (terug naar de tegels), ongedaan maken en
+    <b>Klaar</b> (terug naar de presentatie).</figcaption>
+  </figure>
+  <div class="note why"><span class="t">Waarom een apart aanraakmenu</span>
+    <p>De editor is gebouwd met vier kolommen naast elkaar. Op een staande holobox van 1080
+    pixels breed bleef daar een voorvertoning van 392 pixels over, met knopjes van 28 pixels
+    hoog: te klein voor een vinger. De taak die je het vaakst doet, een knop een video geven,
+    stond onderaan een lange lijst. Nu begin je bij de taak en zie je alleen wat daarbij hoort.
+    Op een breed scherm met een muis blijft de editor met vier kolommen.</p></div>
 
   <div class="note why"><span class="t">Waarom één bestand</span>
     <p>De holobox staat vaak op een beursvloer of in een showroom zonder betrouwbaar internet.
@@ -2591,6 +2639,13 @@ header.cover{padding-block:88px 8px}
       <tr><td>Terugzetten zegt “niet genoeg ruimte”</td><td>De schijf van de box is te vol
         voor alle video's.</td><td>Ruimte vrijmaken, of eerst <b>Alles wissen</b> op de
         nieuwe box en dan opnieuw terugzetten.</td></tr>
+      <tr><td>Het menu ziet er op de box anders uit dan op mijn laptop</td><td>Zo hoort het: op een
+        staand of smal scherm opent het aanraakmenu, op een breed scherm de editor met vier
+        kolommen.</td><td>De instellingen zijn dezelfde. Zoek je iets, gebruik dan het zoekveld
+        op het startscherm (hoofdstuk 2).</td></tr>
+      <tr><td>Knoppen staan over elkaar heen op een staand scherm</td><td>De indeling is liggend
+        gemaakt.</td><td>Knoppen &amp; video's &rarr; <b>Netjes indelen voor een staand
+        scherm</b>. Ongedaan maken kan met &#8630; bovenin.</td></tr>
       <tr><td>Ik kom niet in het menu</td><td>De bedieningsknoppen zijn verborgen (standaard),
         of er zit een PIN op.</td><td>5× snel tikken in de hoek linksboven, binnen 4 seconden.
         Daarna de PIN.</td></tr>
@@ -2703,7 +2758,7 @@ header.cover{padding-block:88px 8px}
 
   <hr class="soft">
   <p class="measure" style="color:var(--ink-3);font-size:14.5px">
-    Dit boek hoort bij versie 2.27.0 van de HereWeHolo Experience Manager. De bewegingswetten
+    Dit boek hoort bij versie 2.28.0 van de HereWeHolo Experience Manager. De bewegingswetten
     achter Motion staan uitgeschreven in <code>docs/MOTION.md</code>; het systeem zelf kun je
     in werking zien in <code>motion/motion-system.html</code>.
   </p>
