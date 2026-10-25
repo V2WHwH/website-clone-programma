@@ -72,8 +72,10 @@
       inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -0.35em 0.6em rgba(0,0,0,0.18);
     transition: filter 0.15s; line-height: 1.25; padding: 0.4em 0.9em; overflow-wrap: anywhere;
     /* Breedte naar de tekst, niet naar de ruimte tot de rand: een knop rechts
-       van het midden brak zijn tekst anders midden in een woord af. */
-    width: max-content; max-width: 44vw; }
+       van het midden brak zijn tekst anders midden in een woord af. Hooguit
+       zo'n zestien tekens per regel; een langere tekst loopt netjes op een
+       woordgrens door naar een tweede regel. */
+    width: max-content; max-width: min(44vw, 11em); }
   .vbtn:active { filter: brightness(1.2); }
   /* Losse "grondschaduw" onder de knop: dit verkoopt het zweefeffect. */
   .vbtn::after { content: ''; position: absolute; left: 6%; right: 6%; bottom: -1.15em; height: 0.5em;
@@ -737,6 +739,38 @@
      over elf tabbladen; zoeken is dan geen luxe maar de normale manier om
      iets terug te vinden. */
   #navZoek { position: relative; margin: 2px 2px 8px; }
+  .nav-grp { font-size: 9.5px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--color-text-muted); padding: 12px 12px 4px; }
+  .nav-tx2 { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+  .nav-st { font-size: 10px; font-weight: 500; color: var(--color-text-muted); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; }
+  .nav-st.let { color: #f0b429; }
+  @media (max-width: 1240px) { .nav-grp, .nav-st { display: none; } }
+  /* Brede editor: de knoppen staan als korte lijst links, de details in de
+     inspector rechts. De lange knoppenkaarten stonden er dubbel. */
+  #btnList, #undoRow { display: none !important; }
+  #panel:not(.box) #boxIndeling button.alleen-box { display: none; }
+  .box-rij.sel { border-color: var(--color-border-active); background: rgba(21,242,224,.07); }
+  #panel:not(.box) .box-rij { min-height: 46px; padding: 6px 12px; gap: 10px; grid-template-columns: 12px minmax(0, 1fr) auto 12px; }
+  #panel:not(.box) .box-rij .dot { width: 12px; height: 12px; }
+  #panel:not(.box) .box-rij .nm { font-size: 13.5px; }
+  #panel:not(.box) .box-rij .sub { font-size: 12px; max-width: 150px; }
+  #panel:not(.box) .box-rij .pijl { display: none; }
+  #panel:not(.box) #boxKnoppen { gap: 6px; }
+  /* De bewegingsbalk alleen bij Motion: op elk ander tabblad nam hij ruimte
+     in zonder iets met dat tabblad te maken te hebben. */
+  #panel:not(.box):not([data-tab="fx"]) #motionDock { display: none; }
+  #panel:not(.box):not([data-tab="fx"]) { grid-template-rows: 56px minmax(0, 1fr) 26px; }
+  /* Overzicht: dezelfde taaktegels als het aanraakmenu, in de smalle kolom */
+  .tabpage .st-tegels { gap: 10px; }
+  .tabpage .st-tegel { min-height: 108px; padding: 13px; border-radius: 13px; gap: 6px; }
+  .tabpage .st-tegel .ic { width: 32px; height: 32px; font-size: 16px; border-radius: 9px; }
+  .tabpage .st-tegel .nm { font-size: 14.5px; }
+  .tabpage .st-tegel .st { font-size: 12px; }
+  .tabpage .st-vraag { font: 650 19px/1.2 var(--ui-font); color: var(--color-text-primary); }
+  #panel.box .tabpage .st-tegel { min-height: 150px; padding: 18px; }
+  #panel.box .tabpage .st-tegel .nm { font-size: 19px; }
+  #panel.box .tabpage .st-tegel .st { font-size: 14px; }
   #zoekVeld { width: 100%; background: var(--p-card-2); border: 1px solid var(--p-line);
     color: var(--p-ink); border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 12.5px; }
   #zoekVeld::placeholder { color: var(--p-ink-3); }
@@ -898,7 +932,7 @@
   .tabpage h2 { font-size: 11px; color: var(--p-ink-3); text-transform: uppercase;
     letter-spacing: 0.1em; font-weight: 650; margin: 6px 2px 0; }
 
-  /* -- Inklapbare onderdelen. Een tabblad als Beheer & device is bijna drie
+  /* -- Inklapbare onderdelen. Een tabblad als Opslaan & beheer is bijna drie
      schermen lang; wie de bovenste twee onderdelen dichtklapt, ziet de rest
      in één oogopslag. De kop is zelf de knop: klikken op het nummer, de
      titel of het pijltje doet hetzelfde. -- */
@@ -1121,7 +1155,7 @@
        je eigen video's erin.</p>
     <div id="sjablonen"></div>
     <p class="klein">Liever zelf beginnen? Kies <b>Leeg scherm</b>. Je kunt later altijd
-       nog een andere indeling kiezen via <b>Dashboard &rarr; Snel aan de slag</b>.</p>
+       nog een andere indeling kiezen via <b>Overzicht &rarr; Snel aan de slag</b>.</p>
   </div>
   <div id="breadcrumb" class="hidden"></div>
   <div id="langBar" class="hidden"></div>
@@ -1288,18 +1322,20 @@
       <input type="search" id="zoekVeld" placeholder="Zoek een instelling…" autocomplete="off">
       <div id="zoekUit" class="hidden"></div>
     </div>
-    <button data-tab="dashboard"><span class="nav-ic">&#8962;</span><span class="nav-txt">Dashboard</span></button>
-    <button data-tab="buttons" class="active"><span class="nav-ic">&#9678;</span><span class="nav-txt">Knoppen &amp; sc&egrave;nes</span></button>
+    <button data-tab="dashboard"><span class="nav-ic">&#8962;</span><span class="nav-txt">Overzicht</span></button>
+    <div class="nav-grp">Taken</div>
+    <button data-tab="buttons" class="active"><span class="nav-ic">&#9678;</span><span class="nav-tx2"><span class="nav-txt">Knoppen &amp; video's</span><span class="nav-st" data-st="buttons"></span></span></button>
+    <button data-tab="saver"><span class="nav-ic">&#10033;</span><span class="nav-tx2"><span class="nav-txt">Screensaver</span><span class="nav-st" data-st="saver"></span></span></button>
+    <button data-tab="reeks"><span class="nav-ic">&#9197;</span><span class="nav-tx2"><span class="nav-txt">Reeks &amp; klikker</span><span class="nav-st" data-st="reeks"></span></span></button>
+    <button data-tab="share"><span class="nav-ic">&#8644;</span><span class="nav-tx2"><span class="nav-txt">Opslaan &amp; beheer</span><span class="nav-st" data-st="share"></span></span></button>
+    <div class="nav-grp">Meer</div>
     <button data-tab="media"><span class="nav-ic">&#9654;</span><span class="nav-txt">Media</span></button>
     <button data-tab="look"><span class="nav-ic">&#9635;</span><span class="nav-txt">Scherm &amp; sc&egrave;ne</span></button>
     <button data-tab="style"><span class="nav-ic">&#9671;</span><span class="nav-txt">Vormgeving</span></button>
-    <button data-tab="3d"><span class="nav-ic">&#9707;</span><span class="nav-txt">3D-objecten</span></button>
     <button data-tab="fx"><span class="nav-ic">&#12316;</span><span class="nav-txt">Motion</span></button>
-    <button data-tab="saver"><span class="nav-ic">&#10033;</span><span class="nav-txt">Screensaver</span></button>
-    <button data-tab="reeks"><span class="nav-ic">&#9197;</span><span class="nav-txt">Reeks &amp; klikker</span></button>
+    <button data-tab="3d"><span class="nav-ic">&#9707;</span><span class="nav-txt">3D-objecten</span></button>
     <button data-tab="cam"><span class="nav-ic">&#9737;</span><span class="nav-txt">Camera</span></button>
     <button data-tab="avatar"><span class="nav-ic">&#9786;</span><span class="nav-txt">AI-avatars</span></button>
-    <button data-tab="share"><span class="nav-ic">&#8644;</span><span class="nav-txt">Beheer &amp; device</span></button>
     <button data-tab="help"><span class="nav-ic">?</span><span class="nav-txt">Help</span></button>
     <div id="navFoot">
       <div class="av"></div>
@@ -1316,9 +1352,9 @@
 
   <!-- ================= KNOPPEN ================= -->
   <div class="tabpage" id="page-buttons">
-    <p class="note" id="btnIntro">Of een knop meebeweegt op de muziek zet je bij de knop zelf, met de
-    schakelaar <b>&#9835; Beats</b>. Effecten bij het kiezen en het aandacht trekken staan
-    op het tabblad <b>Motion</b>.</p>
+    <p class="note" id="btnIntro">Klik een knop aan in de lijst of de voorvertoning; rechts staan dan
+    al zijn instellingen, ook <b>&#9835; Beats</b> (meebewegen op de muziek) bij MOTION. Effecten
+    voor de hele presentatie staan op het tabblad <b>Motion</b>.</p>
     <div class="card" id="sceneCard">
       <label class="field">Sc&egrave;ne
         <select id="sceneSelect"></select>
@@ -1331,9 +1367,9 @@
       <p class="note">Een knop kan media afspelen &oacute;f naar een andere sc&egrave;ne navigeren (actie per knop hieronder). De homescène is het startpunt.</p>
     </div>
     <button id="addBtn" class="btn primary block">+ Knop toevoegen</button>
-    <div id="boxKnoppen" class="box-alleen"></div>
+    <div id="boxKnoppen"></div>
     <div id="boxKaart" class="box-alleen hidden"></div>
-    <div id="boxIndeling" class="box-alleen"></div>
+    <div id="boxIndeling"></div>
     <div class="card" id="edRasterCard">
       <div class="row" id="undoRow">
         <button id="undoBtn" class="btn small">&#8630; Ongedaan (Ctrl+Z)</button>
@@ -1352,12 +1388,12 @@
           <input type="number" id="edSafe" min="0" max="25" step="1">
         </label>
       </div>
-      <p class="note">Verslepen: zet de voorvertoning op <b>Bewerken</b> en sleep een knop. Raster,
-      hulplijnen en de veilige marge zijn dan zichtbaar.</p>
+      <p class="note">Verslepen: op dit tabblad klik je een knop aan in de voorvertoning en sleep je
+      hem. Raster, hulplijnen en de veilige marge zijn dan zichtbaar.</p>
     </div>
     <div class="card" id="edAlignCard">
       <div class="t-label">Uitlijnen, verdelen &amp; layout</div>
-      <p class="note" id="selInfo">Geen selectie &mdash; klik in verplaats-modus op knoppen (shift = meerdere)</p>
+      <p class="note" id="selInfo">Geen selectie &mdash; klik een knop aan in de voorvertoning of de lijst (shift = meerdere)</p>
       <div class="row" style="flex-wrap:wrap">
         <button class="btn small" data-align="left" title="Links uitlijnen">&#8676;</button>
         <button class="btn small" data-align="hcenter" title="Horizontaal centreren">&#8596;</button>
@@ -2063,7 +2099,7 @@
   <div class="tabpage hidden" id="page-avatar">
     <p class="note">Een avatar is een pratende gesprekspartner in de holobox. De bezoeker
     tikt een tegel aan, de box zet een live sessie op bij de aanbieder en het beeld komt
-    als videostroom binnen. Koppel een avatar aan een knop via <b>Knoppen &amp; sc&egrave;nes</b>
+    als videostroom binnen. Koppel een avatar aan een knop via <b>Knoppen &amp; video's</b>
     &rarr; Actie &rarr; <b>AI-avatar openen</b>.</p>
 
     <button id="avAdd" class="btn primary block">+ Avatar toevoegen</button>
@@ -2111,7 +2147,7 @@
         <li>De server geeft alleen het kamer-adres terug.</li>
         <li>De box stapt die kamer binnen en toont het beeld.</li>
       </ol>
-      <p class="note">Stel het serveradres en de device-key in bij <b>Beheer &amp; device</b>.
+      <p class="note">Stel het serveradres en de device-key in bij <b>Opslaan &amp; beheer</b>.
       De sleutel zet je op de server: per holobox in het beheerscherm, of voor alle
       boxen samen als <code>LEMONSLICE_API_KEY</code> in <code>.env</code>.</p>
     </div>
@@ -2248,7 +2284,7 @@
     <h2>Offline op een andere pc</h2>
     <div class="card">
       <p class="note">Let op: de app-map bevat alleen het programma. Je indeling en video's staan
-      in de opslag van deze computer. Maak daarom eerst <b>Beheer &amp; device &rarr; Alles
+      in de opslag van deze computer. Maak daarom eerst <b>Opslaan &amp; beheer &rarr; Alles
       exporteren</b>: dat geeft &eacute;&eacute;n bestand met alles erin. Installeer de app op de andere
       pc en kies daar <b>Terugzetten uit een bestand</b>. Internet is daarna niet nodig.</p>
     </div>
@@ -2359,7 +2395,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.28.0';
+const APP_VERSION = '2.29.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -3945,6 +3981,7 @@ async function haalWebLogo(b, stil = false) {
   const gevonden = await zoekWebLogo(url);
   b.webLogo = { url: gevonden, bron: url, bezig: false };
   save(); renderStage(); renderBtnList();
+  if (panel.classList.contains('open')) renderInspector();
   if (!stil) toast(gevonden ? 'Logo gevonden' : 'Geen logo gevonden — de knop toont WWW');
   return gevonden;
 }
@@ -4468,11 +4505,11 @@ function markSelection() {
   const info = document.getElementById('selInfo');
   if (info) info.textContent = selectedIds.size
     ? `${selectedIds.size} knop${selectedIds.size === 1 ? '' : 'pen'} geselecteerd`
-    : 'Geen selectie — klik in verplaats-modus op knoppen (shift = meerdere)';
+    : 'Geen selectie — klik een knop aan in de voorvertoning of de lijst (shift = meerdere)';
   if (panel.classList.contains('open') && typeof renderInspector === 'function') {
     renderInspector();
     renderLayers();
-    if (typeof AanraakMenu !== 'undefined' && AanraakMenu.aan) AanraakMenu.selectie();
+    if (typeof AanraakMenu !== 'undefined' && AanraakMenu) AanraakMenu.selectie();
   }
 }
 
@@ -5591,7 +5628,7 @@ document.querySelectorAll('#tabs button').forEach((t) => t.addEventListener('cli
 }));
 
 /* ================= Inklapbare onderdelen in de tabbladen =================
-   De tabbladen zijn met de jaren gegroeid; Beheer & device is bijna drie
+   De tabbladen zijn met de jaren gegroeid; Opslaan & beheer is bijna drie
    schermen lang. Elke <h2> wordt hier een kop met een nummer en een pijltje,
    en alles eronder tot de volgende kop vouwt weg als je erop klikt.
 
@@ -5682,8 +5719,8 @@ const SJABLONEN = [
     motion: { preset: 'corporate', intensity: 'immersive' },
     scene: { title: 'Welkom' },
     knoppen: [
-      { label: 'Model A', x: 22, y: 52, size: 11 }, { label: 'Model B', x: 41, y: 52, size: 11 },
-      { label: 'Model C', x: 59, y: 52, size: 11 }, { label: 'Model D', x: 78, y: 52, size: 11 }
+      { label: 'Model A', x: 16, y: 52, size: 10 }, { label: 'Model B', x: 38, y: 52, size: 10 },
+      { label: 'Model C', x: 62, y: 52, size: 10 }, { label: 'Model D', x: 84, y: 52, size: 10 }
     ],
     saver: { enabled: true, delaySec: 120 }
   },
@@ -5776,7 +5813,7 @@ function pasSjabloonToe(sj) {
   if (panel.classList.contains('open')) refreshPanel();
   toast(sj.knoppen.length
     ? `Indeling "${sj.naam}" gezet — ${sj.knoppen.length} knoppen. Koppel er nu video's aan.`
-    : 'Leeg scherm — voeg zelf knoppen toe via Knoppen & scènes.');
+    : 'Leeg scherm — voeg zelf knoppen toe via Knoppen & video\'s.');
 }
 
 
@@ -5809,8 +5846,17 @@ const plat = (t) => (t || '').toLowerCase()
 const ZOEK_EXTRA = [
   { woorden: 'beats geluid muziek ritme beat equalizer hz toon bas hoog laag meebewegen',
     tekst: '♫ Beats — knop beweegt mee met de muziek', tab: 'buttons',
-    hint: 'Staat onder elke knop. Zet de schakelaar ♫ Beats open; daaronder komen ' +
-      'de band, het opveren, de gevoeligheid en de demo-beat.' },
+    hint: 'Kies een knop; de schakelaar ♫ Beats staat bij MOTION (op de box: Meer opties › MOTION). ' +
+      'Daaronder komen de band, het opveren, de gevoeligheid en de demo-beat.' },
+  { woorden: 'png afbeelding plaatje vorm eigen knopvorm logo',
+    tekst: 'Eigen PNG als knopvorm', tab: 'buttons',
+    hint: 'Kies een knop; Eigen PNG als knopvorm staat bij UITERLIJK (op de box: Meer opties › UITERLIJK).' },
+  { woorden: 'planning tijd tijden dagen uur tijdvenster rooster',
+    tekst: 'Planning — knop alleen op vaste tijden tonen', tab: 'buttons',
+    hint: 'Kies een knop; Planning staat bij PLANNING & TAAL (op de box: Meer opties › PLANNING & TAAL).' },
+  { woorden: 'vertaling vertalingen taal talen engels duits label',
+    tekst: 'Vertalingen van het label', tab: 'buttons',
+    hint: 'Zet eerst meertaligheid aan bij Scherm & scène. Daarna: kies een knop › PLANNING & TAAL.' },
   { woorden: 'bolling midden rand sterker dempen',
     tekst: 'Bolling — knoppen in het midden reageren sterker', tab: 'buttons',
     hint: 'Onder ♫ Beats bij een knop, in het blok "Geldt voor alle knoppen".' },
@@ -5841,7 +5887,7 @@ const ZOEK_EXTRA = [
     hint: 'Tabblad Reeks & klikker.' },
   { woorden: 'verhuizen kopie kopieren back-up backup usb andere computer pc exporteren terugzetten importeren overzetten meenemen',
     tekst: 'Alles exporteren / terugzetten — indeling én video\'s in één bestand', tab: 'share',
-    hint: 'Beheer & device → onderdeel Naar een andere computer.' },
+    hint: 'Opslaan & beheer → onderdeel Naar een andere computer.' },
   { woorden: 'speaker standby slaap ruis geluid wakker versterker stil boxen signaal',
     tekst: 'Speaker wakker houden — zacht signaal tegen standby', tab: 'saver',
     hint: 'Screensaver → onderdeel Speaker wakker houden.' },
@@ -5871,6 +5917,7 @@ function zoekInstellingen(vraag) {
     const kandidaten = page.querySelectorAll(
       'label.field, .toggle-row .t-label, .sec-head .sec-ttl, h2, .lay-row');
     for (const n of kandidaten) {
+      if (n.closest('#btnList, #undoRow')) continue;     // verborgen: dubbel met de inspector
       // Alleen de eigen tekst van het label, niet die van de velden erin.
       let tekst = '';
       for (const k of n.childNodes) if (k.nodeType === 3) tekst += k.textContent;
@@ -5918,6 +5965,7 @@ function toonZoekUit(lijst) {
 
 function springNaar(r) {
   document.querySelector(`#tabs button[data-tab="${r.tab}"]`)?.click();
+  if (r.node?.closest?.('#edRasterCard, #edAlignCard')) document.getElementById('page-buttons').classList.add('toon-indeling');
   // Een treffer uit de woordenlijst heeft geen veld om naartoe te springen:
   // die zit achter een schakelaar. Dan wijzen we de weg in woorden.
   if (r.extra) {
@@ -6364,7 +6412,7 @@ function renderAvatars() {
       ? 'Uit: een avatartegel toont een melding dat de koppeling nog niet is ingesteld.'
       : url
         ? `De box vraagt sessies aan bij ${url} met zijn device-key. De geheime sleutel van de aanbieder blijft op die server.`
-        : 'Er is nog geen serveradres ingesteld. Ga naar Beheer & device en vul het serveradres en de device-key in — zonder server kan de box geen sessie aanvragen.';
+        : 'Er is nog geen serveradres ingesteld. Ga naar Opslaan & beheer en vul het serveradres en de device-key in — zonder server kan de box geen sessie aanvragen.';
   }
 }
 
@@ -6532,6 +6580,8 @@ function renderDashboard() {
   if (!page) return;
   page.innerHTML = '';   // let op: onderaan weer buildSections(page), anders
                          // verdwijnen de inklapkoppen bij elke verversing
+  // Dezelfde taaktegels als het startscherm van het aanraakmenu.
+  if (typeof AanraakMenu !== 'undefined' && AanraakMenu) page.append(...AanraakMenu.tegelBlok());
   const mediaBytes = [...mediaCache.values()].reduce((a, m) => a + (m.size || 0), 0);
   const allButtons = config.scenes.reduce((a, sc) => a + sc.buttons.length, 0);
   const stat = (label, value, sub) => el('div', { class: 'card', style: 'gap:2px' },
@@ -6555,7 +6605,7 @@ function renderDashboard() {
         el('button', { class: 'btn small', onclick: () => openPublishModal() }, 'Publiceren')),
       el('div', { class: 'toggle-row' },
         el('div', {}, el('div', { class: 't-label' }, 'Beheer op afstand'),
-          el('div', { class: 't-sub' }, config.remote.enabled ? 'Gekoppeld aan ' + (config.remote.url || '—') : 'Niet gekoppeld — zie Beheer & device')),
+          el('div', { class: 't-sub' }, config.remote.enabled ? 'Gekoppeld aan ' + (config.remote.url || '—') : 'Niet gekoppeld — zie Opslaan & beheer')),
         el('span', { class: 'sdot' + (config.remote.enabled ? (lastRemoteOk ? ' on' : ' err') : '') })),
       el('div', { class: 'toggle-row' },
         el('div', {}, el('div', { class: 't-label' }, 'Beveiliging'),
@@ -6580,7 +6630,7 @@ function syncInspTabs() {
   $('#layersBody').classList.toggle('hidden', inspTab !== 'layers');
 }
 
-const inspOpenState = { CONTENT: true, POSITIE: true, UITERLIJK: true, INTERACTIE: false, ATTENTIE: false, MOTION: false, GEAVANCEERD: false };
+const inspOpenState = { CONTENT: true, POSITIE: true, UITERLIJK: true, INTERACTIE: false, ATTENTIE: false, MOTION: false, 'PLANNING & TAAL': false, GEAVANCEERD: false };
 
 function inspSection(title, ...kids) {
   const d = el('details', {});
@@ -6602,9 +6652,8 @@ function renderInspector() {
   const b = primarySelected();
   if (!b) {
     body.append(el('div', { class: 'insp-empty' },
-      'Selecteer een knop om zijn eigenschappen te bewerken.', el('br'), el('br'),
-      'Klik op een laag in het tabblad LAYERS, of zet de canvas op ',
-      el('b', {}, 'Bewerken'), ' en klik een knop aan (shift = meerdere).'));
+      'Kies een knop in de lijst bij Knoppen & video\'s, of klik er een aan in het podium.', el('br'), el('br'),
+      'Shift-klik selecteert er meer tegelijk; dan werken uitlijnen en verdelen op die selectie.'));
     return;
   }
   const media = mediaCache.get(b.mediaId);
@@ -6637,8 +6686,11 @@ function renderInspector() {
       sel.value = act.type;
       return sel;
     })()),
-    act.type === 'OpenURL' ? el('label', { class: 'field' }, 'Adres',
-      el('input', { type: 'text', value: b.action.url || '', oninput: (e) => { b.action.url = e.target.value.trim(); save(); } })) : null,
+    act.type === 'OpenURL' ? el('div', { class: 'field' }, 'Adres (https:// of lokaal bestand)',
+      el('input', { type: 'text', value: b.action.url || '', placeholder: 'https://… of ./map/pagina.html',
+        oninput: (e) => { b.action.url = e.target.value.trim(); save(); },
+        onchange: () => { if (!b.imageId) haalWebLogo(b, true); } }),
+      webLogoRij(b)) : null,
     act.type === 'OpenAvatar' ? el('label', { class: 'field' }, 'Welke avatar', (() => {
       const sel = el('select', { onchange: (e) => { b.action.avatarId = e.target.value; save(); } });
       if (!(config.avatars || []).length) sel.append(el('option', { value: '' }, '— maak er eerst een aan bij AI-avatars —'));
@@ -6653,7 +6705,8 @@ function renderInspector() {
       (() => { const sel = mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); if (v) ensurePreviewRendition(v); renderStage(); });
                return sel; })()),
     media ? el('div', { class: 'note' }, media.name + ' · ' + fmtSize(media.size)) : null,
-    el('div', { class: 'field' }, 'Playlist', playlistEditor(b))));
+    el('div', { class: 'field' }, 'Playlist', playlistEditor(b)),
+    knopShuffle(b)));
 
   // POSITIE
   body.append(inspSection('POSITIE',
@@ -6694,6 +6747,7 @@ function renderInspector() {
     el('label', { class: 'field' }, `Gloed (${(b.glow ?? 1).toFixed(1)}×)`,
       el('input', { type: 'range', min: 0, max: 2.5, step: 0.1, value: b.glow ?? 1,
         oninput: commit((e) => { b.glow = Number(e.target.value); }) })),
+    el('label', { class: 'field' }, 'Eigen PNG als knopvorm', knopPngKeuze(b)),
     el('label', { class: 'field' }, 'Frame', (() => {
       const sel = el('select', { onchange: commit((e) => { b.frameOwn = e.target.value === 'own'; if (!b.frameOwn) delete b.frameOwn; }) },
         el('option', { value: 'global' }, 'Globale Frame Style'), el('option', { value: 'own' }, 'Eigen knopkleur'));
@@ -6721,7 +6775,7 @@ function renderInspector() {
       })())),
     el('div', { class: 'note' }, b.schedule && b.schedule.enabled
       ? (scheduleActive(b) ? 'Planning actief — nu zichtbaar' : 'Planning actief — nu buiten het tijdvenster')
-      : 'Geen planning — knop is altijd zichtbaar. Tijdvensters stel je in op het tabblad Knoppen & scènes.')));
+      : 'Geen planning — knop is altijd zichtbaar. Een tijdvenster stel je in bij PLANNING & TAAL.')));
 
   // ATTENTIE
   body.append(inspSection('ATTENTIE',
@@ -6738,7 +6792,11 @@ function renderInspector() {
     el('div', { class: 'note' },
       'Entrance: ' + ((MOTION_PRESETS[config.motion.preset] || {}).label || config.motion.preset) +
       (config.motion.overrides.effect ? ' · ' + config.motion.overrides.effect : '')),
+    beatEditor(b),
     el('button', { class: 'btn small', onclick: () => document.querySelector('#tabs button[data-tab=fx]').click() }, 'Motion-instellingen openen')));
+
+  // PLANNING & TAAL — ook hier, niet alleen in de knoppenlijst
+  body.append(inspSection('PLANNING & TAAL', knopPlanning(b), knopVertalingen(b)));
 
   // GEAVANCEERD
   body.append(inspSection('GEAVANCEERD',
@@ -6898,7 +6956,7 @@ function refreshPanel() {
   refreshSceneUI(); renderBtnList(); renderMediaList(); renderLook(); renderSaver(); renderMotion(); renderShare();
   renderReeks();
   renderDashboard(); renderInspector(); renderLayers(); renderMotionDock(); updateTopbar();
-  if (typeof AanraakMenu !== 'undefined' && AanraakMenu.aan) AanraakMenu.teken();
+  if (typeof AanraakMenu !== 'undefined' && AanraakMenu) AanraakMenu.teken();
   requestAnimationFrame(fitEditorCanvas);
 }
 
@@ -6944,7 +7002,7 @@ var AanraakMenu = (() => {
   const MEER = [
     ['media', 'Media', '▶'], ['look', 'Scherm & scène', '▣'], ['style', 'Vormgeving', '◇'],
     ['fx', 'Motion', '〜'], ['3d', '3D-objecten', '◫'], ['cam', 'Camera', '☉'],
-    ['avatar', 'AI-avatars', '☺'], ['share', 'Beheer & device', '⇄'], ['help', 'Help', '?'],
+    ['avatar', 'AI-avatars', '☺'], ['share', 'Opslaan & beheer', '⇄'], ['help', 'Help', '?'],
   ];
   // Bij deze taken hoort het podium in beeld; bij de rest is het alleen ruimteverlies.
   const MET_PODIUM = new Set(['buttons', 'look', 'style', 'fx', '3d']);
@@ -7002,6 +7060,12 @@ var AanraakMenu = (() => {
       vers = true;
     }
     if (aan && vers) naarStart();
+    if (!aan) {
+      // Brede editor: bewerkstand volgt het tabblad; dicht = altijd uit.
+      setEditing(panel.classList.contains('open') && actieveTab() === 'buttons', { stil: true });
+      if (panel.classList.contains('open')) tekenKnoppen();
+    }
+    navStatus();
     podiumStand();
     requestAnimationFrame(fitEditorCanvas);
   }
@@ -7042,14 +7106,8 @@ var AanraakMenu = (() => {
 
   function tekenStart() {
     start.innerHTML = '';
-    start.append(el('div', { class: 'st-vraag' }, 'Wat wil je doen?'), zoekPlek);
-    start.append(el('div', { class: 'st-tegels' }, TAKEN.map((t) => {
-      const st = t.status();
-      return el('button', { class: 'st-tegel', type: 'button', 'data-taak': t.tab, onclick: () => open(t.tab, t.titel || t.naam) },
-        el('span', { class: 'ic' }, t.ic),
-        el('span', { class: 'nm' }, t.naam),
-        el('span', { class: 'st' + (st.let ? ' let' : '') }, st.t));
-    })));
+    const [vraag, tegels] = tegelBlok();
+    start.append(vraag, zoekPlek, tegels);
     start.append(el('div', { class: 'st-kop' }, 'Meer'));
     start.append(el('div', { class: 'st-meer' }, MEER.map(([tab, naam, ic]) =>
       el('button', { type: 'button', 'data-tab-meer': tab, onclick: () => open(tab, naam) },
@@ -7072,19 +7130,26 @@ var AanraakMenu = (() => {
 
   function tekenKnoppen() {
     const b = primarySelected();
-    panel.classList.toggle('knop-open', !!b);
     const lijst = document.getElementById('boxKnoppen');
     const kaart = document.getElementById('boxKaart');
-    lijst.classList.toggle('hidden', !!b);
-    kaart.classList.toggle('hidden', !b);
-    if (b) return tekenKaart(b, kaart);
+    // In de brede editor blijft de lijst staan en staan de details in de
+    // inspector; in het aanraakmenu maakt de lijst plaats voor de knopkaart.
+    const kaartOpen = aan && !!b;
+    panel.classList.toggle('knop-open', kaartOpen);
+    lijst.classList.toggle('hidden', kaartOpen);
+    kaart.classList.toggle('hidden', !kaartOpen);
+    if (kaartOpen) return tekenKaart(b, kaart);
     lijst.innerHTML = '';
     const knoppen = [...curButtons()].sort((p, q) => (p.y - q.y) || (p.x - q.x));
     if (!knoppen.length) lijst.append(el('p', { class: 'note' }, 'Nog geen knoppen. Voeg er hieronder één toe.'));
     for (const k of knoppen) {
       const m = mediaNaam(k);
-      lijst.append(el('button', { class: 'box-rij', type: 'button', 'data-knop': k.id,
-        onclick: () => { selectedIds.clear(); selectedIds.add(k.id); markSelection(); } },
+      lijst.append(el('button', { class: 'box-rij' + (selectedIds.has(k.id) ? ' sel' : ''), type: 'button', 'data-knop': k.id,
+        onclick: (e) => {
+          if (!aan && (e.shiftKey || e.ctrlKey || e.metaKey)) { if (selectedIds.has(k.id)) selectedIds.delete(k.id); else selectedIds.add(k.id); }
+          else { selectedIds.clear(); selectedIds.add(k.id); }
+          markSelection();
+        } },
         el('span', { class: 'dot', style: `background:${k.color}` }),
         el('span', { class: 'nm' }, k.label || '(zonder tekst)'),
         el('span', { class: 'sub' + (m.mist ? ' mist' : '') }, m.t),
@@ -7096,7 +7161,7 @@ var AanraakMenu = (() => {
     ind.append(
       el('button', { class: 'btn block', type: 'button', id: 'boxStaand', onclick: () => staandIndelen() },
         'Netjes indelen voor een staand scherm'),
-      el('button', { class: 'btn block', type: 'button', onclick: (e) => {
+      el('button', { class: 'btn block alleen-box', type: 'button', onclick: (e) => {
         const nu = pagina.classList.toggle('toon-indeling');
         e.currentTarget.textContent = nu ? 'Uitlijnen & raster verbergen' : 'Uitlijnen, verdelen & raster…';
       } }, pagina.classList.contains('toon-indeling') ? 'Uitlijnen & raster verbergen' : 'Uitlijnen, verdelen & raster…'));
@@ -7176,20 +7241,57 @@ var AanraakMenu = (() => {
     toast('Knoppen ingedeeld voor een staand scherm');
   }
 
+  function navStatus() {
+    for (const t of TAKEN) {
+      const n = document.querySelector(`.nav-st[data-st="${t.tab}"]`);
+      if (!n) continue;
+      const st = t.status();
+      n.textContent = t.tab === 'share' ? 'Exporteren naar USB' : st.t;
+      n.classList.toggle('let', !!st.let);
+    }
+  }
+  // De tegels voor het overzicht (brede editor) en het startscherm.
+  function tegelBlok() {
+    return [
+      el('div', { class: 'st-vraag' }, 'Wat wil je doen?'),
+      el('div', { class: 'st-tegels' }, TAKEN.map((t) => {
+        const st = t.status();
+        return el('button', { class: 'st-tegel', type: 'button', 'data-taak': t.tab,
+          onclick: () => (aan ? open(t.tab, t.titel || t.naam) : document.querySelector(`#tabs button[data-tab="${t.tab}"]`)?.click()) },
+          el('span', { class: 'ic' }, t.ic), el('span', { class: 'nm' }, t.naam),
+          el('span', { class: 'st' + (st.let ? ' let' : '') }, st.t));
+      })),
+    ];
+  }
+
+  function actieveTab() { return document.querySelector('#tabs button[data-tab].active')?.dataset.tab || 'buttons'; }
+
   function teken() {
-    if (!aan) return;
+    navStatus();
+    if (!aan) {
+      if (actieveTab() === 'buttons') tekenKnoppen();
+      return;
+    }
     if (scherm === 'start') tekenStart();
     else if (scherm === 'buttons') tekenKnoppen();
   }
 
   // Een tabblad dat anders wordt geopend (zoeken, een snelkoppeling) opent
-  // in het aanraakmenu als taakpagina.
+  // in het aanraakmenu als taakpagina. In de brede editor: bij Knoppen &
+  // video's meteen in de bewerkstand (klikken selecteert, slepen verplaatst),
+  // en de bewegingsbalk alleen bij Motion.
   for (const t of document.querySelectorAll('#tabs button[data-tab]')) {
     t.addEventListener('click', () => {
-      if (!aan || intern) return;
-      open(t.dataset.tab);
+      panel.dataset.tab = t.dataset.tab;
+      if (aan) { if (!intern) open(t.dataset.tab); return; }
+      if (panel.classList.contains('open')) {
+        setEditing(t.dataset.tab === 'buttons', { stil: true });
+        if (t.dataset.tab === 'buttons') tekenKnoppen();
+        requestAnimationFrame(fitEditorCanvas);
+      }
     });
   }
+  panel.dataset.tab = actieveTab();
   document.getElementById('tbTerug').addEventListener('click', naarStart);
   document.getElementById('tbKlaar').addEventListener('click', closeEditor);
   addEventListener('resize', () => pasToe());
@@ -7197,8 +7299,10 @@ var AanraakMenu = (() => {
   return {
     get aan() { return aan; },
     get scherm() { return scherm; },
-    pasToe, teken, open, naarStart, staandePosities,
-    selectie() { if (aan && scherm === 'buttons') tekenKnoppen(); },
+    pasToe, teken, open, naarStart, staandePosities, tegelBlok, navStatus,
+    selectie() {
+      if (aan ? scherm === 'buttons' : (panel.classList.contains('open') && actieveTab() === 'buttons')) tekenKnoppen();
+    },
   };
 })();
 
@@ -7386,10 +7490,7 @@ function renderBtnList() {
       el('option', { value: 'shine' }, 'Glans-veeg'),
       el('option', { value: 'none' }, 'Uit'));
     fxSel.value = b.fx || 'random';
-    const images = [...mediaCache.values()].filter((m) => m.kind === 'image');
-    const imageSel = el('select', { onchange: (e) => { b.imageId = e.target.value || null; save(); renderStage(); } },
-      el('option', { value: '' }, '— geen (kader met preview) —'),
-      images.map((m) => { const o = el('option', { value: m.id }, m.name); if (m.id === b.imageId) o.selected = true; return o; }));
+    const imageSel = knopPngKeuze(b);
     list.append(el('div', { class: 'card', style: `--bcol:${b.color}` },
       el('div', { class: 'row' },
         el('input', { type: 'text', class: 'grow', value: b.label, placeholder: 'Tekst op de knop',
@@ -7439,14 +7540,7 @@ function renderBtnList() {
                 placeholder: 'https://… of ./map/pagina.html',
                 oninput: (e) => { b.action.url = e.target.value.trim(); save(); },
                 onchange: () => { if (!b.imageId) haalWebLogo(b, true); } }),
-              el('div', { class: 'row mid' },
-                el('button', { class: 'btn small', onclick: () => haalWebLogo(b) },
-                  '🔍 Logo van de site ophalen'),
-                el('span', { class: 'note grow' },
-                  b.imageId ? 'Je eigen plaatje gaat voor het logo.'
-                    : b.webLogo?.bezig ? 'Bezig met zoeken…'
-                    : b.webLogo?.url ? 'Logo gevonden en in de knop gezet.'
-                    : 'Nog geen logo — de knop toont WWW.')))
+              webLogoRij(b))
           : null,
         buttonAction(b).type === 'OpenAvatar'
           ? el('label', { class: 'field' }, 'Welke avatar', (() => {
@@ -7530,6 +7624,20 @@ function renderBtnList() {
       el('label', { class: 'field' }, 'Aandachtseffect (speelt af en toe vanzelf)', fxSel),
         el('label', { class: 'field' }, 'Frame', frameSel)),
       beatEditor(b),
+      knopShuffle(b),
+      knopPlanning(b),
+      knopVertalingen(b),
+      swatches
+    ));
+  });
+  markSelection();
+}
+
+/* Instellingen van een knop die zowel in de knoppenlijst als in de inspector
+   (en in de knopkaart van het aanraakmenu) staan. Eén bouwsteen per
+   onderdeel, zodat ze overal hetzelfde werken. */
+function knopShuffle(b) {
+  return (
       el('div', { class: 'toggle-row' },
         el('div', {}, el('div', { class: 't-label' }, 'Playlist in willekeurige volgorde'),
           el('div', { class: 't-sub' }, 'Na de eerste video volgt de rest geschud')),
@@ -7540,7 +7648,11 @@ function renderBtnList() {
           cb.checked = !!b.shuffle;
           sw.append(cb, el('i'));
           return sw;
-        })()),
+        })())
+  );
+}
+function knopPlanning(b) {
+  return (
       (() => {
         // Planning (spec 21): knop alleen tonen binnen een tijdvenster.
         const sc = b.schedule || {};
@@ -7579,7 +7691,11 @@ function renderBtnList() {
               el('div', { class: 't-sub' }, scheduleActive(b) ? 'Nu binnen het tijdvenster — knop zichtbaar' : 'Nu buiten het tijdvenster — knop verborgen')),
             sw),
           details);
-      })(),
+      })()
+  );
+}
+function knopVertalingen(b) {
+  return (
       config.lang.enabled ? el('div', { class: 'field' }, 'Vertalingen van het label',
         el('div', { class: 'row', style: 'flex-wrap:wrap' },
           (config.lang.available || []).map((code) =>
@@ -7592,11 +7708,26 @@ function renderBtnList() {
                   else delete b.labels[code];
                   if (!Object.keys(b.labels).length) delete b.labels;
                   save(); renderStage();
-                } }))))) : null,
-      swatches
-    ));
-  });
-  markSelection();
+                } }))))) : null
+  );
+}
+function webLogoRij(b) {
+  return (
+              el('div', { class: 'row mid' },
+                el('button', { class: 'btn small', onclick: () => haalWebLogo(b) },
+                  '🔍 Logo van de site ophalen'),
+                el('span', { class: 'note grow' },
+                  b.imageId ? 'Je eigen plaatje gaat voor het logo.'
+                    : b.webLogo?.bezig ? 'Bezig met zoeken…'
+                    : b.webLogo?.url ? 'Logo gevonden en in de knop gezet.'
+                    : 'Nog geen logo — de knop toont WWW.'))
+  );
+}
+function knopPngKeuze(b) {
+    const images = [...mediaCache.values()].filter((m) => m.kind === 'image');
+  return el('select', { onchange: (e) => { b.imageId = e.target.value || null; save(); renderStage(); } },
+      el('option', { value: '' }, '— geen (kader met preview) —'),
+      images.map((m) => { const o = el('option', { value: m.id }, m.name); if (m.id === b.imageId) o.selected = true; return o; }));
 }
 
 $('#addBtn').addEventListener('click', () => {
@@ -8980,7 +9111,7 @@ async function bundelVragen(file, bundel) {
         await vhVenster({ titel: 'Niet genoeg ruimte',
           tekst: `Dit bestand heeft <b>${fmtSize(nodig)}</b> nodig, maar er is op deze computer nog
             <b>${fmtSize(vrij)}</b> vrij voor de holobox. Maak ruimte vrij op de schijf, of wis eerst de
-            huidige inhoud (Beheer &amp; device &rarr; Alles wissen) en probeer het opnieuw.`,
+            huidige inhoud (Opslaan &amp; beheer &rarr; Alles wissen) en probeer het opnieuw.`,
           ja: 'Sluiten', enkel: true });
         return;
       }
@@ -10141,8 +10272,8 @@ function avatarTransport(url, hint) {
 // Geeft {ok, url, token, transport, sessionId, controlUrl} of {ok:false, error}.
 async function requestAvatarSession(avatar, opts = {}) {
   const base = (config.remote.url || '').trim().replace(/\/+$/, '');
-  if (!base) return { ok: false, error: 'geen serveradres ingesteld (Beheer & device)' };
-  if (!config.remote.key) return { ok: false, error: 'geen device-key ingesteld (Beheer & device)' };
+  if (!base) return { ok: false, error: 'geen serveradres ingesteld (Opslaan & beheer)' };
+  if (!config.remote.key) return { ok: false, error: 'geen device-key ingesteld (Opslaan & beheer)' };
   try {
     const r = await fetch(base + '/api/v1/avatar/session', {
       method: 'POST',
@@ -10327,7 +10458,7 @@ async function openAvatar(avatarId) {
   }
   if (!config.avatarLink.enabled) {
     return avatarStatus('De avatarkoppeling staat uit.',
-      'Zet hem aan op het tabblad <b>AI-avatars</b> en vul bij <b>Beheer &amp; device</b> ' +
+      'Zet hem aan op het tabblad <b>AI-avatars</b> en vul bij <b>Opslaan &amp; beheer</b> ' +
       'het serveradres en de device-key in.');
   }
 
@@ -10340,7 +10471,7 @@ async function openAvatar(avatarId) {
     // box zelf nog niet is ingesteld stuurt iemand de verkeerde kant op.
     const lokaal = /device-key|serveradres/.test(ses.error);
     return avatarStatus('Kan geen sessie starten.', ses.error + '<br><br>' + (lokaal
-      ? 'Vul het serveradres en de device-key in bij <b>Beheer &amp; device</b>.'
+      ? 'Vul het serveradres en de device-key in bij <b>Opslaan &amp; beheer</b>.'
       : 'Controleer de LemonSlice-sleutel: die staat per holobox in het beheerscherm, ' +
         'of voor alle boxen samen als <code>LEMONSLICE_API_KEY</code> in <code>.env</code>.'));
   }
