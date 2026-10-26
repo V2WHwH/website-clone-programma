@@ -35,7 +35,7 @@ EERSTE KEER: PRESENTATIE INRICHTEN
                        altijd met de wachtvideo ertussen. >: volgende
                        video. < 1x: opnieuw, 2x snel: vorige.
 - Tabblad Camera      : aanwezigheidsdetectie via webcam.
-- Beheer & device    : alles exporteren/terugzetten, PIN, statistieken.
+- Opslaan & beheer   : alles exporteren/terugzetten, PIN, statistieken.
 
 Alles wordt automatisch bewaard op deze computer en werkt daarna offline.
 
@@ -45,11 +45,22 @@ NAAR EEN ANDERE COMPUTER VERHUIZEN
 Let op: deze map bevat alleen het programma. Je indeling en video's
 staan in de opslag van deze computer. Een kopie van de map is dus leeg.
 
-1. Menu > Beheer & device > "Alles exporteren - een bestand".
+1. Menu > Opslaan & beheer > "Alles exporteren - een bestand".
    Je krijgt een .holobox-bestand met de indeling EN alle video's.
 2. Zet dat bestand op een USB-stick (of netwerkschijf / cloud).
 3. Start de app op de andere computer en kies
    "Terugzetten uit een bestand". Klaar - daarna mag de stick eruit.
+
+
+ALLES VERWIJDEREN
+-----------------
+Dubbelklik "HereWeHolo verwijderen.bat". Je ziet eerst wat er weggaat,
+en pas als je JA typt wordt alles verwijderd: de app (als die
+geinstalleerd is), alle video's, de indeling, de instellingen en de
+map in AppData. Maak eerst een back-up met "Alles exporteren".
+Is de box als kiosk ingericht? Rechtsklik dan op het bestand en kies
+"Als administrator uitvoeren"; dan wordt ook het automatisch inloggen
+teruggezet.
 
 
 WAAROM GEEN VIRUSMELDING

@@ -53,6 +53,64 @@ jobs:
           if (-not (Test-Path smoke-result.json)) { throw 'smoke-result.json ontbreekt' }
           Get-Content smoke-result.json
 
+      - name: Uninstaller-test op Windows (installeren, bijwerken, alles verwijderen)
+        shell: pwsh
+        run: |
+          $setup   = (Get-ChildItem release -Filter 'HereWeHolo-Player-Setup-*.exe' | Select-Object -First 1).FullName
+          $inst    = Join-Path $env:LOCALAPPDATA 'Programs\HereWeHolo Player'
+          $appdata = Join-Path $env:APPDATA 'HereWeHolo Player'
+          $kiosk   = Join-Path $env:LOCALAPPDATA 'HereWeHolo\kiosk-profile'
+          function Wacht([scriptblock]$klaar, [string]$wat) {
+            for ($i = 0; $i -lt 120; $i++) { if (& $klaar) { return }; Start-Sleep -Milliseconds 500 }
+            throw "Time-out: $wat"
+          }
+          function Gegevens {
+            New-Item -ItemType Directory -Force -Path (Join-Path $appdata 'IndexedDB'), $kiosk | Out-Null
+            Set-Content (Join-Path $appdata 'settings.json') '{"test":true}'
+            Set-Content (Join-Path $appdata 'IndexedDB\video.bin') ('x' * 4096)
+            Set-Content (Join-Path $kiosk 'Local State') '{}'
+          }
+          function Installeer {
+            Start-Process $setup -ArgumentList '/S' -Wait
+            Wacht { Test-Path (Join-Path $inst 'HereWeHolo Player.exe') } 'installatie'
+          }
+
+          Write-Host '1. Installeren'
+          Installeer
+          Gegevens
+
+          Write-Host '2. Opnieuw installeren (zoals een update): gegevens moeten blijven'
+          Installeer
+          Start-Sleep -Seconds 2
+          if (-not (Test-Path (Join-Path $appdata 'settings.json'))) { throw 'Bijwerken heeft de gegevens gewist' }
+          if (-not (Test-Path $kiosk)) { throw 'Bijwerken heeft het kioskprofiel gewist' }
+
+          Write-Host '3. Verwijderen via de uninstaller: alles moet weg'
+          $un = Get-ChildItem $inst -Filter 'Uninstall*.exe' | Select-Object -First 1
+          Start-Process $un.FullName -ArgumentList '/S' -Wait
+          Wacht { -not (Test-Path (Join-Path $inst 'HereWeHolo Player.exe')) } 'programma verwijderd'
+          Wacht { -not (Test-Path $appdata) } 'AppData-map verwijderd'
+          Wacht { -not (Test-Path (Join-Path $env:LOCALAPPDATA 'HereWeHolo')) } 'kioskprofiel verwijderd'
+          Wacht { -not (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName -like 'HereWeHolo Player*' }) } 'uit Geinstalleerde apps'
+
+          Write-Host '4. Los verwijderprogramma (studio\verwijderen.ps1) na een nieuwe installatie'
+          Installeer
+          Gegevens
+          powershell -NoProfile -ExecutionPolicy Bypass -File ..\studio\verwijderen.ps1 -Ja | Write-Host
+          if ($LASTEXITCODE -ne 0) { throw "verwijderen.ps1 eindigde met $LASTEXITCODE" }
+          foreach ($p in @($appdata, (Join-Path $env:LOCALAPPDATA 'HereWeHolo'), (Join-Path $inst 'HereWeHolo Player.exe'))) {
+            if (Test-Path $p) { throw "Nog aanwezig na verwijderen.ps1: $p" }
+          }
+          $reg = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName -like 'HereWeHolo Player*' }
+          if ($reg) { throw 'De app staat nog in Geinstalleerde apps na verwijderen.ps1' }
+
+          Write-Host '5. Nog een keer draaien: meldt dat er niets meer staat'
+          powershell -NoProfile -ExecutionPolicy Bypass -File ..\studio\verwijderen.ps1 -Ja | Write-Host
+          if ($LASTEXITCODE -ne 0) { throw "tweede run eindigde met $LASTEXITCODE" }
+          Write-Host 'Uninstaller-test geslaagd.'
+
       - name: Complete applicatie bundelen (broncode + installer in één zip)
         shell: pwsh
         run: |
@@ -94,6 +152,12 @@ jobs:
             'Zonder code-signing-certificaat meldt Defender een onbekende'
             'uitgever. Kies "Meer informatie" > "Toch uitvoeren".'
             ''
+            'VERWIJDEREN'
+            'Instellingen > Apps > HereWeHolo Player > Verwijderen. Je krijgt de'
+            'vraag of ook de video''s, de indeling en de instellingen (de map in'
+            'AppData) weg moeten. Alles in een keer, ook de kioskvergrendeling:'
+            'studio\HereWeHolo verwijderen.bat (als administrator uitvoeren).'
+            ''
             'Controleren:'
             '  Get-FileHash .\' + $exe.Name + ' -Algorithm SHA256'
             'Verwacht:'
@@ -108,7 +172,7 @@ jobs:
         run: |
           $out = "release\HereWeHolo-Studio-Offline-$((Get-Content package.json | ConvertFrom-Json).version).zip"
           # vendor mee: zonder die map kan deze versie geen AI-avatar openen
-          Compress-Archive -Path ..\studio\index.html, ..\studio\vendor, "..\studio\Start Holobox.bat", "..\studio\Start Holobox (venster).bat", "..\studio\LEES MIJ.txt" -DestinationPath $out -Force
+          Compress-Archive -Path ..\studio\index.html, ..\studio\vendor, "..\studio\Start Holobox.bat", "..\studio\Start Holobox (venster).bat", "..\studio\LEES MIJ.txt", "..\studio\HereWeHolo verwijderen.bat", ..\studio\verwijderen.ps1 -DestinationPath $out -Force
           Write-Host "Gebundeld: $out"
 
       - name: Checksums genereren

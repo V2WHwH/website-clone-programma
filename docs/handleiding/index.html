@@ -289,7 +289,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.30.0</span><span>23 hoofdstukken</span><span>36 schermafbeeldingen</span>
+    <span>Versie 2.31.0</span><span>23 hoofdstukken</span><span>36 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -2536,8 +2536,8 @@ header.cover{padding-block:88px 8px}
 <section class="ch" id="h18">
   <div class="ch-head"><div class="ch-num">20</div><div>
     <h2>Waar staat alles?</h2>
-    <p class="lead measure">Drie plekken, elk met een eigen rol. Weet je deze drie, dan weet
-    je ook wat je moet meenemen bij een verhuizing.</p>
+    <p class="lead measure">Een paar plekken, elk met een eigen rol. Weet je die, dan weet je
+    wat je meeneemt bij een verhuizing, en wat er weg moet als je de computer opruimt.</p>
   </div></div>
 
   <div class="tw"><table>
@@ -2567,6 +2567,42 @@ header.cover{padding-block:88px 8px}
     browserprofiel. Een andere browser, een ander Windows-account, een privévenster of een
     gekopieerde app-map ziet een lege studio. Maak daarom na elke sessie een
     <b>Alles exporteren</b>.</p></div>
+
+  <h3>Op de schijf van Windows</h3>
+  <p class="measure">De opslag hierboven is een map op de computer. Waar die staat, hangt af van
+  hoe je de studio start.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Map</th><th>Van wie</th><th>Wat erin zit</th></tr></thead>
+    <tbody>
+      <tr><td><code>%APPDATA%\HereWeHolo Player</code></td><td>De Windows-app</td>
+        <td>Het ontwerp, alle video's, de instellingen van de app en de logboeken.</td></tr>
+      <tr><td><code>%LOCALAPPDATA%\HereWeHolo</code></td><td>De versie zonder installatie
+        (<b>Start Holobox.bat</b>)</td>
+        <td>Het eigen browserprofiel, met daarin het ontwerp en de video's.</td></tr>
+      <tr><td><code>%LOCALAPPDATA%\Programs\HereWeHolo Player</code></td><td>De Windows-app</td>
+        <td>Alleen het programma. Hier staan geen gegevens.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Alles verwijderen</h3>
+  <p class="measure">Gaat de box weg, of wil je schoon beginnen? Maak eerst een <b>Alles
+  exporteren</b> als je de indeling ooit nog wilt gebruiken. Daarna heb je twee manieren.</p>
+  <ol class="steps">
+    <li><b>Instellingen → Apps → HereWeHolo Player → Verwijderen.</b> De uninstaller vraagt of
+    ook de video's, de indeling en de instellingen weg moeten. Kies <b>Ja</b> en de map in
+    AppData gaat mee, net als het browserprofiel van de versie zonder installatie. Kies
+    <b>Nee</b> en alleen het programma verdwijnt. Bij een update wordt dit niet gevraagd: dan
+    blijft alles staan.</li>
+    <li><b>HereWeHolo verwijderen.bat</b>, in de map <code>studio</code> van de download. Het
+    laat eerst zien wat er weggaat en hoe groot dat is, en verwijdert pas als je
+    <b>JA</b> typt. Het haalt alles in één keer weg: de app, beide mappen, de snelkoppelingen.
+    Dit werkt ook als de app niet geïnstalleerd is.</li>
+  </ol>
+  <div class="note"><span class="t">Ook de kioskvergrendeling</span>
+    <p>Heb je de box als kiosk ingericht, met automatisch inloggen als <code>holobox</code>?
+    Start <b>HereWeHolo verwijderen.bat</b> dan met de rechtermuisknop en kies <b>Als
+    administrator uitvoeren</b>. Het zet het automatisch inloggen en de vervangen shell terug,
+    en vraagt apart of het account <code>holobox</code> ook weg moet.</p></div>
 </section>
 
 <!-- ═══════════════════════════════════════════════ 21 ═══ -->
@@ -2675,6 +2711,10 @@ header.cover{padding-block:88px 8px}
       <tr><td>Ik kom niet in het menu</td><td>Er staan geen menuknoppen op het scherm, of er zit
         een PIN op.</td><td>5× snel tikken in de hoek linksboven, binnen 4 seconden. Daarna de
         PIN.</td></tr>
+      <tr><td>Na verwijderen staan mijn video's er nog</td><td>Bij het verwijderen is op
+        <b>Nee</b> gedrukt, of de app was nooit geïnstalleerd.</td>
+        <td>Start <b>HereWeHolo verwijderen.bat</b> uit de map <code>studio</code>. Zie
+        hoofdstuk 20.</td></tr>
       <tr><td>Ik zie nog ronde knoppen links onder</td><td>Er draait een versie van vóór 2.30.</td>
         <td>Installeer de nieuwste versie. Daarna staan ze er nooit meer.</td></tr>
       <tr><td>Bezoekers veranderen instellingen</td><td>Iemand kent het gebaar linksboven.</td>
