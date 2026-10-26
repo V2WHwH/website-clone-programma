@@ -184,10 +184,11 @@ td code{white-space:nowrap}
 
 .steps{counter-reset:s;list-style:none;padding:0;margin:20px 0 26px;
   display:flex;flex-direction:column;gap:2px}
-.steps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:14px;
-  padding:12px 0;border-bottom:1px solid var(--rule-2);margin:0}
+.steps li{counter-increment:s;position:relative;
+  padding:12px 0 12px 44px;border-bottom:1px solid var(--rule-2);margin:0}
 .steps li::before{content:counter(s);font:600 13px/24px var(--f-mono);text-align:center;
-  background:var(--ink);color:var(--paper);border-radius:6px;height:24px}
+  background:var(--ink);color:var(--paper);border-radius:6px;height:24px;
+  position:absolute;left:0;top:12px;width:30px}
 
 .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:16px 0 24px;
   font-size:14.5px}
