@@ -499,12 +499,12 @@
   #lockFab { left: 16px; bottom: 82px; }
   #fsFab { left: 16px; bottom: 148px; }
   body.editing #lockFab { background: var(--accent-dark); border-color: var(--accent); }
-  body.clean .fab { opacity: 0.14; }
-  body.clean .fab:hover { opacity: 1; }
-  /* Verborgen: echt weg, niet aanraakbaar. Alleen tijdens het verplaatsen blijft
-     het slotje staan — daarmee zet je de knoppen weer vast. */
-  body.knoppen-weg .fab { display: none; }
-  body.knoppen-weg.editing #lockFab { display: flex; }
+  /* De vier ronde knoppen links onder (menu, verplaatsen, volledig scherm,
+     oriëntatie) zijn er voor bezoekers nooit: omstanders drukten erop en
+     veranderden instellingen. Het menu opent alleen met 5× tikken
+     linksboven; alles wat de knoppen deden zit in het menu zelf. Ze blijven
+     in de pagina staan zodat bestaande koppelingen blijven werken. */
+  .fab { display: none !important; }
 
   /* ============ MENU-PANEEL — professioneel controlepaneel ============
      Rustige typografie, hairlines, subtiele reliëftextuur (ingebed, offline)
@@ -1154,6 +1154,7 @@
        screensaver staan dan meteen goed. Daarna vervang je de teksten en zet je
        je eigen video's erin.</p>
     <div id="sjablonen"></div>
+    <p class="klein">Het menu open je met <b>5&times; snel tikken in de hoek linksboven</b>.</p>
     <p class="klein">Liever zelf beginnen? Kies <b>Leeg scherm</b>. Je kunt later altijd
        nog een andere indeling kiezen via <b>Overzicht &rarr; Snel aan de slag</b>.</p>
   </div>
@@ -1485,15 +1486,13 @@
         <div><div class="t-label">Knoppen verbergen tijdens afspelen</div></div>
         <label class="switch"><input type="checkbox" id="cfgHideBtns"><i></i></label>
       </div>
-      <label class="field">Bedieningsknoppen links onder
-        <select id="cfgKnoppen">
-          <option value="verborgen">Verborgen &mdash; alleen 5&times; tikken linksboven opent het menu (aanbevolen)</option>
-          <option value="vaag">Vaag &mdash; bijna onzichtbaar, verschijnen bij aanwijzen</option>
-          <option value="zichtbaar">Zichtbaar</option>
-        </select>
-      </label>
-      <p class="note">Verborgen: bezoekers zien en raken geen menuknop. Jij komt in het menu met
-      <b>5&times; snel tikken in de hoek linksboven</b> (met een muis: 5&times; klikken).</p>
+      <div class="toggle-row" id="cfgMenuUitleg">
+        <div><div class="t-label">Menu openen</div>
+          <div class="t-sub">Er staan geen menuknoppen op het scherm, zodat bezoekers niet bij de
+          instellingen kunnen. Het menu open je met <b>5&times; snel tikken in de hoek
+          linksboven</b> (met een muis: 5&times; klikken). Zet een PIN bij Opslaan &amp; beheer
+          als extra slot.</div></div>
+      </div>
     </div>
     <h2>Taal &amp; navigatie</h2>
     <div class="card">
@@ -2395,7 +2394,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.29.0';
+const APP_VERSION = '2.30.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -2427,7 +2426,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 19,
+  version: 20,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -2457,11 +2456,6 @@ const defaultConfig = () => ({
   title: '',
   idleMediaId: null,
   hideButtonsDuringPlay: true,
-  /* De ronde bedieningsknoppen links onder (menu, verplaatsen, volledig
-     scherm, oriëntatie). 'verborgen': weg; alleen 5× tikken linksboven opent
-     het menu, zodat omstanders niet aan de instellingen zitten.
-     'vaag': bijna onzichtbaar, verschijnen bij aanwijzen. 'zichtbaar'. */
-  bedieningsKnoppen: 'verborgen',
   orientationMode: 'auto', // 'auto' | 'portrait' | 'landscape'
   // sound/volume: de playlist speelde altijd gedempt, ook in achtergrondmodus.
   screensaver: { enabled: false, delaySec: 120, mediaIds: [],
@@ -2632,9 +2626,11 @@ function migrateConfig(stored) {
   // v19: bedieningsknoppen standaard weg — ook in bestaande projecten, want
   // juist op een staande box drukken omstanders er voor de grap op. De oude
   // kioskmodus (vage knoppen) is nu de keuze 'vaag'.
-  if ((stored.version || 0) < 19) c.bedieningsKnoppen = 'verborgen';
   delete c.cleanMode;
-  c.version = 19;
+  // v20: de bedieningsknoppen zijn er nooit meer (ook niet als 'vaag' of
+  // 'zichtbaar' gekozen was, of bij een lege scène). Menu: 5× tikken linksboven.
+  delete c.bedieningsKnoppen;
+  c.version = 20;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -3761,13 +3757,13 @@ function renderStage() {
     logo.removeAttribute('src');
   }
   const leeg = !(curButtons().length > 0 || curScene().idleMediaId || sceneTitle(curScene()));
-  $('#welcome').classList.toggle('hidden', !leeg);
-  if (leeg && !$('#sjablonen')?.children.length) renderSjablonen();
-  // Leeg project (welkomstscherm): knoppen altijd zichtbaar, anders kom je er
-  // bij een nieuwe installatie niet in.
-  const knoppen = leeg ? 'zichtbaar' : (config.bedieningsKnoppen || 'verborgen');
-  document.body.classList.toggle('clean', knoppen === 'vaag');
-  document.body.classList.toggle('knoppen-weg', knoppen === 'verborgen');
+  /* Het welkomstscherm met indelingen alleen bij een echt nieuwe installatie:
+     nog geen enkel bestand en geen reeks. Een lege scène op een ingerichte box
+     (bijvoorbeeld alleen een reeks met de klikker) liet bezoekers anders een
+     indeling kiezen. Pas na het laden van de media, anders flitst hij even op. */
+  const welkom = leeg && mediaGeladen && mediaCache.size === 0 && !(config.reeks?.items || []).length;
+  $('#welcome').classList.toggle('hidden', !welkom);
+  if (welkom && !$('#sjablonen')?.children.length) renderSjablonen();
   renderBreadcrumb();
   renderLangBar();
 
@@ -5780,7 +5776,7 @@ function renderSjablonen() {
   box.innerHTML = '';
   for (const sj of SJABLONEN) {
     box.append(el('button', { class: 'sjab', type: 'button',
-      onclick: () => pasSjabloonToe(sj) },
+      onclick: async () => { if (await requireAdmin()) pasSjabloonToe(sj); } },
       sjabVoorbeeld(sj),
       el('div', { class: 'nm' }, sj.naam),
       el('div', { class: 'om' }, sj.om)));
@@ -7955,7 +7951,6 @@ function renderLook() {
   $('#cfgIdleVolume').value = curScene().idleVolume ?? 60;
   updateSoundNotes();
   $('#cfgHideBtns').checked = config.hideButtonsDuringPlay;
-  $('#cfgKnoppen').value = config.bedieningsKnoppen || 'verborgen';
   $('#cfgOrientation').value = config.orientationMode || 'auto';
   $('#thFont').value = config.theme.font;
   $('#thWeight').value = String(config.theme.weight);
@@ -8220,10 +8215,6 @@ $('#cfgMasterVol').addEventListener('input', (e) => {
   refreshAllBgSound();   // achtergrond en screensaver vallen ook onder het hoofdvolume
 });
 $('#cfgHideBtns').addEventListener('change', (e) => { config.hideButtonsDuringPlay = e.target.checked; save(); });
-$('#cfgKnoppen').addEventListener('change', (e) => {
-  config.bedieningsKnoppen = e.target.value; save(); renderStage();
-  if (e.target.value === 'verborgen') toast('Knoppen verborgen — menu: 5× tikken linksboven');
-});
 $('#cfgOrientation').addEventListener('change', (e) => { setOrientationMode(e.target.value); });
 
 /* ---- Scènebeheer ---- */
@@ -11800,6 +11791,7 @@ window.addEventListener('error', () => {
 setInterval(() => { errorBurst = Math.max(0, errorBurst - 5); }, 60000);
 
 /* ================= Start ================= */
+var mediaGeladen = false;   // var: renderStage vraagt ernaar vóór dit punt
 (async () => {
   try {
     idb = await openDb();
@@ -11818,6 +11810,7 @@ setInterval(() => { errorBurst = Math.max(0, errorBurst - 5); }, 60000);
   } catch (e) {
     toast('Let op: video-opslag niet beschikbaar in deze browser');
   }
+  mediaGeladen = true;
   buildSections();
   autoDetectLanguage();
   renderStage();

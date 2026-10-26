@@ -22,11 +22,10 @@ STARTEN
 
 EERSTE KEER: PRESENTATIE INRICHTEN
 ----------------------------------
-- Nieuw project: klik linksonder op het tandwiel om het menu te openen.
-- Zodra er iets is ingericht, zijn de knoppen links onder verborgen
-  (omstanders drukken er anders op). Menu openen: 5x snel tikken in de
-  hoek linksboven. Terug naar Windows: in het menu linksboven op
-  "Naar Windows", of Alt+F4.
+- Menu openen: 5x snel tikken in de hoek linksboven (met een muis:
+  5x klikken). Er staan geen menuknoppen op het scherm, zodat
+  bezoekers niet bij de instellingen kunnen. Terug naar Windows: in
+  het menu linksboven op "Naar Windows", of Alt+F4.
 - Tabblad Media       : video's, PNG-knoppen en 3D-objecten toevoegen.
 - Tabblad Knoppen     : knoppen maken en koppelen aan media of scenes.
 - Bewerken (canvas)   : knoppen verslepen, nogmaals klikken = vastzetten.
