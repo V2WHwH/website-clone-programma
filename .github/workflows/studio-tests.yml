@@ -1,0 +1,36 @@
+name: Studio-tests
+
+# Elke wijziging aan de Studio: alle onderdelen in een echte browser
+# nalopen (klikker, screensaver, muziek, toetsenbord, indeling).
+on:
+  push:
+    branches: [claude/holobox-4k-platform-ggpzo2]
+    paths: ['studio/**', 'tests/studio/**', '.github/workflows/studio-tests.yml']
+  workflow_dispatch:
+
+jobs:
+  studio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: tests/studio
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Playwright en Chromium installeren
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Testmedia maken
+        run: |
+          command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+          node maak-media.js
+
+      - name: Alle studio-tests
+        run: node alles.js

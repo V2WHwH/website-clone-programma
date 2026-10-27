@@ -1,0 +1,12 @@
+{
+  "name": "hereweholo-studio-tests",
+  "private": true,
+  "description": "Automatische tests van de Studio (studio/index.html) in een echte browser",
+  "scripts": {
+    "media": "node maak-media.js",
+    "test": "node alles.js"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}
