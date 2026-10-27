@@ -33,6 +33,11 @@
     font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
   button { font: inherit; cursor: pointer; }
   .hidden { display: none !important; }
+  /* Speler voor muziek van YouTube of SoundCloud: onzichtbaar, maar wel
+     echt in de pagina, anders speelt hij niet. */
+  #muziekLaag { position: fixed; right: 0; bottom: 0; width: 2px; height: 2px; overflow: hidden;
+    opacity: 0; pointer-events: none; z-index: -1; }
+  #muziekLaag iframe, #muziekLaag webview { width: 240px; height: 240px; border: 0; display: block; }
 
   /* ============ PRESENTATIE ============ */
   #stage { position: absolute; inset: 0; background: radial-gradient(120% 120% at 50% 20%, #10202c 0%, #050a10 70%);
@@ -745,6 +750,7 @@
   .nav-st { font-size: 10px; font-weight: 500; color: var(--color-text-muted); white-space: nowrap;
     overflow: hidden; text-overflow: ellipsis; }
   .nav-st.let { color: #f0b429; }
+  .note.let { color: #f0b429; }
   @media (max-width: 1240px) { .nav-grp, .nav-st { display: none; } }
   /* Brede editor: de knoppen staan als korte lijst links, de details in de
      inspector rechts. De lange knoppenkaarten stonden er dubbel. */
@@ -1426,7 +1432,7 @@
   <!-- ================= MEDIA ================= -->
   <div class="tabpage hidden" id="page-media">
     <button id="addMedia" class="btn primary block">+ Bestanden toevoegen</button>
-    <input type="file" id="mediaInput" accept="video/*,.obj,.mtl,.glb,.gltf,.bin,.fbx,image/png,image/jpeg,.webp" multiple hidden>
+    <input type="file" id="mediaInput" accept="video/*,.obj,.mtl,.glb,.gltf,.bin,.fbx,image/png,image/jpeg,.webp,audio/*,.mp3,.m4a,.aac,.wav,.ogg,.oga,.opus,.flac" multiple hidden>
     <p class="note">Video (mp4 H.264/H.265, 4K, liggend of staand) &middot; PNG met transparantie (wordt een knop in de vorm van de afbeelding) &middot; 3D-objecten: <b>.glb / .gltf</b> (aanbevolen &mdash; licht, incl. textures en animaties), <b>.obj</b> (+ .mtl en texture-afbeeldingen samen toevoegen) en <b>.fbx</b> (statisch; voor animaties converteer je naar .glb). Alles wordt in de browser opgeslagen en werkt daarna ook offline.</p>
     <div id="mediaList"></div>
   </div>
@@ -1853,6 +1859,51 @@
       <p class="note" id="svSoundNote"></p>
     </div>
 
+    <h2>Muziek bij de screensaver</h2>
+    <div class="card">
+      <div class="toggle-row">
+        <div><div class="t-label">Muziek afspelen</div>
+          <div class="t-sub">Een eigen nummer of een stream zolang de screensaver loopt, in
+          plaats van alleen de zachte ruis</div></div>
+        <label class="switch"><input type="checkbox" id="svMuziekAan"><i></i></label>
+      </div>
+      <label class="field">Waar komt de muziek vandaan?
+        <select id="svMuziekBron">
+          <option value="bestand">Een muziekbestand op deze computer</option>
+          <option value="url">Een internetadres: YouTube, SoundCloud of een stream</option>
+        </select>
+      </label>
+      <div id="svMuziekBestandVelden">
+        <label class="field">Nummer
+          <select id="svMuziekId"></select>
+        </label>
+        <button id="svMuziekToevoegen" class="btn block">+ Muziekbestand toevoegen (mp3, m4a, wav)</button>
+        <input type="file" id="svMuziekInput" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.oga,.opus,.flac" hidden>
+      </div>
+      <div id="svMuziekUrlVelden">
+        <label class="field">Internetadres
+          <input type="url" id="svMuziekUrl" inputmode="url" autocomplete="off" spellcheck="false"
+            placeholder="https://soundcloud.com/… of https://youtu.be/…">
+        </label>
+        <p class="note" id="svMuziekUrlSoort"></p>
+      </div>
+      <label class="field">Afspelen
+        <select id="svMuziekModus">
+          <option value="loop">Doorlopend herhalen</option>
+          <option value="once">E&eacute;n keer, telkens als de screensaver begint</option>
+          <option value="pauze">Herhalen met een pauze ertussen</option>
+        </select>
+      </label>
+      <label class="field" id="svMuziekPauzeVeld">Pauze tussen twee keer (minuten)
+        <input type="number" id="svMuziekPauze" min="1" max="240" step="1">
+      </label>
+      <label class="field">Volume van de muziek (%)
+        <input type="range" id="svMuziekVolume" min="0" max="100" step="5">
+      </label>
+      <button id="svMuziekTest" class="btn block">&#9654; 15 seconden laten horen</button>
+      <p class="note" id="svMuziekNote"></p>
+    </div>
+
     <h2>Speaker wakker houden</h2>
     <div class="card">
       <div class="toggle-row">
@@ -2179,7 +2230,7 @@
       <div class="t-label">Media opnieuw koppelen</div>
       <p class="note" id="relinkText"></p>
       <button id="relinkPick" class="btn primary block">Mediabestanden aanwijzen&hellip;</button>
-      <input type="file" id="relinkInput" accept="video/*,.obj,image/png" multiple hidden>
+      <input type="file" id="relinkInput" accept="video/*,.obj,image/png,audio/*" multiple hidden>
     </div>
     <h2>Beheer op afstand</h2>
     <div class="card">
@@ -2394,7 +2445,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.31.0';
+const APP_VERSION = '2.32.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -2426,7 +2477,7 @@ const AppState = {
 const LS_KEY = 'hwh_studio_config_v1';
 
 const defaultConfig = () => ({
-  version: 20,
+  version: 21,
   scenes: [],          // Project -> Scenes -> knoppen (masterspec §22)
   homeSceneId: null,
   motion: { preset: 'corporate', intensity: 'immersive', overrides: { effect: 'galaxyTiles' } },
@@ -2460,7 +2511,13 @@ const defaultConfig = () => ({
   // sound/volume: de playlist speelde altijd gedempt, ook in achtergrondmodus.
   screensaver: { enabled: false, delaySec: 120, mediaIds: [],
     transition: 'crossfade', transitionSec: 1.2, background: false,
-    sound: false, volume: 60 },
+    sound: false, volume: 60,
+    /* Muziek bij de screensaver: een eigen nummer in plaats van alleen de
+       zachte ruis. modus: loop = doorlopend, once = één keer per keer dat de
+       screensaver begint, pauze = na afloop pauzeMin minuten wachten en dan
+       opnieuw. bron: bestand = mediaId uit de bibliotheek, url = een
+       internetadres (YouTube, SoundCloud of een directe stream). */
+    muziek: { aan: false, bron: 'bestand', mediaId: null, url: '', modus: 'loop', pauzeMin: 5, volume: 60 } },
   /* Speaker wakker houden. Een actieve speaker of versterker valt na een paar
      minuten stilte in standby en is daarna alleen met de afstandsbediening
      weer wakker te krijgen — in een holobox die de hele dag op een beurs of
@@ -2630,7 +2687,10 @@ function migrateConfig(stored) {
   // v20: de bedieningsknoppen zijn er nooit meer (ook niet als 'vaag' of
   // 'zichtbaar' gekozen was, of bij een lege scène). Menu: 5× tikken linksboven.
   delete c.bedieningsKnoppen;
-  c.version = 20;
+  // v21: muziek bij de screensaver.
+  c.screensaver.muziek = { aan: false, bron: 'bestand', mediaId: null, url: '', modus: 'loop', pauzeMin: 5, volume: 60,
+    ...(c.screensaver.muziek || {}) };
+  c.version = 21;
   delete c.buttons; delete c.title; delete c.idleMediaId;
   return c;
 }
@@ -2684,7 +2744,8 @@ let mediaCache = new Map(); // id -> {id, name, size, url, kind, aspect?}
 const mediaKind = (name) => /\.(obj|glb|gltf|fbx)$/i.test(name || '') ? 'model'
   : /\.mtl$/i.test(name || '') ? 'mtl'
   : /\.bin$/i.test(name || '') ? 'bin'
-  : /\.(png|jpe?g|webp)$/i.test(name || '') ? 'image' : 'video';
+  : /\.(png|jpe?g|webp)$/i.test(name || '') ? 'image'
+  : /\.(mp3|m4a|aac|wav|ogg|oga|opus|flac)$/i.test(name || '') ? 'audio' : 'video';
 
 /* ================= Hulpjes ================= */
 const $ = (s) => document.querySelector(s);
@@ -5884,6 +5945,9 @@ const ZOEK_EXTRA = [
   { woorden: 'verhuizen kopie kopieren back-up backup usb andere computer pc exporteren terugzetten importeren overzetten meenemen',
     tekst: 'Alles exporteren / terugzetten — indeling én video\'s in één bestand', tab: 'share',
     hint: 'Opslaan & beheer → onderdeel Naar een andere computer.' },
+  { woorden: 'muziek nummer liedje mp3 achtergrondmuziek screensaver herhalen loop eenmalig pauze minuten geluid youtube soundcloud stream radio internetradio url link',
+    tekst: 'Muziek bij de screensaver — bestand, YouTube, SoundCloud of stream', tab: 'saver',
+    hint: 'Screensaver → onderdeel Muziek bij de screensaver.' },
   { woorden: 'speaker standby slaap ruis geluid wakker versterker stil boxen signaal',
     tekst: 'Speaker wakker houden — zacht signaal tegen standby', tab: 'saver',
     hint: 'Screensaver → onderdeel Speaker wakker houden.' },
@@ -6983,6 +7047,9 @@ var AanraakMenu = (() => {
       if (!sv.enabled) return { t: 'Uit' };
       const sec = Number(sv.delaySec) || 0;
       return { t: `Aan · na ${sec >= 60 ? Math.round(sec / 60) + ' min' : sec + ' s'}` +
+        (sv.muziek?.aan && ((sv.muziek.bron || 'bestand') === 'url'
+          ? !['leeg', 'fout'].includes(muziekAdres(sv.muziek.url).soort)
+          : mediaCache.get(sv.muziek.mediaId)?.kind === 'audio') ? ' · muziek' : '') +
         (config.keepAlive?.on ? ' · speaker wakker' : '') };
     } },
     { tab: 'reeks', naam: 'Reeks & klikker', ic: '⏭', status: () => {
@@ -7306,7 +7373,7 @@ var AanraakMenu = (() => {
 function mediaSelect(selectedId, onchange) {
   const sel = el('select', { onchange: (e) => onchange(e.target.value || null) },
     el('option', { value: '' }, '— kies een video —'),
-    [...mediaCache.values()].filter((m) => m.kind !== 'mtl' && m.kind !== 'bin').map((m) => {
+    [...mediaCache.values()].filter((m) => m.kind !== 'mtl' && m.kind !== 'bin' && m.kind !== 'audio').map((m) => {
       const o = el('option', { value: m.id }, m.name);
       if (m.id === selectedId) o.selected = true;
       return o;
@@ -7750,10 +7817,12 @@ function renderMediaList() {
         ? el('div', { style: 'width:76px;height:46px;border-radius:7px;background:#0a0f16;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none' }, '🎨')
       : m.kind === 'image'
         ? el('img', { src: m.url, style: 'width:76px;height:46px;object-fit:contain;border-radius:7px;background:#0a0f16;flex:none' })
+      : m.kind === 'audio'
+        ? el('div', { style: 'width:76px;height:46px;border-radius:7px;background:#0a0f16;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none' }, '🎵')
         : el('video', { src: m.url, preload: 'metadata', muted: '' });
     list.append(el('div', { class: 'card' }, el('div', { class: 'media-item' },
       thumb,
-      el('div', { class: 'grow' }, el('div', { class: 'nm', title: m.name }, m.name), el('div', { class: 'sz' }, (m.kind === 'model' ? '3D-object · ' : '') + fmtSize(m.size))),
+      el('div', { class: 'grow' }, el('div', { class: 'nm', title: m.name }, m.name), el('div', { class: 'sz' }, (m.kind === 'model' ? '3D-object · ' : m.kind === 'audio' ? 'Muziek · ' : '') + fmtSize(m.size))),
       m.kind === 'video' ? el('button', { class: 'btn small', title: 'Afspeelinstellingen',
         onclick: (e) => {
           const card = e.target.closest('.card');
@@ -7931,6 +8000,7 @@ function renderLook() {
   idleSel.innerHTML = '';
   idleSel.append(el('option', { value: '' }, '— geen —'));
   for (const m of mediaCache.values()) {
+    if (m.kind === 'audio') continue;
     const o = el('option', { value: m.id }, m.name);
     if (m.id === curScene().idleMediaId) o.selected = true;
     idleSel.append(o);
@@ -8748,6 +8818,7 @@ function renderSaver() {
   $('#svTransNote').textContent = `De overgang start ${(sv.transitionSec ?? 1.2).toFixed(1)}s voor het einde van de lopende video, zodat de wissel vloeiend overlapt.`;
   $('#svSound').checked = !!sv.sound;
   $('#svVolume').value = sv.volume ?? 60;
+  renderMuziekKeuze();
   const ka = config.keepAlive || {};
   $('#kaOn').checked = !!ka.on;
   $('#kaType').value = ka.type || 'ruis';
@@ -8851,6 +8922,167 @@ $('#kaTest').addEventListener('click', (e) => {
     knop.innerHTML = '&#9654; 5 seconden hardop laten horen';
     renderKaNote();
   }, 5200);
+});
+
+/* Muziek bij de screensaver: bron, manier van afspelen en een regel die
+   zegt wat er nu werkelijk gebeurt. */
+const MUZIEK_SOORT = { youtube: 'YouTube', soundcloud: 'SoundCloud', stream: 'directe stream' };
+function renderMuziekKeuze() {
+  const mz = config.screensaver.muziek;
+  const sel = $('#svMuziekId');
+  sel.innerHTML = '';
+  const nummers = [...mediaCache.values()].filter((m) => m.kind === 'audio');
+  sel.append(el('option', { value: '' },
+    nummers.length ? '— kies een nummer —' : '— nog geen muziek toegevoegd —'));
+  for (const m of nummers) {
+    const o = el('option', { value: m.id }, m.name);
+    if (m.id === mz.mediaId) o.selected = true;
+    sel.append(o);
+  }
+  $('#svMuziekAan').checked = !!mz.aan;
+  $('#svMuziekBron').value = mz.bron || 'bestand';
+  if (document.activeElement !== $('#svMuziekUrl')) $('#svMuziekUrl').value = mz.url || '';
+  $('#svMuziekModus').value = mz.modus || 'loop';
+  $('#svMuziekPauze').value = mz.pauzeMin ?? 5;
+  $('#svMuziekVolume').value = mz.volume ?? 60;
+  renderMuziekNote();
+}
+
+// Onder het adresveld: wat er herkend is, of wat er mis is.
+function renderMuziekUrlSoort() {
+  const r = $('#svMuziekUrlSoort'); if (!r) return;
+  const a = muziekAdres($('#svMuziekUrl').value);
+  r.classList.toggle('let', a.soort === 'fout');
+  r.textContent =
+    a.soort === 'leeg' ? 'Plak de link van een nummer of afspeellijst op YouTube of SoundCloud, ' +
+      'of het adres van een stream (bijvoorbeeld een internetradio of een mp3 op een website).'
+    : a.soort === 'fout' ? a.reden
+    : a.soort === 'youtube' ? (a.list && !a.id ? 'YouTube-afspeellijst herkend.' : 'YouTube-video herkend' +
+        (a.list ? ', met de afspeellijst erbij.' : '.'))
+    : a.soort === 'soundcloud' ? 'SoundCloud herkend.'
+    : 'Directe stream: wordt rechtstreeks afgespeeld (mp3, aac, ogg of een internetradio).';
+}
+
+function renderMuziekNote() {
+  const note = $('#svMuziekNote'); if (!note) return;
+  const sv = config.screensaver, mz = sv.muziek;
+  const modus = mz.modus || 'loop';
+  const viaUrl = (mz.bron || 'bestand') === 'url';
+  $('#svMuziekPauzeVeld').classList.toggle('hidden', modus !== 'pauze');
+  $('#svMuziekBestandVelden').classList.toggle('hidden', viaUrl);
+  $('#svMuziekUrlVelden').classList.toggle('hidden', !viaUrl);
+  if (viaUrl) renderMuziekUrlSoort();
+  const knop = $('#svMuziekTest');
+  if (knop) knop.innerHTML = Muziek.proefLoopt ? '&#9632; Stoppen' : '&#9654; 15 seconden laten horen';
+  const b = Muziek.bron();
+  if (!mz.aan) { note.textContent = 'Uit — de screensaver speelt zonder muziek.'; return; }
+  if (!b) {
+    note.textContent = viaUrl ? 'Vul hierboven een internetadres in.'
+      : 'Kies een nummer, of voeg een muziekbestand toe met de knop hierboven.';
+    return;
+  }
+  const min = Math.max(1, Number(mz.pauzeMin) || 5);
+  const hoe = { loop: 'doorlopend',
+    once: 'één keer, telkens als de screensaver begint',
+    pauze: `en daarna steeds opnieuw na ${min} minuut${min === 1 ? '' : 'en'} pauze` }[modus];
+  const wie = viaUrl ? `De muziek van ${MUZIEK_SOORT[b.soort]}` : `“${b.naam}”`;
+  let s = `${wie} speelt ${hoe}, op ${Math.round(bgVolume(true, mz.volume ?? 60) * 100)}% ` +
+    `(schuif ${mz.volume ?? 60}% × hoofdvolume ${config.masterVolume ?? 100}%). `;
+  if (sv.background) s += 'Ook terwijl de playlist achter de knoppen draait. ';
+  s += 'Speelt een bezoeker een video af, dan zwijgt de muziek en gaat daarna verder. ';
+  if (!sv.enabled) s += 'Let op: de screensaver zelf staat uit, dus de muziek ook. ';
+  else if (Muziek.fout) s += 'Nu: ' + Muziek.fout + ' ';
+  else if (Muziek.speelt) s += 'Nu: speelt. ';
+  else if (Muziek.wachtTot > Date.now()) {
+    const rest = Math.ceil((Muziek.wachtTot - Date.now()) / 1000);
+    s += `Nu: pauze, nog ${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, '0')}. `;
+  } else if (Muziek.klaar) s += 'Nu: één keer gespeeld; opnieuw zodra de screensaver weer begint. ';
+  if (viaUrl) {
+    s += 'Dit heeft internet nodig; zonder verbinding blijft het stil. ';
+    if (b.soort === 'stream' && modus !== 'loop') s += 'Een radiostream heeft geen einde: die speelt gewoon door. ';
+    if (b.soort === 'youtube') {
+      s += 'YouTube kan tussendoor reclame laten horen. ';
+      if (!webviewSupported()) s += 'In deze browserversie weigert YouTube vaak af te spelen, omdat de pagina ' +
+        'een lokaal bestand is; in de Windows-app werkt het wel. ';
+    }
+  }
+  if (Muziek.geblokkeerd) s += 'De browser laat pas geluid toe nadat iemand het scherm heeft ' +
+    'aangeraakt. In de Windows-app speelt hij meteen. ';
+  if (sv.sound) s += 'De video’s van de playlist hebben ook geluid: zet “Geluid bij de ' +
+    'screensaver” uit als alleen de muziek moet klinken.';
+  note.textContent = s.trim();
+}
+// Zolang de pagina open is: de regel bijhouden (pauze die aftelt, speelt nu).
+setInterval(() => {
+  if (!document.getElementById('page-saver')?.classList.contains('hidden')) renderMuziekNote();
+}, 1000);
+
+$('#svMuziekAan').addEventListener('change', (e) => {
+  const mz = config.screensaver.muziek;
+  mz.aan = e.target.checked;
+  // Eén nummer in de bibliotheek en nog niets gekozen: dan is de keuze duidelijk.
+  const nummers = [...mediaCache.values()].filter((m) => m.kind === 'audio');
+  if (mz.aan && (mz.bron || 'bestand') === 'bestand' && !Muziek.nummer() && nummers.length === 1) {
+    mz.mediaId = nummers[0].id;
+  }
+  save(); renderMuziekKeuze(); Muziek.tik();
+  if (mz.aan && !Muziek.bron()) {
+    toast((mz.bron || 'bestand') === 'url' ? 'Vul nog een internetadres in.'
+      : 'Voeg nog een muziekbestand toe of kies een nummer.');
+  }
+});
+$('#svMuziekBron').addEventListener('change', (e) => {
+  config.screensaver.muziek.bron = e.target.value;
+  save(); Muziek.tik(); renderMuziekNote();
+  if (e.target.value === 'url' && !config.screensaver.muziek.url) $('#svMuziekUrl').focus();
+});
+$('#svMuziekUrl').addEventListener('input', () => renderMuziekUrlSoort());
+$('#svMuziekUrl').addEventListener('change', (e) => {
+  const v = e.target.value.trim();
+  const a = muziekAdres(v);
+  // Zonder https:// ingetypt: netjes aanvullen.
+  config.screensaver.muziek.url = a.url || v;
+  e.target.value = config.screensaver.muziek.url;
+  if (a.soort !== 'leeg' && a.soort !== 'fout') config.screensaver.muziek.aan = true;
+  save(); renderMuziekKeuze(); Muziek.tik();
+});
+$('#svMuziekId').addEventListener('change', (e) => {
+  config.screensaver.muziek.mediaId = e.target.value || null;
+  save(); Muziek.tik(); renderMuziekNote();
+});
+$('#svMuziekToevoegen').addEventListener('click', () => $('#svMuziekInput').click());
+$('#svMuziekInput').addEventListener('change', async (e) => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  if (mediaKind(f.name) !== 'audio') return toast('Dit is geen muziekbestand (mp3, m4a, wav, ogg, flac).');
+  const id = await addMediaFile(f);
+  if (!id) return;
+  const mz = config.screensaver.muziek;
+  mz.mediaId = id; mz.aan = true; mz.bron = 'bestand';
+  save(); renderMuziekKeuze(); Muziek.tik();
+  toast('Muziek toegevoegd: ' + f.name);
+});
+$('#svMuziekModus').addEventListener('change', (e) => {
+  config.screensaver.muziek.modus = e.target.value;
+  save(); Muziek.tik(); renderMuziekNote();
+});
+$('#svMuziekPauze').addEventListener('change', (e) => {
+  const n = Math.round(Number(e.target.value));
+  config.screensaver.muziek.pauzeMin = Math.min(240, Math.max(1, Number.isFinite(n) ? n : 5));
+  e.target.value = config.screensaver.muziek.pauzeMin;
+  save(); renderMuziekNote();
+});
+$('#svMuziekVolume').addEventListener('input', (e) => {
+  config.screensaver.muziek.volume = Number(e.target.value); renderMuziekNote();
+});
+$('#svMuziekVolume').addEventListener('change', () => save());
+$('#svMuziekTest').addEventListener('click', () => {
+  if (Muziek.proefLoopt) { Muziek.proef(0); renderMuziekNote(); return; }
+  if (!Muziek.bron()) {
+    return toast((config.screensaver.muziek.bron || 'bestand') === 'url' ? 'Vul eerst een internetadres in.' : 'Kies eerst een nummer.');
+  }
+  Muziek.proef(15); renderMuziekNote();
 });
 
 $('#svPreview').addEventListener('click', () => {
@@ -10939,6 +11171,483 @@ const Wakker = (() => {
   return { apply, hardop, niveau,
     get luid() { return Date.now() < luidTot; },
     get klaar() { const c = AudioFX.ctx; return !!c && c.state === 'running'; } };
+})();
+
+/* ================= Muziek bij de screensaver =================
+   Een eigen nummer zolang de screensaver loopt: schermvullend, of als de
+   playlist in de achtergrondmodus achter de knoppen draait. Speelt een
+   bezoeker iets af met eigen geluid (een knopvideo, een webpagina, de avatar,
+   de reeks), dan zwijgt de muziek en gaat daarna verder waar hij was.
+
+   Drie manieren van afspelen:
+     loop   doorlopend herhalen
+     once   één keer, telkens als de screensaver begint
+     pauze  na afloop pauzeMin minuten stil, dan opnieuw
+
+   De muziek komt uit een bestand in de bibliotheek, of van internet: een
+   directe stream (mp3, internetradio), YouTube of SoundCloud. Elke bron heeft
+   zijn eigen speler met dezelfde handvatten (speel, pauzeer, naar het begin,
+   volume); de motor hieronder weet niet welke het is.
+
+   Bewust één vaste tik in plaats van haken op elke plek waar de toestand
+   verandert: screensaver, achtergrondmodus, knopvideo's en reeks schakelen
+   elk op hun eigen manier, en een tik die kijkt wat er nú te zien is kan
+   geen overgang missen. Het in- en uitfaden komt daarmee vanzelf mee. */
+
+// Wat voor internetadres is dit? YouTube, SoundCloud, of een directe stream.
+function muziekAdres(invoer) {
+  const s = String(invoer || '').trim();
+  if (!s) return { soort: 'leeg' };
+  if (/\s/.test(s)) return { soort: 'fout', reden: 'Een internetadres heeft geen spaties.' };
+  let u;
+  try { u = new URL(/^[a-z][a-z0-9+.-]*:/i.test(s) ? s : 'https://' + s); }
+  catch { return { soort: 'fout', reden: 'Dit is geen geldig internetadres.' }; }
+  if (!/^https?:$/.test(u.protocol)) {
+    return { soort: 'fout', reden: 'Alleen adressen die met http:// of https:// beginnen.' };
+  }
+  if (!/\./.test(u.hostname) && u.hostname !== 'localhost') {
+    return { soort: 'fout', reden: 'Dit is geen geldig internetadres.' };
+  }
+  const host = u.hostname.toLowerCase().replace(/^(www|m|music)\./, '');
+  if (host === 'youtu.be' || host === 'youtube.com' || host === 'youtube-nocookie.com') {
+    let id = host === 'youtu.be' ? u.pathname.split('/')[1] : u.searchParams.get('v');
+    if (!id) { const m = u.pathname.match(/^\/(?:embed|shorts|live|v)\/([\w-]{11})/); if (m) id = m[1]; }
+    if (!/^[\w-]{11}$/.test(id || '')) id = null;
+    let list = u.searchParams.get('list');
+    if (!/^[\w-]{2,64}$/.test(list || '')) list = null;
+    if (!id && !list) return { soort: 'fout', reden: 'In dit YouTube-adres staat geen video of afspeellijst.' };
+    return { soort: 'youtube', id, list, url: u.href };
+  }
+  if (host === 'soundcloud.com' || host === 'on.soundcloud.com' || host === 'api.soundcloud.com') {
+    if (u.pathname.length < 2) return { soort: 'fout', reden: 'Plak de link van een nummer of afspeellijst op SoundCloud.' };
+    return { soort: 'soundcloud', url: u.href };
+  }
+  if (/(^|\.)spotify\.com$/.test(host)) {
+    return { soort: 'fout', reden: 'Spotify speelt buiten zijn eigen app alleen fragmenten van 30 seconden. ' +
+      'Kies YouTube, SoundCloud of een directe stream.' };
+  }
+  return { soort: 'stream', url: u.href };
+}
+
+/* Speler voor een bestand of een directe stream: een gewoon audio-element.
+   Bij doorlopend herhalen loopt hij zelf rond, zonder hapering. */
+function muziekAudioSpeler(url, onEinde) {
+  const a = new Audio();
+  a.preload = 'auto';
+  a.src = url;
+  let bezig = false, geblokkeerd = false, laatste = 0, fout = '';
+  a.addEventListener('ended', () => onEinde());
+  a.addEventListener('playing', () => { fout = ''; });
+  a.addEventListener('error', () => {
+    fout = /^blob:/.test(url) ? 'Het bestand kan niet worden afgespeeld.'
+      : 'Deze stream is niet bereikbaar of geen geluid. Is er internet?';
+  });
+  return {
+    speel() {
+      if (bezig || !a.paused) return;
+      // Zonder aanraking weigert een browser geluid; niet elke tik opnieuw vragen.
+      if (geblokkeerd && Date.now() - laatste < 1000) return;
+      bezig = true; laatste = Date.now();
+      a.play().then(() => { geblokkeerd = false; })
+        .catch((e) => { geblokkeerd = e && e.name === 'NotAllowedError'; })
+        .finally(() => { bezig = false; });
+    },
+    pauzeer() { a.pause(); },
+    naarBegin() { try { a.currentTime = 0; } catch {} },
+    zetVolume(v) { a.volume = v; },
+    zetLus(aan) { a.loop = aan; },
+    weg() { a.pause(); a.removeAttribute('src'); a.load(); },
+    get gepauzeerd() { return a.paused; },
+    get speelt() { return !a.paused && a.readyState >= 2; },
+    get verbonden() { return a.readyState >= 1; },
+    get fout() { return fout; },
+    get geblokkeerd() { return geblokkeerd; },
+    get geeindigd() { return a.ended; },
+    get positie() { return a.currentTime || 0; }
+  };
+}
+
+/* Wat er in de pagina van YouTube of SoundCloud zelf draait (Windows-app).
+   De webview laadt hun speler als gewone pagina; dit stukje legt vast welke
+   audio- en video-elementen er spelen, zodat we die direct kunnen bedienen.
+   Bij YouTube gebruiken we liever zijn eigen speler (movie_player), want die
+   houdt reclame en afspeellijsten zelf bij. */
+const MUZIEK_GAST_INIT = `(() => {
+  if (window.__hwh) return true;
+  const h = window.__hwh = { media: new Set() };
+  const play = HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play = function () { h.media.add(this); return play.apply(this, arguments); };
+  return true;
+})()`;
+function muziekGastActie(actie, waarde) {
+  return `(() => {
+  const h = window.__hwh || { media: new Set() };
+  document.querySelectorAll('video, audio').forEach((x) => h.media.add(x));
+  const lijst = [...h.media];
+  const m = lijst.find((x) => !x.paused) || lijst.find((x) => x.currentSrc) || null;
+  const yt = document.getElementById('movie_player');
+  const ytOk = !!(yt && typeof yt.getPlayerState === 'function');
+  const sc = (method, value) => window.postMessage(JSON.stringify(value === undefined ? { method } : { method, value }), '*');
+  const a = ${JSON.stringify(actie)}, n = ${JSON.stringify(waarde ?? null)};
+  try {
+    if (a === 'speel') {
+      // Eerst het volume: anders begint YouTube een tel op zijn eigen stand.
+      if (n !== null) {
+        if (ytOk) { if (yt.isMuted && yt.isMuted()) yt.unMute(); yt.setVolume(Math.round(n * 100)); }
+        else lijst.forEach((x) => { x.volume = n; });
+      }
+      if (ytOk) yt.playVideo();
+      else if (m) m.play().catch(() => {});
+      else { sc('play'); const k = document.querySelector('.playButton, button[title="Play"], button[aria-label="Play"]'); if (k) k.click(); }
+    } else if (a === 'pauzeer') {
+      if (ytOk) yt.pauseVideo(); else { lijst.forEach((x) => x.pause()); sc('pause'); }
+    } else if (a === 'begin') {
+      if (ytOk) yt.seekTo(0, true); else { if (m) m.currentTime = 0; sc('seekTo', 0); }
+    } else if (a === 'volume') {
+      if (ytOk) { if (yt.isMuted && yt.isMuted()) yt.unMute(); yt.setVolume(Math.round(n * 100)); }
+      else { lijst.forEach((x) => { x.volume = n; }); sc('setVolume', Math.round(n * 100)); }
+    }
+  } catch (e) {}
+  const fe = document.querySelector('.ytp-error, .errorPage, .sc-error');
+  const fout = fe && fe.offsetParent !== null ? (fe.innerText || 'Fout').trim().replace(/\\s+/g, ' ').slice(0, 160) : '';
+  if (ytOk) {
+    const s = yt.getPlayerState();
+    return { verbonden: true, speelt: s === 1, einde: s === 0, t: yt.getCurrentTime() || 0, fout };
+  }
+  if (m) return { verbonden: true, speelt: !m.paused && !m.ended, einde: m.ended, t: m.currentTime || 0, fout };
+  return { verbonden: !!document.querySelector('.playButton, button[title="Play"], button[aria-label="Play"]'),
+    speelt: false, einde: false, t: 0, fout };
+})()`;
+}
+
+/* Speler voor YouTube en SoundCloud. In de Windows-app een webview: die laadt
+   de speler als gewone pagina, met een herkomst erbij (zonder herkomst weigert
+   YouTube sinds 2025 ingesloten video's), en we kunnen er rechtstreeks in
+   bedienen. In een gewone browser een iframe, bediend via de berichten die
+   YouTube en SoundCloud daarvoor zelf aanbieden. */
+function muziekEmbedSpeler(adres, onEinde) {
+  const yt = adres.soort === 'youtube';
+  const naam = yt ? 'YouTube' : 'SoundCloud';
+  const desk = webviewSupported();
+  let laag = document.getElementById('muziekLaag');
+  if (!laag) {
+    laag = el('div', { id: 'muziekLaag', 'aria-hidden': 'true' });
+    document.body.append(laag);
+  }
+  let wil = false, verbonden = false, speelt = false, einde = false, pos = 0, fout = '';
+  let volGewenst = 0, volGezet = -1, volTijd = 0, beginNodig = false, laatsteOpdracht = 0, weg = false;
+  // Het einde telt pas als we hem sinds de laatste start hebben zien spelen:
+  // vlak na "naar het begin" meldt een speler soms nog even "afgelopen".
+  let gewapend = false;
+  const begin = Date.now();
+
+  let src;
+  if (yt) {
+    const q = new URLSearchParams({ autoplay: '0', controls: '0', playsinline: '1', rel: '0',
+      enablejsapi: '1', iv_load_policy: '3' });
+    if (adres.list) q.set('list', adres.list);
+    if (!desk && /^https?:/.test(location.origin)) q.set('origin', location.origin);
+    src = `https://www.youtube.com/embed/${adres.id || 'videoseries'}?${q}`;
+  } else {
+    const q = new URLSearchParams({ url: adres.url, auto_play: 'false', visual: 'false',
+      hide_related: 'true', show_comments: 'false', show_user: 'false', show_reposts: 'false' });
+    src = `https://w.soundcloud.com/player/?${q}`;
+  }
+
+  let elem, poll = 0, handdruk = 0;
+  const zetSpeelt = (nu) => { speelt = nu; if (nu) { gewapend = true; einde = false; } };
+  const zetEinde = (nu) => {
+    // Alleen de overgang naar "afgelopen" telt, en alleen als we wilden spelen.
+    if (nu && !einde && wil && gewapend) { einde = true; gewapend = false; onEinde(); }
+  };
+
+  if (desk) {
+    elem = document.createElement('webview');
+    elem.setAttribute('partition', 'persist:hwh-muziek');
+    elem.setAttribute('httpreferrer', 'https://hereweholo.nl/');
+    elem.src = src;
+    let klaarVoorJs = false, bezig = false;
+    elem.addEventListener('dom-ready', () => {
+      klaarVoorJs = true;
+      elem.executeJavaScript(MUZIEK_GAST_INIT).catch(() => {});
+    });
+    elem.addEventListener('did-fail-load', (e) => {
+      if (e.errorCode === -3 || e.isMainFrame === false) return;
+      fout = `${naam} is niet bereikbaar (${e.errorDescription || e.errorCode}). Is er internet?`;
+    });
+    // Elke kwart seconde: openstaande opdracht uitvoeren en de stand uitlezen.
+    poll = setInterval(() => {
+      if (!klaarVoorJs || bezig || weg) return;
+      let actie = 'status', waarde = null;
+      if (beginNodig) actie = 'begin';
+      else if (wil && !speelt && Date.now() - laatsteOpdracht > 1500) { actie = 'speel'; waarde = volGewenst; }
+      else if (!wil && speelt && Date.now() - laatsteOpdracht > 600) actie = 'pauzeer';
+      // Volume bij elke wijziging, en elke twee seconden opnieuw: na reclame
+      // of bij het volgende nummer zet een speler het soms terug.
+      else if (Math.abs(volGewenst - volGezet) >= 0.01 || (speelt && Date.now() - volTijd > 2000)) {
+        actie = 'volume'; waarde = volGewenst;
+      }
+      if (actie === 'speel' || actie === 'pauzeer' || actie === 'begin') laatsteOpdracht = Date.now();
+      if (actie === 'volume' || actie === 'speel') { volGezet = volGewenst; volTijd = Date.now(); }
+      bezig = true;
+      elem.executeJavaScript(muziekGastActie(actie, waarde), true).then((s) => {
+        if (!s) return;
+        if (actie === 'begin') beginNodig = false;
+        verbonden = verbonden || s.verbonden;
+        zetSpeelt(!!s.speelt); pos = s.t || 0;
+        if (s.fout) fout = `${naam}: ${s.fout}`; else if (speelt) fout = '';
+        zetEinde(!!s.einde);
+      }).catch(() => {}).finally(() => { bezig = false; });
+    }, 250);
+  } else {
+    elem = document.createElement('iframe');
+    elem.setAttribute('allow', 'autoplay; encrypted-media');
+    elem.title = 'Muziek';
+    elem.src = src;
+    const doel = yt ? 'https://www.youtube.com' : 'https://w.soundcloud.com';
+    const stuur = (data) => { try { elem.contentWindow.postMessage(JSON.stringify(data), doel); } catch {} };
+    const opdracht = (func, args = []) => yt
+      ? stuur({ event: 'command', func, args, id: 1, channel: 'widget' })
+      : stuur(args.length ? { method: func, value: args[0] } : { method: func });
+    elem._opdracht = opdracht;
+    const ontvang = (e) => {
+      if (e.source !== elem.contentWindow) return;
+      let d = e.data;
+      try { if (typeof d === 'string') d = JSON.parse(d); } catch { return; }
+      if (!d || typeof d !== 'object') return;
+      if (yt) {
+        if (!verbonden) {
+          verbonden = true; clearInterval(handdruk);
+          for (const ev of ['onStateChange', 'onError']) opdracht('addEventListener', [ev]);
+        }
+        const info = d.info;
+        if (d.event === 'infoDelivery' && info && typeof info === 'object') {
+          if (typeof info.currentTime === 'number') pos = info.currentTime;
+          if (typeof info.playerState === 'number') { zetSpeelt(info.playerState === 1); zetEinde(info.playerState === 0); }
+        } else if (d.event === 'onStateChange') {
+          const s = typeof info === 'object' && info ? info.playerState : info;
+          zetSpeelt(s === 1); zetEinde(s === 0);
+        } else if (d.event === 'onError') {
+          fout = `YouTube kan dit niet afspelen (fout ${info}).` +
+            (info === 101 || info === 150 ? ' De eigenaar staat insluiten niet toe.' : '') +
+            (info === 152 || info === 153 ? ' YouTube eist een herkomst die een lokaal bestand niet heeft: gebruik de Windows-app.' : '');
+        }
+      } else {
+        const m = d.method;
+        if (m === 'ready') {
+          verbonden = true;
+          for (const ev of ['play', 'pause', 'finish', 'playProgress', 'error']) opdracht('addEventListener', [ev]);
+        } else if (m === 'play') zetSpeelt(true);
+        else if (m === 'pause') zetSpeelt(false);
+        else if (m === 'finish') { zetSpeelt(false); zetEinde(true); }
+        else if (m === 'playProgress' && d.value) pos = (d.value.currentPosition || 0) / 1000;
+        else if (m === 'error') fout = 'SoundCloud kan dit nummer niet afspelen.';
+      }
+    };
+    window.addEventListener('message', ontvang);
+    elem._ontvang = ontvang;
+    // YouTube praat pas terug na een handdruk ("listening").
+    if (yt) {
+      handdruk = setInterval(() => stuur({ event: 'listening', id: 1, channel: 'widget' }), 500);
+      elem.addEventListener('load', () => stuur({ event: 'listening', id: 1, channel: 'widget' }));
+    }
+    poll = setInterval(() => {
+      if (!verbonden || weg) return;
+      if (beginNodig) { yt ? opdracht('seekTo', [0, true]) : opdracht('seekTo', [0]); beginNodig = false; }
+      if (wil && !speelt && Date.now() - laatsteOpdracht > 1500) {
+        laatsteOpdracht = Date.now();
+        // eerst het volume, dan pas spelen
+        volGezet = volGewenst; volTijd = Date.now();
+        if (yt) { opdracht('unMute'); opdracht('setVolume', [Math.round(volGewenst * 100)]); }
+        else opdracht('setVolume', [Math.round(volGewenst * 100)]);
+        opdracht(yt ? 'playVideo' : 'play');
+      } else if (!wil && speelt && Date.now() - laatsteOpdracht > 600) {
+        laatsteOpdracht = Date.now(); opdracht(yt ? 'pauseVideo' : 'pause');
+      }
+      if (Math.abs(volGewenst - volGezet) >= 0.01 || (speelt && Date.now() - volTijd > 2000)) {
+        volGezet = volGewenst; volTijd = Date.now();
+        if (yt) { opdracht('unMute'); opdracht('setVolume', [Math.round(volGewenst * 100)]); }
+        else opdracht('setVolume', [Math.round(volGewenst * 100)]);
+      }
+    }, 250);
+  }
+  laag.append(elem);
+
+  return {
+    speel() {
+      if (!wil) laatsteOpdracht = 0;   // meteen, niet pas na de wachttijd
+      wil = true;
+    },
+    pauzeer() {
+      if (wil) laatsteOpdracht = 0;
+      wil = false;
+    },
+    naarBegin() { beginNodig = true; einde = false; gewapend = false; },
+    zetVolume(v) { volGewenst = Math.max(0, Math.min(1, v)); },
+    zetLus() {},       // de motor start hem zelf opnieuw bij het einde
+    weg() {
+      weg = true; clearInterval(poll); clearInterval(handdruk);
+      if (elem._ontvang) window.removeEventListener('message', elem._ontvang);
+      elem.remove();
+    },
+    get gepauzeerd() { return !wil; },
+    get speelt() { return speelt; },
+    get verbonden() { return verbonden; },
+    get fout() {
+      if (fout) return fout;
+      if (!verbonden && Date.now() - begin > 25000) return `Geen verbinding met ${naam}. Is er internet?`;
+      return '';
+    },
+    get geblokkeerd() { return false; },
+    get geeindigd() { return einde; },
+    get positie() { return pos; }
+  };
+}
+
+const Muziek = (() => {
+  const TIK = 100;                       // ms
+  const IN = 1500, UIT = 400;            // fade-duur in ms
+  let speler = null, sleutel = '', volume = 0;
+  let sessie = false, klaar = false, wachtTot = 0, proefTot = 0;
+
+  const cfg = () => config.screensaver?.muziek || {};
+  const modus = () => cfg().modus || 'loop';
+  const nummer = () => {
+    const m = mediaCache.get(cfg().mediaId);
+    return m && m.kind === 'audio' ? m : null;
+  };
+  // De gekozen bron, of null als er (nog) niets bruikbaars gekozen is.
+  function bron() {
+    const c = cfg();
+    if ((c.bron || 'bestand') === 'url') {
+      const a = muziekAdres(c.url);
+      if (a.soort === 'leeg' || a.soort === 'fout') return null;
+      return { ...a, sleutel: 'url:' + a.url, naam: a.url };
+    }
+    const m = nummer();
+    return m ? { soort: 'bestand', url: m.url, sleutel: 'bestand:' + m.id, naam: m.name } : null;
+  }
+  const verborgen = (id) => document.getElementById(id)?.classList.contains('hidden') !== false;
+
+  // Is de playlist nu te zien als screensaver (schermvullend of achtergrond)?
+  const playlistZichtbaar = () => !!config.screensaver?.enabled && (saverActive || bgRotator.running);
+  // Speelt er iets anders met eigen geluid? Dan zwijgt de muziek.
+  const stilNodig = () => playOverlay.classList.contains('show')
+    || !verborgen('webOverlay') || !verborgen('avatarOverlay')
+    || (typeof Reeks !== 'undefined' && Reeks.actief);
+
+  function faden(doel, daarna) {
+    if (Math.abs(volume - doel) < 0.002) volume = doel;
+    else volume = doel > volume
+      ? Math.min(doel, volume + Math.max(0.005, doel * TIK / IN))
+      : Math.max(doel, volume - TIK / UIT);
+    speler.zetVolume(volume);
+    if (volume === doel && daarna) daarna();
+  }
+
+  function eindeBereikt() {
+    if (modus() === 'once') klaar = true;
+    else if (modus() === 'pauze') {
+      wachtTot = Date.now() + Math.max(1, Number(cfg().pauzeMin) || 5) * 60000;
+    }
+    // loop: het audio-element loopt zelf rond; YouTube en SoundCloud
+    // zet de tik hieronder weer aan het begin.
+  }
+
+  function opruimen() {
+    if (speler) speler.weg();
+    speler = null; sleutel = ''; volume = 0;
+  }
+
+  function tik() {
+    const b = bron();
+    const proef = Date.now() < proefTot;
+    if (!b || !(proef || (cfg().aan && playlistZichtbaar()))) {
+      // Screensaver voorbij: snel uitfaden. De volgende keer begint het
+      // nummer weer vooraan.
+      sessie = false; klaar = false; wachtTot = 0;
+      if (speler && (!b || b.sleutel !== sleutel || !cfg().aan) && speler.gepauzeerd && !proef) opruimen();
+      else if (speler && !speler.gepauzeerd) faden(0, () => speler.pauzeer());
+      return;
+    }
+    if (b.sleutel !== sleutel) {
+      opruimen();
+      speler = b.soort === 'youtube' || b.soort === 'soundcloud'
+        ? muziekEmbedSpeler(b, eindeBereikt)
+        : muziekAudioSpeler(b.url, eindeBereikt);
+      sleutel = b.sleutel; klaar = false; wachtTot = 0; sessie = false;
+    }
+    speler.zetLus(modus() === 'loop');
+    if (!sessie) {
+      sessie = true; klaar = false; wachtTot = 0;
+      volume = 0; speler.zetVolume(0);
+      speler.naarBegin();
+    }
+    if (!proef) {
+      if (stilNodig() || (modus() === 'once' && klaar) || (modus() === 'pauze' && Date.now() < wachtTot)) {
+        if (!speler.gepauzeerd) faden(0, () => speler.pauzeer());
+        return;
+      }
+      // Hier is een eventuele pauze voorbij.
+      wachtTot = 0;
+    }
+    // Afgelopen (een pauze voorbij, doorlopend bij YouTube/SoundCloud, of een
+    // proef): van voren af aan.
+    if (speler.geeindigd) speler.naarBegin();
+    speler.speel();
+    faden(bgVolume(true, cfg().volume ?? 60));
+  }
+  setInterval(tik, TIK);
+
+  return {
+    tik, nummer, bron,
+    proef(sec) { proefTot = sec > 0 ? Date.now() + sec * 1000 : 0; tik(); },
+    get proefLoopt() { return Date.now() < proefTot; },
+    get speelt() { return !!speler && speler.speelt && volume > 0.001; },
+    get verbonden() { return !!speler && speler.verbonden; },
+    get fout() { return speler ? speler.fout : ''; },
+    get geblokkeerd() { return !!speler && speler.geblokkeerd; },
+    get wachtTot() { return wachtTot; },
+    get klaar() { return klaar; },
+    get positie() { return speler ? speler.positie : 0; },
+    get volume() { return volume; },
+    get soort() { return bron()?.soort || ''; },
+    /* Voor de build-test van de Windows-app: speelt een internetadres even
+       en meldt wat er gebeurde. Raakt de instellingen niet aan. */
+    async test(url, sec = 45) {
+      const a = muziekAdres(url);
+      const uit = { url, soort: a.soort };
+      if (a.soort === 'fout' || a.soort === 'leeg') return { ...uit, fout: a.reden || 'leeg adres' };
+      const s = a.soort === 'stream' ? muziekAudioSpeler(a.url, () => {}) : muziekEmbedSpeler(a, () => {});
+      const wacht = (ms) => new Promise((r) => setTimeout(r, ms));
+      const tot = async (fn, ms) => {
+        const eind = Date.now() + ms;
+        while (Date.now() < eind) { if (fn()) return true; await wacht(200); }
+        return false;
+      };
+      const t0 = Date.now();
+      s.zetVolume(0.05); s.speel();
+      uit.speelde = await tot(() => s.speelt && s.positie > 1, sec * 1000);
+      uit.secTotSpelen = uit.speelde ? Math.round((Date.now() - t0) / 100) / 10 : null;
+      uit.verbonden = s.verbonden;
+      if (uit.speelde) {
+        const p1 = s.positie; await wacht(3000);
+        uit.loopt = s.positie > p1 + 1.5;
+        s.zetVolume(0.2); await wacht(600);
+        s.pauzeer();
+        uit.pauze = await tot(() => !s.speelt, 6000);
+        const p2 = s.positie; await wacht(1500);
+        uit.staatStil = Math.abs(s.positie - p2) < 0.6;
+        s.speel();
+        uit.hervat = await tot(() => s.speelt && s.positie > p2 + 0.5, 10000);
+        s.naarBegin();
+        uit.naarBegin = await tot(() => s.positie < 2.5, 10000);
+      }
+      uit.fout = s.fout;
+      s.weg();
+      return uit;
+    }
+  };
 })();
 
 /* ================= Reeks met klikker =================

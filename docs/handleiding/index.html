@@ -290,7 +290,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.31.0</span><span>23 hoofdstukken</span><span>36 schermafbeeldingen</span>
+    <span>Versie 2.32.0</span><span>23 hoofdstukken</span><span>36 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -910,6 +910,10 @@ header.cover{padding-block:88px 8px}
       <tr><td>3D — statisch</td><td><code>.fbx</code></td>
         <td>Wordt getoond zonder animatie. Heb je beweging nodig, converteer dan naar
         <code>.glb</code>.</td></tr>
+      <tr><td>Muziek</td><td><code>.mp3</code>, <code>.m4a</code>, <code>.wav</code>,
+        <code>.ogg</code>, <code>.flac</code></td>
+        <td>Voor de muziek bij de screensaver (hoofdstuk 12). Staat in de lijst met een
+        muzieknootje en is niet te kiezen als video van een knop.</td></tr>
     </tbody>
   </table></div>
 
@@ -1339,7 +1343,7 @@ header.cover{padding-block:88px 8px}
     <div><dt>Wie</dt><dd>De bouwer; in een showroom is dit vaak het meest bekeken
       onderdeel.</dd></div>
     <div><dt>Wat</dt><dd>Aan/uit, wachttijd, playlist, overgang, achtergrondmodus,
-      geluid en de speaker wakker houden.</dd></div>
+      geluid, muziek en de speaker wakker houden.</dd></div>
     <div><dt>Waar</dt><dd>Achtste tabblad.</dd></div>
     <div><dt>Waarom</dt><dd>Een holobox staat het grootste deel van de dag alleen. Een zwart
       scherm trekt niemand; een lus die doorloopt wel.</dd></div>
@@ -1347,7 +1351,7 @@ header.cover{padding-block:88px 8px}
 
   <div class="split">
     <figure><div class="panelshot tall">
-      <img src="img/paneel-saver.webp" alt="Het paneel Screensaver" width="371" height="1956" loading="lazy">
+      <img src="img/paneel-saver.webp" alt="Het paneel Screensaver, met Muziek bij de screensaver" width="371" height="2385" loading="lazy">
     </div></figure>
     <div class="tw"><table>
       <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
@@ -1391,8 +1395,12 @@ header.cover{padding-block:88px 8px}
         knoppen in beeld staan.</td><td>Screensaver — geldt voor alle scènes.</td></tr>
       <tr><td>Screensaver schermvullend</td><td>De playlist.</td>
         <td>Screensaver.</td></tr>
-      <tr><td>Bezoeker speelt een knopvideo</td><td>Alleen die video. De achtergrond zwijgt
-        vanzelf en komt terug zodra de video stopt.</td><td>Gaat automatisch.</td></tr>
+      <tr><td>Muziek bij de screensaver <b>aan</b></td><td>Het gekozen nummer, zolang de
+        playlist loopt: schermvullend, en in de achtergrondmodus ook achter de knoppen.</td>
+        <td>Screensaver → Muziek bij de screensaver.</td></tr>
+      <tr><td>Bezoeker speelt een knopvideo</td><td>Alleen die video. De achtergrond en de
+        muziek zwijgen vanzelf en komen terug zodra de video stopt; de muziek gaat verder
+        waar hij was.</td><td>Gaat automatisch.</td></tr>
       <tr><td>Bezoeker raakt het scherm aan tijdens de screensaver</td><td>Stilte — de
         screensaver is meteen stil, ook tijdens het uitvloeien van het beeld.</td>
         <td>Gaat automatisch.</td></tr>
@@ -1411,6 +1419,52 @@ header.cover{padding-block:88px 8px}
     <p>Beide schuiven worden vermenigvuldigd met het <b>hoofdvolume</b> uit Scherm &amp;
     scène. Zo zet je met één schuif — ook op afstand vanuit het beheerpaneel — de hele box
     zachter zonder je verhoudingen kwijt te raken.</p></div>
+
+  <h3>Muziek bij de screensaver</h3>
+  <p class="measure">In plaats van alleen de zachte ruis kan de screensaver een eigen nummer
+  laten horen. Je kiest het nummer, hoe het speelt en hoe hard. Het speelt zolang de
+  playlist in beeld is; raakt iemand het scherm aan, dan is het binnen een halve seconde
+  stil.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
+    <tbody>
+      <tr><td>Muziek afspelen</td><td>Aan of uit.</td>
+        <td>Uit is de screensaver zoals altijd: alleen het geluid van de video's, als dat
+        aanstaat.</td></tr>
+      <tr><td>Nummer</td><td>Kies een muziekbestand uit de mediabibliotheek.</td>
+        <td>Muziek staat in dezelfde bibliotheek als je video's, en gaat dus mee met
+        <b>Alles exporteren</b>.</td></tr>
+      <tr><td>+ Muziekbestand toevoegen</td><td>Een mp3, m4a, wav, ogg of flac van de
+        computer of een USB-stick. Het nummer wordt meteen gekozen en de muziek gaat aan.</td>
+        <td>Eén stap in plaats van eerst naar Media en dan terug.</td></tr>
+      <tr><td>Afspelen</td><td><b>Doorlopend herhalen</b>: het nummer begint steeds opnieuw.<br>
+        <b>Eén keer</b>: één keer, telkens als de screensaver begint.<br>
+        <b>Herhalen met een pauze ertussen</b>: na afloop een pauze, dan weer van voren af aan.</td>
+        <td>Doorlopend past bij sfeermuziek. Eén keer bij een jingle of een gesproken welkom.
+        Met een pauze trek je af en toe de aandacht, zonder dat het de hele dag doorgaat.</td></tr>
+      <tr><td>Pauze tussen twee keer</td><td>1 tot 240 minuten. Alleen zichtbaar bij
+        <b>Herhalen met een pauze</b>.</td>
+        <td>De regel onder de schuif telt de pauze af, zodat je ziet wanneer hij weer
+        komt.</td></tr>
+      <tr><td>Volume van de muziek</td><td>0 tot 100 %, maal het hoofdvolume.</td>
+        <td>Dezelfde rekensom als de andere geluiden: met het hoofdvolume zet je alles
+        tegelijk zachter.</td></tr>
+      <tr><td>15 seconden laten horen</td><td>Speelt het nummer nu, ook zonder screensaver.
+        Nog een keer drukken stopt het.</td>
+        <td>Zo stel je het volume in op de plek zelf, zonder te wachten tot de screensaver
+        begint.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note"><span class="t">Hoe het samengaat met de rest</span>
+    <p>Speelt een bezoeker een knopvideo, een webpagina, de avatar of de reeks, dan zwijgt
+    de muziek en gaat daarna verder waar hij was. Na een aanraking tijdens de schermvullende
+    screensaver begint het nummer de volgende keer weer vooraan, en begint ook een pauze
+    opnieuw. Hebben de video's van de playlist zelf geluid, zet dan <b>Geluid bij de
+    screensaver</b> uit als alleen de muziek moet klinken; de regel onder de muziek waarschuwt
+    daarvoor. Het zachte signaal van <b>Speaker wakker houden</b> mag gewoon aan blijven: dat
+    houdt de speaker wakker op de momenten dat de muziek stil is.</p></div>
 
   <h3>Speaker wakker houden</h3>
   <p class="measure">Dit lost een hardwareprobleem op, geen softwareprobleem. Een actieve
@@ -2716,6 +2770,11 @@ header.cover{padding-block:88px 8px}
         <b>Nee</b> gedrukt, of de app was nooit geïnstalleerd.</td>
         <td>Start <b>HereWeHolo verwijderen.bat</b> uit de map <code>studio</code>. Zie
         hoofdstuk 20.</td></tr>
+      <tr><td>Ik hoor geen muziek bij de screensaver</td><td>De screensaver staat uit, er is
+        geen nummer gekozen, het nummer heeft bij <b>Eén keer</b> al gespeeld, of een pauze
+        loopt nog. In een gewone browser kan het ook de eerste aanraking zijn.</td>
+        <td>Kijk naar de regel onder <b>Muziek bij de screensaver</b>: die zegt wat er nu
+        gebeurt. Druk op <b>15 seconden laten horen</b> om het volume te controleren.</td></tr>
       <tr><td>Ik zie nog ronde knoppen links onder</td><td>Er draait een versie van vóór 2.30.</td>
         <td>Installeer de nieuwste versie. Daarna staan ze er nooit meer.</td></tr>
       <tr><td>Bezoekers veranderen instellingen</td><td>Iemand kent het gebaar linksboven.</td>
@@ -2817,6 +2876,8 @@ header.cover{padding-block:88px 8px}
         voorste verder dan de achterste. Heeft de camera nodig.</td></tr>
       <tr><td>Speaker wakker houden</td><td>Een heel zacht signaal dat blijft lopen zodat de
         speaker zichzelf niet in stand-by zet.</td></tr>
+      <tr><td>Muziek bij de screensaver</td><td>Een eigen nummer zolang de screensaver loopt:
+        doorlopend, één keer, of steeds opnieuw na een pauze in minuten.</td></tr>
       <tr><td>Reeks met klikker</td><td>Genummerde video's met een wachtvideo ertussen, door de
         presentator doorgeklikt met een presenter.</td></tr>
       <tr><td>Device-key</td><td>De sleutel waarmee één box zich bij je beheerserver

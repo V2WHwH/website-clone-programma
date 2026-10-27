@@ -10,6 +10,9 @@ const path = require('path');
 const os = require('os');
 
 const SMOKE_TEST = process.argv.includes('--smoke-test');
+// Build-test voor muziek van internet: --stream-test=<adres> speelt dat adres
+// even af in de echte app en schrijft stream-result.json.
+const STREAM_TEST = (process.argv.find((a) => a.startsWith('--stream-test=')) || '').slice('--stream-test='.length);
 const APP_URL = 'file://' + path.join(__dirname, 'app', 'index.html');
 
 /* ---------------- Instellingen (atomic writes) ---------------- */
@@ -411,6 +414,29 @@ if (!app.requestSingleInstanceLock()) {
       fs.writeFileSync(path.join(process.cwd(), 'smoke-result.json'), JSON.stringify(out, null, 2));
       console.log('SMOKE-TEST OK');
       app.exit(0);
+      return;
+    }
+
+    if (STREAM_TEST) {
+      createWindow();
+      let gemeld = false;
+      const klaar = (uit) => {
+        if (gemeld) return;
+        gemeld = true;
+        try { fs.writeFileSync(path.join(process.cwd(), 'stream-result.json'), JSON.stringify(uit, null, 2)); } catch {}
+        console.log('STREAM-TEST ' + JSON.stringify(uit));
+        app.exit(uit && uit.speelde ? 0 : 1);
+      };
+      setTimeout(() => klaar({ url: STREAM_TEST, fout: 'time-out na 150 s' }), 150000);
+      win.webContents.once('did-finish-load', async () => {
+        try {
+          await win.webContents.executeJavaScript(
+            'new Promise((r) => { const t = () => (typeof Muziek !== "undefined" ? r() : setTimeout(t, 100)); t(); })');
+          klaar(await win.webContents.executeJavaScript(`Muziek.test(${JSON.stringify(STREAM_TEST)}, 60)`));
+        } catch (e) {
+          klaar({ url: STREAM_TEST, fout: String((e && e.message) || e) });
+        }
+      });
       return;
     }
 

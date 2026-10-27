@@ -53,6 +53,29 @@ jobs:
           if (-not (Test-Path smoke-result.json)) { throw 'smoke-result.json ontbreekt' }
           Get-Content smoke-result.json
 
+      # Muziek van internet in de echte app: een directe stream, SoundCloud en
+      # YouTube. Hangt af van diensten buiten ons; een storing daar mag de
+      # release niet tegenhouden, daarom alleen rapporteren.
+      - name: Muziek van internet testen (stream, SoundCloud, YouTube)
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $exe = Get-ChildItem -Path release\win-unpacked -Filter '*.exe' | Select-Object -First 1
+          $adressen = @(
+            'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+            'https://soundcloud.com/forss/flickermood',
+            'https://www.youtube.com/watch?v=aqz-KE-bpKQ'
+          )
+          $mislukt = 0
+          foreach ($a in $adressen) {
+            Remove-Item stream-result.json -ErrorAction SilentlyContinue
+            Write-Host "== $a"
+            & $exe.FullName "--stream-test=$a" --no-sandbox | Write-Host
+            if (Test-Path stream-result.json) { Get-Content stream-result.json | Write-Host }
+            if ($LASTEXITCODE -ne 0) { $mislukt++; Write-Host "::warning::Muziek van $a speelde niet af" }
+          }
+          if ($mislukt) { throw "$mislukt van de $($adressen.Count) bronnen speelde niet af" }
+
       - name: Uninstaller-test op Windows (installeren, bijwerken, alles verwijderen)
         shell: pwsh
         run: |
