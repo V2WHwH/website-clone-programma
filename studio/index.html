@@ -33,6 +33,65 @@
     font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
   button { font: inherit; cursor: pointer; }
   .hidden { display: none !important; }
+
+  /* Video's voor de screensaver aan- en uittikken */
+  .sv-kies-kop { display: flex; align-items: center; gap: 8px; margin: 14px 0 6px; font-size: 12.5px;
+    color: var(--color-text-secondary, #a9b6c4); }
+  .sv-kies { display: flex; flex-direction: column; gap: 6px; }
+  .sv-kies-rij { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 8px 12px;
+    border-radius: 10px; border: 1px solid var(--p-line, #233040); background: var(--p-card-2, #111a24);
+    color: var(--p-ink, #eef2f6); font: inherit; font-size: 13.5px; text-align: left; cursor: pointer; }
+  .sv-kies-rij .vink { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+    border: 1px solid var(--p-line, #233040); color: var(--color-text-muted, #8a98a8); font-weight: 700; }
+  .sv-kies-rij.aan { border-color: var(--color-accent-teal, #15f2e0); background: rgba(21,242,224,.07); }
+  .sv-kies-rij.aan .vink { background: var(--color-accent-teal, #15f2e0); border-color: transparent; color: #04130f; }
+  .sv-kies-rij .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sv-kies-rij .nr { flex: none; font-size: 12px; color: var(--color-text-muted, #8a98a8); }
+  #panel.box .sv-kies-rij { min-height: 56px; font-size: 16px; }
+
+  /* Invoervenster (in plaats van prompt) */
+  #tekstVraag { position: fixed; inset: 0; z-index: 90; background: rgba(2,6,10,.62);
+    display: flex; justify-content: center; align-items: flex-start; padding: 12vh 16px 0; }
+  #tekstVraag .tv-kaart { width: min(520px, 100%); background: var(--color-bg, #0d141c);
+    border: 1px solid var(--p-line, #233040); border-radius: 16px; padding: 20px;
+    display: flex; flex-direction: column; gap: 12px; box-shadow: 0 24px 60px rgba(0,0,0,.6); }
+  #tekstVraag label { font-size: 16px; font-weight: 650; color: var(--p-ink, #eef2f6); }
+  #tekstVraag input { font-size: 18px; padding: 12px 14px; }
+  #tekstVraag input[type=password] { letter-spacing: .3em; }
+  #tekstVraag .tv-fout { color: #f0b429; font-size: 13.5px; margin: 0; }
+  #tekstVraag .tv-knoppen { display: flex; gap: 10px; justify-content: flex-end; }
+  #tekstVraag .tv-knoppen .btn { min-height: 46px; min-width: 120px; }
+
+  /* Toetsenbord op het scherm. Bovenin staat wat je typt, met een
+     knipperende cursor: ook als het vak zelf achter het toetsenbord valt. */
+  #osk { position: fixed; left: 0; right: 0; bottom: 0; z-index: 95; background: #0a1017;
+    border-top: 1px solid var(--p-line, #233040); box-shadow: 0 -14px 40px rgba(0,0,0,.55);
+    padding: 8px max(10px, calc((100vw - 1100px) / 2)) 12px; user-select: none; -webkit-user-select: none;
+    touch-action: manipulation; }
+  #osk .osk-voorbeeld { display: flex; align-items: baseline; gap: 12px; padding: 6px 4px 8px;
+    min-height: 34px; overflow: hidden; white-space: nowrap; }
+  #osk .osk-lbl { flex: none; max-width: 40%; overflow: hidden; text-overflow: ellipsis;
+    color: var(--color-text-muted, #8a98a8); font-size: 13px; }
+  #osk .osk-waarde { flex: 1; min-width: 0; overflow: hidden; color: #f2f5f8; font-size: 19px;
+    display: flex; justify-content: flex-start; }
+  #osk .osk-waarde span { white-space: pre; }
+  #osk .osk-cursor { display: inline-block; width: 2px; height: 1.15em; margin: 0 1px;
+    background: var(--color-accent-teal, #15f2e0); vertical-align: -3px; animation: oskKnipper 1s steps(1) infinite; }
+  @keyframes oskKnipper { 50% { opacity: 0; } }
+  #osk .osk-rij { display: flex; gap: 6px; margin-top: 6px; }
+  #osk .osk-k { flex: 1 1 0; min-width: 0; height: clamp(48px, 6.2vh, 76px); border-radius: 10px;
+    border: 1px solid #263342; background: #17212c; color: #f2f5f8; cursor: pointer;
+    font: 600 clamp(17px, 2.3vh, 25px)/1 var(--ui-font, system-ui); padding: 0; }
+  #osk .osk-k.in { background: var(--color-accent-teal, #15f2e0); color: #04130f; }
+  #osk .osk-spatie { flex-grow: 5; }
+  #osk .osk-klaar { flex-grow: 2; background: var(--color-accent-teal, #15f2e0); color: #04130f; }
+  #osk .osk-shift.aan, #osk .osk-shift.vast { background: #2b4a52; }
+  #osk .osk-shift.vast { box-shadow: inset 0 -3px 0 var(--color-accent-teal, #15f2e0); }
+  #osk .osk-wis, #osk .osk-laag, #osk .osk-shift { flex-grow: 1.5; font-size: clamp(15px, 2vh, 21px); }
+  #osk[data-laag="cijfers"] .osk-toetsen { max-width: 560px; margin: 0 auto; }
+  body.osk-open #panel .tabpage, body.osk-open #inspBody, body.osk-open #startScherm,
+  body.osk-open #avEditorBody { padding-bottom: calc(var(--osk-h, 380px) + 40px); }
+  body.osk-open #tekstVraag { padding-top: 5vh; }
   /* Speler voor muziek van YouTube of SoundCloud: onzichtbaar, maar wel
      echt in de pagina, anders speelt hij niet. */
   #muziekLaag { position: fixed; right: 0; bottom: 0; width: 2px; height: 2px; overflow: hidden;
@@ -984,7 +1043,9 @@
   /* Een tekstvak kreeg anders het schrijfmachineletterype van de browser —
      naast de gewone velden leest dat als een ander formulier. */
   textarea { font-family: var(--ui-font); line-height: 1.5; resize: vertical; }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-dark); }
+  /* Duidelijk zien in welk vak je typt: een gekleurde rand en cursor. */
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--color-accent-teal);
+    box-shadow: 0 0 0 3px rgba(21,242,224,.22); caret-color: var(--color-accent-teal); }
   input[type=range] { width: 100%; accent-color: var(--accent); }
   input[type=color] { width: 44px; height: 32px; border: 1px solid var(--p-line); border-radius: 8px;
     background: var(--p-card-2); padding: 2px; }
@@ -1499,6 +1560,12 @@
           linksboven</b> (met een muis: 5&times; klikken). Zet een PIN bij Opslaan &amp; beheer
           als extra slot.</div></div>
       </div>
+      <div class="toggle-row">
+        <div><div class="t-label">Toetsenbord op het scherm</div>
+          <div class="t-sub">Verschijnt als je op de holobox een tekstvak aantikt, met bovenin
+          wat je typt. Met een muis en een gewoon toetsenbord blijft het weg.</div></div>
+        <label class="switch"><input type="checkbox" id="cfgToetsenbord"><i></i></label>
+      </div>
     </div>
     <h2>Taal &amp; navigatie</h2>
     <div class="card">
@@ -1941,8 +2008,8 @@
     <h2>Playlist</h2>
     <div class="card">
       <div id="svPlaylist"></div>
-      <p class="note">De video's spelen in deze volgorde en beginnen daarna opnieuw.
-      &Eacute;&eacute;n video loopt naadloos in een lus.</p>
+      <p class="note">De video's in de playlist spelen in deze volgorde en beginnen daarna
+      opnieuw. Met de pijltjes verander je de volgorde.</p>
     </div>
     <h2>Overgang tussen de video's</h2>
     <div class="card">
@@ -2440,12 +2507,24 @@
   </div>
 </div>
 
+<!-- Eigen invoervenster: vervangt prompt(), dat de Windows-app niet kent. -->
+<div id="tekstVraag" class="hidden" role="dialog" aria-modal="true" aria-labelledby="tvVraag">
+  <form id="tvForm" class="tv-kaart" autocomplete="off">
+    <label id="tvVraag" for="tvVeld"></label>
+    <input type="text" id="tvVeld" autocomplete="off" spellcheck="false">
+    <p class="tv-fout hidden" id="tvFout"></p>
+    <div class="tv-knoppen">
+      <button type="button" class="btn" id="tvAnnuleer">Annuleren</button>
+      <button type="submit" class="btn primary" id="tvOk">OK</button>
+    </div>
+  </form>
+</div>
 <div id="toast" class="hidden"></div>
 
 <script>
 'use strict';
 
-const APP_VERSION = '2.32.0';
+const APP_VERSION = '2.33.0';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -2507,6 +2586,7 @@ const defaultConfig = () => ({
   title: '',
   idleMediaId: null,
   hideButtonsDuringPlay: true,
+  toetsenbord: 'aan',      // eigen toetsenbord op het scherm bij aanraken: 'aan' | 'uit'
   orientationMode: 'auto', // 'auto' | 'portrait' | 'landscape'
   // sound/volume: de playlist speelde altijd gedempt, ook in achtergrondmodus.
   screensaver: { enabled: false, delaySec: 120, mediaIds: [],
@@ -4482,6 +4562,7 @@ function playObject(mediaId) {
   playOverlay.style.setProperty('--objShadow', config.object3d.shadow ?? 0.35);
   if (config.hideButtonsDuringPlay) $('#buttonLayer').style.visibility = 'hidden';
   $('#idleVideo').pause();
+  bgRotator.setPaused(true);
   setPreviewsPaused(true);
   loadObjGeometry(mediaId)
     .then((g) => {
@@ -4737,10 +4818,10 @@ function applyLayout(kind) {
 }
 
 /* ---- Benoemde groepen (spec 38): samen selecteren en verslepen ---- */
-function groupSelection() {
+async function groupSelection() {
   const list = selectedButtons();
   if (list.length < 2) return toast('Selecteer eerst minstens twee knoppen (shift-klik)');
-  const name = prompt('Naam van de groep:', 'Groep ' + (new Set(curButtons().map((b) => b.groupId).filter(Boolean)).size + 1));
+  const name = await vraagTekst('Naam van de groep', 'Groep ' + (new Set(curButtons().map((b) => b.groupId).filter(Boolean)).size + 1));
   if (!name) return;
   pushUndo();
   const gid = uid();
@@ -8021,6 +8102,7 @@ function renderLook() {
   $('#cfgIdleVolume').value = curScene().idleVolume ?? 60;
   updateSoundNotes();
   $('#cfgHideBtns').checked = config.hideButtonsDuringPlay;
+  $('#cfgToetsenbord').checked = config.toetsenbord !== 'uit';
   $('#cfgOrientation').value = config.orientationMode || 'auto';
   $('#thFont').value = config.theme.font;
   $('#thWeight').value = String(config.theme.weight);
@@ -8285,6 +8367,10 @@ $('#cfgMasterVol').addEventListener('input', (e) => {
   refreshAllBgSound();   // achtergrond en screensaver vallen ook onder het hoofdvolume
 });
 $('#cfgHideBtns').addEventListener('change', (e) => { config.hideButtonsDuringPlay = e.target.checked; save(); });
+$('#cfgToetsenbord').addEventListener('change', (e) => {
+  config.toetsenbord = e.target.checked ? 'aan' : 'uit'; save();
+  if (!e.target.checked) Toetsenbord.sluit();
+});
 $('#cfgOrientation').addEventListener('change', (e) => { setOrientationMode(e.target.value); });
 
 /* ---- Scènebeheer ---- */
@@ -8307,8 +8393,8 @@ for (const selId of ['#sceneSelect', '#tbScene']) $(selId).addEventListener('cha
   refreshPanel();
 });
 
-$('#sceneAdd').addEventListener('click', () => {
-  const name = prompt('Naam van de nieuwe scène:', 'Scène ' + (config.scenes.length + 1));
+$('#sceneAdd').addEventListener('click', async () => {
+  const name = await vraagTekst('Naam van de nieuwe scène', 'Scène ' + (config.scenes.length + 1));
   if (!name) return;
   const sc = { id: uid(), name, title: '', idleMediaId: null,
     idleSound: false, idleVolume: 60, buttons: [] };
@@ -8318,8 +8404,8 @@ $('#sceneAdd').addEventListener('click', () => {
   toast('Scène toegevoegd — maak knoppen en koppel er vanaf een andere scène naartoe');
 });
 
-$('#sceneRename').addEventListener('click', () => {
-  const name = prompt('Nieuwe naam:', curScene().name);
+$('#sceneRename').addEventListener('click', async () => {
+  const name = await vraagTekst('Nieuwe naam voor deze scène', curScene().name);
   if (!name) return;
   curScene().name = name;
   save(); refreshPanel();
@@ -8450,10 +8536,293 @@ async function sha256(text) {
 }
 
 let adminUnlockedUntil = 0;
+/* ================= Typen op de holobox =================
+   Een holobox heeft meestal geen toetsenbord. Het toetsenbord van Windows
+   zelf verschijnt alleen als Windows denkt dat er géén toetsenbord is — en de
+   ontvanger van een presenter (Logitech R400) meldt zich juist als toetsenbord.
+   Dan kun je een tekstvak wel leegmaken (selecteren, knippen) maar niets
+   nieuws typen. Daarom een eigen toetsenbord, dat verschijnt zodra je met je
+   vinger een tekstvak aantikt. Bovenin staat wat je typt, met een knipperende
+   cursor, zodat je het ook ziet als het vak zelf achter het toetsenbord valt.
+   Met een muis blijft het weg. */
+const Toetsenbord = (() => {
+  const LETTERS = [
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+    ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', '-'],
+    ['⇧', 'z', 'x', 'c', 'v', 'b', 'n', 'm', '⌫'],
+    ['123', ',', 'spatie', '.', '←', '→', 'Klaar'],
+  ];
+  const TEKENS = [
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+    ['@', '#', '&', '_', '+', '=', '(', ')', '/', ':'],
+    ['é', 'ë', 'è', 'á', 'ó', 'ö', 'ü', 'ï', 'ç', '€'],
+    ['!', '?', ';', '\'', '"', '%', '*', '⌫'],
+    ['abc', ',', 'spatie', '.', '←', '→', 'Klaar'],
+  ];
+  const CIJFERS = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '9'], ['←', '0', '⌫'], ['Klaar']];
+  const NAMEN = { '⇧': 'shift', '⌫': 'wis', spatie: 'spatie', '123': 'laag', abc: 'laag', Klaar: 'klaar', '←': 'pijl', '→': 'pijl' };
+  const TEKST_TYPES = /^(text|search|url|email|tel|password|number)$/;
+  const MET_SELECTIE = /^(text|search|url|tel|password)$/;
+
+  let doel = null, laag = 'abc', shift = false, vast = false, laatsteShift = 0;
+  let startWaarde = '', aanwijzer = '', herhaal = 0;
+  const origineel = new WeakMap();      // inputmode zoals hij was, om terug te zetten
+
+  const bord = el('div', { id: 'osk', class: 'hidden', 'aria-hidden': 'true' });
+  const lbl = el('span', { class: 'osk-lbl' });
+  const waarde = el('div', { class: 'osk-waarde' });
+  const toetsen = el('div', { class: 'osk-toetsen' });
+  bord.append(el('div', { class: 'osk-voorbeeld' }, lbl, waarde), toetsen);
+  document.body.append(bord);
+
+  const aan = () => config.toetsenbord !== 'uit';
+  const bewerkbaar = (t) => !!t && !t.disabled && !t.readOnly && (t.tagName === 'TEXTAREA' ||
+    (t.tagName === 'INPUT' && TEKST_TYPES.test(t.type || 'text')));
+  const metSelectie = (t) => t.tagName === 'TEXTAREA' || MET_SELECTIE.test(t.type || 'text');
+
+  // Het eigen toetsenbord van Windows niet óók laten opkomen.
+  function onderdruk(t) {
+    if (!origineel.has(t)) origineel.set(t, t.getAttribute('inputmode'));
+    t.setAttribute('inputmode', 'none');
+  }
+  function herstel(t) {
+    if (!origineel.has(t)) return;
+    const o = origineel.get(t);
+    origineel.delete(t);
+    if (o === null) t.removeAttribute('inputmode'); else t.setAttribute('inputmode', o);
+  }
+
+  function labelVan(t) {
+    if (t.id === 'tvVeld') return $('#tvVraag').textContent;
+    const l = t.closest('label');
+    const tekst = l ? [...l.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' ') : '';
+    return (tekst || t.getAttribute('aria-label') || t.placeholder || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function toonWaarde() {
+    if (!doel) return;
+    lbl.textContent = labelVan(doel);
+    const v = doel.type === 'password' ? '•'.repeat(doel.value.length) : doel.value;
+    const pos = metSelectie(doel) ? (doel.selectionEnd ?? v.length) : v.length;
+    // Het stuk rond de cursor; bij een lange tekst het einde.
+    const voor = v.slice(Math.max(0, pos - 60), pos), na = v.slice(pos, pos + 30);
+    waarde.innerHTML = '';
+    waarde.append(el('span', {}, voor), el('i', { class: 'osk-cursor' }), el('span', {}, na));
+  }
+
+  function teken() {
+    toetsen.innerHTML = '';
+    bord.dataset.laag = laag;
+    const rijen = laag === 'cijfers' ? CIJFERS : laag === '123' ? TEKENS : LETTERS;
+    const hoofd = laag === 'abc' && (shift || vast);
+    for (const rij of rijen) {
+      const r = el('div', { class: 'osk-rij' });
+      for (const k of rij) {
+        const naam = NAMEN[k];
+        const tekst = k === 'spatie' ? 'spatie' : hoofd && k.length === 1 ? k.toUpperCase() : k;
+        const b = el('button', { type: 'button', tabindex: '-1', 'data-k': k,
+          class: 'osk-k' + (naam ? ' osk-' + naam : '') +
+            (k === '⇧' && vast ? ' vast' : k === '⇧' && shift ? ' aan' : '') }, tekst);
+        r.append(b);
+      }
+      toetsen.append(r);
+    }
+  }
+
+  const geefDoor = () => doel.dispatchEvent(new Event('input', { bubbles: true }));
+
+  function voegIn(tekst) {
+    const t = doel; if (!t) return;
+    if (t.type === 'number') {
+      if (!/^[0-9.,-]$/.test(tekst)) return;
+      t.value = (t.value + tekst.replace(',', '.'));
+    } else if (metSelectie(t)) {
+      const s = t.selectionStart ?? t.value.length, e = t.selectionEnd ?? s;
+      if (t.maxLength > 0 && t.value.length - (e - s) + tekst.length > t.maxLength) return;
+      t.setRangeText(tekst, s, e, 'end');
+    } else {
+      if (t.maxLength > 0 && t.value.length >= t.maxLength) return;
+      t.value += tekst;
+    }
+    geefDoor(); toonWaarde();
+  }
+
+  function wis() {
+    const t = doel; if (!t || !t.value) return;
+    if (metSelectie(t)) {
+      const s = t.selectionStart ?? t.value.length, e = t.selectionEnd ?? s;
+      if (s !== e) t.setRangeText('', s, e, 'end');
+      else if (s > 0) t.setRangeText('', s - 1, s, 'end');
+      else return;
+    } else t.value = t.value.slice(0, -1);
+    geefDoor(); toonWaarde();
+    // Helemaal leeg: de volgende letter wordt weer een hoofdletter.
+    if (!t.value && !shift && !vast && hoofdletterBijLeeg(t)) { shift = true; teken(); }
+  }
+
+  function hoofdletterBijLeeg(t) {
+    const im = origineel.has(t) ? origineel.get(t) : t.getAttribute('inputmode');
+    return laag === 'abc' && t.type === 'text' && im !== 'url' && im !== 'email' && t.id !== 'svMuziekUrl';
+  }
+
+  function beweeg(stap) {
+    const t = doel; if (!t || !metSelectie(t)) return;
+    const p = Math.max(0, Math.min(t.value.length, (t.selectionEnd ?? t.value.length) + stap));
+    t.setSelectionRange(p, p);
+    toonWaarde();
+  }
+
+  // Wijzigingen doorgeven zoals een gewoon tekstvak dat doet bij het verlaten.
+  function afronden() {
+    if (!doel) return;
+    if (doel.value !== startWaarde) doel.dispatchEvent(new Event('change', { bubbles: true }));
+    startWaarde = doel.value;
+  }
+
+  function klaar() {
+    const t = doel;
+    if (!t) return sluit();
+    const form = t.closest('form');
+    if (t.id === 'tvVeld' && form) { form.requestSubmit(); return; }
+    sluit();
+    t.blur();
+  }
+
+  function druk(k) {
+    switch (k) {
+      case '⇧': {
+        const nu = Date.now();
+        if (vast) { vast = false; shift = false; }
+        else if (shift && nu - laatsteShift < 450) { vast = true; shift = false; }   // twee keer snel: vast
+        else shift = !shift;
+        laatsteShift = nu;
+        return teken();
+      }
+      case '⌫': return wis();
+      case 'spatie': return voegIn(' ');
+      case '←': return beweeg(-1);
+      case '→': return beweeg(1);
+      case '123': laag = '123'; return teken();
+      case 'abc': laag = 'abc'; return teken();
+      case 'Klaar': return klaar();
+      default:
+        voegIn(laag === 'abc' && (shift || vast) ? k.toUpperCase() : k);
+        if (shift) { shift = false; teken(); }
+    }
+  }
+
+  function open(t) {
+    if (doel && doel !== t) { afronden(); herstel(doel); }
+    doel = t;
+    startWaarde = t.value;
+    const im = origineel.has(t) ? origineel.get(t) : t.getAttribute('inputmode');
+    onderdruk(t);
+    laag = t.type === 'number' || t.type === 'tel' || im === 'numeric' || im === 'decimal' ? 'cijfers' : 'abc';
+    // Een leeg tekstvak begint met een hoofdletter, behalve bij adressen.
+    vast = false;
+    shift = !t.value && hoofdletterBijLeeg(t);
+    teken(); toonWaarde();
+    bord.classList.remove('hidden');
+    bord.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('osk-open');
+    document.documentElement.style.setProperty('--osk-h', bord.offsetHeight + 'px');
+    requestAnimationFrame(() => { try { t.scrollIntoView({ block: 'center' }); } catch {} });
+  }
+
+  function sluit() {
+    clearInterval(herhaal); herhaal = 0;
+    if (doel) { afronden(); herstel(doel); }
+    doel = null;
+    bord.classList.add('hidden');
+    bord.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('osk-open');
+  }
+
+  // Met de vinger (of pen) op een tekstvak: ons toetsenbord, niet dat van Windows.
+  document.addEventListener('pointerdown', (e) => {
+    if (bord.contains(e.target)) return;
+    aanwijzer = e.pointerType;
+    const t = e.target;
+    if ((aanwijzer === 'touch' || aanwijzer === 'pen') && aan() && bewerkbaar(t)) onderdruk(t);
+    else if (aanwijzer === 'mouse' && doel) sluit();
+  }, true);
+  document.addEventListener('focusin', (e) => {
+    const t = e.target;
+    if (!bewerkbaar(t)) return;
+    if ((aanwijzer === 'touch' || aanwijzer === 'pen') && aan()) open(t);
+    else if (doel && doel !== t) sluit();
+  });
+  document.addEventListener('focusout', () => {
+    setTimeout(() => { if (doel && document.activeElement !== doel) {
+      if (bewerkbaar(document.activeElement) && (aanwijzer === 'touch' || aanwijzer === 'pen')) return;
+      sluit();
+    } }, 0);
+  });
+  // Ook met een gewoon toetsenbord typen terwijl dit openstaat: meekijken.
+  document.addEventListener('input', (e) => { if (e.target === doel) toonWaarde(); });
+  document.addEventListener('selectionchange', () => { if (doel && document.activeElement === doel) toonWaarde(); });
+
+  // De toetsen nemen nooit de focus over: zo blijft het tekstvak actief.
+  toetsen.addEventListener('pointerdown', (e) => {
+    const b = e.target.closest('.osk-k');
+    e.preventDefault();
+    if (!b) return;
+    b.classList.add('in');
+    const k = b.dataset.k;
+    druk(k);
+    if (k === '⌫') {
+      clearInterval(herhaal);
+      const start = Date.now();
+      herhaal = setInterval(() => { if (Date.now() - start > 450) wis(); }, 70);
+    }
+  });
+  const los = (e) => {
+    clearInterval(herhaal); herhaal = 0;
+    toetsen.querySelectorAll('.osk-k.in').forEach((b) => b.classList.remove('in'));
+  };
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) toetsen.addEventListener(ev, los);
+  bord.addEventListener('mousedown', (e) => e.preventDefault());
+
+  return { sluit, open, get actief() { return !!doel; }, get doel() { return doel; } };
+})();
+
+/* Een tekst vragen in een eigen venster. prompt() werkt niet in de Windows-app
+   (Electron kent hem niet) en is op een aanraakscherm onbruikbaar.
+   Geeft de ingevulde tekst terug, of null bij Annuleren. */
+function vraagTekst(vraag, standaard = '', { pin = false, controle = null } = {}) {
+  return new Promise((klaar) => {
+    const box = $('#tekstVraag'), form = $('#tvForm'), veld = $('#tvVeld'), fout = $('#tvFout');
+    $('#tvVraag').textContent = vraag;
+    veld.type = pin ? 'password' : 'text';
+    if (pin) veld.setAttribute('inputmode', 'numeric'); else veld.removeAttribute('inputmode');
+    veld.maxLength = pin ? 8 : 120;
+    veld.value = standaard || '';
+    fout.classList.add('hidden');
+    box.classList.remove('hidden');
+    const dicht = (w) => {
+      form.onsubmit = null; $('#tvAnnuleer').onclick = null; box.onkeydown = null;
+      Toetsenbord.sluit();
+      box.classList.add('hidden');
+      klaar(w);
+    };
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const w = veld.value.trim();
+      const f = controle ? controle(w) : (w ? '' : 'Vul iets in, of kies Annuleren.');
+      if (f) { fout.textContent = f; fout.classList.remove('hidden'); veld.focus(); return; }
+      dicht(w);
+    };
+    $('#tvAnnuleer').onclick = () => dicht(null);
+    box.onkeydown = (e) => { if (e.key === 'Escape') { e.preventDefault(); dicht(null); } };
+    requestAnimationFrame(() => { veld.focus(); if (!pin) veld.select(); });
+  });
+}
+
 async function requireAdmin() {
   if (!config.security.pinHash) return true;
   if (Date.now() < adminUnlockedUntil) return true;
-  const pin = prompt('Voer de admin-PIN in:');
+  const pin = await vraagTekst('Voer de PIN in om het menu te openen', '', { pin: true });
   if (pin === null) return false;
   if (await sha256(pin) === config.security.pinHash) {
     adminUnlockedUntil = Date.now() + 10 * 60 * 1000; // 10 min ontgrendeld
@@ -8503,8 +8872,9 @@ function renderShare() {
 
 $('#pinSet').addEventListener('click', async () => {
   if (!(await requireAdmin())) return;
-  const pin = prompt('Nieuwe PIN (4–8 cijfers):');
-  if (!pin || !/^\d{4,8}$/.test(pin)) return toast('PIN moet 4–8 cijfers zijn');
+  const pin = await vraagTekst('Nieuwe PIN (4 tot 8 cijfers)', '', { pin: true,
+    controle: (w) => /^\d{4,8}$/.test(w) ? '' : 'Een PIN is 4 tot 8 cijfers.' });
+  if (!pin) return;
   config.security.pinHash = await sha256(pin);
   adminUnlockedUntil = Date.now() + 10 * 60 * 1000;
   save(); renderShare();
@@ -8781,31 +9151,53 @@ function renderSaver() {
   $('#svEnabled').checked = sv.enabled;
   $('#svDelay').value = sv.delaySec;
   $('#svBackground').checked = !!sv.background;
-  // Geordende playlist met omhoog/omlaag/verwijderen + toevoeg-select.
+  // Geordende playlist met omhoog/omlaag/verwijderen, en daaronder alle
+  // video's om aan of uit te tikken. Eerst was dat een keuzelijst: op een
+  // aanraakscherm voegde die er één per keer toe, en dezelfde video kon er
+  // meerdere keren in — dan speelde de box steeds die ene.
   const list = $('#svPlaylist');
   list.innerHTML = '';
-  const ids = sv.mediaIds || [];
-  if (!ids.length) list.append(el('p', { class: 'note' }, 'Nog geen video\u2019s in de playlist \u2014 voeg er hieronder toe.'));
+  const ids = sv.mediaIds = [...new Set(sv.mediaIds || [])];
+  const wijzig = () => { save(); renderSaver(); syncBackgroundRotator(); };
+  if (!ids.length) list.append(el('p', { class: 'note' }, 'Nog geen video\u2019s in de playlist \u2014 tik hieronder aan welke moeten spelen.'));
   ids.forEach((id, i) => {
     const m = mediaCache.get(id);
     list.append(el('div', { class: 'row', style: 'display:flex;gap:6px;align-items:center;margin-bottom:6px' },
       el('span', { class: 'grow', style: 'font-size:12.5px;color:var(--p-ink)' }, `${i + 1}. ${m ? m.name : '(ontbreekt)'}`),
       el('button', { class: 'btn small', title: 'Omhoog', onclick: () => {
-        if (i > 0) { [ids[i - 1], ids[i]] = [ids[i], ids[i - 1]]; save(); renderSaver(); syncBackgroundRotator(); } } }, '\u2191'),
+        if (i > 0) { [ids[i - 1], ids[i]] = [ids[i], ids[i - 1]]; wijzig(); } } }, '\u2191'),
       el('button', { class: 'btn small', title: 'Omlaag', onclick: () => {
-        if (i < ids.length - 1) { [ids[i + 1], ids[i]] = [ids[i], ids[i + 1]]; save(); renderSaver(); syncBackgroundRotator(); } } }, '\u2193'),
-      el('button', { class: 'btn small danger', onclick: () => {
-        ids.splice(i, 1); save(); renderSaver(); syncBackgroundRotator(); } }, '\u2715')));
+        if (i < ids.length - 1) { [ids[i + 1], ids[i]] = [ids[i], ids[i + 1]]; wijzig(); } } }, '\u2193'),
+      el('button', { class: 'btn small danger', title: 'Uit de playlist', onclick: () => {
+        ids.splice(i, 1); wijzig(); } }, '\u2715')));
   });
-  const addable = [...mediaCache.values()].filter((m) => m.kind === 'video');
-  const add = el('select', { 'data-role': 'sv-add', onchange: (e) => {
-    if (!e.target.value) return;
-    sv.mediaIds.push(e.target.value);
-    save(); renderSaver(); syncBackgroundRotator();
-  } }, el('option', { value: '' }, '+ video toevoegen\u2026'),
-     addable.map((m) => el('option', { value: m.id }, m.name)));
-  list.append(add);
-  if (!addable.length) list.append(el('p', { class: 'note' }, 'Voeg eerst video\u2019s toe op het tabblad Media.'));
+  const videos = [...mediaCache.values()].filter((m) => m.kind === 'video');
+  if (videos.length) {
+    list.append(el('div', { class: 'sv-kies-kop' },
+      el('span', { class: 'grow' }, 'Welke video\u2019s spelen?'),
+      el('button', { class: 'btn small', type: 'button', onclick: () => {
+        for (const m of videos) if (!ids.includes(m.id)) ids.push(m.id);
+        wijzig(); } }, 'Alle'),
+      el('button', { class: 'btn small', type: 'button', onclick: () => { ids.length = 0; wijzig(); } }, 'Geen')));
+    const kies = el('div', { class: 'sv-kies' });
+    for (const m of videos) {
+      const nr = ids.indexOf(m.id);
+      kies.append(el('button', { type: 'button', class: 'sv-kies-rij' + (nr >= 0 ? ' aan' : ''),
+        'aria-pressed': String(nr >= 0), 'data-id': m.id, onclick: () => {
+          const j = ids.indexOf(m.id);
+          if (j >= 0) ids.splice(j, 1); else ids.push(m.id);
+          wijzig();
+        } },
+        el('span', { class: 'vink' }, nr >= 0 ? '\u2713' : '+'),
+        el('span', { class: 'nm' }, m.name),
+        nr >= 0 ? el('span', { class: 'nr' }, String(nr + 1)) : null));
+    }
+    list.append(kies);
+  } else {
+    list.append(el('p', { class: 'note' }, 'Voeg eerst video\u2019s toe op het tabblad Media.'));
+  }
+  list.append(el('p', { class: 'note', id: 'svNu' }));
+  renderSvNu();
   // Overgang
   const tr = $('#svTransition');
   tr.innerHTML = '';
@@ -9012,9 +9404,23 @@ function renderMuziekNote() {
     'screensaver” uit als alleen de muziek moet klinken.';
   note.textContent = s.trim();
 }
-// Zolang de pagina open is: de regel bijhouden (pauze die aftelt, speelt nu).
+// Onder de playlist: hoeveel video's, en welke er nu in beeld is.
+function renderSvNu() {
+  const r = document.getElementById('svNu'); if (!r) return;
+  const n = saverPlaylist().length;
+  if (!n) { r.textContent = ''; return; }
+  let s = n === 1 ? 'Eén video: die loopt naadloos in een lus.'
+    : `${n} video\u2019s, na elkaar. Elke keer dat de screensaver begint, gaat hij verder met de volgende. ` +
+      'Een video die niet wil afspelen wordt overgeslagen.';
+  const rot = saverActive ? saverRotator : bgRotator.running ? bgRotator : null;
+  if (rot && rot.running && rot.lengte > 1 && rot.huidige) {
+    s += ` Nu in beeld: ${rot.index + 1} van ${rot.lengte} \u2014 ${rot.huidige.name}.`;
+  }
+  r.textContent = s;
+}
+// Zolang de pagina open is: de regels bijhouden (pauze die aftelt, speelt nu).
 setInterval(() => {
-  if (!document.getElementById('page-saver')?.classList.contains('hidden')) renderMuziekNote();
+  if (!document.getElementById('page-saver')?.classList.contains('hidden')) { renderMuziekNote(); renderSvNu(); }
 }, 1000);
 
 $('#svMuziekAan').addEventListener('change', (e) => {
@@ -9765,7 +10171,10 @@ const sceneSound = () => ({ on: !!curScene().idleSound, vol: curScene().idleVolu
 
 function createRotator(elA, elB, getSound) {
   const sound = () => (getSound && getSound()) || { on: false, vol: 0 };
-  const st = { list: [], idx: 0, active: elA, running: false, transitioning: false, anims: [] };
+  // laatsteId: de video die het laatst in beeld was, ook na stoppen. Zo gaat
+  // de volgende keer de vólgende video spelen in plaats van weer de eerste.
+  const st = { list: [], idx: 0, active: elA, running: false, transitioning: false, anims: [],
+    paused: false, laatsteId: null, fouten: 0, stil: null };
   const standby = () => (st.active === elA ? elB : elA);
 
   function applyTransition(effect, sec, inEl, outEl) {
@@ -9812,9 +10221,13 @@ function createRotator(elA, elB, getSound) {
     const next = st.list[st.idx];
     if (inEl.src !== next.url) { inEl.src = next.url; }
     const sn = sound();
-    await playBg(inEl, sn.on, sn.vol);
+    const gestart = await playBg(inEl, sn.on, sn.vol);
     applyBgAudio(outEl, false, 0);   // de vertrekkende speler zwijgt meteen
     st.active = inEl;
+    st.laatsteId = next.id; st.stil = null;
+    // Kon deze video niet laden of starten (kapot, of een codec die de pc niet
+    // kent)? Dan meteen door naar de volgende in plaats van stil te staan.
+    if (inEl.error || (!gestart && inEl.paused)) setTimeout(overslaan, 300);
     if (effect === 'none') {
       settle(inEl, outEl);
     } else {
@@ -9845,10 +10258,34 @@ function createRotator(elA, elB, getSound) {
     if (!st.transitioning) advance('none'); // harde wissel (effect 'none' of te korte video)
   }
 
+  function overslaan() {
+    if (!st.running || st.list.length < 2) return;
+    if (st.transitioning) { setTimeout(overslaan, 400); return; }
+    // Doen álle video's het niet, dan niet eindeloos rondjes draaien.
+    if (++st.fouten >= st.list.length) return;
+    advance('none');
+  }
+
   for (const el of [elA, elB]) {
     el.addEventListener('timeupdate', onTime);
     el.addEventListener('ended', onEnded);
+    el.addEventListener('error', (e) => { if (e.target === st.active && !st.transitioning) setTimeout(overslaan, 300); });
+    el.addEventListener('playing', (e) => { if (e.target === st.active) st.fouten = 0; });
   }
+
+  // Waakhond: staat de lopende video langer dan 8 seconden stil terwijl hij
+  // speelt (vastgelopen decoder, half bestand), dan de volgende. Een video die
+  // iemand bewust op pauze zette telt niet.
+  setInterval(() => {
+    if (!st.running || st.paused || st.transitioning || st.list.length < 2 || st.active.paused) { st.stil = null; return; }
+    const v = st.active;
+    if (!st.stil || st.stil.v !== v || Math.abs(v.currentTime - st.stil.t) > 0.05) {
+      st.stil = { v, t: v.currentTime, sinds: Date.now() };
+    } else if (Date.now() - st.stil.sinds > 8000) {
+      st.stil = null;
+      overslaan();
+    }
+  }, 1000);
 
   return {
     start(list) {
@@ -9858,17 +10295,22 @@ function createRotator(elA, elB, getSound) {
       this.stop();          // maakt ook st.list leeg — daarom pas daarná zetten
       st.list = list;
       st.running = true;
-      st.idx = 0;
+      // Verder met de video ná de vorige keer, zodat ze allemaal aan bod komen.
+      const vorige = list.length > 1 ? list.findIndex((m) => m.id === st.laatsteId) : -1;
+      st.idx = vorige >= 0 ? (vorige + 1) % list.length : 0;
+      st.fouten = 0; st.stil = null;
       st.active = elA;
       elA.classList.add('front'); elB.classList.remove('front');
       elA.loop = list.length === 1;
-      elA.src = list[0].url;
+      elA.src = list[st.idx].url;
+      st.laatsteId = list[st.idx].id;
       const sn = sound();
       playBg(elA, sn.on, sn.vol);
     },
     stop() {
       st.running = false;
       st.transitioning = false;
+      st.paused = false;
       clearAnims();
       for (const el of [elA, elB]) {
         el.classList.remove('front');
@@ -9880,6 +10322,7 @@ function createRotator(elA, elB, getSound) {
     },
     setPaused(p) {
       if (!st.running) return;
+      st.paused = !!p; st.stil = null;
       if (p) { elA.pause(); elB.pause(); }
       else { const sn = sound(); playBg(st.active, sn.on, sn.vol); }
     },
@@ -9893,6 +10336,8 @@ function createRotator(elA, elB, getSound) {
     },
     get running() { return st.running; },
     get index() { return st.idx; },
+    get lengte() { return st.list.length; },
+    get huidige() { return st.list[st.idx] || null; },
     get activeEl() { return st.active; }
   };
 }
@@ -9959,7 +10404,8 @@ function updateSoundNotes() {
 }
 
 function saverPlaylist() {
-  return (config.screensaver.mediaIds || []).map((id) => mediaCache.get(id)).filter(Boolean);
+  return [...new Set(config.screensaver.mediaIds || [])].map((id) => mediaCache.get(id))
+    .filter((m) => m && m.kind === 'video');
 }
 
 function enterSaver() {

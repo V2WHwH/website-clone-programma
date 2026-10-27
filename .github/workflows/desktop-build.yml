@@ -82,6 +82,7 @@ jobs:
             }
           }
           if ($mislukt) { throw "$mislukt van de $($adressen.Count) bronnen speelde niet af" }
+          $global:LASTEXITCODE = 0
 
       - name: Uninstaller-test op Windows (installeren, bijwerken, alles verwijderen)
         shell: pwsh

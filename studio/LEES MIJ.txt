@@ -26,6 +26,9 @@ EERSTE KEER: PRESENTATIE INRICHTEN
   5x klikken). Er staan geen menuknoppen op het scherm, zodat
   bezoekers niet bij de instellingen kunnen. Terug naar Windows: in
   het menu linksboven op "Naar Windows", of Alt+F4.
+- Typen op de holobox: tik een tekstvak aan met je vinger. Onderin
+  verschijnt een toetsenbord; bovenaan staat wat je typt. "Klaar"
+  sluit het en bewaart de tekst.
 - Tabblad Media       : video's, PNG-knoppen en 3D-objecten toevoegen.
 - Tabblad Knoppen     : knoppen maken en koppelen aan media of scenes.
 - Bewerken (canvas)   : knoppen verslepen, nogmaals klikken = vastzetten.
