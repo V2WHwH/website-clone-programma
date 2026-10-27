@@ -11320,6 +11320,8 @@ function muziekGastActie(actie, waarde) {
 })()`;
 }
 
+const YT_SPELER = 'https://www.youtube-nocookie.com';
+
 /* Speler voor YouTube en SoundCloud. In de Windows-app een webview: die laadt
    de speler als gewone pagina, met een herkomst erbij (zonder herkomst weigert
    YouTube sinds 2025 ingesloten video's), en we kunnen er rechtstreeks in
@@ -11347,7 +11349,10 @@ function muziekEmbedSpeler(adres, onEinde) {
       enablejsapi: '1', iv_load_policy: '3' });
     if (adres.list) q.set('list', adres.list);
     if (!desk && /^https?:/.test(location.origin)) q.set('origin', location.origin);
-    src = `https://www.youtube.com/embed/${adres.id || 'videoseries'}?${q}`;
+    // youtube-nocookie.com: de privacyvriendelijke speler van YouTube zelf,
+    // bedoeld om in te sluiten. Zet geen volgcookies, en vraagt minder vaak
+    // om te bevestigen dat er geen bot luistert.
+    src = `${YT_SPELER}/embed/${adres.id || 'videoseries'}?${q}`;
   } else {
     const q = new URLSearchParams({ url: adres.url, auto_play: 'false', visual: 'false',
       hide_related: 'true', show_comments: 'false', show_user: 'false', show_reposts: 'false' });
@@ -11408,7 +11413,7 @@ function muziekEmbedSpeler(adres, onEinde) {
     elem.setAttribute('allow', 'autoplay; encrypted-media');
     elem.title = 'Muziek';
     elem.src = src;
-    const doel = yt ? 'https://www.youtube.com' : 'https://w.soundcloud.com';
+    const doel = yt ? YT_SPELER : 'https://w.soundcloud.com';
     const stuur = (data) => { try { elem.contentWindow.postMessage(JSON.stringify(data), doel); } catch {} };
     const opdracht = (func, args = []) => yt
       ? stuur({ event: 'command', func, args, id: 1, channel: 'widget' })
