@@ -11,7 +11,7 @@ const wacht = (ms) => new Promise((r) => setTimeout(r, ms));
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROMIUM });
-  for (const [w, h] of [[1080, 1920], [1920, 1080], [1600, 1000], [1366, 768]]) {
+  for (const [w, h] of [[1080, 1920], [1920, 1080], [1600, 1000], [1366, 768], [1280, 800], [1024, 768]]) {
     console.log(`== ${w}×${h}`);
     const ctx = await b.newContext({ viewport: { width: w, height: h }, hasTouch: true });
     const p = await ctx.newPage();
@@ -23,7 +23,7 @@ const wacht = (ms) => new Promise((r) => setTimeout(r, ms));
     for (const id of sjablonen) {
       await p.evaluate((i) => { pasSjabloonToe(SJABLONEN.find((s) => s.id === i)); closeEditor(); renderStage(); }, id);
       await wacht(2500);   // binnenkomst-animatie uit laten lopen
-      const r = await p.evaluate(() => {
+      const meet = () => p.evaluate(() => {
         const knoppen = [...document.querySelectorAll('#buttonLayer .vbtn')].map((x) => ({ r: x.getBoundingClientRect(), x }));
         const over = [];
         for (let i = 0; i < knoppen.length; i++) for (let j = i + 1; j < knoppen.length; j++) {
@@ -40,6 +40,10 @@ const wacht = (ms) => new Promise((r) => setTimeout(r, ms));
           return l.scrollWidth > l.clientWidth + 2; }).map(({ x }) => x.textContent.trim());
         return { n: knoppen.length, over, buiten, afgekapt };
       });
+      // Vijf keer over drie seconden: een aandachtseffect laat een knop even
+      // groeien, en ook dan mogen ze elkaar niet raken.
+      let r = await meet();
+      for (let k = 0; k < 4 && !r.over.length && !r.buiten.length; k++) { await wacht(750); r = await meet(); }
       check(`${id}: ${r.n} knoppen, geen overlap, binnen beeld`, (id === 'leeg' ? r.n === 0 : r.n > 0) && !r.over.length && !r.buiten.length && !r.afgekapt.length, r.over.length || r.buiten.length || r.afgekapt.length ? r : undefined);
     }
     // Het menu: niets mag opzij uitsteken.

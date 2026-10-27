@@ -2524,7 +2524,7 @@
 <script>
 'use strict';
 
-const APP_VERSION = '2.33.0';
+const APP_VERSION = '2.33.1';
 
 /* ================= Feature-flags (masterspec §0) ================= */
 // Actieve opties uit de genummerde catalogus; nieuwe nummers hier aanzetten.
@@ -5925,6 +5925,38 @@ function renderSjablonen() {
   }
 }
 
+/* Een sjabloon is getekend voor 16:9. De knoppen schalen met de hoogte van
+   het scherm, de ruimte ertussen met de breedte: op 16:10 raakten de knoppen
+   van Museum elkaar bijna, en op 4:3 lagen ze over elkaar. Daarom meten we na
+   het plaatsen hoe breed ze werkelijk zijn en maken we ze zo nodig wat kleiner,
+   met ruimte over voor de aandachtseffecten die een knop even laten groeien. */
+function pasGrootteAanScherm(knoppen) {
+  const laag = document.getElementById('buttonLayer');
+  const W = laag?.offsetWidth || innerWidth, H = laag?.offsetHeight || innerHeight;
+  if (!W || !H || knoppen.length < 2) return;
+  const marge = Math.max(28, W * 0.03);
+  for (let poging = 0; poging < 5; poging++) {
+    const els = knoppen.map((b) => laag.querySelector(`.vbtn[data-id="${b.id}"]`));
+    if (els.some((x) => !x)) return;
+    let factor = 1;
+    for (let i = 0; i < knoppen.length; i++) {
+      for (let j = i + 1; j < knoppen.length; j++) {
+        const a = knoppen[i], c = knoppen[j];
+        const dx = Math.abs(a.x - c.x) / 100 * W, dy = Math.abs(a.y - c.y) / 100 * H;
+        const halfW = (els[i].offsetWidth + els[j].offsetWidth) / 2;
+        const halfH = (els[i].offsetHeight + els[j].offsetHeight) / 2;
+        if (dx >= halfW + marge || dy >= halfH + marge) continue;   // ze raken elkaar niet
+        // Kleiner maken in de richting waarin ze het verst uit elkaar staan.
+        factor = Math.min(factor, dx / W >= dy / H
+          ? Math.max(0.3, (dx - marge) / halfW) : Math.max(0.3, (dy - marge) / halfH));
+      }
+    }
+    if (factor >= 0.99) return;
+    for (const b of knoppen) b.size = Math.max(4, Math.floor(b.size * factor * 2) / 2);
+    renderStage();
+  }
+}
+
 function pasSjabloonToe(sj) {
   pushUndo();
   const sc = curScene();
@@ -5945,7 +5977,9 @@ function pasSjabloonToe(sj) {
   }));
   if (sj.motion) Object.assign(config.motion, sj.motion);
   if (sj.saver) Object.assign(config.screensaver, sj.saver);
-  save(); renderStage();
+  renderStage();
+  pasGrootteAanScherm(sc.buttons);
+  save();
   // Het hele paneel verversen, niet alleen de knoppenlijst: een sjabloon zet
   // ook de beweging en de screensaver, en die velden staan elders.
   if (panel.classList.contains('open')) refreshPanel();
