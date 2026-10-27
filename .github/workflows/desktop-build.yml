@@ -71,8 +71,15 @@ jobs:
             Remove-Item stream-result.json -ErrorAction SilentlyContinue
             Write-Host "== $a"
             & $exe.FullName "--stream-test=$a" --no-sandbox | Write-Host
-            if (Test-Path stream-result.json) { Get-Content stream-result.json | Write-Host }
-            if ($LASTEXITCODE -ne 0) { $mislukt++; Write-Host "::warning::Muziek van $a speelde niet af" }
+            $code = $LASTEXITCODE
+            $uit = if (Test-Path stream-result.json) { Get-Content stream-result.json -Raw } else { '' }
+            Write-Host $uit
+            if ($code -ne 0) {
+              # YouTube weert serverparken van GitHub met een bot-controle;
+              # dat zegt niets over de app.
+              if ($uit -match 'geen bot') { Write-Host "::warning::YouTube blokkeert de testserver (bot-controle); niet te testen" }
+              else { $mislukt++; Write-Host "::warning::Muziek van $a speelde niet af" }
+            }
           }
           if ($mislukt) { throw "$mislukt van de $($adressen.Count) bronnen speelde niet af" }
 

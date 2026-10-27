@@ -11395,7 +11395,11 @@ function muziekEmbedSpeler(adres, onEinde) {
         if (actie === 'begin') beginNodig = false;
         verbonden = verbonden || s.verbonden;
         zetSpeelt(!!s.speelt); pos = s.t || 0;
-        if (s.fout) fout = `${naam}: ${s.fout}`; else if (speelt) fout = '';
+        if (s.fout) fout = /not a bot|geen bot/i.test(s.fout)
+          ? 'YouTube vraagt te bevestigen dat dit geen bot is. Dat doet YouTube soms bij bedrijfs- ' +
+            'of gastnetwerken; probeer het later opnieuw, of kies SoundCloud of een bestand.'
+          : `${naam}: ${s.fout}`;
+        else if (speelt) fout = '';
         zetEinde(!!s.einde);
       }).catch(() => {}).finally(() => { bezig = false; });
     }, 250);
