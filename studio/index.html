@@ -2297,7 +2297,7 @@
       <div class="t-label">Media opnieuw koppelen</div>
       <p class="note" id="relinkText"></p>
       <button id="relinkPick" class="btn primary block">Mediabestanden aanwijzen&hellip;</button>
-      <input type="file" id="relinkInput" accept="video/*,.obj,image/png,audio/*" multiple hidden>
+      <input type="file" id="relinkInput" accept="video/*,.obj,.mtl,.glb,.gltf,.bin,.fbx,image/png,image/jpeg,.webp,audio/*,.mp3,.m4a,.aac,.wav,.ogg,.oga,.opus,.flac" multiple hidden>
     </div>
     <h2>Beheer op afstand</h2>
     <div class="card">
@@ -2767,6 +2767,13 @@ function migrateConfig(stored) {
   // v20: de bedieningsknoppen zijn er nooit meer (ook niet als 'vaag' of
   // 'zichtbaar' gekozen was, of bij een lege scène). Menu: 5× tikken linksboven.
   delete c.bedieningsKnoppen;
+  // Tot 2.33 konden "Media" en de playlist van een knop uit elkaar lopen:
+  // de box speelde mediaId en daarna mediaIds vanaf het tweede item. Precies
+  // dat wordt nu de lijst, zodat de box blijft doen wat hij deed.
+  for (const sc of c.scenes) for (const b of (sc.buttons || [])) {
+    if (!Array.isArray(b.mediaIds)) continue;
+    zetKnopLijst(b, b.mediaId ? [b.mediaId, ...b.mediaIds.slice(1)] : b.mediaIds);
+  }
   // v21: muziek bij de screensaver.
   c.screensaver.muziek = { aan: false, bron: 'bestand', mediaId: null, url: '', modus: 'loop', pauzeMin: 5, volume: 60,
     ...(c.screensaver.muziek || {}) };
@@ -2912,6 +2919,7 @@ function ensurePreviewRendition(mediaId) {
   if (renditionBusy.has(mediaId)) return renditionBusy.get(mediaId);
   const job = renderRendition(m)
     .then(async (result) => {
+      if (!mediaCache.has(m.id)) return; // intussen gewist: geen weesvoorbeeld bewaren
       await dbPut({ id: 'prev_' + m.id, hidden: true, name: '__preview__', size: result.blob.size, blob: result.blob });
       m.previewUrl = URL.createObjectURL(result.blob);
       m.aspect = result.aspect;
@@ -3860,15 +3868,18 @@ function scheduleActive(b, now = new Date()) {
   return from <= to ? (cur >= from && cur <= to) : (cur >= from || cur <= to); // over middernacht heen
 }
 
+// Welke knoppen er nu in beeld horen. renderStage onthoudt wat hij toonde;
+// wijkt dat af (tijdvenster begonnen of voorbij, of het menu ging dicht
+// terwijl er een knop buiten zijn tijd stond), dan opnieuw tekenen.
 let lastScheduleKey = '';
+const scheduleKey = () => curButtons().map((b) => (editing || scheduleActive(b)) ? 1 : 0).join('');
+function toonPlanning({ entree = false } = {}) {
+  if (scheduleKey() === lastScheduleKey) return;
+  renderStage();
+  if (entree) runEntrance();
+}
 setInterval(() => {
-  const key = curButtons().map((b) => scheduleActive(b) ? 1 : 0).join('');
-  if (lastScheduleKey && key !== lastScheduleKey && !editing && !saverActive &&
-      !playOverlay.classList.contains('show')) {
-    renderStage();
-    runEntrance();
-  }
-  lastScheduleKey = key;
+  if (!editing && !saverActive && !playOverlay.classList.contains('show')) toonPlanning({ entree: true });
 }, 30000);
 
 /* ================= Presentatie renderen ================= */
@@ -3943,12 +3954,16 @@ function renderStage() {
   // Lagen (spec 41-43): lage z eerst tekenen, hoge z ligt bovenop.
   // Planning (spec 21): knoppen buiten hun tijdvenster niet tonen —
   // in verplaats-modus blijft alles zichtbaar zodat je kunt blijven bewerken.
+  lastScheduleKey = scheduleKey();
   const ordered = [...curButtons()]
     .filter((b) => !b.hidden && (editing || scheduleActive(b)))
     .sort((a, b) => (a.z || 0) - (b.z || 0));
   for (const b of ordered) {
-    const media = mediaCache.get(b.mediaId);
-    const preview = b.showPreview !== false && !!media && b.shape !== 'hotspot';
+    // Een videovoorbeeld alleen als de knop ook media afspeelt; een eigen
+    // plaatje (PNG-knop) geldt voor elke actie.
+    const media = buttonAction(b).type === 'PlayMedia' ? mediaCache.get(b.mediaId) : null;
+    const eigenPlaatje = b.imageId ? mediaCache.get(b.imageId) : null;
+    const preview = b.showPreview !== false && (!!media || !!eigenPlaatje) && b.shape !== 'hotspot';
     const glowI = (config.frameStyle.glow ?? 1) * (b.glow ?? 1);
     const btn = el('button', {
       class: `vbtn shape-${b.shape || 'pill'}` + (preview ? ' has-preview' : ''),
@@ -4115,7 +4130,8 @@ async function haalWebLogo(b, stil = false) {
   if (!url) { delete b.webLogo; return null; }
   b.webLogo = { url: null, bron: url, bezig: true };
   renderStage();
-  const gevonden = await zoekWebLogo(url);
+  // "voorbeeld.nl/pagina" opent als https://…; het logo zoeken net zo.
+  const gevonden = await zoekWebLogo(normalizeWebUrl(url));
   b.webLogo = { url: gevonden, bron: url, bezig: false };
   save(); renderStage(); renderBtnList();
   if (panel.classList.contains('open')) renderInspector();
@@ -4455,6 +4471,9 @@ function setPreviewsPaused(paused) {
 }
 
 // Afspeelinstellingen per video (spec 15-19, 23-25).
+// Elke nieuwe weergave krijgt een volgnummer. Het opruimen na een stop
+// (een halve seconde later) laat een weergave die intussen begon met rust.
+let playToken = 0;
 const PLAY_DEFAULTS = { trimStart: 0, trimEnd: 0, volume: 0, fadeSec: 0, loop: false, holdLastFrame: false };
 function playSettings(mediaId) {
   return { ...PLAY_DEFAULTS, ...(config.mediaSettings[mediaId] || {}) };
@@ -4488,6 +4507,8 @@ function playMedia(mediaId) {
   if (!m) return toast('Deze knop heeft nog geen (gevonden) video — koppel hem in het menu');
   if (m.kind === 'model') return playObject(mediaId);
   if (m.kind === 'image') return; // PNG is de knop zelf; niets om af te spelen
+  if (m.kind !== 'video') return toast('Dit is geen video — kies een video voor deze knop');
+  playToken++;
   const sb = standbyVideo();
   if (playOverlay.classList.contains('show') && sb.src === m.url && sb.readyState >= 2) {
     // Gapless: de standby-speler heeft deze video al gebufferd en neemt het
@@ -4505,7 +4526,9 @@ function playMedia(mediaId) {
   const ps = playSettings(mediaId);
   const vol = effVolume(ps);
   finishing = false;
-  playVideo.loop = ps.loop;
+  // Met een beginpunt kan de speler niet zelf loopen (hij springt naar 0);
+  // dan doen 'ended' en de trimcontrole het terugspringen.
+  playVideo.loop = ps.loop && !(ps.trimStart > 0) && !(ps.trimEnd > 0);
   playVideo.muted = vol <= 0;
   playVideo.volume = vol;
   const startAt = () => {
@@ -4540,7 +4563,7 @@ for (const pv of [playVideoA, playVideoB]) pv.addEventListener('timeupdate', () 
     fadeAudio(playVideo, playVideo.volume, 0, end - playVideo.currentTime);
   }
   if (playVideo.currentTime >= end - 0.05) {
-    if (playVideo.loop) { try { playVideo.currentTime = ps.trimStart || 0; } catch {} }
+    if (ps.loop) { try { playVideo.currentTime = ps.trimStart || 0; } catch {} }
     else finishPlayback(ps);
   }
 });
@@ -4557,6 +4580,7 @@ playOverlay.addEventListener('pointerdown', () => {
 });
 
 function playObject(mediaId) {
+  playToken++;
   playOverlay.classList.add('show', 'mode-3d');
   playOverlay.classList.toggle('light', config.object3d.lightBg !== false);
   playOverlay.style.setProperty('--objShadow', config.object3d.shadow ?? 0.35);
@@ -4577,6 +4601,7 @@ function playObject(mediaId) {
 }
 
 function stopPlaying() {
+  const mijn = ++playToken;
   clearTimeout(objCloseTimer);
   clearInterval(fadeTimer);
   playQueue = [];
@@ -4585,6 +4610,7 @@ function stopPlaying() {
   cancelSelectAnims(); // knoppen terug naar hun plek
   playOverlay.classList.remove('show');
   setTimeout(() => {
+    if (mijn !== playToken) return; // er speelt alweer iets nieuws
     playOverlay.classList.remove('mode-3d', 'light');
     for (const pv of [playVideoA, playVideoB]) { pv.pause(); pv.removeAttribute('src'); pv.load(); }
     playVideo = playVideoA;
@@ -4609,7 +4635,14 @@ function stopPlaying() {
 for (const pv of [playVideoA, playVideoB]) pv.addEventListener('ended', () => {
   if (pv !== playVideo) return;
   const id = [...mediaCache.values()].find((m) => m.url === playVideo.src)?.id;
-  finishPlayback(playSettings(id));
+  const ps = playSettings(id);
+  if (ps.loop && playOverlay.classList.contains('show')) {
+    // Loopen vanaf het beginpunt (zie playMedia).
+    try { playVideo.currentTime = ps.trimStart || 0; } catch {}
+    playVideo.play().catch(() => {});
+    return;
+  }
+  finishPlayback(ps);
 });
 
 // Afronden: volgende uit de wachtrij, op het laatste frame blijven staan
@@ -4690,7 +4723,8 @@ $('#buttonLayer').addEventListener('pointerdown', (e) => {
   drag = {
     lead: curButtons().find((x) => x.id === id),
     group: group.map((b) => ({ b, x0: b.x, y0: b.y })),
-    px: p.x, py: p.y, moved: false
+    px: p.x, py: p.y, moved: false,
+    voor: JSON.stringify(config)   // voor ongedaan maken: de stand vóór het slepen
   };
   btnEl.setPointerCapture(e.pointerId);
   e.preventDefault();
@@ -4728,7 +4762,7 @@ $('#buttonLayer').addEventListener('pointermove', (e) => {
 });
 
 $('#buttonLayer').addEventListener('pointerup', () => {
-  if (drag && drag.moved) { pushUndo(); save(); }
+  if (drag && drag.moved) { pushUndo(drag.voor); save(); }
   $('#alignGuideV').style.display = $('#alignGuideH').style.display = 'none';
   drag = null;
 });
@@ -4925,8 +4959,7 @@ const redoStack = [];
 
 // Roep pushUndo() aan vlak vóór een wijziging: de huidige staat gaat op de
 // stapel, zodat undo exact terugkeert naar het moment vóór die wijziging.
-function pushUndo() {
-  const now = JSON.stringify(config);
+function pushUndo(now = JSON.stringify(config)) {
   if (undoStack[undoStack.length - 1] === now) return;
   undoStack.push(now);
   if (undoStack.length > 50) undoStack.shift();
@@ -4963,6 +4996,18 @@ function updateUndoUI() {
     if (n) n.disabled = !stack.length;
   }
 }
+
+// Een tekstveld bewaart vóór de eerste letter de stand, zodat Ctrl+Z een
+// getypte tekst terugzet en niet de hele knop weghaalt.
+document.addEventListener('focusin', (e) => {
+  const t = e.target;
+  if (!t.closest?.('#panel, #inspector, #inspBody')) return;
+  if (t.matches('input[type=text], input:not([type]), textarea')) t._undoVoor = JSON.stringify(config);
+});
+document.addEventListener('input', (e) => {
+  const t = e.target;
+  if (t._undoVoor) { pushUndo(t._undoVoor); t._undoVoor = null; }
+}, true);
 
 window.addEventListener('keydown', (e) => {
   if (!(e.ctrlKey || e.metaKey)) return;
@@ -5403,6 +5448,24 @@ function buttonAction(b) {
   return b.action && b.action.type ? b.action : { type: 'PlayMedia', mediaId: b.mediaId };
 }
 
+/* De media van een knop zijn één lijst: wat er speelt, in die volgorde.
+   b.mediaId is altijd het eerste item (daar kijken voorbeeld en export
+   naar); b.mediaIds bestaat pas vanaf twee items. */
+function knopLijst(b) {
+  return Array.isArray(b.mediaIds) && b.mediaIds.length ? b.mediaIds.slice() : (b.mediaId ? [b.mediaId] : []);
+}
+// "Media" kiezen = het eerste item van de playlist vervangen.
+function zetEersteMedia(b, v) {
+  const l = knopLijst(b);
+  if (v) { if (l.length) l[0] = v; else l.push(v); } else l.shift();
+  zetKnopLijst(b, l);
+}
+function zetKnopLijst(b, lijst) {
+  lijst = lijst.filter(Boolean);
+  b.mediaId = lijst[0] || null;
+  if (lijst.length > 1) b.mediaIds = lijst; else delete b.mediaIds;
+}
+
 let lastChosenId = null;
 let fxSuppressUntil = 0; // attract-gedrag kort uit na terugkeer (spec 229)
 
@@ -5420,15 +5483,22 @@ function runAction(b, btnEl) {
     case 'SetLanguage': return setLanguage(a.langCode || 'nl');
     case 'PlayMedia':
     default: {
-      const m = mediaCache.get(a.mediaId ?? b.mediaId);
+      // De eerste speelbare uit de lijst; een gewist of ontbrekend item
+      // wordt overgeslagen in plaats van de hele knop stil te leggen.
+      const lijst = knopLijst(b).filter((id) => {
+        const k = mediaCache.get(id)?.kind;
+        return k === 'video' || k === 'model';
+      });
+      const m = mediaCache.get(lijst[0]);
       if (m && (m.kind === 'video' || m.kind === 'model')) {
+        playToken++;
         if (m.kind === 'video') { playVideo.src = m.url; playVideo.load(); }
         else loadObjGeometry(m.id).catch(() => {});
         lastChosenId = b.id;
         AppState.set('CONTENT_TRANSITION');
         // Playlist: meerdere media achter elkaar (spec 19-20), optioneel in
         // willekeurige volgorde (spec 21).
-        playQueue = (Array.isArray(b.mediaIds) ? b.mediaIds.slice(1) : []).filter((id) => mediaCache.has(id));
+        playQueue = lijst.slice(1).filter((id) => mediaCache.get(id)?.kind === 'video');
         if (b.shuffle && playQueue.length > 1) {
           for (let i = playQueue.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -5445,8 +5515,9 @@ function runAction(b, btnEl) {
           morphPending = null;
           playMedia(m.id);
         });
-      } else {
-        playMedia(a.mediaId ?? b.mediaId);
+      } else if (mediaCache.get(b.mediaId)?.kind !== 'image') {
+        // Een PNG-knop is zelf het beeld; verder is er niets te spelen.
+        toast('Deze knop heeft nog geen (gevonden) video — koppel hem in het menu');
       }
     }
   }
@@ -5648,7 +5719,7 @@ function setEditing(aan, { stil = false } = {}) {
   $('#editHint').classList.toggle('hidden', !editing);
   applyOrientationMode(); // tijdens verplaatsen niet roteren, daarna weer wel
   syncFrames();
-  if (!editing) { clearSelection(); save(); if (!stil) toast('Knoppen vastgezet'); }
+  if (!editing) { clearSelection(); save(); toonPlanning(); if (!stil) toast('Knoppen vastgezet'); }
   else { markSelection(); if (!stil) toast('Shift-klik selecteert meerdere knoppen tegelijk'); }
 }
 lockFab.addEventListener('click', toggleEditing);
@@ -5727,6 +5798,7 @@ function closeEditor() {
   document.body.classList.remove('editor-open');
   clearEditorCanvas();
   applyOrientationMode();
+  toonPlanning();              // knoppen buiten hun tijdvenster weer verbergen
   Reeks.rust();                // met klikker en wachtvideo: terug in de wachtlus
 }
 
@@ -6876,12 +6948,35 @@ function renderInspector() {
       }
       return sel;
     })()) : null,
-    el('label', { class: 'field' }, 'Media',
-      (() => { const sel = mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); if (v) ensurePreviewRendition(v); renderStage(); });
-               return sel; })()),
-    media ? el('div', { class: 'note' }, media.name + ' · ' + fmtSize(media.size)) : null,
-    el('div', { class: 'field' }, 'Playlist', playlistEditor(b)),
-    knopShuffle(b)));
+    act.type === 'OpenScene' ? el('label', { class: 'field' }, 'Naar welke scène', (() => {
+      const sel = el('select', { 'data-role': 'insp-scene', onchange: (e) => { b.action.sceneId = e.target.value; save(); } });
+      const andere = config.scenes.filter((sc) => sc.id !== currentSceneId);
+      if (!andere.length) sel.append(el('option', { value: '' }, '— maak er eerst een aan bij Scènes —'));
+      for (const sc of andere) {
+        const o = el('option', { value: sc.id }, sc.name || sc.id);
+        if (sc.id === b.action.sceneId) o.selected = true;
+        sel.append(o);
+      }
+      return sel;
+    })()) : null,
+    act.type === 'SetLanguage' ? el('label', { class: 'field' }, 'Naar welke taal', (() => {
+      const sel = el('select', { 'data-role': 'insp-lang', onchange: (e) => { b.action.langCode = e.target.value; save(); } },
+        (config.lang.available || ['nl']).map((code) => {
+          const o = el('option', { value: code }, LANGS[code] || code);
+          if ((b.action.langCode || 'nl') === code) o.selected = true;
+          return o;
+        }));
+      return sel;
+    })()) : null,
+    act.type === 'PlayMedia' ? el('label', { class: 'field' }, 'Media',
+      (() => { const sel = mediaSelect(b.mediaId, (v) => {
+                 zetEersteMedia(b, v);
+                 save(); if (v) ensurePreviewRendition(v); renderStage(); renderInspector();
+               });
+               return sel; })()) : null,
+    act.type === 'PlayMedia' && media ? el('div', { class: 'note' }, media.name + ' · ' + fmtSize(media.size)) : null,
+    act.type === 'PlayMedia' ? el('div', { class: 'field' }, 'Playlist', playlistEditor(b)) : null,
+    act.type === 'PlayMedia' ? knopShuffle(b) : null));
 
   // POSITIE
   body.append(inspSection('POSITIE',
@@ -7376,7 +7471,7 @@ var AanraakMenu = (() => {
             oninput: (e) => { b.label = e.target.value; save(); renderStage(); } })),
         speeltMedia
           ? el('label', { class: 'field' }, 'Video',
-              (() => { const sel = mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); if (v) ensurePreviewRendition(v); renderStage(); renderInspector(); });
+              (() => { const sel = mediaSelect(b.mediaId, (v) => { zetEersteMedia(b, v); save(); if (v) ensurePreviewRendition(v); renderStage(); renderInspector(); });
                        sel.id = 'bkVideo'; return sel; })())
           : el('p', { class: 'note' }, `Deze knop ${mediaNaam(b).t}. Wijzigen kan onder Meer opties, bij Actie.`),
         el('div', { class: 'field' }, 'Kleur',
@@ -7497,29 +7592,31 @@ function mediaSelect(selectedId, onchange) {
 }
 
 // Playlist per knop: extra media die na de hoofdvideo automatisch volgen.
+// De lijst is precies wat de knop afspeelt; item 1 is wat bij "Media" staat.
 function playlistEditor(b) {
   const wrap = el('div', { style: 'display:flex;flex-direction:column;gap:6px' });
-  const ids = Array.isArray(b.mediaIds) ? b.mediaIds : (b.mediaId ? [b.mediaId] : []);
+  const klaar = (eersteAnders) => {
+    save();
+    // Veranderde het eerste item, dan ook "Media" en het voorbeeld bijwerken.
+    if (eersteAnders) { renderStage(); renderInspector(); } else redraw();
+  };
   const redraw = () => {
     wrap.innerHTML = '';
-    const list = Array.isArray(b.mediaIds) ? b.mediaIds : [];
-    list.forEach((id, i) => {
+    const list = knopLijst(b);
+    if (list.length > 1) list.forEach((id, i) => {
       const m = mediaCache.get(id);
       wrap.append(el('div', { class: 'row', style: 'gap:6px' },
         el('span', { class: 'grow', style: 'font-size:12.5px' }, `${i + 1}. ${m ? m.name : '(ontbreekt)'}`),
         el('button', { class: 'btn small', title: 'Omhoog', onclick: () => {
-          if (i > 0) { [list[i - 1], list[i]] = [list[i], list[i - 1]]; save(); redraw(); } } }, '↑'),
-        el('button', { class: 'btn small danger', onclick: () => {
-          list.splice(i, 1);
-          if (!list.length) delete b.mediaIds; else b.mediaIds = list;
-          save(); redraw(); } }, '✕')));
+          if (i > 0) { [list[i - 1], list[i]] = [list[i], list[i - 1]]; zetKnopLijst(b, list); klaar(i === 1); } } }, '↑'),
+        el('button', { class: 'btn small danger', title: 'Uit de playlist halen', onclick: () => {
+          list.splice(i, 1); zetKnopLijst(b, list); klaar(i === 0); } }, '✕')));
     });
     const add = el('select', { 'data-role': 'playlist-add', onchange: (e) => {
       if (!e.target.value) return;
-      const cur = Array.isArray(b.mediaIds) ? b.mediaIds : (b.mediaId ? [b.mediaId] : []);
-      b.mediaIds = [...cur, e.target.value];
-      if (!b.mediaId) b.mediaId = b.mediaIds[0];
-      save(); redraw();
+      const list = knopLijst(b);
+      zetKnopLijst(b, [...list, e.target.value]);
+      klaar(!list.length);
     } }, el('option', { value: '' }, '+ video toevoegen…'),
        [...mediaCache.values()].filter((m) => m.kind === 'video').map((m) => el('option', { value: m.id }, m.name)));
     wrap.append(add);
@@ -7756,7 +7853,7 @@ function renderBtnList() {
           : null),
       el('div', { class: 'row' },
         el('label', { class: 'field' }, 'Media die deze knop opent (video of 3D-object)',
-          (() => { const sel = mediaSelect(b.mediaId, (v) => { b.mediaId = v; save(); if (v) ensurePreviewRendition(v); renderStage(); });
+          (() => { const sel = mediaSelect(b.mediaId, (v) => { zetEersteMedia(b, v); save(); if (v) ensurePreviewRendition(v); renderStage(); });
                    sel.dataset.role = 'media'; return sel; })()),
         el('label', { class: 'field', style: 'max-width:150px' }, 'Vorm',
           (() => { const s = el('select', { 'data-role': 'shape', onchange: (e) => { b.shape = e.target.value; save(); renderStage(); } },
@@ -7911,14 +8008,43 @@ function knopPngKeuze(b) {
 $('#addBtn').addEventListener('click', () => {
   pushUndo();
   const n = curButtons().length;
+  // Een vrije plek: rijen van vijf onder elkaar, de zesde in een kolom ernaast.
+  const plekken = [];
+  for (const x of [50, 30, 70, 15, 85]) for (let r = 0; r < 5; r++) plekken.push({ x, y: 25 + r * 13 });
+  const vrij = plekken.find((p) => !curButtons().some((b) => Math.abs(b.x - p.x) < 8 && Math.abs(b.y - p.y) < 6))
+    || plekken[n % plekken.length];
   curButtons().push({
-    id: uid(), label: 'Video ' + (n + 1), mediaId: [...mediaCache.keys()][0] || null,
-    x: 50, y: 25 + (n % 5) * 13, size: 8, color: PALETTE[n % (PALETTE.length - 2)], shape: 'rounded',
+    id: uid(), label: 'Video ' + (n + 1),
+    mediaId: [...mediaCache.values()].find((m) => m.kind === 'video')?.id || null,
+    x: vrij.x, y: vrij.y, size: 8, color: PALETTE[n % (PALETTE.length - 2)], shape: 'rounded',
     depth: 'subtle', drift: 0, showPreview: true, fx: 'random', z: n
   });
   save(); renderStage(); renderBtnList();
-  toast('Knop toegevoegd — klik op 🔒 om hem te verslepen');
+  toast('Knop toegevoegd — verslepen kan op het tabblad Knoppen');
 });
+
+// Na het wissen van een bestand: nergens meer naar verwijzen. Anders speelt
+// een knop zijn playlist niet meer af of zoekt de reeks een video die weg is.
+function vergeetMedia(id) {
+  for (const sc of config.scenes) {
+    if (sc.idleMediaId === id) sc.idleMediaId = null;
+    if (sc.overlayMediaId === id) sc.overlayMediaId = null;
+    for (const b of sc.buttons || []) {
+      if (b.imageId === id) b.imageId = null;
+      zetKnopLijst(b, knopLijst(b).filter((x) => x !== id));
+    }
+  }
+  if (config.idleMediaId === id) config.idleMediaId = null;
+  config.screensaver.mediaIds = (config.screensaver.mediaIds || []).filter((x) => x !== id);
+  if (config.screensaver.muziek?.mediaId === id) config.screensaver.muziek.mediaId = null;
+  if (config.reeks) {
+    config.reeks.items = (config.reeks.items || []).filter((x) => x !== id);
+    if (config.reeks.wachtId === id) config.reeks.wachtId = null;
+  }
+  if (config.theme?.logoMediaId === id) config.theme.logoMediaId = null;
+  for (const a of config.avatars || []) if (a.imageId === id) a.imageId = null;
+  if (config.mediaSettings) delete config.mediaSettings[id];
+}
 
 /* ---- Tab: media ---- */
 function renderMediaList() {
@@ -7958,12 +8084,7 @@ function renderMediaList() {
         URL.revokeObjectURL(m.url);
         if (m.previewUrl) URL.revokeObjectURL(m.previewUrl);
         mediaCache.delete(m.id); objGeomCache.delete(m.id);
-        for (const sc of config.scenes) if (sc.idleMediaId === m.id) sc.idleMediaId = null;
-        config.screensaver.mediaIds = config.screensaver.mediaIds.filter((id) => id !== m.id);
-        for (const sc of config.scenes) for (const b of sc.buttons) {
-          if (b.mediaId === m.id) b.mediaId = null;
-          if (b.imageId === m.id) b.imageId = null;
-        }
+        vergeetMedia(m.id);
         save(); renderStage(); refreshPanel();
       } }, '🗑'))));
   }
@@ -8258,7 +8379,10 @@ function renderLangSettings() {
   }
 }
 
-$('#lgEnabled').addEventListener('change', (e) => { config.lang.enabled = e.target.checked; save(); renderStage(); renderBtnList(); });
+$('#lgEnabled').addEventListener('change', (e) => {
+  config.lang.enabled = e.target.checked; save(); renderStage(); renderBtnList();
+  renderTitleTranslations(); renderInspector();   // vertaalvelden meteen tonen
+});
 $('#lgAuto').addEventListener('change', (e) => { config.lang.autoDetect = e.target.value === 'yes'; save(); });
 $('#lgCurrent').addEventListener('change', (e) => { setLanguage(e.target.value); });
 $('#navCrumb').addEventListener('change', (e) => { config.nav.breadcrumb = e.target.checked; save(); renderBreadcrumb(); });
@@ -9615,7 +9739,9 @@ $('#camTest').addEventListener('click', () => {
 
 /* ---- Tab: opslaan & verhuizen ---- */
 $('#exportBtn').addEventListener('click', () => {
-  const data = { ...config, mediaFiles: [...mediaCache.values()].map((m) => ({ id: m.id, name: m.name, size: m.size })) };
+  // De device-key hoort bij deze box, niet bij het ontwerp (zie ook .holobox).
+  const data = { ...config, remote: { ...config.remote, key: '', enabled: false },
+    mediaFiles: [...mediaCache.values()].map((m) => ({ id: m.id, name: m.name, size: m.size })) };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = el('a', { href: URL.createObjectURL(blob), download: 'holobox-presentatie.json' });
   document.body.append(a); a.click(); a.remove();
@@ -9638,7 +9764,11 @@ $('#importInput').addEventListener('change', async (e) => {
   // Zowel het huidige scènemodel als oude vlakke exports (v1) accepteren.
   if (!Array.isArray(data.scenes) && !Array.isArray(data.buttons)) return toast('Dit is geen Studio-exportbestand');
   const { mediaFiles = [], ...rest } = data;
+  const eigen = config.remote || {};
   config = migrateConfig(rest);
+  /* Het serveradres gaat mee, de device-key niet: twee boxen met dezelfde
+     sleutel melden zich als één box bij het beheerplatform. */
+  config.remote = { ...config.remote, key: eigen.key || '', enabled: !!(eigen.enabled && eigen.key) };
   currentSceneId = config.homeSceneId;
   sceneStack = [];
   save(); renderStage(); refreshPanel();

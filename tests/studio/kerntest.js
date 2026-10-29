@@ -330,10 +330,16 @@ const check = (naam, cond, info) => {
   const naUndo = (await knoppen(p)).find((x) => x.id === k1);
   check('Ctrl+Z na slepen zet de knop terug op zijn plek', naUndo && naUndo.x === voorSleep.x && naUndo.y === voorSleep.y,
     { voor: [voorSleep.x, voorSleep.y], naUndo: naUndo ? [naUndo.x, naUndo.y] : 'knop weg', knoppen: `${nKnoppen} → ${(await knoppen(p)).length}` });
+  // De stap daarvóór was het dupliceren (het wissen is al teruggedraaid):
+  // een tweede Ctrl+Z haalt precies die kopie weg, en verder niets.
   await p.keyboard.press('Control+z');
   const naUndo2 = (await knoppen(p)).find((x) => x.id === k1);
-  check('… en een tweede Ctrl+Z gooit niet iets anders weg', (await knoppen(p)).length === nKnoppen,
+  check('… een tweede Ctrl+Z draait precies de stap daarvóór terug (het dupliceren)',
+    (await knoppen(p)).length === nKnoppen - 1 && !(await knoppen(p)).some((x) => x.id === kopie.id) &&
+      naUndo2 && naUndo2.x === voorSleep.x && naUndo2.y === voorSleep.y,
     { knoppen: `${nKnoppen} → ${(await knoppen(p)).length}`, k1: naUndo2 ? [naUndo2.x, naUndo2.y] : 'weg' });
+  await p.keyboard.press('Control+y');
+  check('… en Ctrl+Y zet de kopie terug', (await knoppen(p)).length === nKnoppen);
 
   // Tekst wijzigen en ongedaan maken
   await p.click('#addBtn');
