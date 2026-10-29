@@ -13,6 +13,7 @@ const auth = require('../lib/auth');
 const media = require('../lib/media');
 const hub = require('../lib/hub');
 const { buildManifest } = require('../lib/manifest');
+const fout = require('../lib/fout');
 
 const router = express.Router();
 
@@ -30,9 +31,16 @@ function findDeviceByKey(key) {
 /* ---------------- Auth ---------------- */
 
 router.post('/api/login', (req, res) => {
+  const wacht = auth.loginGeblokkeerd(req.ip);
+  if (wacht) {
+    res.setHeader('Retry-After', String(wacht));
+    return res.status(429).json({ error: `Te vaak een fout wachtwoord — probeer het over ${Math.ceil(wacht / 60)} min opnieuw` });
+  }
   if (!auth.checkPassword(req.body?.password)) {
+    auth.loginMislukt(req.ip);
     return res.status(401).json({ error: 'Onjuist wachtwoord' });
   }
+  auth.loginGelukt(req.ip);
   const token = auth.createSession();
   res.setHeader('Set-Cookie', `hwh_session=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=43200`);
   res.json({ ok: true, defaultPassword: auth.usingDefaultPassword() });
@@ -70,8 +78,8 @@ const upload = multer({
   storage: multer.diskStorage({
     destination(req, file, cb) {
       try {
-        const dest = media.resolveSafe(req.query.folder || '');
-        media.createFolder(req.query.folder || '');
+        const dest = media.resolveSafe(folderParam(req.query.folder));
+        media.createFolder(folderParam(req.query.folder));
         cb(null, dest);
       } catch (e) {
         cb(e);
@@ -79,14 +87,31 @@ const upload = multer({
     },
     filename(req, file, cb) {
       // Originele naam behouden, maar onveilige tekens strippen.
-      cb(null, file.originalname.replace(/[^\w.\- ()\[\]]/g, '_'));
+      cb(null, media.safeName(file.originalname));
     }
   }),
+  // De browser stuurt de bestandsnaam als UTF-8; zo blijft "café.mp4" heel.
+  defParamCharset: 'utf8',
+  // Alleen video en beeld: een geüpload HTML- of SVG-bestand zou anders vanaf
+  // hetzelfde adres als het CMS geserveerd worden.
+  fileFilter(req, file, cb) {
+    if (media.kindOf(file.originalname) === 'other') {
+      return cb(fout(400, `“${media.safeName(file.originalname)}” is geen video of beeld (toegestaan: mp4, webm, mov, m4v, mkv, jpg, png, gif, webp, avif)`));
+    }
+    cb(null, true);
+  },
   limits: { fileSize: 1024 * 1024 * 1024 * 8 } // 8 GB: ruim genoeg voor lange 4K-masters
 });
 
+// Een map-parameter is één tekst; ?folder=a&folder=b (een lijst) is ongeldig.
+function folderParam(v) {
+  if (v == null) return '';
+  if (typeof v !== 'string') throw fout(400, 'Ongeldige map');
+  return v;
+}
+
 router.get('/api/media', (req, res) => {
-  const folder = req.query.folder || '';
+  const folder = folderParam(req.query.folder);
   res.json({ folders: media.listFolders(), folder, files: media.listFiles(folder) });
 });
 
@@ -95,17 +120,22 @@ router.post('/api/media/upload', upload.array('files', 20), (req, res) => {
 });
 
 router.post('/api/media/folder', (req, res) => {
+  if (typeof req.body.path !== 'string' || !req.body.path.trim()) return res.status(400).json({ error: 'path (mapnaam) is verplicht' });
   media.createFolder(req.body.path);
   res.json({ ok: true });
 });
 
 router.post('/api/media/rename', (req, res) => {
-  media.renameEntry(req.body.from, req.body.to);
+  const { from, to } = req.body;
+  if (typeof from !== 'string' || typeof to !== 'string') return res.status(400).json({ error: 'from en to zijn verplicht' });
+  media.renameEntry(from, to);
   res.json({ ok: true });
 });
 
 router.delete('/api/media', (req, res) => {
-  media.removeEntry(req.query.path);
+  const p = folderParam(req.query.path);
+  if (!p) return res.status(400).json({ error: 'path is verplicht' });
+  media.removeEntry(p);
   res.json({ ok: true });
 });
 
@@ -115,10 +145,24 @@ router.get('/api/live-sources', (req, res) => {
   res.json(db.load().liveSources);
 });
 
+const LIVE_PROTOCOLS = ['hls', 'whep', 'webrtc-page', 'mjpeg'];
+
+// Controleert de velden van een live-bron; geeft een foutmelding of null.
+function checkLive(b, nieuw) {
+  if ((nieuw || b.name !== undefined) && (typeof b.name !== 'string' || !b.name.trim())) return 'name is verplicht';
+  if ((nieuw || b.protocol !== undefined) && !LIVE_PROTOCOLS.includes(b.protocol)) return `protocol moet één van ${LIVE_PROTOCOLS.join(', ')} zijn`;
+  if ((nieuw || b.url !== undefined) && !isStreamUrl(b.url)) return 'url moet een http(s)-adres zijn (of een pad op deze server)';
+  if (b.lowLatency !== undefined && typeof b.lowLatency !== 'boolean') return 'lowLatency moet true of false zijn';
+  if (b.notes !== undefined && typeof b.notes !== 'string') return 'notes moet tekst zijn';
+  return null;
+}
+
 router.post('/api/live-sources', (req, res) => {
   const state = db.load();
   const { name, protocol, url, lowLatency, notes } = req.body;
   if (!name || !protocol || !url) return res.status(400).json({ error: 'name, protocol en url zijn verplicht' });
+  const bad = checkLive(req.body, true);
+  if (bad) return res.status(400).json({ error: bad });
   const src = { id: db.id('live'), name, protocol, url, lowLatency: lowLatency !== false, notes: notes || '' };
   state.liveSources.push(src);
   db.save();
@@ -128,15 +172,20 @@ router.post('/api/live-sources', (req, res) => {
 router.put('/api/live-sources/:id', (req, res) => {
   const src = db.load().liveSources.find((s) => s.id === req.params.id);
   if (!src) return res.status(404).json({ error: 'Niet gevonden' });
+  const bad = checkLive(req.body, false);
+  if (bad) return res.status(400).json({ error: bad });
   Object.assign(src, pick(req.body, ['name', 'protocol', 'url', 'lowLatency', 'notes']));
   db.save();
+  notifyLiveSourceDevices(src.id);
   res.json(src);
 });
 
 router.delete('/api/live-sources/:id', (req, res) => {
   const state = db.load();
+  if (!state.liveSources.some((s) => s.id === req.params.id)) return res.status(404).json({ error: 'Niet gevonden' });
   state.liveSources = state.liveSources.filter((s) => s.id !== req.params.id);
   db.save();
+  notifyLiveSourceDevices(req.params.id);
   res.json({ ok: true });
 });
 
@@ -146,8 +195,23 @@ router.get('/api/playlists', (req, res) => {
   res.json(db.load().playlists);
 });
 
+// Controleert één playlist-item; geeft een foutmelding of null. Een onbekend
+// type mag (een nieuwere CMS-versie of integratie); het manifest slaat het over.
+function checkItem(item, i) {
+  const waar = `items[${i}]`;
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return `${waar} moet een object zijn`;
+  if (typeof item.type !== 'string') return `${waar}.type ontbreekt`;
+  if (item.durationSec != null && !(Number.isFinite(item.durationSec) && item.durationSec >= 0)) return `${waar}.durationSec moet een getal ≥ 0 zijn`;
+  if (item.type === 'url' && !isWebUrl(item.url)) return `${waar}.url moet een http(s)-adres zijn`;
+  for (const k of ['name', 'mediaPath', 'liveSourceId', 'fit']) {
+    if (item[k] != null && typeof item[k] !== 'string') return `${waar}.${k} moet tekst zijn`;
+  }
+  return null;
+}
+
 router.post('/api/playlists', (req, res) => {
   const state = db.load();
+  if (req.body.name !== undefined && typeof req.body.name !== 'string') return res.status(400).json({ error: 'name moet tekst zijn' });
   const pl = { id: db.id('pl'), name: req.body.name || 'Nieuwe playlist', loop: true, items: [] };
   state.playlists.push(pl);
   db.save();
@@ -157,6 +221,11 @@ router.post('/api/playlists', (req, res) => {
 router.put('/api/playlists/:id', (req, res) => {
   const pl = db.load().playlists.find((p) => p.id === req.params.id);
   if (!pl) return res.status(404).json({ error: 'Niet gevonden' });
+  if (req.body.items !== undefined) {
+    if (!Array.isArray(req.body.items)) return res.status(400).json({ error: 'items moet een lijst zijn' });
+    const bad = req.body.items.map(checkItem).find(Boolean);
+    if (bad) return res.status(400).json({ error: bad });
+  }
   if (typeof req.body.name === 'string') pl.name = req.body.name;
   if (typeof req.body.loop === 'boolean') pl.loop = req.body.loop;
   if (Array.isArray(req.body.items)) {
@@ -169,20 +238,22 @@ router.put('/api/playlists/:id', (req, res) => {
 
 router.delete('/api/playlists/:id', (req, res) => {
   const state = db.load();
+  if (!state.playlists.some((p) => p.id === req.params.id)) return res.status(404).json({ error: 'Niet gevonden' });
   state.playlists = state.playlists.filter((p) => p.id !== req.params.id);
-  for (const d of state.devices) if (d.playlistId === req.params.id) d.playlistId = null;
+  const geraakt = state.devices.filter((d) => d.playlistId === req.params.id);
+  for (const d of geraakt) d.playlistId = null;
   db.save();
+  for (const d of geraakt) hub.sendToDevice(d.id, { type: 'refresh' });
   res.json({ ok: true });
 });
 
 /* ---------------- Devices ---------------- */
 
-router.get('/api/devices', (req, res) => {
-  const state = db.load();
-  // studio-blok niet integraal meesturen: de schermafdruk kan megabytes zijn.
-  // De avatarsleutel gaat er ook uit: die wordt ingevuld, nooit teruggelezen.
-  // Wel het staartje, zodat een beheerder ziet wélke sleutel er staat.
-  res.json(state.devices.map(({ studio, avatarKey, ...d }) => ({
+// studio-blok niet integraal meesturen: de schermafdruk kan megabytes zijn.
+// De avatarsleutel gaat er ook uit: die wordt ingevuld, nooit teruggelezen.
+// Wel het staartje, zodat een beheerder ziet wélke sleutel er staat.
+function deviceView({ studio, avatarKey, ...d }) {
+  return {
     ...d,
     avatarKeySet: !!avatarKey,
     avatarKeyHint: avatarKey ? '…' + String(avatarKey).slice(-4) : '',
@@ -194,11 +265,31 @@ router.get('/api/devices', (req, res) => {
       pendingCommands: (studio.commands || []).length,
       screenshotAt: studio.screenshotAt || null
     } : null
-  })));
+  };
+}
+
+router.get('/api/devices', (req, res) => {
+  res.json(db.load().devices.map(deviceView));
 });
+
+// Controleert de velden van een holobox; geeft een foutmelding of null.
+function checkDevice(b) {
+  for (const k of ['name', 'location', 'notes']) {
+    if (b[k] !== undefined && typeof b[k] !== 'string') return `${k} moet tekst zijn`;
+  }
+  if (b.name !== undefined && !b.name.trim()) return 'name mag niet leeg zijn';
+  if (b.orientation !== undefined && !['portrait', 'landscape'].includes(b.orientation)) return 'orientation moet portrait of landscape zijn';
+  if (b.rotation !== undefined && ![0, 90, 180, 270].includes(b.rotation)) return 'rotation moet 0, 90, 180 of 270 zijn';
+  if (b.playlistId !== undefined && b.playlistId !== null && !db.load().playlists.some((p) => p.id === b.playlistId)) return 'playlistId bestaat niet';
+  if (b.externalEndpoint !== undefined && b.externalEndpoint !== null && b.externalEndpoint !== '' && !isWebUrl(b.externalEndpoint)) return 'externalEndpoint moet een http(s)-adres zijn';
+  if (b.avatarKey !== undefined && typeof b.avatarKey !== 'string') return 'avatarKey moet tekst zijn';
+  return null;
+}
 
 router.post('/api/devices', (req, res) => {
   const state = db.load();
+  const bad = checkDevice(pick(req.body, ['name', 'location']));
+  if (bad) return res.status(400).json({ error: bad });
   const dev = {
     id: db.id('dev'),
     key: db.deviceKey(),
@@ -220,7 +311,10 @@ router.post('/api/devices', (req, res) => {
 router.put('/api/devices/:id', (req, res) => {
   const dev = db.load().devices.find((d) => d.id === req.params.id);
   if (!dev) return res.status(404).json({ error: 'Niet gevonden' });
+  const bad = checkDevice(req.body);
+  if (bad) return res.status(400).json({ error: bad });
   Object.assign(dev, pick(req.body, ['name', 'orientation', 'rotation', 'playlistId', 'externalEndpoint', 'location', 'notes']));
+  if (dev.externalEndpoint === '') dev.externalEndpoint = null;
   // Eigen LemonSlice-sleutel voor deze installatie. Leeg betekent: terug naar
   // de sleutel van het huis in .env. Vandaar apart: pick() zou een lege tekst
   // niet van 'niet meegestuurd' kunnen onderscheiden.
@@ -230,13 +324,16 @@ router.put('/api/devices/:id', (req, res) => {
   }
   db.save();
   hub.sendToDevice(dev.id, { type: 'refresh' });
-  res.json(dev);
+  res.json(deviceView(dev));
 });
 
 router.delete('/api/devices/:id', (req, res) => {
   const state = db.load();
+  if (!state.devices.some((d) => d.id === req.params.id)) return res.status(404).json({ error: 'Niet gevonden' });
   state.devices = state.devices.filter((d) => d.id !== req.params.id);
   db.save();
+  // Een verwijderde box mag niet verbonden blijven (en status blijven sturen).
+  hub.disconnectDevice(req.params.id);
   res.json({ ok: true });
 });
 
@@ -381,6 +478,8 @@ router.post('/api/v1/avatar/session', async (req, res) => {
   const av = (req.body && req.body.avatar) || {};
   try {
     const r = await fetch(url, {
+      // Een aanbieder die niet antwoordt mag de box niet eindeloos laten wachten.
+      signal: AbortSignal.timeout(Number(process.env.LEMONSLICE_TIMEOUT_MS) || 15000),
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -447,7 +546,8 @@ router.post('/api/v1/avatar/session', async (req, res) => {
     if (req.body && req.body.probe) out.probe = true;
     res.json(out);
   } catch (e) {
-    res.status(502).json({ error: 'Aanbieder niet bereikbaar: ' + (e.message || e) });
+    const tijd = e && (e.name === 'TimeoutError' || e.name === 'AbortError');
+    res.status(tijd ? 504 : 502).json({ error: tijd ? 'De aanbieder antwoordde niet op tijd' : 'Aanbieder niet bereikbaar' });
   }
 });
 
@@ -469,6 +569,11 @@ router.post('/api/v1/studio/:key/screenshot', (req, res) => {
     return res.status(400).json({ error: 'body.image (dataURL) ontbreekt' });
   }
   if (img.length > 3 * 1024 * 1024) return res.status(413).json({ error: 'Schermafdruk te groot' });
+  // Precies een plaatje en niets anders: het CMS toont hem later, en een
+  // aangepaste box mag daar geen HTML of script in kwijt kunnen.
+  if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(img)) {
+    return res.status(400).json({ error: 'body.image moet een JPEG-, PNG- of WebP-dataURL (base64) zijn' });
+  }
   const st = studioState(dev);
   st.screenshot = img;
   st.screenshotAt = Date.now();
@@ -484,8 +589,18 @@ router.get('/api/settings', (req, res) => {
 
 router.put('/api/settings', (req, res) => {
   const state = db.load();
-  Object.assign(state.settings, pick(req.body, ['platformName', 'pollIntervalSec', 'transitionMs', 'defaultOrientation']));
+  const b = req.body;
+  const geheel = (v, min, max) => Number.isInteger(v) && v >= min && v <= max;
+  if (b.platformName !== undefined && (typeof b.platformName !== 'string' || !b.platformName.trim() || b.platformName.length > 100)) {
+    return res.status(400).json({ error: 'platformName moet tekst zijn (1–100 tekens)' });
+  }
+  if (b.pollIntervalSec !== undefined && !geheel(b.pollIntervalSec, 5, 3600)) return res.status(400).json({ error: 'pollIntervalSec moet een geheel getal van 5 tot 3600 zijn' });
+  if (b.transitionMs !== undefined && !geheel(b.transitionMs, 0, 5000)) return res.status(400).json({ error: 'transitionMs moet een geheel getal van 0 tot 5000 zijn' });
+  if (b.defaultOrientation !== undefined && !['portrait', 'landscape'].includes(b.defaultOrientation)) return res.status(400).json({ error: 'defaultOrientation moet portrait of landscape zijn' });
+  Object.assign(state.settings, pick(b, ['platformName', 'pollIntervalSec', 'transitionMs', 'defaultOrientation']));
   db.save();
+  // Overgangstijd en poll-interval zitten in het manifest: alle boxen verversen.
+  for (const d of state.devices) hub.sendToDevice(d.id, { type: 'refresh' });
   res.json(state.settings);
 });
 
@@ -548,9 +663,24 @@ function notifyPlaylistDevices(playlistId) {
   }
 }
 
-// Nette JSON-fouten i.p.v. HTML-stacktraces.
-router.use((err, req, res, next) => {
-  res.status(err.status || 500).json({ error: err.message || 'Serverfout' });
-});
+// Alle boxen met een playlist waarin deze live-bron zit, verversen.
+function notifyLiveSourceDevices(liveSourceId) {
+  for (const pl of db.load().playlists) {
+    if ((pl.items || []).some((it) => it.liveSourceId === liveSourceId)) notifyPlaylistDevices(pl.id);
+  }
+}
+
+function isWebUrl(u) {
+  if (typeof u !== 'string') return false;
+  try { return ['http:', 'https:'].includes(new URL(u).protocol); } catch { return false; }
+}
+
+// Een stream mag ook een pad op deze server zijn (/media/…), dat het
+// manifest dan absoluut maakt.
+function isStreamUrl(u) {
+  return isWebUrl(u) || (typeof u === 'string' && /^\/[^/\\]/.test(u));
+}
+
+// Foutafhandeling: zie server.js (één plek, altijd JSON zonder stacktrace).
 
 module.exports = router;

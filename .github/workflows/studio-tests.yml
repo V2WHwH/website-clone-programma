@@ -1,17 +1,27 @@
 name: Studio-tests
 
-# Elke wijziging aan de Studio: alle onderdelen in een echte browser
-# nalopen (klikker, screensaver, muziek, toetsenbord, indeling).
+# Elke wijziging aan de Studio of het beheerplatform: alle onderdelen in een
+# echte browser nalopen (klikker, screensaver, muziek, toetsenbord, indeling,
+# en het CMS, de player en de API van de server).
 on:
   push:
     branches: [claude/holobox-4k-platform-ggpzo2]
-    paths: ['studio/**', 'tests/studio/**', '.github/workflows/studio-tests.yml']
+    paths:
+      - 'studio/**'
+      - 'tests/**'
+      - 'server.js'
+      - 'lib/**'
+      - 'routes/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/studio-tests.yml'
   workflow_dispatch:
 
 jobs:
   studio:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     defaults:
       run:
         working-directory: tests/studio
@@ -34,3 +44,23 @@ jobs:
 
       - name: Alle studio-tests
         run: node alles.js
+
+  server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Afhankelijkheden, Playwright en Chromium
+        run: |
+          npm ci
+          cd tests/studio
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Servertest (API, CMS, player, WebSocket, Studio-koppeling)
+        run: node tests/server/servertest.js

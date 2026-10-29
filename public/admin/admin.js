@@ -8,8 +8,9 @@ async function api(path, opts = {}) {
     ...opts,
     body: opts.body instanceof FormData ? opts.body : opts.body ? JSON.stringify(opts.body) : undefined
   });
-  if (res.status === 401) { showLogin(); throw new Error('Niet ingelogd'); }
   const data = await res.json().catch(() => ({}));
+  // Een fout wachtwoord is ook 401, maar dan telt de melding van de server.
+  if (res.status === 401 && path !== '/api/login') { showLogin(); throw new Error('Niet ingelogd'); }
   if (!res.ok) throw new Error(data.error || `Fout ${res.status}`);
   return data;
 }
@@ -159,8 +160,15 @@ function deviceCard(d) {
       setTimeout(async () => {
         const st = await api(`/api/devices/${d.id}/studio?screenshot=1`);
         if (st.screenshot) {
+          // Via DOM-eigenschappen, nooit als HTML: naam en plaatje komen van de box.
           const w = window.open('', '_blank');
-          w.document.write(`<title>${d.name} — schermafdruk</title><body style="margin:0;background:#000"><img src="${st.screenshot}" style="max-width:100%">`);
+          if (!w) return toast('Pop-up geblokkeerd — sta pop-ups toe voor dit adres');
+          w.document.title = `${d.name} — schermafdruk`;
+          w.document.body.style.cssText = 'margin:0;background:#000';
+          const img = w.document.createElement('img');
+          img.style.maxWidth = '100%';
+          img.src = st.screenshot;
+          w.document.body.append(img);
         } else toast('Nog geen schermafdruk ontvangen — is de Studio-koppeling actief?');
       }, 15000);
     } }, '📷 Schermafdruk'),
@@ -441,8 +449,10 @@ async function addLiveItem() {
 }
 
 function addUrlItem() {
-  const url = prompt('Web-URL (bijv. de eigen holobox-presentatie van de klant):', 'https://');
+  let url = prompt('Web-URL (bijv. de eigen holobox-presentatie van de klant):', 'https://');
   if (!url || url === 'https://') return;
+  url = url.trim();
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
   const durationSec = Number(prompt('Tijdsduur in seconden (leeg = blijf op deze pagina):', '')) || null;
   currentPlaylist.items.push({ type: 'url', name: url, url, durationSec });
   savePlaylist();

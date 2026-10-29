@@ -243,9 +243,22 @@ Maak in het CMS een *live-bron* aan met protocol `whep` en URL
 ## 7. Beveiliging
 
 - CMS-toegang: wachtwoord via `ADMIN_PASSWORD` (verplicht aanpassen),
-  sessie-cookie httpOnly, 12 uur geldig.
+  sessie-cookie httpOnly, 12 uur geldig. Na 10 foute wachtwoorden vanaf één
+  adres binnen een kwartier wacht dat adres een kwartier (HTTP 429).
+- De live-status in het CMS (WebSocket `/ws?role=admin`) vereist dezelfde
+  sessie en werkt alleen vanaf het CMS zelf.
 - Device-keys zijn 96-bit random; wie de key niet heeft, kan manifest noch
   media raden. Keys zijn per box in te trekken door het device te verwijderen
-  en opnieuw aan te maken.
+  en opnieuw aan te maken; een open player-verbinding van die box wordt dan
+  meteen gesloten.
+- Uploads: alleen video (mp4, webm, mov, m4v, mkv) en beeld (jpg, png, gif,
+  webp, avif). Een schermafdruk van een box moet een echte JPEG/PNG/WebP-
+  dataURL zijn. Live-bronnen en web-URL's alleen `http(s)`.
+- Fouten komen altijd terug als JSON (`{"error": "…"}`) zonder stacktrace of
+  serverpaden. Een onleesbare `data/db.json` wordt bewaard als
+  `db.json.kapot-<tijd>` voordat er een lege database start.
 - Zet publiek verkeer altijd achter TLS (reverse proxy) en configureer
-  `PUBLIC_BASE_URL` met `https://`.
+  `PUBLIC_BASE_URL` met `https://`. Staat de proxy op een andere machine,
+  zet dan `TRUST_PROXY` op het adres van die proxy (bijv. `10.0.0.5`), zodat
+  de inlogrem het echte adres van de bezoeker ziet. Standaard wordt alleen
+  een proxy op dezelfde machine vertrouwd.

@@ -22,8 +22,8 @@
   let itemTimer = null;
   let pollTimer = null;
   let ws = null;
-  let hlsInstance = null;
-  let pc = null; // WHEP RTCPeerConnection
+  // Niet-loopende playlist: is het laatste item al eens in beeld geweest?
+  let manifestPlayedOnce = false;
 
   /* ---------- Manifest ophalen ---------- */
 
@@ -66,6 +66,8 @@
     manifest = mf;
     items = mf.items || [];
     index = -1;
+    // Nieuwe content: een niet-loopende playlist speelt weer vanaf het begin.
+    manifestPlayedOnce = false;
 
     if (!items.length) {
       stopPlayback();
@@ -110,7 +112,6 @@
     }
     playItem(items[index]);
   }
-  let manifestPlayedOnce = false;
 
   function playItem(item) {
     const incoming = layers[1 - activeLayer];
@@ -152,7 +153,7 @@
     v.src = item.url;
     layer.appendChild(v);
     v.addEventListener('canplay', onReady, { once: true });
-    v.addEventListener('error', () => scheduleSkip(item), { once: true });
+    v.addEventListener('error', () => { if (v.isConnected) scheduleSkip(item); }, { once: true });
     if (item.durationSec) {
       itemTimer = setTimeout(next, item.durationSec * 1000);
       v.loop = true; // binnen de tijdsduur blijven loopen
@@ -177,13 +178,16 @@
 
     if (item.protocol === 'hls') {
       if (window.Hls && Hls.isSupported()) {
-        hlsInstance = new Hls({ lowLatencyMode: item.lowLatency !== false, backBufferLength: 30 });
-        hlsInstance.loadSource(item.url);
-        hlsInstance.attachMedia(v);
-        hlsInstance.on(Hls.Events.ERROR, (ev, data) => {
+        // De hls.js-instantie hoort bij deze video: cleanupLayer ruimt hem op,
+        // anders blijft een weggeschakelde stream op de achtergrond laden.
+        const hls = new Hls({ lowLatencyMode: item.lowLatency !== false, backBufferLength: 30 });
+        v._hls = hls;
+        hls.loadSource(item.url);
+        hls.attachMedia(v);
+        hls.on(Hls.Events.ERROR, (ev, data) => {
           if (data.fatal) {
             // Live streams vallen wel eens weg: blijven herproberen.
-            setTimeout(() => hlsInstance && hlsInstance.loadSource(item.url), 3000);
+            setTimeout(() => { if (v._hls === hls) hls.loadSource(item.url); }, 3000);
           }
         });
       } else {
@@ -211,8 +215,10 @@
   // Minimale WHEP-client (WebRTC-HTTP Egress Protocol) — werkt met o.a.
   // MediaMTX, Cloudflare Stream, Dolby/Millicast en SRS.
   async function startWhep(video, item, onReady) {
+    let pc = null;
     try {
       pc = new RTCPeerConnection();
+      video._pc = pc;
       pc.addTransceiver('video', { direction: 'recvonly' });
       pc.addTransceiver('audio', { direction: 'recvonly' });
       pc.ontrack = (ev) => {
@@ -226,10 +232,13 @@
         body: offer.sdp
       });
       if (!res.ok) throw new Error(`WHEP ${res.status}`);
-      await pc.setRemoteDescription({ type: 'answer', sdp: await res.text() });
+      const sdp = await res.text();
+      if (video._pc !== pc) return; // intussen weggeschakeld
+      await pc.setRemoteDescription({ type: 'answer', sdp });
       video.addEventListener('playing', onReady, { once: true });
       video.play().catch(() => {});
     } catch (e) {
+      if (video._pc !== pc) return;
       console.error('WHEP-fout', e);
       scheduleSkip(item);
     }
@@ -256,16 +265,15 @@
 
   function cleanupLayer(layer) {
     for (const v of layer.querySelectorAll('video')) {
+      if (v._hls) { try { v._hls.destroy(); } catch {} v._hls = null; }
+      if (v._pc) { try { v._pc.close(); } catch {} v._pc = null; }
       try { v.pause(); v.removeAttribute('src'); v.srcObject = null; v.load(); } catch {}
     }
-    if (hlsInstance && layer.querySelector('video') === null) { /* al opgeruimd */ }
     layer.innerHTML = '';
   }
 
   function stopPlayback() {
     clearTimeout(itemTimer);
-    if (hlsInstance) { try { hlsInstance.destroy(); } catch {} hlsInstance = null; }
-    if (pc) { try { pc.close(); } catch {} pc = null; }
     for (const l of layers) { cleanupLayer(l); l.classList.remove('visible'); }
   }
 
@@ -301,7 +309,11 @@
         case 'wake': blackEl.classList.remove('show'); break;
       }
     };
-    ws.onclose = () => setTimeout(connectWs, 5000);
+    ws.onclose = (ev) => {
+      // 4001: deze device-key bestaat niet (meer) in het CMS.
+      if (ev.code === 4001) showMessage('Geen verbinding: deze holobox staat niet (meer) in het CMS — controleer de player-URL.');
+      setTimeout(connectWs, ev.code === 4001 ? 60000 : 5000);
+    };
   }
 
   function sendStatus(item) {
