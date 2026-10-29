@@ -3,6 +3,7 @@ import { useState } from "react";
 import { PROJECTEN } from "../content/nl/projecten";
 import { SECTOREN } from "../content/nl/sectoren";
 import type { SectorSlug } from "../content/types";
+import { SITE } from "../data/site";
 import { Reveal } from "../components/ui/Reveal";
 import { ProjectKaart } from "../components/site/Kaarten";
 import { Kruimelpad } from "../components/site/Kruimelpad";
@@ -50,13 +51,39 @@ export function Projecten() {
           ))}
         </div>
 
-        <div className="grid gap-4 pb-20 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 pb-14 sm:grid-cols-2 lg:grid-cols-3">
           {zichtbaar.map((p, i) => (
             <Reveal key={p.slug} vertraging={(i % 6) * 40}>
               <ProjectKaart project={p} prioriteit={i < 2} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" />
             </Reveal>
           ))}
         </div>
+
+        <Reveal className="mb-20 flex flex-col items-start gap-5 rounded-kaart border border-accent/30 bg-nacht/60 p-6 md:flex-row md:items-center md:justify-between md:p-8">
+          <div className="flex items-center gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-lijn text-accent" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <rect x="3" y="3" width="18" height="18" rx="5" />
+                <circle cx="12" cy="12" r="4.2" />
+                <circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none" />
+              </svg>
+            </span>
+            <div>
+              <p className="kicker mb-1">Volg ons op Instagram</p>
+              <p className="max-w-md text-[0.98rem] leading-relaxed text-zacht">
+                Nieuwe projecten, opbouw achter de schermen en video&rsquo;s van installaties op locatie.
+              </p>
+            </div>
+          </div>
+          <a
+            href={SITE.socials.find((s) => s.naam === "Instagram")?.url}
+            rel="noopener"
+            className="navlink inline-flex shrink-0 items-center gap-1.5 rounded-klein border border-lijn px-5 py-2.5 font-display text-[0.95rem] font-medium text-tekst transition-colors hover:border-accent hover:text-accent"
+          >
+            Bekijk @vision2watch
+            <span aria-hidden="true">→</span>
+          </a>
+        </Reveal>
       </div>
       <CtaSectie
         kop="Uw project als volgende referentie?"
