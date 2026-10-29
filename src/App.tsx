@@ -3,6 +3,7 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import { Header } from "./components/site/Header";
 import { Footer } from "./components/site/Footer";
 import { Achtergrond } from "./components/site/Achtergrond";
+import { Snelzoeken } from "./components/site/Snelzoeken";
 import { ROUTES } from "./routes";
 import { titelVoorPad } from "./seo/head";
 
@@ -34,6 +35,7 @@ export function App() {
         </Routes>
       </main>
       <Footer />
+      <Snelzoeken />
     </div>
   );
 }

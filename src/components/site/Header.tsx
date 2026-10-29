@@ -6,6 +6,7 @@ import { PRODUCTEN } from "../../content/nl/producten";
 import { SECTOREN } from "../../content/nl/sectoren";
 import { leveringLabel } from "../../content/levering";
 import { Logo } from "./Logo";
+import { SnelzoekenKnop } from "./Snelzoeken";
 
 // Menu-onderdelen die een paneel opengeklapt krijgen. De rest is een gewone
 // link. Zo staat het hele aanbod één beweging van de bezoeker af, in plaats
@@ -135,6 +136,7 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
+          <SnelzoekenKnop className="flex h-10 w-10 items-center justify-center rounded-klein border border-lijn text-zacht transition-colors hover:border-accent/60 hover:text-tekst" />
           <Link
             to="/contact"
             className="rounded-klein border border-lijn px-4 py-2 text-[0.9rem] text-tekst transition-colors hover:border-accent hover:text-accent"
@@ -149,18 +151,21 @@ export function Header() {
           </Link>
         </div>
 
-        <button
-          type="button"
-          className="flex h-11 w-11 items-center justify-center rounded-klein border border-lijn lg:hidden"
-          aria-expanded={open}
-          aria-controls="mobiel-menu"
-          onClick={() => setOpen(!open)}
-        >
-          <span className="sr-only">{open ? "Menu sluiten" : "Menu openen"}</span>
-          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6">
-            {open ? <path d="M4 4l12 12M16 4L4 16" /> : <path d="M2.5 5.5h15M2.5 10h15M2.5 14.5h15" />}
-          </svg>
-        </button>
+        <div className="flex items-center gap-2 lg:hidden">
+          <SnelzoekenKnop className="flex h-11 w-11 items-center justify-center rounded-klein border border-lijn text-zacht" />
+          <button
+            type="button"
+            className="flex h-11 w-11 items-center justify-center rounded-klein border border-lijn"
+            aria-expanded={open}
+            aria-controls="mobiel-menu"
+            onClick={() => setOpen(!open)}
+          >
+            <span className="sr-only">{open ? "Menu sluiten" : "Menu openen"}</span>
+            <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6">
+              {open ? <path d="M4 4l12 12M16 4L4 16" /> : <path d="M2.5 5.5h15M2.5 10h15M2.5 14.5h15" />}
+            </svg>
+          </button>
+        </div>
       </div>
 
       {open && (

@@ -292,3 +292,39 @@ nav a {
   -webkit-mask-image: linear-gradient(to top, black 30%, transparent 85%);
   mask-image: linear-gradient(to top, black 30%, transparent 85%);
 }
+
+/* 404: een stille knipoog naar het eigen vak (holografie, projectie) in
+   plaats van een kale foutmelding. Om de paar seconden een kort,
+   subtiel glitch-moment; verder staat het cijfer stil. Uit bij reduced
+   motion, zoals de rest van de bewegende elementen op de site. */
+@media (prefers-reduced-motion: no-preference) {
+  .glitch-404 {
+    animation: glitch-404 6s ease-in-out infinite;
+  }
+}
+@keyframes glitch-404 {
+  0%, 92%, 100% {
+    transform: none;
+    text-shadow: none;
+  }
+  93% {
+    transform: translate3d(-2px, 0, 0) skewX(-1deg);
+    text-shadow: 2px 0 var(--color-accent-fel), -2px 0 #4db8ff;
+  }
+  94% {
+    transform: translate3d(2px, 0, 0) skewX(1deg);
+    text-shadow: -2px 0 var(--color-accent-fel), 2px 0 #4db8ff;
+  }
+  95% {
+    transform: none;
+    text-shadow: none;
+  }
+  96% {
+    transform: translate3d(-1px, 0, 0);
+    text-shadow: 1px 0 var(--color-accent-fel), -1px 0 #4db8ff;
+  }
+  97%, 100% {
+    transform: none;
+    text-shadow: none;
+  }
+}
