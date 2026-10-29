@@ -71,6 +71,9 @@ const stand = (p) => p.evaluate(() => ({
 // Een punt op de knop dat echt bij die knop hoort (knoppen kunnen elkaar
 // deels overlappen; dan telt wat bovenop ligt).
 async function punt(p, id) {
+  // Tijdens de binnenkomst-animatie zijn de knoppen (instelling "Interactie
+  // tijdens de entrance") nog niet aan te raken.
+  await p.waitForFunction(() => !$('#buttonLayer').classList.contains('wacht'), null, { timeout: 8000 });
   const pt = await p.evaluate((i) => {
     const e = document.querySelector(`#buttonLayer .vbtn[data-id="${i}"]`);
     if (!e) return null;
@@ -87,7 +90,7 @@ async function punt(p, id) {
 // Een knop aantikken zoals een bezoeker, zodra de knoppenlaag weer
 // aanraakbaar is (tijdens de binnenkomst-animatie niet).
 async function tik(p, id) {
-  await p.waitForFunction(() => $('#buttonLayer').style.pointerEvents !== 'none', null, { timeout: 8000 });
+  await p.waitForFunction(() => !$('#buttonLayer').classList.contains('wacht'), null, { timeout: 8000 });
   await wacht(150);
   const { x, y } = await punt(p, id);
   await p.mouse.click(x, y);

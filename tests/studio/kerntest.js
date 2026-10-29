@@ -230,7 +230,7 @@ const check = (naam, cond, info) => {
   check('✕ midden in een playlist sluit direct', await tot(p, () => !playOverlay.classList.contains('show'), 1500));
   await wacht(2500);
   check('en de rest van de playlist komt niet alsnog', await p.evaluate(() => !playOverlay.classList.contains('show') && playVideo.paused && playQueue.length === 0));
-  check('knoppen weer aanraakbaar', await tot(p, () => $('#buttonLayer').style.visibility !== 'hidden' && $('#buttonLayer').style.pointerEvents !== 'none', 5000));
+  check('knoppen weer aanraakbaar', await tot(p, () => $('#buttonLayer').style.visibility !== 'hidden' && !$('#buttonLayer').classList.contains('wacht'), 5000));
   // Een andere knop meteen daarna werkt gewoon
   await tik(p, k1);
   check('direct daarna een andere knop: speelt', await tot(p, () => playOverlay.classList.contains('show') && !playVideo.paused &&
@@ -240,7 +240,7 @@ const check = (naam, cond, info) => {
   await wacht(700);
 
   // Een bezoeker die dubbel tikt
-  await tot(p, () => $('#buttonLayer').style.pointerEvents !== 'none' && $('#buttonLayer').style.visibility !== 'hidden', 5000);
+  await tot(p, () => !$('#buttonLayer').classList.contains('wacht') && $('#buttonLayer').style.visibility !== 'hidden', 5000);
   await wacht(300);
   const dp = await punt(p, k2);
   await p.mouse.dblclick(dp.x, dp.y);

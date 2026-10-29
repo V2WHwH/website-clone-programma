@@ -220,12 +220,12 @@ async function netjes(p) { // knoppen in een raster, zodat ze niet over elkaar l
   check('laadmelding verdwijnt na het laden', await tot(p, () => $('#webStatus').classList.contains('hidden'), 3000));
   await p.click('#webClose');
   check('× Sluiten sluit het webvenster en ruimt op', await tot(p, () => $('#webOverlay').classList.contains('hidden') && !$('#webHost').children.length, 2000));
-  check('daarna weer gewoon de knoppen', await tot(p, () => AppState.is('IDLE') && $('#buttonLayer').style.pointerEvents !== 'none', 5000));
+  check('daarna weer gewoon de knoppen', await tot(p, () => AppState.is('IDLE') && !$('#buttonLayer').classList.contains('wacht'), 5000));
   await tik(p, kKaal);
   check('adres zonder https:// wordt https://', await tot(p, () => $('#webFrame')?.src === 'https://voorbeeld.test/pagina', 3000),
     await p.evaluate(() => $('#webFrame')?.src));
   await p.click('#webClose');
-  await tot(p, () => $('#buttonLayer').style.pointerEvents !== 'none', 5000);
+  await tot(p, () => !$('#buttonLayer').classList.contains('wacht'), 5000);
   await tik(p, kKapot);
   check('onbereikbare site: eerlijke melding', await tot(p, () => /niet bereikbaar/.test($('#webBlockedText').textContent) &&
     !$('#webStatus').classList.contains('hidden'), 5000), await p.evaluate(() => $('#webBlockedText').textContent));
