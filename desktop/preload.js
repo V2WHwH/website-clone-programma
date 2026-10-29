@@ -17,5 +17,7 @@ contextBridge.exposeInMainWorld('hwhDesktop', {
   setSettings: (patch) => ipcRenderer.invoke('settings:set', patch),
   // Logo van een website opzoeken. Alleen het hoofdproces kan de pagina
   // ophalen: een browser mag de inhoud van een vreemde site niet lezen.
-  findLogo: (url) => ipcRenderer.invoke('web:findLogo', String(url || ''))
+  findLogo: (url) => ipcRenderer.invoke('web:findLogo', String(url || '')),
+  // Hoog geheugengebruik: de presentatie kiest zelf een rustig moment om te herstarten.
+  onGeheugenHoog: (fn) => ipcRenderer.on('health:geheugenHoog', (e, mb) => fn(Number(mb) || 0))
 });

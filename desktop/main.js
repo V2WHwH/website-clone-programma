@@ -175,12 +175,22 @@ function createWindow() {
     }
   });
 
-  // Vastgelopen rendermodule: Chromium meldt dit zelf.
+  // Vastgelopen rendermodule: Chromium meldt dit zelf. Een korte hapering
+  // (een groot bestand inlezen, een zware 4K-video starten) is geen
+  // vastloper: pas herstellen als hij 15 seconden niet terugkomt.
+  let hangTimer = null;
   win.on('unresponsive', () => {
-    log('error', 'venster reageert niet — herstellen');
-    recover('venster reageerde niet');
+    log('warn', 'venster reageert even niet');
+    clearTimeout(hangTimer);
+    hangTimer = setTimeout(() => {
+      log('error', 'venster reageert 15 s niet — herstellen');
+      recover('venster reageerde niet');
+    }, 15000);
   });
-  win.on('responsive', () => log('info', 'venster reageert weer'));
+  win.on('responsive', () => {
+    clearTimeout(hangTimer); hangTimer = null;
+    log('info', 'venster reageert weer');
+  });
 
   // Hartslag opnieuw starten na elke (her)lading van de pagina.
   win.webContents.on('did-finish-load', () => { lastBeat = Date.now(); });
@@ -269,16 +279,21 @@ setInterval(async () => {
   } catch (err) { log('warn', 'cache legen mislukt', { err: String(err) }); }
 }, 6 * 3600 * 1000);
 
-// Geheugenbewaking van het hoofdproces + rendermodule.
+// Geheugenbewaking van het hoofdproces + rendermodule. De grens groeit mee
+// met het werkgeheugen van de pc: met 4K-video's gebruikt de app op een
+// ruime machine gewoon meer. Boven de grens herladen we niet meteen (dat
+// onderbrak een video of presentatie): de presentatie herstart zelf op het
+// eerstvolgende rustige moment.
+const GEHEUGEN_GRENS = Math.max(2600, os.totalmem() / 1048576 * 0.4);
 setInterval(async () => {
   if (!win || win.isDestroyed()) return;
   try {
     const metrics = app.getAppMetrics();
     const totalMb = metrics.reduce((a, m) => a + (m.memory?.workingSetSize || 0), 0) / 1024;
-    if (totalMb > 2600) {
-      log('error', 'geheugengebruik hoog — venster verversen', { mb: Math.round(totalMb) });
-      win.reload();
-      lastBeat = Date.now();
+    if (totalMb > GEHEUGEN_GRENS) {
+      log('error', 'geheugengebruik hoog — herstart op een rustig moment', { mb: Math.round(totalMb), grens: Math.round(GEHEUGEN_GRENS) });
+      try { await session.defaultSession.clearCache(); } catch {}
+      win.webContents.send('health:geheugenHoog', Math.round(totalMb));
     } else if (totalMb > 1800) {
       log('warn', 'geheugengebruik loopt op', { mb: Math.round(totalMb) });
       try { await session.defaultSession.clearCache(); } catch {}
@@ -371,6 +386,7 @@ ipcMain.on('app:quit', () => {
 });
 
 ipcMain.handle('settings:set', (e, patch) => {
+  if (!patch || typeof patch !== 'object') return settings;
   const allowed = ['kiosk', 'hardwareAcceleration', 'zoomFactor'];
   for (const k of allowed) if (patch[k] !== undefined) settings[k] = patch[k];
   saveSettings();

@@ -10176,7 +10176,10 @@ let bgAudioBlocked = false;
 
 function bgVolume(on, vol) {
   if (!on) return 0;
-  const v = (Number(vol) ?? 60) / 100 * ((config.masterVolume ?? 100) / 100);
+  // Number(undefined) is NaN, niet null: '?? 60' ving dat nooit op, en een
+  // volume van NaN laat de browser een fout gooien.
+  const n = Number(vol), m = Number(config.masterVolume ?? 100);
+  const v = (Number.isFinite(n) ? n : 60) / 100 * ((Number.isFinite(m) ? m : 100) / 100);
   return Math.max(0, Math.min(1, v));
 }
 
@@ -10203,12 +10206,17 @@ async function playBg(el, on, vol) {
 const saverSound = () => ({ on: !!config.screensaver.sound, vol: config.screensaver.volume });
 const sceneSound = () => ({ on: !!curScene().idleSound, vol: curScene().idleVolume });
 
-function createRotator(elA, elB, getSound) {
+function createRotator(elA, elB, getSound, naam = '') {
+  // Welke video het laatst in beeld was, ook na herladen of herstarten.
+  const SLEUTEL = naam ? 'hwh_rotator_' + naam : '';
+  const onthoud = (id) => { if (SLEUTEL) try { localStorage.setItem(SLEUTEL, id || ''); } catch {} };
+  let eerder = '';
+  if (SLEUTEL) try { eerder = localStorage.getItem(SLEUTEL) || ''; } catch {}
   const sound = () => (getSound && getSound()) || { on: false, vol: 0 };
   // laatsteId: de video die het laatst in beeld was, ook na stoppen. Zo gaat
   // de volgende keer de vólgende video spelen in plaats van weer de eerste.
   const st = { list: [], idx: 0, active: elA, running: false, transitioning: false, anims: [],
-    paused: false, laatsteId: null, fouten: 0, stil: null };
+    paused: false, laatsteId: eerder || null, fouten: 0, stil: null };
   const standby = () => (st.active === elA ? elB : elA);
 
   function applyTransition(effect, sec, inEl, outEl) {
@@ -10258,7 +10266,7 @@ function createRotator(elA, elB, getSound) {
     const gestart = await playBg(inEl, sn.on, sn.vol);
     applyBgAudio(outEl, false, 0);   // de vertrekkende speler zwijgt meteen
     st.active = inEl;
-    st.laatsteId = next.id; st.stil = null;
+    st.laatsteId = next.id; st.stil = null; onthoud(next.id);
     // Kon deze video niet laden of starten (kapot, of een codec die de pc niet
     // kent)? Dan meteen door naar de volgende in plaats van stil te staan.
     if (inEl.error || (!gestart && inEl.paused)) setTimeout(overslaan, 300);
@@ -10337,7 +10345,7 @@ function createRotator(elA, elB, getSound) {
       elA.classList.add('front'); elB.classList.remove('front');
       elA.loop = list.length === 1;
       elA.src = list[st.idx].url;
-      st.laatsteId = list[st.idx].id;
+      st.laatsteId = list[st.idx].id; onthoud(st.laatsteId);
       const sn = sound();
       playBg(elA, sn.on, sn.vol);
     },
@@ -10376,11 +10384,11 @@ function createRotator(elA, elB, getSound) {
   };
 }
 
-const saverRotator = createRotator(saverVideo, $('#saverVideoB'), saverSound);
+const saverRotator = createRotator(saverVideo, $('#saverVideoB'), saverSound, 'saver');
 // In achtergrondmodus draait de saver-playlist op deze lagen en volgt hij
 // dus de screensaver-schuif; anders is het de achtergrondvideo van de scène.
 const bgRotator = createRotator($('#idleVideo'), $('#idleVideoB'),
-  () => (bgRotator.running ? saverSound() : sceneSound()));
+  () => (bgRotator.running ? saverSound() : sceneSound()), 'achtergrond');
 
 // Elke aanraking telt als activiteit; tijdens de screensaver wekt hij het menu.
 for (const evt of ['pointerdown', 'keydown']) {
@@ -12862,8 +12870,23 @@ function maintenanceIdle() {
     !panel.classList.contains('open') &&
     !editing &&
     document.getElementById('webOverlay').classList.contains('hidden') &&
+    document.getElementById('avatarOverlay').classList.contains('hidden') &&
+    // Een presentatie met de klikker: wel in de wachtlus, niet midden in een video.
+    !(typeof Reeks !== 'undefined' && Reeks.actief && Reeks.fase === 'video') &&
     Date.now() - lastInteraction > 8000;
 }
+
+// Het hoofdproces van de Windows-app meldt een hoog geheugengebruik. Niet
+// meteen herladen (dat onderbrak een video of presentatie), maar op het
+// eerstvolgende rustige moment.
+let geheugenHerstartNodig = 0;
+window.hwhDesktop?.onGeheugenHoog?.((mb) => { geheugenHerstartNodig = mb || 1; });
+setInterval(() => {
+  if (geheugenHerstartNodig && maintenanceIdle()) {
+    const mb = geheugenHerstartNodig; geheugenHerstartNodig = 0;
+    selfRestart('geheugen van de app (' + Math.round(mb) + ' MB)');
+  }
+}, 5000);
 
 // Lichte opruiming — mag altijd draaien, ook tijdens de screensaver.
 function sweepLight() {
@@ -12968,13 +12991,26 @@ setInterval(() => { if (maintenanceIdle()) sweepDeep(); }, 15 * 60000);
 /* Watchdog: de rendermodule geeft elke seconde een hartslag af. Blijft die
    weg (vastgelopen scriptlus), dan grijpt de desktop-app in; in de browser
    detecteert een tweede timer de stilstand zelf. */
-let lastBeat = Date.now();
-(function beat() {
+/* Zichtbaar loopt de hartslag via een beeldje, zodat ook een vastgelopen
+   weergave opvalt. Verborgen (geminimaliseerd, of een ander venster ervoor)
+   tekent de browser geen beeldjes; dat is geen vastloper, en dan herlaadde de
+   app na een halve minuut voor niets. Dan loopt de hartslag op de klok. */
+let lastBeat = Date.now(), beatToken = 0;
+function planBeat() {
+  const tk = ++beatToken;
+  const ga = () => { if (tk === beatToken) beat(); };
+  if (document.hidden) setTimeout(ga, 1000);
+  else requestAnimationFrame(() => setTimeout(ga, 1000));
+}
+function beat() {
   lastBeat = Date.now();
   try { window.hwhDesktop?.heartbeat?.(); } catch {}
-  requestAnimationFrame(() => setTimeout(beat, 1000));
-})();
+  planBeat();
+}
+document.addEventListener('visibilitychange', () => { lastBeat = Date.now(); planBeat(); });
+beat();
 setInterval(() => {
+  if (document.hidden) return;
   const gap = (Date.now() - lastBeat) / 1000;
   const limit = (config.maintenance?.watchdogSec) || 25;
   if (gap > limit) selfRestart('watchdog: beeld stond ' + Math.round(gap) + 's stil');
