@@ -43,10 +43,15 @@ const gevuld = (a) => { let n = 0; for (let i = 3; i < a.length; i += 4) if (a[i
   };
   const open = async () => { await p.evaluate(() => openEditor()); await wacht(200); };
   const dicht = async () => { await p.evaluate(() => closeEditor()); await wacht(250); };
-  const knopMidden = (bid) => p.evaluate((i) => {
-    const r = document.querySelector(`.vbtn[data-id="${i}"]`).getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-  }, bid);
+  // Na een stop komen de knoppen terug met hun entrance; tot die half klaar is
+  // (instelling "Interactie tijdens de entrance") zijn ze niet aan te tikken.
+  const knopMidden = async (bid) => {
+    await tot(p, () => !document.getElementById('buttonLayer').classList.contains('wacht'), 5000);
+    return p.evaluate((i) => {
+      const r = document.querySelector(`.vbtn[data-id="${i}"]`).getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }, bid);
+  };
   // Momentopname van een WebGL-canvas, verkleind tot 64×64 RGBA.
   const foto = (sel) => p.evaluate((s) => {
     const cv = document.querySelector(s);

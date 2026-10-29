@@ -290,7 +290,7 @@ header.cover{padding-block:88px 8px}
   <b>wat</b> het doet, <b>waar</b> het staat en <b>waarom</b> het er zo uitziet.
   Alle afbeeldingen komen uit de draaiende software, niet uit een ontwerp.</p>
   <div class="meta">
-    <span>Versie 2.33.1</span><span>23 hoofdstukken</span><span>39 schermafbeeldingen</span>
+    <span>Versie 2.34.0</span><span>23 hoofdstukken</span><span>39 schermafbeeldingen</span>
     <span>Nederlands</span>
   </div>
 </header>
@@ -866,9 +866,12 @@ header.cover{padding-block:88px 8px}
       <thead><tr><th>Sectie</th><th>Velden</th><th>Waarvoor</th></tr></thead>
       <tbody>
         <tr><td>Content</td><td>Tekst op de knop · Actie · Media of Adres (met het logo van de
-          site) · Playlist · Playlist in willekeurige volgorde</td>
+          site) · Naar welke scène · Naar welke taal · Playlist · Playlist in willekeurige volgorde</td>
           <td>Wat de knop is en wat hij doet. De velden wisselen mee met de gekozen actie:
-          kies je “Website openen”, dan verschijnt een adresveld in plaats van een medialijst.</td></tr>
+          kies je “Website openen”, dan verschijnt een adresveld in plaats van een medialijst;
+          bij “Ga naar scène” en “Taal omschakelen” kies je hier de scène of de taal.
+          De playlist is precies wat de knop afspeelt, in die volgorde: item 1 is wat bij
+          <b>Media</b> staat. Haal je item 1 weg met &times;, dan schuift item 2 op naar Media.</td></tr>
         <tr><td>Positie</td><td>X (%) · Y (%) · Laag · Grootte</td>
           <td>Exact typen wat je met slepen niet precies krijgt. “Laag” bepaalt wat er vóór ligt.</td></tr>
         <tr><td>Uiterlijk</td><td>Vorm · Kleur · Dekking · Eigen PNG als knopvorm · Frame</td>
@@ -1259,7 +1262,7 @@ header.cover{padding-block:88px 8px}
       <tr><td>Diepte</td><td class="num">30 px</td><td>Hoeveel ze naar achteren beginnen.</td></tr>
       <tr><td>Overshoot</td><td class="num">2,5 %</td><td>Hoever ze voorbij hun plek schieten. <b>Eén keer voorbij, nooit twee</b> — dat is het hele verschil.</td></tr>
       <tr><td>Easing</td><td>Out Expo</td><td>De snelheidscurve. Out Expo is de aanbevolen: snel weg, zacht aan.</td></tr>
-      <tr><td>Interactie tijdens entrance</td><td>Na 50 % · Pas na afloop · Direct</td><td>Wanneer een tegel al aangeraakt mag worden. <b>Na 50 %</b> voelt reactief zonder half-gelande tegels te laten indrukken.</td></tr>
+      <tr><td>Interactie tijdens entrance</td><td>Na 50 % · Pas na afloop · Direct</td><td>Wanneer een tegel al aangeraakt mag worden. <b>Na 50 %</b> voelt reactief zonder half-gelande tegels te laten indrukken. Dat geldt ook als de knoppen terugkomen na een video: dan zijn ze ongeveer een seconde niet aan te raken. Wil je dat niet, kies <b>Direct</b>.</td></tr>
       <tr><td>Reduced motion</td><td>aan / uit</td><td>Toegankelijkheid: Galaxy wordt een rustige fade met subtiele scale.</td></tr>
     </tbody>
   </table></div>
@@ -1343,7 +1346,10 @@ header.cover{padding-block:88px 8px}
     achter de knoppen speelt — de video — blijft gewoon te zien.</p>
     <p>Verschuif je een knop, dan schuift zijn toonhoogte mee. Onder de keuze staat op welke
     plek hij zit en rond welke frequentie hij beweegt. Wil je dat een knop altijd op de bas
-    reageert, ongeacht waar hij staat, kies dan een vaste band.</p></div>
+    reageert, ongeacht waar hij staat, kies dan een vaste band.</p>
+    <p>De knoppen luisteren naar alles wat de box zelf afspeelt: de video's en de muziek
+    bij de screensaver uit een eigen bestand. Muziek van internet (een stream, YouTube of
+    SoundCloud) mag de box niet meelezen; daar bewegen de knoppen niet op mee.</p></div>
 
   <div class="note why"><span class="t">Waarom het scherm bol lijkt te staan</span>
     <p>Een knop midden op het scherm reageert voluit; hoe verder naar de randen, hoe
@@ -1397,7 +1403,8 @@ header.cover{padding-block:88px 8px}
       <thead><tr><th>Veld</th><th>Wat het doet</th><th>Waarom</th></tr></thead>
       <tbody>
         <tr><td>Screensaver aan</td><td>Start vanzelf na rust; aanraking brengt de knoppen
-          direct terug.</td><td>De terugweg moet onmiddellijk zijn, anders denkt de bezoeker
+          direct terug. Niet tijdens een gesprek met een AI-avatar of terwijl er een
+          webpagina open staat: daarna begint de wachttijd opnieuw.</td><td>De terugweg moet onmiddellijk zijn, anders denkt de bezoeker
           dat de box niet reageert.</td></tr>
         <tr><td>Start na</td><td>Seconden zonder aanraking.</td>
           <td>120 s is een goede showroomwaarde; op een drukke beurs mag het korter.</td></tr>
@@ -2512,7 +2519,8 @@ header.cover{padding-block:88px 8px}
       export nog: een klein <code>.json</code>-bestand. Handig om een ontwerp te mailen. Na
       het terugzetten daarvan wijs je de video's aan met <b>Media opnieuw koppelen</b>. Beide
       soorten bestanden gaan via dezelfde knop <b>Terugzetten</b>: hij herkent zelf wat hij
-      krijgt.</p>
+      krijgt. Ook in een <code>.json</code> zit de device-key niet: de box die hem
+      terugzet, houdt zijn eigen sleutel.</p>
     </div>
   </div>
 
@@ -2537,6 +2545,12 @@ header.cover{padding-block:88px 8px}
   </table></div>
   <p class="measure">Via het beheerpaneel kun je daarna per box: de live status zien, een
   schermafdruk opvragen, het volume zetten, herstarten en een ontwerp publiceren.</p>
+  <div class="note"><span class="t">Beveiliging van het beheerpaneel</span>
+    <p>Het beheerpaneel vraagt een wachtwoord (instelbaar op de server). Na tien foute
+    wachtwoorden achter elkaar wacht het een kwartier voordat het weer een poging
+    aanneemt. In de mediabibliotheek van de server kun je alleen video en beeld zetten
+    (mp4, webm, mov, m4v, mkv, jpg, png, gif, webp, avif). Verwijder je een box in het
+    beheerpaneel, dan wordt zijn verbinding meteen verbroken.</p></div>
 
   <h3>Continu bedrijf &amp; onderhoud</h3>
   <div class="tw"><table>
@@ -2550,7 +2564,7 @@ header.cover{padding-block:88px 8px}
       <tr><td>Nachtelijke verversing</td><td>Herstart de presentatie één keer per nacht.</td>
         <td>Alleen als er niemand kijkt — een herstart tijdens een demo is erger dan de
         kwaal.</td></tr>
-      <tr><td>Tijdstip</td><td>Het uur van die herstart.</td>
+      <tr><td>Tijdstip</td><td>Het uur van die herstart (0 = middernacht).</td>
         <td>Zet het ruim vóór openingstijd.</td></tr>
       <tr><td>Watchdog</td><td>Grijpt in als het beeld zoveel seconden stilstaat.</td>
         <td>Loopt de weergave alsnog vast, dan herstart de presentatie automatisch. In de
@@ -2812,7 +2826,12 @@ header.cover{padding-block:88px 8px}
         <b>Bewerken</b> in de canvasbalk.</td></tr>
       <tr><td>Een knop is leeg geworden</td><td>De media eronder is verwijderd of de
         koppeling is verbroken.</td><td>Selecteer de knop en kies opnieuw een bestand bij
-        <b>Media</b> in de inspector.</td></tr>
+        <b>Media</b> in de inspector. Een gewiste video verdwijnt ook uit playlists, de reeks
+        en de screensaver; de rest van zo'n playlist speelt gewoon door.</td></tr>
+      <tr><td>Vlak na een video reageert een knop even niet</td><td>De knoppen komen terug
+        met hun entrance; bij <b>Na 50 %</b> zijn ze tot halverwege niet aan te raken.</td>
+        <td>Zo hoort het. Wil je dat ze meteen reageren: Motion &rarr; <b>Interactie tijdens
+        entrance</b> op <b>Direct</b>.</td></tr>
       <tr><td>Video hapert op 4K</td><td>De videokaart decodeert niet.</td>
         <td>Controleer <code>chrome://gpu</code> en start met de vlaggen uit hoofdstuk 17.</td></tr>
       <tr><td>3D-object is traag of verschijnt niet</td><td>Het model is zwaarder dan de

@@ -56,10 +56,15 @@ async function tot(p, fn, ms = 6000, arg) {
   };
   const open = async () => { await p.evaluate(() => openEditor()); await wacht(200); };
   const dicht = async () => { await p.evaluate(() => closeEditor()); await wacht(250); };
-  const knopMidden = (bid) => p.evaluate((i) => {
-    const r = document.querySelector(`.vbtn[data-id="${i}"]`).getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-  }, bid);
+  // Na een stop komen de knoppen terug met hun entrance; tot die half klaar is
+  // (instelling "Interactie tijdens de entrance") zijn ze niet aan te tikken.
+  const knopMidden = async (bid) => {
+    await tot(p, () => !document.getElementById('buttonLayer').classList.contains('wacht'), 5000);
+    return p.evaluate((i) => {
+      const r = document.querySelector(`.vbtn[data-id="${i}"]`).getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }, bid);
+  };
   await p.evaluate((id) => {
     const k = (i, label, mediaId, x, y) => ({ id: 'k' + i, label, mediaId, x, y, size: 8, color: PALETTE[i],
       shape: 'rounded', depth: 'off', drift: 0, showPreview: false, fx: 'none', z: i });
@@ -172,9 +177,30 @@ async function tot(p, fn, ms = 6000, arg) {
     await p.evaluate(() => bgRotator.huidige?.name));
   await p.evaluate(() => { lastInteraction = Date.now() - 20000; });
   check('screensaver start ook in achtergrondmodus', await tot(p, () => saverActive, 3000));
-  check('achtergrond pauzeert onder de schermvullende screensaver', await p.evaluate(() => $('#idleVideo').paused && $('#idleVideoB').paused));
   await p.mouse.click(800, 900);
   check('aanraking: achtergrondplaylist speelt verder', await tot(p, () => !saverActive && !bgRotator.activeEl.paused, 2000));
+  // Onder de schermvullende screensaver hoort de achtergrondplaylist stil te
+  // staan. Met korte video's valt het begin van de screensaver vaak samen met
+  // een wissel van de achtergrond; precies dan ging het mis.
+  const lijstWas = await p.evaluate(() => config.screensaver.mediaIds.slice());
+  await p.evaluate((id) => { config.screensaver.mediaIds = [id['1 intro.webm'], id['2 uitleg.webm']]; config.screensaver.transitionSec = 1.2;
+    config.screensaver.transition = 'crossfade'; save(); renderStage(); }, id);
+  await wacht(1000);
+  const onder = [];
+  for (let i = 0; i < 12; i++) {
+    await wacht(200 + ((i * 337) % 700));
+    await p.evaluate(() => enterSaver());
+    await wacht(600);
+    const x1 = await p.evaluate(() => ({ a: $('#idleVideo').paused, b: $('#idleVideoB').paused }));
+    await wacht(1500);
+    const x2 = await p.evaluate(() => ({ a: $('#idleVideo').paused, b: $('#idleVideoB').paused }));
+    onder.push({ a: x1.a && x2.a, b: x1.b && x2.b });
+    await p.evaluate(() => exitSaver());
+  }
+  const spelend = onder.filter((x) => !x.a || !x.b).length;
+  check('achtergrondplaylist staat stil onder de schermvullende screensaver (12 pogingen)', spelend === 0, { spelendOnder: spelend, van: 12 });
+  await p.evaluate((l) => { config.screensaver.mediaIds = l; config.screensaver.transitionSec = 0.5; save(); renderStage(); }, lijstWas);
+  await wacht(500);
   await open(); await tab('saver');
   await schakel('#svBackground', false);
   await dicht();

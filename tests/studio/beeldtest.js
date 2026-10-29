@@ -76,6 +76,8 @@ const bijna = (a, b, marge = 0.02) => typeof a === 'number' && Math.abs(a - b) <
   check('titel is bewaard', await p.evaluate(() => JSON.parse(localStorage.getItem(LS_KEY)).scenes[0].title) === 'Welkom bij de test');
 
   console.log('2. Achtergrondvideo, met en zonder geluid');
+  const idleKeus = await p.evaluate(() => [...$('#cfgIdle').options].map((o) => o.textContent).filter((t) => !t.startsWith('—')));
+  check('keuzelijst achtergrondvideo bevat alleen video\'s', idleKeus.every((n) => /\.(webm|mp4)$/.test(n)), idleKeus);
   await p.selectOption('#cfgIdle', id['clip.webm']);
   await dicht();
   const idle = () => p.evaluate(() => { const v = $('#idleVideo'); return { hidden: v.classList.contains('hidden'),
@@ -526,6 +528,18 @@ const bijna = (a, b, marge = 0.02) => typeof a === 'number' && Math.abs(a - b) <
   await p.mouse.click(800, 960);
   await wacht(60);
   check('aanraking: handje direct weg', await p.evaluate(() => !$('#hand').classList.contains('visible')));
+  // Een verborgen knop hoort het handje niet aan te wijzen
+  await p.evaluate(() => { curButtons().forEach((k, i) => { k.hidden = i > 0 ? true : undefined; if (!k.hidden) delete k.hidden; });
+    curButtons()[1].x = 88; curButtons()[1].y = 12; save(); renderStage();
+    window.__hand = new Set();
+    // Ook bij het verschijnen noteren: met één zichtbare knop verandert de plek niet.
+    new MutationObserver(() => { if ($('#hand').classList.contains('visible')) window.__hand.add($('#hand').style.left); })
+      .observe($('#hand'), { attributes: true, attributeFilter: ['style', 'class'] });
+    lastInteraction = Date.now() - 4000; });
+  await wacht(9000);
+  const handPlekken = await p.evaluate(() => [...window.__hand]);
+  check('handje wijst alleen zichtbare knoppen aan', handPlekken.length > 0 && handPlekken.every((x) => x.includes('30%')), handPlekken);
+  await p.evaluate(() => { curButtons().forEach((k) => delete k.hidden); save(); renderStage(); });
   await open(); await tab('fx'); await schakel('#handEnabled', false); await dicht();
 
   check('geen JS-fouten', errs.length === 0, errs.slice(0, 5));

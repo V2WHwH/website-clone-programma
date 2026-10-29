@@ -5,7 +5,8 @@
 const { spawnSync } = require('child_process');
 const path = require('path');
 
-const TESTS = ['rooktest', 'kliktest', 'playlisttest', 'muziektest', 'streamtest', 'toetsenbordtest', 'layouttest'];
+const TESTS = ['rooktest', 'kliktest', 'playlisttest', 'muziektest', 'streamtest', 'toetsenbordtest', 'layouttest',
+  'kerntest', 'scenetest', 'verhuistest', 'beeldtest', '3dtest', 'sensortest', 'instellingentest'];
 const alleen = process.argv.slice(2);
 const uitslag = [];
 for (const t of TESTS.filter((x) => !alleen.length || alleen.includes(x))) {
